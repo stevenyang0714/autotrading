@@ -44,31 +44,37 @@ Never silently resolve a conflict. If two sources disagree and the errata does n
 
 ## Secrets and execution safety
 - Never read, print, log or commit `.env*` files or secrets (do not `cat` them via Bash either). Use `.env.example` for variable names.
+- Never run `docker compose config`, `docker inspect`, or `env` / `printenv` inside a container: they print resolved secrets.
 - Paper trading only until Phase 5 exit. `LIVE_TRADING_ENABLED` must stay `false`; code must refuse to start a live broker session unless Phase 6 gates are recorded as passed.
 - Paper and live configuration, credentials and database schemas are isolated.
 
 ## Engineering baseline (details in DECISIONS.md)
 - Backend: Python 3.12, FastAPI, Pydantic v2, SQLAlchemy 2 + Alembic, `uv`, `ruff`, `mypy`, `pytest`.
-- Data: PostgreSQL + TimescaleDB, Redis (cache/queue, never source of truth), S3-compatible object store (MinIO locally).
+- Data: PostgreSQL + TimescaleDB, Redis (cache/queue, never source of truth), S3-compatible object store (Silo locally, ADR-011).
 - Jobs: Dramatiq (Redis broker) + APScheduler; idempotent jobs, retries with backoff, dead-letter queue, freshness SLA.
 - Frontend: Next.js (App Router) + React + TypeScript strict, Tailwind, TanStack Query, Apache ECharts, `pnpm`, Vitest, Playwright.
 - Local-first via Docker Compose. Store all timestamps in UTC (`timestamptz`); display Asia/Singapore plus exchange-local time for market events.
 
 ## Commands
-Fill in during M0.1 and keep current:
-- `make up` / `make down` — start/stop local stack
-- `make test` — full test suite (backend + frontend)
-- `make lint` — ruff, mypy, eslint, tsc
-- `make migrate` — apply Alembic migrations
+Defined in the root `Makefile` (`make help` lists them). Keep this list current:
+- `make setup` — install backend (uv) and frontend (pnpm) dependencies on the host
+- `make up` / `make down` — start (waits until healthy) / stop the local stack; `make ps`, `make logs SERVICE=api`
+- `make test` — full suite: `make test-unit` (pytest + vitest, no stack) and `make test-integration` (needs `make up`; fails, never skips, when the stack is down)
+- `make lint` — ruff, ruff format --check, mypy (strict on `domain/`), eslint, tsc
+- `make fmt` — auto-format and auto-fix
+- `make migrate` — apply Alembic migrations inside the api container
+- `make dev-web` — Next.js dev server on http://127.0.0.1:3000
+- Health: `curl http://127.0.0.1:8000/health` (dependencies) and `/health/live` (process only)
 
-## Repo layout (target)
+## Repo layout
 ```
-apps/api/        FastAPI app, domain, adapters, jobs
-apps/web/        Next.js dashboard
-config/          universe.yaml, source registry seeds
-docs/            spec, decisions, milestones, glossary, reports, STATUS.md
-infra/           docker-compose, CI
-tests/fixtures/  recorded real API responses (never shown as live)
+apps/api/           FastAPI app, domain, adapters, jobs (one image for api / worker / scheduler)
+apps/web/           Next.js dashboard
+config/             universe.yaml, source registry seeds
+docs/               spec, decisions, milestones, glossary, reports, STATUS.md
+infra/              docker-compose
+.github/workflows/  CI (GitHub requires this location)
+tests/fixtures/     recorded real API responses (never shown as live)
 ```
 
 Keep this file short. Put detail in `docs/`, not here.

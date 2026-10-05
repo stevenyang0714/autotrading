@@ -1,0 +1,7 @@
+# Never send secrets or local build output into an image.
+.env
+.env.*
+node_modules/
+.next/
+coverage/
+*.tsbuildinfo

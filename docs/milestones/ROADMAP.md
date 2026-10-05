@@ -11,6 +11,29 @@ Detailed milestone files are written **one phase at a time**, at the end of the 
 | 5 | Options analytics and hedges, order preview, IBKR paper adapter (Alpaca paper as secondary), reconciliation, kill switch | Phase 4 exit; options data decided | Liquidity and max-loss checks; duplicate-order protection and idempotent orders; paper/live isolation proven; kill switch tested | OD-4, OD-9 |
 | 6 | Selective auto-execution for validated sleeves only (S1–S4 candidates) | Phase 5 exit; validation report per strategy (02 §31) approved by user | OOS + walk-forward + costs + robustness + canary + rollback + 100% audit trace | — |
 
+## Dashboard → phase map (approved with the M0.1 plan, 2026-10-04)
+The phase is the first one in which the dashboard shows real content; until then the page shows "Planned — Phase N" and no data. Source of truth in code: `apps/web/src/lib/dashboards.ts`.
+
+| Dashboard (02 §21) | Phase | Note |
+|---|---|---|
+| Global Monitor | 3 | Not named in the phase table; inferred from the world/physical scope |
+| Market Regime | 2 | |
+| Opportunity Radar | 2 | Could move to 1 if Phase 1 buyback states produce candidates |
+| Fundamental Research | 1 | |
+| Corporate Actions | 1 | Buybacks first; Form 4 insider activity added in Phase 4 |
+| Event Transmission | 3 | |
+| Earnings | 1 | |
+| X / Expert Watch | 4 | |
+| Policy Monitor | 3 | |
+| Congress Trades | 4 | |
+| Options & Vol | 5 | |
+| Portfolio Risk | 2 | |
+| Alerts Center | 1 | In-app only until OD-2 is decided |
+| Strategy Lab | 1 | Paper journal in Phase 1; walk-forward in Phase 2 |
+| Execution | 5 | |
+
+The Phase 0 screens from M0.9 (Data Health, Instrument, Macro, News feed, Audit log) are not among the 15 dashboards. They go in a separate "System" nav group.
+
 ## Standing rules across phases
 - Signals and strategies always reference canonical IDs (families 1–10, strategies S1–S12).
 - Every new metric ships with its glossary entry in the same PR.

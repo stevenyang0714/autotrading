@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+  COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
+
+jobs:
+  backend:
+    name: backend (ruff, mypy, unit tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.12.22"
+          working-directory: apps/api
+          enable-cache: true
+          cache-dependency-glob: apps/api/uv.lock
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy
+      - run: uv run mypy --strict src/autotrading/domain
+      - run: uv run pytest -m "not integration"
+
+  frontend:
+    name: frontend (eslint, tsc, vitest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          package_json_file: apps/web/package.json
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: apps/web/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -s lint
+      - run: pnpm -s typecheck
+      - run: pnpm -s test
+
+  compose-smoke:
+    name: compose smoke (make up, integration tests, /health)
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.12.22"
+          working-directory: apps/api
+          enable-cache: true
+          cache-dependency-glob: apps/api/uv.lock
+      - run: cd apps/api && uv sync --locked
+      - run: make up
+      - run: make migrate
+      - run: make test-integration
+      - run: curl -fsS http://127.0.0.1:8000/health
+      - name: Service status on failure
+        if: failure()
+        run: make ps && docker compose -f infra/docker-compose.yml --project-directory . logs --tail=200
+      - name: Tear down
+        if: always()
+        run: docker compose -f infra/docker-compose.yml --project-directory . down -v

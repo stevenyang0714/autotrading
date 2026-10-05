@@ -12,7 +12,7 @@ Work one sub-milestone at a time, in order. Each one ends with the Build Output 
 
 ## M0.1 Repo scaffold and local stack
 **Build**
-- Monorepo layout from CLAUDE.md. `infra/docker-compose.yml` with: TimescaleDB (Postgres 16), Redis, MinIO, `api` (FastAPI), `worker` (Dramatiq), `scheduler` (APScheduler), `web` (Next.js).
+- Monorepo layout from CLAUDE.md. `infra/docker-compose.yml` with: TimescaleDB (Postgres 16), Redis, S3-compatible object store (Silo, ADR-011), `api` (FastAPI), `worker` (Dramatiq), `scheduler` (APScheduler), `web` (Next.js).
 - `Makefile` targets: `up`, `down`, `test`, `lint`, `migrate`, `fmt`.
 - Backend skeleton: settings via pydantic-settings reading `.env`; `/health` endpoint reporting DB, Redis, object store status.
 - Frontend skeleton: app shell with left nav listing all 15 dashboards (02 §21). Unbuilt dashboards render "Planned — Phase N", never placeholder numbers.
@@ -44,7 +44,7 @@ Work one sub-milestone at a time, in order. Each one ends with the Build Output 
 - Dramatiq actors + APScheduler schedules. `ingestion_runs` table: source, job, params, started/finished, status, row counts, raw payload object keys, error.
 - Idempotency key per job (source + params + window). Retry with exponential backoff; after max retries move to dead-letter and record it.
 - Redis token-bucket rate limiter configurable per source.
-- Raw payloads stored in MinIO with SHA-256; parsed rows reference the payload.
+- Raw payloads stored in the object store (Silo, ADR-011) with SHA-256; parsed rows reference the payload.
 - Freshness monitor: per source, compare latest successful ingest with its SLA → `fresh` / `stale` / `failing`.
 
 **Acceptance**
@@ -64,6 +64,8 @@ Work one sub-milestone at a time, in order. Each one ends with the Build Output 
   3. Test: every backend metric's `methodology_version` equals its glossary entry's version.
   4. ESLint rule or test: no metric-like component renders outside `<Metric>` (use a `data-metric` attribute convention).
 - Complete the seed entries needed by Phase 0 screens (status `seed` → `complete`).
+- Per errata E13: add glossary entries for the 15 dashboard labels and the `planned_phase` status label, and render the nav and planned pages through the glossary component.
+- Install Playwright and its browsers here, not earlier, to save disk space.
 - After the validator exists, add a Claude Code hook in `.claude/settings.json` that runs the glossary check after edits under `apps/web/` (ask the user before changing settings).
 
 **Acceptance**

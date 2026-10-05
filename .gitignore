@@ -14,8 +14,12 @@ __pycache__/
 # node
 node_modules/
 .next/
-# local data
-data/
+next-env.d.ts
+*.tsbuildinfo
+coverage/
+test-results/
+# local data (root only; `data/` would also match source folders at any depth)
+/data/
 *.dump
 # os
 .DS_Store

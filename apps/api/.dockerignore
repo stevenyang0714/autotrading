@@ -1,0 +1,9 @@
+# Never send secrets or local environments into an image.
+.env
+.env.*
+.venv/
+**/__pycache__/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+tests/
