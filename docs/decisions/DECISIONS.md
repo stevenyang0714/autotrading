@@ -58,6 +58,8 @@ Store UTC (`timestamptz`) everywhere. Display Asia/Singapore by default; show Am
 - Standard query helper: `as_of(known_at: datetime, effective_at: datetime | None)`.
 - Raw provider payloads are stored in the object store with SHA-256 and linked from ingestion runs.
 
+> The meaning of `known_at` and the correction semantics are defined by ADR-012.
+
 ## ADR-008 Secrets and environment isolation — Accepted
 - Local secrets in `.env` (gitignored). `.env.example` documents names only.
 - `.claude/settings.json` denies Claude Code's Read tool on `.env*`. That rule does not cover Bash, so CLAUDE.md also forbids reading secrets via shell.
@@ -83,6 +85,26 @@ Supersedes the object-store row of ADR-002 and the MinIO entry in ADR-003.
   - Ports bind to 127.0.0.1 only (errata E12).
 - **Risk:** Silo is maintained by a small team. Because only the S3 API is used, switching to RustFS or SeaweedFS means changing the image and copying data (rclone or `aws s3 sync`). Re-evaluate before any cloud deployment ADR (OD-8).
 - **License:** AGPLv3. It runs unmodified as a local service in a personal tool and is not distributed.
+
+## ADR-012 Knowledge time vs system time — Accepted (2026-10-05, approved by Steven)
+Refines ADR-007, which did not define what `known_at` is compared with.
+- **Two clocks:**
+  - `as_of(known_at, effective_at=None, system_time=None)` keeps rows with `published_at <= known_at`. That is world knowledge time: when the information became public, such as an SEC acceptance datetime or an ALFRED `realtime_start`.
+  - It also keeps only rows visible at `system_time` (`recorded_at <= system_time` and not yet superseded). Without a `system_time`, that means the current, non-superseded rows.
+  - Per fact key it returns the latest `published_at`; ties go to the later `recorded_at`, then `id`.
+- **Why not `recorded_at`:** backfilled history is recorded today, so comparing `known_at` with it would hide all history from backtests.
+- **Source-side revision** (issuer restatement, statistical revision):
+  - Stored as a new row with a later `published_at`, `restated_flag = true`, `supersedes_fact_id` pointing to the prior row and `revision_reason` set to `restatement` or `revision`.
+  - The prior row is not superseded, so an earlier `known_at` still returns the original value.
+- **Our own correction** (e.g. a parser error):
+  - The wrong row gets `superseded_at` (the only permitted UPDATE), and a new row is stored with `revision_reason = correction`.
+  - An earlier `system_time` reproduces what this database said before the fix.
+- **Unchanged values:** a repeated value (e.g. a prior-year comparative repeated in a later 10-K) is not a new version. Versions must be ingested in publication order; otherwise the repository raises `FactConflictError`.
+- **Date-only publication times** are stored as the end of that day in America/New_York with `published_at_precision = day`, so a backtest never sees a same-day release early. Exact timestamps use precision `exact`.
+- **System time comes from the database clock:** triggers set `recorded_at` on insert and `superseded_at` on supersede. Application code cannot backdate either.
+- **Known gaps:**
+  - A source withdrawing an observation (no replacement value) cannot be represented yet; design a tombstone when a source first needs it.
+  - Backtests and signals must record the `(known_at, system_time)` pair they used (Phase 2).
 
 ---
 

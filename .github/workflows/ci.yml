@@ -19,7 +19,7 @@ env:
 jobs:
   backend:
     name: backend (ruff, mypy, unit tests)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     defaults:
       run:
@@ -31,7 +31,7 @@ jobs:
           version: "0.12.22"
           working-directory: apps/api
           enable-cache: true
-          cache-dependency-glob: apps/api/uv.lock
+          cache-dependency-glob: uv.lock  # relative to working-directory
       - run: uv sync --locked
       - run: uv run ruff check .
       - run: uv run ruff format --check .
@@ -41,7 +41,7 @@ jobs:
 
   frontend:
     name: frontend (eslint, tsc, vitest)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     defaults:
       run:
@@ -64,7 +64,7 @@ jobs:
   compose-smoke:
     name: compose smoke (make up, integration tests, /health)
     needs: [backend, frontend]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v7
@@ -73,7 +73,7 @@ jobs:
           version: "0.12.22"
           working-directory: apps/api
           enable-cache: true
-          cache-dependency-glob: apps/api/uv.lock
+          cache-dependency-glob: uv.lock  # relative to working-directory
       - run: cd apps/api && uv sync --locked
       - run: make up
       - run: make migrate
