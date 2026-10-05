@@ -29,7 +29,14 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
-LICENSE_STATUSES = ("public", "terms_of_use", "licensed", "personal_use", "unknown")
+# Glossary term `license_status` (docs/glossary/glossary_seed.yaml); keep the two in step.
+LICENSE_STATUSES = (
+    "public",
+    "licensed_personal",
+    "licensed_redistribution",
+    "restricted",
+    "unknown",
+)
 TIME_PRECISIONS = ("exact", "day")
 
 
@@ -63,8 +70,10 @@ class ProvenanceMixin:
     license_status: Mapped[str] = mapped_column(Text)
     confidence: Mapped[Decimal] = mapped_column(Numeric(4, 3))
     source_timezone: Mapped[str | None] = mapped_column(Text)
-    # Filled from M0.3 (ingestion runs, raw payloads). Present now because facts are immutable.
-    ingestion_run_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    # Links to the ingestion run and raw payload that produced the row (M0.3).
+    ingestion_run_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("ingestion_runs.id")
+    )
     raw_payload_sha256: Mapped[str | None] = mapped_column(Text)
 
 

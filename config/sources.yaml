@@ -1,0 +1,80 @@
+# Source Registry seed (02 §4, M0.3). Loaded by `make migrate` (python -m autotrading.config_sync).
+# Only providers named in the specs/ADRs. A source stays `enabled: false` until its adapter ships
+# and its license/access check is recorded; disabled sources are not judged for freshness.
+# license_status uses the glossary values: public | licensed_personal | licensed_redistribution |
+# restricted | unknown. Re-verify provider terms and rate limits before enabling.
+version: 0.1.0
+
+sources:
+  - id: sec_edgar
+    name: SEC EDGAR (submissions and XBRL company facts)
+    url: https://www.sec.gov/search-filings/edgar-application-programming-interfaces
+    tier: 1
+    license_status: public
+    access_status: pending_review   # needs SEC_USER_AGENT (name + email) in .env
+    update_cadence: per_filing
+    freshness_sla_seconds: 172800   # 2 days
+    enabled: false                  # M0.5
+    priority: 10
+    topics: [filings, fundamentals, corporate_actions]
+    rate_limit_per_second: 5        # errata E8: well under SEC's 10 requests/second
+    rate_limit_burst: 5
+
+  - id: fred
+    name: FRED / ALFRED (Federal Reserve Bank of St. Louis)
+    url: https://fred.stlouisfed.org/docs/api/fred/
+    tier: 1
+    license_status: restricted
+    note: Free API under FRED terms; some series carry third-party copyright.
+    access_status: pending_review   # needs FRED_API_KEY in .env
+    update_cadence: daily
+    freshness_sla_seconds: 172800
+    enabled: false                  # M0.6
+    priority: 20
+    topics: [macro, rates, inflation, labor, credit]
+    rate_limit_per_second: 1
+    rate_limit_burst: 2
+
+  - id: alpaca_iex
+    name: Alpaca Market Data, Basic plan (IEX real-time)
+    url: https://docs.alpaca.markets/us/v1.1/docs/about-market-data-api
+    tier: 1
+    license_status: licensed_personal
+    access_status: pending_review   # needs Alpaca paper-account data keys; OD-9 (Singapore)
+    update_cadence: intraday
+    freshness_sla_seconds: 900      # refined to US market hours in M0.7
+    enabled: false                  # M0.7 (ADR-004)
+    priority: 30
+    topics: [prices, quotes, bars]
+    rate_limit_per_second: 3
+    rate_limit_burst: 5
+
+  - id: massive
+    name: Massive (formerly Polygon.io) Stocks
+    url: https://www.massive.com/stocks
+    tier: 1
+    license_status: licensed_personal
+    note: Canonical primary price feed; paid. Activated only after the license check (ADR-004).
+    access_status: disabled
+    update_cadence: intraday
+    freshness_sla_seconds: 900
+    enabled: false
+    priority: 25
+    topics: [prices, quotes, bars, financials]
+    rate_limit_per_second: 5
+    rate_limit_burst: 10
+
+  - id: gdelt
+    name: GDELT DOC 2.0 API
+    url: https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/
+    tier: 2
+    license_status: public
+    note: Discovery layer; each news item keeps the tier of its own publisher.
+    access_status: pending_review
+    update_cadence: intraday
+    freshness_sla_seconds: 7200
+    enabled: false                  # M0.8
+    priority: 40
+    topics: [news]
+    rate_limit_per_second: 0.2      # one request every 5 seconds
+    rate_limit_burst: 1

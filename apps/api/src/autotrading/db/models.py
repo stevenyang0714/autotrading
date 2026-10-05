@@ -23,6 +23,7 @@ from sqlalchemy import (
     Numeric,
     SmallInteger,
     Text,
+    UniqueConstraint,
     Uuid,
     func,
     text,
@@ -48,6 +49,7 @@ INSTRUMENT_TYPES = ("equity", "etf", "index", "future", "option", "fx", "other")
 ID_TYPES = ("ticker", "cik", "figi", "composite_figi", "share_class_figi")
 REVISION_REASONS = ("restatement", "revision", "correction")
 AUDIT_ACTIONS = ("insert", "update", "delete", "supersede")
+RUN_STATUSES = ("queued", "running", "succeeded", "failed", "dead_lettered", "skipped")
 
 
 # ---------- canonical registries (seeded by migration, immutable) ----------
@@ -97,6 +99,8 @@ class Source(MutableRowMixin, Base):
         CheckConstraint(sql_in("access_status", ACCESS_STATUSES), name="access_status"),
         CheckConstraint(sql_in("update_cadence", UPDATE_CADENCES), name="update_cadence"),
         CheckConstraint("freshness_sla_seconds > 0", name="freshness_sla_positive"),
+        CheckConstraint("rate_limit_per_second > 0", name="rate_limit_positive"),
+        CheckConstraint("rate_limit_burst >= 1", name="rate_limit_burst_positive"),
     )
     __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
 
@@ -111,6 +115,9 @@ class Source(MutableRowMixin, Base):
     enabled: Mapped[bool] = mapped_column(Boolean, server_default=text("false"))
     priority: Mapped[int] = mapped_column(SmallInteger, server_default=text("100"))
     topics: Mapped[list[str]] = mapped_column(ARRAY(Text), server_default=text("'{}'"))
+    # Token bucket per source (M0.3): sustained requests per second and burst size.
+    rate_limit_per_second: Mapped[Decimal] = mapped_column(Numeric(8, 3), server_default=text("1"))
+    rate_limit_burst: Mapped[int] = mapped_column(Integer, server_default=text("1"))
 
 
 class Entity(MutableRowMixin, Base):
@@ -180,6 +187,115 @@ class Identifier(MutableRowMixin, Base):
     valid_from: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     valid_to: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     source_id: Mapped[str] = mapped_column(Text, ForeignKey("sources.id"))
+
+
+# ---------- ingestion (M0.3) ----------
+
+
+class IngestionRun(MutableRowMixin, Base):
+    """One ingestion job execution; retries of the same message update the same row.
+
+    The idempotency key is sha256(source, job, canonical params, window). A key can succeed
+    only once (partial unique index), so re-running a finished job is recorded as `skipped`.
+    """
+
+    __tablename__ = "ingestion_runs"
+    __table_args__ = (
+        CheckConstraint("job ~ '^[a-z][a-z0-9_.]*$'", name="job_format"),
+        CheckConstraint("idempotency_key ~ '^[0-9a-f]{64}$'", name="idempotency_key_format"),
+        CheckConstraint(sql_in("status", RUN_STATUSES), name="status"),
+        CheckConstraint("attempt >= 1", name="attempt_positive"),
+        CheckConstraint(
+            "window_end IS NULL OR window_start IS NULL OR window_end >= window_start",
+            name="window_order",
+        ),
+        Index(
+            "uq_ingestion_runs_succeeded_key",
+            "idempotency_key",
+            unique=True,
+            postgresql_where=text("status = 'succeeded'"),
+        ),
+        Index("ix_ingestion_runs_source_id_created_at", "source_id", "created_at"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    source_id: Mapped[str] = mapped_column(Text, ForeignKey("sources.id"))
+    job: Mapped[str] = mapped_column(Text)
+    params: Mapped[dict[str, Any]] = mapped_column(JSONB, server_default=text("'{}'"))
+    window_start: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    window_end: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    idempotency_key: Mapped[str] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(Text)
+    attempt: Mapped[int] = mapped_column(Integer, server_default=text("1"))
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    rows_inserted: Mapped[int] = mapped_column(Integer, server_default=text("0"))
+    rows_unchanged: Mapped[int] = mapped_column(Integer, server_default=text("0"))
+    raw_payload_keys: Mapped[list[str]] = mapped_column(ARRAY(Text), server_default=text("'{}'"))
+    error_class: Mapped[str | None] = mapped_column(Text)
+    error_message: Mapped[str | None] = mapped_column(Text)
+
+
+class RawPayload(Base):
+    """Metadata of a raw provider response stored in the object store (append-only).
+
+    Content-addressed: one row per (source, sha256), however many runs fetched it.
+    """
+
+    __tablename__ = "raw_payloads"
+    __table_args__ = (
+        CheckConstraint("sha256 ~ '^[0-9a-f]{64}$'", name="sha256_format"),
+        CheckConstraint("size_bytes >= 0", name="size_non_negative"),
+        CheckConstraint("source_url ~ '^https?://'", name="source_url_scheme"),
+        UniqueConstraint("source_id", "sha256", name="uq_raw_payloads_source_id_sha256"),
+        UniqueConstraint("object_key", name="uq_raw_payloads_object_key"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    source_id: Mapped[str] = mapped_column(Text, ForeignKey("sources.id"))
+    ingestion_run_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("ingestion_runs.id"))
+    object_key: Mapped[str] = mapped_column(Text)
+    sha256: Mapped[str] = mapped_column(Text)
+    size_bytes: Mapped[int] = mapped_column(BigInteger)
+    content_type: Mapped[str] = mapped_column(Text)
+    source_url: Mapped[str] = mapped_column(Text)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class DeadLetter(MutableRowMixin, Base):
+    """A job that still failed after its last retry. Resolving it is an audited update."""
+
+    __tablename__ = "dead_letters"
+    __table_args__ = (
+        CheckConstraint("attempts >= 1", name="attempts_positive"),
+        CheckConstraint("(resolved_at IS NULL) = (resolution IS NULL)", name="resolution_complete"),
+        UniqueConstraint("ingestion_run_id", name="uq_dead_letters_ingestion_run_id"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    ingestion_run_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("ingestion_runs.id"))
+    source_id: Mapped[str] = mapped_column(Text, ForeignKey("sources.id"))
+    job: Mapped[str] = mapped_column(Text)
+    params: Mapped[dict[str, Any]] = mapped_column(JSONB, server_default=text("'{}'"))
+    idempotency_key: Mapped[str] = mapped_column(Text)
+    attempts: Mapped[int] = mapped_column(Integer)
+    error_class: Mapped[str | None] = mapped_column(Text)
+    error_message: Mapped[str | None] = mapped_column(Text)
+    failed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    resolution: Mapped[str | None] = mapped_column(Text)
 
 
 # ---------- facts (append-only, bitemporal) ----------

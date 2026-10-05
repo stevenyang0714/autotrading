@@ -10,7 +10,10 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator, model_validator
 
-LicenseStatus = Literal["public", "terms_of_use", "licensed", "personal_use", "unknown"]
+# Values of the glossary term `license_status` (docs/glossary/glossary_seed.yaml).
+LicenseStatus = Literal[
+    "public", "licensed_personal", "licensed_redistribution", "restricted", "unknown"
+]
 TimePrecision = Literal["exact", "day"]
 
 # ADR-012: date-only publication times are treated as known at the end of that day in New York,
