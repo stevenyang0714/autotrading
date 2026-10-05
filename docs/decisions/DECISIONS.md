@@ -115,7 +115,7 @@ Refines ADR-007, which did not define what `known_at` is compared with.
 | OD-1 | Confirm ADR-001 (single-user, personal, no redistribution) | Before M0.7 | Build as assumed |
 | OD-2 | Alert delivery channel outside the app (email / Telegram / Slack / push) | Phase 1 | In-app Alerts Center only |
 | OD-3 | Point-in-time consensus estimates provider | Phase 1 (S2) | Consensus shown as `Data unavailable` |
-| OD-4 | Options data provider and budget | Phase 5 | No options data |
+| OD-4 | Options data provider and budget. Candidate (checked 2026-10-05; re-verify before paying): Unusual Whales API. Basic USD 150/month gives REST access to real-time flow; Advanced USD 375/month adds WebSocket streaming; a 15-minute-delayed tier is cheaper. Personal use only, no redistribution (fits ADR-001). Its free website flow is delayed, and scraping it is not allowed. | Phase 5, or earlier if Steven pulls options flow forward | No options data |
 | OD-5 | Short interest / borrow data provider | Before SHORT eligibility | SHORT ideas alert-only |
 | OD-6 | Physical data sources (candidates to evaluate: NASA FIRMS fire data, NOAA climate data, port/shipping data vendors) | Phase 3 | Not ingested |
 | OD-7 | Survivorship-free historical dataset including delisted names | Before Phase 2 backtests | Backtests blocked from reporting performance |
