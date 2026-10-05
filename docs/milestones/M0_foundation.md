@@ -99,12 +99,19 @@ Delivered with M0.4: glossary registry (`glossary_terms`, migration 0003, synced
 - `/instruments/[ticker]` for the equities in `config/universe.yaml`: key XBRL facts from M0.5 (revenue, net income, diluted EPS, share repurchases, diluted shares, cash, debt) with period, value, unit, filing link and accession number.
 - A point-in-time toggle: "as known on date X" uses `as_of(known_at=...)` (ADR-012); restated values show the restatement badge and link the earlier version.
 - Every number through `<Metric>`; each XBRL metric gets a complete glossary entry and a backend `METRICS` registration.
+- XOM history: link the predecessor issuer Exxon Mobil Corp (ADR-014; added by Steven 2026-10-05).
 - No prices, news or valuation yet (M0.7, M0.8, Phase 1).
 
 **Acceptance**
-- [ ] AAPL page shows real SEC values that match the filing they link to.
-- [ ] Switching "as known on" to a date before a restatement shows the original value.
-- [ ] No number without a tooltip (unit test + Playwright).
+- [x] AAPL page shows real SEC values that match the filing they link to. FY2025 revenue $416.161B links to 10-K 0000320193-25-000079, which reports total net sales of $416,161m (`test_instruments.py`, Playwright).
+- [x] Switching "as known on" to a date before a restatement shows the original value. AAPL FY2008 net income is $4.834B as known on 2010-01-25, and $6.119B with the Restated badge on 2010-01-27 (backend, vitest and Playwright).
+- [x] No number without a tooltip (unit test + Playwright).
+- [x] XOM shows FY2023-2025 from Exxon Mobil Corp (predecessor), labelled, and names it as the issuer before 2026-07-01.
+
+**Notes (M0.5b)**
+- "As known on" a date means the end of that day in Singapore time; the page shows the exact SGT and ET timestamp it used.
+- Quarterly tables are deferred: 10-Q cash flows are year-to-date and need their own handling (Phase 1).
+- CI loads the recorded SEC fixtures (`make sec-replay`), so the instrument e2e tests run on real data without network access.
 
 ## M0.6 FRED / ALFRED adapter (macro with vintages)
 **Build**
