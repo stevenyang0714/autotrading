@@ -11,6 +11,7 @@ from autotrading.api.data_health import router as data_health_router
 from autotrading.api.glossary import router as glossary_router
 from autotrading.api.health import HealthChecker
 from autotrading.api.health import router as health_router
+from autotrading.api.instruments import router as instruments_router
 from autotrading.infra.dependencies import Dependencies
 from autotrading.infra.object_store import ensure_bucket
 from autotrading.settings import get_settings
@@ -51,6 +52,7 @@ def create_app(
     app.include_router(health_router)
     app.include_router(data_health_router)
     app.include_router(glossary_router)
+    app.include_router(instruments_router)
     return app
 
 

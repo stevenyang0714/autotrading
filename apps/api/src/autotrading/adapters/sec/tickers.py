@@ -15,14 +15,15 @@ import logging
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Literal
 
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from autotrading.adapters.sec.client import SecClient
-from autotrading.adapters.sec.parsing import normalize_cik
-from autotrading.db.models import Entity, Identifier, Instrument
+from autotrading.adapters.sec.parsing import filing_index_url, normalize_cik
+from autotrading.db.models import Entity, EntityRelationship, Identifier, Instrument
 from autotrading.ingestion.job import (
     FetchContext,
     FetchedPayload,
@@ -44,6 +45,18 @@ NAMESPACE = "sec"
 TICKERS_URL = "https://www.sec.gov/files/company_tickers_exchange.json"
 # SEC exchange names -> ISO 10383 MIC. Others (OTC, CBOE) stay unknown.
 EXCHANGE_MIC = {"Nasdaq": "XNAS", "NYSE": "XNYS"}
+
+
+class Predecessor(BaseModel):
+    """An earlier issuer of a universe equity (config/universe.yaml `predecessors:`, ADR-014)."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    cik: str = Field(pattern=r"^\d{10}$")
+    name: str = Field(min_length=1)
+    relationship: Literal["successor_issuer"] = "successor_issuer"
+    effective_at: AwareDatetime  # when the successor took over (8-K12B acceptance)
+    evidence_accession: str = Field(pattern=r"^\d{10}-\d{2}-\d{6}$")
 
 
 @dataclass(frozen=True)
@@ -80,6 +93,14 @@ class SecTickersJob(IngestionJob):
     def tickers(self) -> list[str]:
         return [str(t).upper() for t in self.params["tickers"]]
 
+    @property
+    def predecessors(self) -> dict[str, list[Predecessor]]:
+        raw: dict[str, list[dict[str, Any]]] = self.params.get("predecessors") or {}
+        return {
+            ticker.upper(): [Predecessor.model_validate(item) for item in items]
+            for ticker, items in raw.items()
+        }
+
     def fetch(self, ctx: FetchContext) -> list[FetchedPayload]:
         with self.client() as client:
             return [client.get(TICKERS_URL, ctx.acquire)]
@@ -101,6 +122,15 @@ class SecTickersJob(IngestionJob):
             changes = _sync_ticker(ctx.session, row, tickers_of_cik[row.cik], at=payload.fetched_at)
             inserted += changes
             unchanged += changes == 0
+        for ticker, predecessors in self.predecessors.items():
+            row = by_ticker.get(ticker)
+            if row is None or ticker not in self.tickers:
+                logger.warning("predecessors of %s skipped: not a listed universe ticker", ticker)
+                continue
+            for predecessor in predecessors:
+                changes = _sync_predecessor(ctx.session, row, predecessor, at=payload.fetched_at)
+                inserted += changes
+                unchanged += changes == 0
         return StoreResult(inserted=inserted, unchanged=unchanged)
 
 
@@ -145,6 +175,55 @@ def _sync_ticker(
     session.flush()
     session.add(_identifier("ticker", row.ticker, at, instrument_id=instrument.id))
     return written + 1
+
+
+def _sync_predecessor(
+    session: Session, successor: ListedTicker, predecessor: Predecessor, *, at: datetime
+) -> int:
+    """Ensure the predecessor entity, its CIK and the link to the ticker's current issuer."""
+    successor_id = current_identifier(session, "cik", NAMESPACE, successor.cik)
+    if successor_id is None or successor_id.entity_id is None:
+        raise LookupError(f"no entity for CIK {successor.cik}")  # _sync_ticker runs first
+    written = 0
+    cik_id = current_identifier(session, "cik", NAMESPACE, predecessor.cik)
+    if cik_id is None or cik_id.entity_id is None:
+        entity = Entity(name=predecessor.name, entity_type="company")
+        session.add(entity)
+        session.flush()
+        session.add(_identifier("cik", predecessor.cik, at, entity_id=entity.id))
+        predecessor_entity_id = entity.id
+        written += 2
+    else:
+        predecessor_entity_id = cik_id.entity_id
+
+    wanted = {
+        "effective_at": predecessor.effective_at,
+        "evidence_accession": predecessor.evidence_accession,
+        "evidence_url": filing_index_url(successor.cik, predecessor.evidence_accession),
+    }
+    link = session.scalars(
+        select(EntityRelationship).where(
+            EntityRelationship.predecessor_entity_id == predecessor_entity_id,
+            EntityRelationship.successor_entity_id == successor_id.entity_id,
+            EntityRelationship.relationship_type == predecessor.relationship,
+        )
+    ).first()
+    if link is None:
+        session.add(
+            EntityRelationship(
+                predecessor_entity_id=predecessor_entity_id,
+                successor_entity_id=successor_id.entity_id,
+                relationship_type=predecessor.relationship,
+                source_id=SOURCE_ID,
+                **wanted,
+            )
+        )
+        session.flush()
+        return written + 1
+    changed = {k: v for k, v in wanted.items() if getattr(link, k) != v}
+    for key, value in changed.items():
+        setattr(link, key, value)
+    return written + bool(changed)
 
 
 def _renamed_instrument(

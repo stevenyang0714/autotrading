@@ -7,20 +7,16 @@ import json
 from collections.abc import Iterator
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
-from pathlib import Path
 from typing import Any
 from uuid import UUID, uuid4
 
-import httpx2 as httpx
 import pytest
 from sqlalchemy import Engine, func, select, text
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session, sessionmaker
 
-from autotrading.adapters.sec.client import SecClient
-from autotrading.adapters.sec.company import SecCompanyJob, companyfacts_url, submissions_url
+from autotrading.adapters.sec.company import companyfacts_url, submissions_url
 from autotrading.adapters.sec.refresh import company_ciks, create_company_runs
-from autotrading.adapters.sec.tickers import SecTickersJob
 from autotrading.config_sync import load_sources, sync_sources
 from autotrading.db.models import (
     Entity,
@@ -33,49 +29,20 @@ from autotrading.db.models import (
 )
 from autotrading.infra.object_store import make_s3_client
 from autotrading.infra.redis_client import make_redis
-from autotrading.ingestion.job import JobRegistry, Window, register_job
+from autotrading.ingestion.job import Window
 from autotrading.ingestion.rate_limit import TokenBucketLimiter
 from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.repositories.facts import FinancialFactRepository
 from autotrading.settings import get_settings
+from tests.sec_replay import FIXTURES, OVERRIDES, recorded_registry
 
 pytestmark = pytest.mark.integration
 
-FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "sec"
-MANIFEST = json.loads((FIXTURES / "manifest.json").read_text(encoding="utf-8"))
 CIK = "0000320193"
 ORIGINAL_10K = "0001193125-09-214859"  # accepted 2009-10-27 20:18:29 UTC
 RESTATED_10KA = "0001193125-10-012091"  # accepted 2010-01-25 21:25:58 UTC
 FY2008 = (date(2007, 9, 30), date(2008, 9, 27))
-
-# Mutations of the recorded data for single tests, keyed by URL.
-OVERRIDES: dict[str, bytes] = {}
-
-
-def serve(request: httpx.Request) -> httpx.Response:
-    url = str(request.url)
-    assert request.headers["User-Agent"] == "Test Runner test@example.com"
-    if url in OVERRIDES:
-        return httpx.Response(200, content=OVERRIDES[url])
-    name = MANIFEST["files"].get(url)
-    if name is None:
-        return httpx.Response(404)
-    return httpx.Response(200, content=(FIXTURES / name).read_bytes())
-
-
-def recorded_client() -> SecClient:
-    return SecClient("Test Runner test@example.com", transport=httpx.MockTransport(serve))
-
-
-class RecordedTickers(SecTickersJob):
-    def client(self) -> SecClient:
-        return recorded_client()
-
-
-class RecordedCompany(SecCompanyJob):
-    def client(self) -> SecClient:
-        return recorded_client()
 
 
 @pytest.fixture(scope="module")
@@ -95,14 +62,11 @@ def runner(sessions: sessionmaker[Session]) -> Iterator[IngestionRunner]:
     s3 = make_s3_client(settings)
     bucket = f"raw-payloads-test-{uuid4().hex[:10]}"
     s3.create_bucket(Bucket=bucket)
-    registry: JobRegistry = {}
-    register_job(RecordedTickers, registry)
-    register_job(RecordedCompany, registry)
     yield IngestionRunner(
         sessions,
         RawPayloadStore(s3, bucket),
         TokenBucketLimiter(make_redis(settings), prefix=f"test-ratelimit-{uuid4().hex[:8]}"),
-        registry,
+        recorded_registry(),
     )
     for obj in s3.list_objects_v2(Bucket=bucket).get("Contents", []):
         s3.delete_object(Bucket=bucket, Key=obj["Key"])

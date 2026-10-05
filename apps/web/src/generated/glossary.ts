@@ -6,6 +6,7 @@ export const GLOSSARY_VERSION = "0.1.0";
 /** Terms with all 17 fields of 02 §22 filled. Only these may be rendered (<Metric>). */
 export type CompleteTermId =
   | "access_status"
+  | "accession_number"
   | "as_of"
   | "capex"
   | "cash"
@@ -29,6 +30,7 @@ export type CompleteTermId =
   | "dead_letter"
   | "diluted_shares"
   | "eps_diluted"
+  | "filing_date"
   | "freshness_sla"
   | "gross_profit"
   | "ingestion_status"
@@ -39,8 +41,13 @@ export type CompleteTermId =
   | "operating_cash_flow"
   | "operating_income"
   | "page_data_health"
+  | "page_instruments"
   | "planned_phase"
+  | "point_in_time"
+  | "predecessor_issuer"
   | "rate_limit"
+  | "reporting_period"
+  | "restated_flag"
   | "revenue"
   | "share_repurchases"
   | "source_tier"
@@ -89,6 +96,29 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "license_status",
       "data_freshness"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "accession_number": {
+    "term_id": "accession_number",
+    "display_name": "Accession Number",
+    "category": "provenance",
+    "short_definition": "SEC's unique identifier for a filing.",
+    "full_definition": "Ten digits of the filer agent's CIK, two of the year and a six-digit sequence. Every value on the instrument page links to the EDGAR index page of the filing with this number.",
+    "formula": "from SEC submissions metadata",
+    "unit": "identifier",
+    "example": "0001193125-10-012091 is Apple's 10-K/A of January 2010.",
+    "direction": "N/A",
+    "interpretation": "Click-through link to the exact source document.",
+    "why_it_matters": "Makes every financial fact traceable to its filing.",
+    "source": "SEC submissions API (data.sec.gov)",
+    "source_url": "https://www.sec.gov/search-filings/edgar-application-programming-interfaces",
+    "as_of": "2026-10-05",
+    "update_cadence": "per filing",
+    "caveats": "Amendments have their own accession numbers.",
+    "related_terms": [
+      "filing_date",
+      "restated_flag"
     ],
     "methodology_version": "0.1.0"
   },
@@ -609,6 +639,29 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     ],
     "methodology_version": "0.1.0"
   },
+  "filing_date": {
+    "term_id": "filing_date",
+    "display_name": "Filing Date",
+    "category": "provenance",
+    "short_definition": "When a filing was accepted by the SEC and became public.",
+    "full_definition": "Shown as the EDGAR acceptance time, in SGT and ET. Filings accepted after 17:30 ET carry the next business day as their official filing date, so the acceptance time is the earlier and more precise moment.",
+    "formula": "EDGAR acceptanceDateTime (UTC); if missing, end of the filing date in New York",
+    "unit": "timestamp",
+    "example": "Apple's FY2025 10-K was accepted on 2025-10-31 at 06:01 ET (18:01 SGT).",
+    "direction": "N/A",
+    "interpretation": "Information was not public before this time.",
+    "why_it_matters": "Point-in-time logic uses publication time, not period end.",
+    "source": "SEC submissions API (data.sec.gov); ADR-013",
+    "source_url": "https://www.sec.gov/search-filings/edgar-application-programming-interfaces",
+    "as_of": "2026-10-05",
+    "update_cadence": "per filing",
+    "caveats": "A few old filings only have a date; those count from the end of that day in New York.",
+    "related_terms": [
+      "accession_number",
+      "point_in_time"
+    ],
+    "methodology_version": "0.1.0"
+  },
   "freshness_sla": {
     "term_id": "freshness_sla",
     "display_name": "Freshness SLA",
@@ -842,6 +895,30 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     ],
     "methodology_version": "0.1.0"
   },
+  "page_instruments": {
+    "term_id": "page_instruments",
+    "display_name": "Instruments",
+    "category": "navigation",
+    "short_definition": "Universe stocks with their SEC-reported fundamentals as known at a chosen date.",
+    "full_definition": "System page listing the equities in config/universe.yaml. Each stock page shows the last three fiscal years and recent balance sheets from SEC XBRL filings, every value linked to its filing, with an As known on date to see what was public at that time. Pulled forward from M0.9 to M0.5b.",
+    "formula": "not a calculation; reads GET /instruments and /instruments/{ticker}/fundamentals",
+    "unit": "page",
+    "example": "Choosing As known on 2010-01-25 on AAPL shows FY2008 net income before Apple's 2010 restatement.",
+    "direction": "N/A",
+    "interpretation": "Start here to check a company's reported numbers and where they came from.",
+    "why_it_matters": "Every later signal builds on these values; this page shows them with their sources.",
+    "source": "Milestone M0.5b (minimal instrument page)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M0_foundation.md",
+    "as_of": "2026-10-05",
+    "update_cadence": "live (each page load); SEC data refreshed daily at 10:00 SGT",
+    "caveats": "No prices, news or valuation yet (M0.7, M0.8, Phase 1); quarterly tables come later.",
+    "related_terms": [
+      "point_in_time",
+      "restated_flag",
+      "accession_number"
+    ],
+    "methodology_version": "0.1.0"
+  },
   "planned_phase": {
     "term_id": "planned_phase",
     "display_name": "Planned Phase",
@@ -861,6 +938,53 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "caveats": "Phases can move when the roadmap changes.",
     "related_terms": [
       "page_data_health"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "point_in_time": {
+    "term_id": "point_in_time",
+    "display_name": "Point-in-Time",
+    "category": "methodology",
+    "short_definition": "Using only information that was public at a given time.",
+    "full_definition": "A point-in-time view keeps, for each fact, the latest version whose publication time (e.g. an SEC acceptance time) is at or before the chosen moment, as this database holds it now. On the instrument page, \"As known on\" a date means the end of that day in Singapore time.",
+    "formula": "per fact key: latest version with published_at <= known_at and not superseded (ADR-012)",
+    "unit": "timestamp",
+    "example": "As known on 2010-01-25, Apple's FY2008 net income is $4.834B; the 10-K/A that restated it to $6.119B was accepted on 2010-01-26 05:25 SGT.",
+    "direction": "N/A",
+    "interpretation": "Historical views and backtests see the data as it was public then, without later restatements.",
+    "why_it_matters": "Required to avoid look-ahead bias.",
+    "source": "ADR-012 Knowledge time vs system time",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/decisions/DECISIONS.md",
+    "as_of": "2026-10-05",
+    "update_cadence": "N/A",
+    "caveats": "Only as good as the publication times the source provides; date-only times count from the end of that day in New York.",
+    "related_terms": [
+      "vintage",
+      "look_ahead_bias",
+      "restated_flag"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "predecessor_issuer": {
+    "term_id": "predecessor_issuer",
+    "display_name": "Predecessor Issuer",
+    "category": "provenance",
+    "short_definition": "An earlier company whose filings form part of a stock's history.",
+    "full_definition": "When a company reorganizes (e.g. under a new holding company), the new issuer files under a new CIK. The platform links the earlier issuer with the SEC filing that records the change and shows its figures for periods the new issuer has not reported, labelled with the earlier issuer's name.",
+    "formula": "curated link in config/universe.yaml with an SEC filing as evidence (ADR-014)",
+    "unit": "label",
+    "example": "XOM: Exxon Mobil Corp (CIK 0000034088) until 2026-07-01, then ExxonMobil Holdings Corp (CIK 0002115436).",
+    "direction": "N/A",
+    "interpretation": "Values marked with a predecessor were reported by the earlier company, not restated by the new one.",
+    "why_it_matters": "Keeps the multi-year history of a stock usable after a corporate reorganization.",
+    "source": "ADR-014 Successor issuers",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/decisions/DECISIONS.md",
+    "as_of": "2026-10-05",
+    "update_cadence": "per corporate reorganization",
+    "caveats": "Links are added by hand from SEC filings; the new issuer's values win where both reported the same period.",
+    "related_terms": [
+      "accession_number",
+      "point_in_time"
     ],
     "methodology_version": "0.1.0"
   },
@@ -884,6 +1008,53 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "update_cadence",
       "access_status"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "reporting_period": {
+    "term_id": "reporting_period",
+    "display_name": "Reporting Period",
+    "category": "provenance",
+    "short_definition": "The period a financial value describes, shown by its end date.",
+    "full_definition": "Income and cash-flow values cover a span (here a fiscal year of 350 to 380 days, which fits 52/53-week years); balance-sheet values are as of one day. Columns are labelled by the period end date the company reported.",
+    "formula": "period_start..period_end from the XBRL fact; fiscal year = 350-380 days",
+    "unit": "date range",
+    "example": "Apple's fiscal year 2025 runs from 2024-09-29 to 2025-09-27.",
+    "direction": "N/A",
+    "interpretation": "Compare columns of the same length; fiscal years do not always match calendar years.",
+    "why_it_matters": "The period end is not when the value became public; that is the filing time.",
+    "source": "SEC XBRL company facts (start/end of each fact)",
+    "source_url": "https://www.sec.gov/search-filings/edgar-application-programming-interfaces",
+    "as_of": "2026-10-05",
+    "update_cadence": "per filing",
+    "caveats": "A change of fiscal year end can create a short transition period, which the annual table leaves out.",
+    "related_terms": [
+      "filing_date",
+      "point_in_time"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "restated_flag": {
+    "term_id": "restated_flag",
+    "display_name": "Restated",
+    "category": "provenance",
+    "short_definition": "Marks a financial value that replaced an earlier reported value for the same period.",
+    "full_definition": "Set when a later filing reports a different value for the same company, metric, unit and period. The earlier version is kept and shown next to the restated one, and a point-in-time view before the later filing still returns the earlier value.",
+    "formula": "true when a later filing reports a different value for the same metric and period",
+    "unit": "boolean",
+    "example": "Apple's FY2008 net income: $4.834B in the 10-K of 2009-10-27, restated to $6.119B in the 10-K/A of 2010-01-25.",
+    "direction": "N/A",
+    "interpretation": "The figure changed after first publication; earlier version retained.",
+    "why_it_matters": "Restatements can signal accounting changes and affect backtests.",
+    "source": "ADR-012 and ADR-013 (SEC version rules)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/decisions/DECISIONS.md",
+    "as_of": "2026-10-05",
+    "update_cadence": "per filing",
+    "caveats": "Small differences can come from XBRL tagging, not true restatements; stock splits also change past per-share values.",
+    "related_terms": [
+      "vintage",
+      "filing_date",
+      "accession_number"
     ],
     "methodology_version": "0.1.0"
   },

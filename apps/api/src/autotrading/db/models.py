@@ -48,6 +48,7 @@ UPDATE_CADENCES = ("intraday", "daily", "weekly", "monthly", "per_filing", "per_
 ENTITY_TYPES = ("company", "fund", "government", "other")
 INSTRUMENT_TYPES = ("equity", "etf", "index", "future", "option", "fx", "other")
 ID_TYPES = ("ticker", "cik", "figi", "composite_figi", "share_class_figi")
+RELATIONSHIP_TYPES = ("successor_issuer",)
 REVISION_REASONS = ("restatement", "revision", "correction")
 AUDIT_ACTIONS = ("insert", "update", "delete", "supersede")
 RUN_STATUSES = ("queued", "running", "succeeded", "failed", "dead_lettered", "skipped")
@@ -187,6 +188,43 @@ class Identifier(MutableRowMixin, Base):
     id_value: Mapped[str] = mapped_column(Text)
     valid_from: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     valid_to: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    source_id: Mapped[str] = mapped_column(Text, ForeignKey("sources.id"))
+
+
+class EntityRelationship(MutableRowMixin, Base):
+    """A link between two entities, e.g. a holding company that succeeded an issuer (ADR-014).
+
+    Curated from config/universe.yaml with an SEC filing as evidence; audited like identifiers.
+    effective_at is when the successor took over (e.g. the 8-K12B acceptance time).
+    """
+
+    __tablename__ = "entity_relationships"
+    __table_args__ = (
+        CheckConstraint(sql_in("relationship_type", RELATIONSHIP_TYPES), name="relationship_type"),
+        CheckConstraint("predecessor_entity_id <> successor_entity_id", name="distinct_entities"),
+        CheckConstraint("evidence_url ~ '^https?://'", name="evidence_url_scheme"),
+        CheckConstraint(
+            r"evidence_accession IS NULL OR evidence_accession ~ '^\d{10}-\d{2}-\d{6}$'",
+            name="evidence_accession_format",
+        ),
+        UniqueConstraint(
+            "predecessor_entity_id",
+            "successor_entity_id",
+            "relationship_type",
+            name="uq_entity_relationships_pair_type",
+        ),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    predecessor_entity_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("entities.id"))
+    successor_entity_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("entities.id"))
+    relationship_type: Mapped[str] = mapped_column(Text)
+    effective_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    evidence_url: Mapped[str] = mapped_column(Text)
+    evidence_accession: Mapped[str | None] = mapped_column(Text)
     source_id: Mapped[str] = mapped_column(Text, ForeignKey("sources.id"))
 
 

@@ -154,6 +154,309 @@
         "title": "DeadLetterOut",
         "type": "object"
       },
+      "EntityOut": {
+        "properties": {
+          "cik": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cik"
+          },
+          "evidence_accession": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Accession"
+          },
+          "evidence_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Url"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "issuer",
+              "predecessor"
+            ],
+            "title": "Role",
+            "type": "string"
+          },
+          "succeeded_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Succeeded At"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "cik",
+          "role"
+        ],
+        "title": "EntityOut",
+        "type": "object"
+      },
+      "FactCell": {
+        "properties": {
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "filing": {
+            "$ref": "#/components/schemas/FilingRef"
+          },
+          "fiscal_period": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fiscal Period"
+          },
+          "period_end": {
+            "format": "date",
+            "title": "Period End",
+            "type": "string"
+          },
+          "period_start": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Start"
+          },
+          "previous": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PreviousVersion"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reported_by": {
+            "format": "uuid",
+            "title": "Reported By",
+            "type": "string"
+          },
+          "restated": {
+            "title": "Restated",
+            "type": "boolean"
+          },
+          "source_concept": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Concept"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          },
+          "value": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "unit",
+          "currency",
+          "period_start",
+          "period_end",
+          "fiscal_period",
+          "source_concept",
+          "filing",
+          "restated",
+          "previous",
+          "reported_by"
+        ],
+        "title": "FactCell",
+        "type": "object"
+      },
+      "FactTable": {
+        "properties": {
+          "periods": {
+            "items": {
+              "$ref": "#/components/schemas/PeriodColumn"
+            },
+            "title": "Periods",
+            "type": "array"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/MetricRow"
+            },
+            "title": "Rows",
+            "type": "array"
+          }
+        },
+        "required": [
+          "periods",
+          "rows"
+        ],
+        "title": "FactTable",
+        "type": "object"
+      },
+      "FilingRef": {
+        "properties": {
+          "accession": {
+            "title": "Accession",
+            "type": "string"
+          },
+          "form": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Form"
+          },
+          "published_at": {
+            "format": "date-time",
+            "title": "Published At",
+            "type": "string"
+          },
+          "published_at_precision": {
+            "title": "Published At Precision",
+            "type": "string"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "accession",
+          "form",
+          "url",
+          "published_at",
+          "published_at_precision"
+        ],
+        "title": "FilingRef",
+        "type": "object"
+      },
+      "Fundamentals": {
+        "properties": {
+          "annual": {
+            "$ref": "#/components/schemas/FactTable"
+          },
+          "balance_sheet": {
+            "$ref": "#/components/schemas/FactTable"
+          },
+          "entities": {
+            "items": {
+              "$ref": "#/components/schemas/EntityOut"
+            },
+            "title": "Entities",
+            "type": "array"
+          },
+          "exchange": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exchange"
+          },
+          "issuer": {
+            "$ref": "#/components/schemas/EntityOut"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "last_refresh_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Refresh At"
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticker",
+          "exchange",
+          "known_at",
+          "issuer",
+          "entities",
+          "annual",
+          "balance_sheet",
+          "last_refresh_at"
+        ],
+        "title": "Fundamentals",
+        "type": "object"
+      },
       "GlossaryTermDetail": {
         "properties": {
           "term": {
@@ -343,6 +646,169 @@
           "components"
         ],
         "title": "HealthReport",
+        "type": "object"
+      },
+      "InstrumentList": {
+        "properties": {
+          "instruments": {
+            "items": {
+              "$ref": "#/components/schemas/InstrumentSummary"
+            },
+            "title": "Instruments",
+            "type": "array"
+          },
+          "last_refresh_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Refresh At"
+          }
+        },
+        "required": [
+          "instruments",
+          "last_refresh_at"
+        ],
+        "title": "InstrumentList",
+        "type": "object"
+      },
+      "InstrumentSummary": {
+        "properties": {
+          "cik": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cik"
+          },
+          "exchange": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exchange"
+          },
+          "latest_report": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FilingRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "predecessors": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Predecessors",
+            "type": "array"
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticker",
+          "name",
+          "cik",
+          "exchange",
+          "predecessors",
+          "latest_report"
+        ],
+        "title": "InstrumentSummary",
+        "type": "object"
+      },
+      "MetricRow": {
+        "properties": {
+          "cells": {
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/FactCell"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "title": "Cells",
+            "type": "array"
+          },
+          "metric_id": {
+            "title": "Metric Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "metric_id",
+          "cells"
+        ],
+        "title": "MetricRow",
+        "type": "object"
+      },
+      "PeriodColumn": {
+        "properties": {
+          "period_end": {
+            "format": "date",
+            "title": "Period End",
+            "type": "string"
+          },
+          "period_start": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Start"
+          }
+        },
+        "required": [
+          "period_start",
+          "period_end"
+        ],
+        "title": "PeriodColumn",
+        "type": "object"
+      },
+      "PreviousVersion": {
+        "properties": {
+          "filing": {
+            "$ref": "#/components/schemas/FilingRef"
+          },
+          "value": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "filing"
+        ],
+        "title": "PreviousVersion",
         "type": "object"
       },
       "RunOut": {
@@ -981,6 +1447,88 @@
         "summary": "Ingestion Runs",
         "tags": [
           "data health"
+        ]
+      }
+    },
+    "/instruments": {
+      "get": {
+        "operationId": "list_instruments_instruments_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstrumentList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Instruments",
+        "tags": [
+          "instruments"
+        ]
+      }
+    },
+    "/instruments/{ticker}/fundamentals": {
+      "get": {
+        "operationId": "fundamentals_instruments__ticker__fundamentals_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ticker",
+            "required": true,
+            "schema": {
+              "title": "Ticker",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Fundamentals"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Fundamentals",
+        "tags": [
+          "instruments"
         ]
       }
     }

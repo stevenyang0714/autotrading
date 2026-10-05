@@ -123,6 +123,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/instruments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Instruments */
+        get: operations["list_instruments_instruments_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/instruments/{ticker}/fundamentals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Fundamentals */
+        get: operations["fundamentals_instruments__ticker__fundamentals_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -184,6 +218,100 @@ export interface components {
             resolved_at: string | null;
             /** Source Id */
             source_id: string;
+        };
+        /** EntityOut */
+        EntityOut: {
+            /** Cik */
+            cik: string | null;
+            /** Evidence Accession */
+            evidence_accession?: string | null;
+            /** Evidence Url */
+            evidence_url?: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "issuer" | "predecessor";
+            /** Succeeded At */
+            succeeded_at?: string | null;
+        };
+        /** FactCell */
+        FactCell: {
+            /** Currency */
+            currency: string | null;
+            filing: components["schemas"]["FilingRef"];
+            /** Fiscal Period */
+            fiscal_period: string | null;
+            /**
+             * Period End
+             * Format: date
+             */
+            period_end: string;
+            /** Period Start */
+            period_start: string | null;
+            previous: components["schemas"]["PreviousVersion"] | null;
+            /**
+             * Reported By
+             * Format: uuid
+             */
+            reported_by: string;
+            /** Restated */
+            restated: boolean;
+            /** Source Concept */
+            source_concept: string | null;
+            /** Unit */
+            unit: string;
+            /** Value */
+            value: string;
+        };
+        /** FactTable */
+        FactTable: {
+            /** Periods */
+            periods: components["schemas"]["PeriodColumn"][];
+            /** Rows */
+            rows: components["schemas"]["MetricRow"][];
+        };
+        /** FilingRef */
+        FilingRef: {
+            /** Accession */
+            accession: string;
+            /** Form */
+            form: string | null;
+            /**
+             * Published At
+             * Format: date-time
+             */
+            published_at: string;
+            /** Published At Precision */
+            published_at_precision: string;
+            /** Url */
+            url: string;
+        };
+        /** Fundamentals */
+        Fundamentals: {
+            annual: components["schemas"]["FactTable"];
+            balance_sheet: components["schemas"]["FactTable"];
+            /** Entities */
+            entities: components["schemas"]["EntityOut"][];
+            /** Exchange */
+            exchange: string | null;
+            issuer: components["schemas"]["EntityOut"];
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Last Refresh At */
+            last_refresh_at: string | null;
+            /** Ticker */
+            ticker: string;
         };
         /** GlossaryTermDetail */
         GlossaryTermDetail: {
@@ -266,6 +394,50 @@ export interface components {
              * @enum {string}
              */
             status: "ok" | "degraded" | "down";
+        };
+        /** InstrumentList */
+        InstrumentList: {
+            /** Instruments */
+            instruments: components["schemas"]["InstrumentSummary"][];
+            /** Last Refresh At */
+            last_refresh_at: string | null;
+        };
+        /** InstrumentSummary */
+        InstrumentSummary: {
+            /** Cik */
+            cik: string | null;
+            /** Exchange */
+            exchange: string | null;
+            latest_report: components["schemas"]["FilingRef"] | null;
+            /** Name */
+            name: string;
+            /** Predecessors */
+            predecessors: string[];
+            /** Ticker */
+            ticker: string;
+        };
+        /** MetricRow */
+        MetricRow: {
+            /** Cells */
+            cells: (components["schemas"]["FactCell"] | null)[];
+            /** Metric Id */
+            metric_id: string;
+        };
+        /** PeriodColumn */
+        PeriodColumn: {
+            /**
+             * Period End
+             * Format: date
+             */
+            period_end: string;
+            /** Period Start */
+            period_start: string | null;
+        };
+        /** PreviousVersion */
+        PreviousVersion: {
+            filing: components["schemas"]["FilingRef"];
+            /** Value */
+            value: string;
         };
         /** RunOut */
         RunOut: {
@@ -554,6 +726,60 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RunOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_instruments_instruments_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InstrumentList"];
+                };
+            };
+        };
+    };
+    fundamentals_instruments__ticker__fundamentals_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+            };
+            header?: never;
+            path: {
+                ticker: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Fundamentals"];
                 };
             };
             /** @description Validation Error */
