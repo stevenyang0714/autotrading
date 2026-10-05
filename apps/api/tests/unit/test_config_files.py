@@ -51,3 +51,20 @@ def test_watchlists_file_parses() -> None:
 
 def test_config_dir_exists() -> None:
     assert isinstance(CONFIG_DIR, Path) and CONFIG_DIR.is_dir()
+
+
+def test_macro_series_are_registered_with_complete_glossary_terms() -> None:
+    from autotrading.config_sync import load_glossary, load_macro_series
+    from autotrading.domain.metrics import MACRO_SERIES_TERMS
+
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]
+    series = load_macro_series(settings.resolved_config_dir() / "macro_series.yaml").series
+    complete = {
+        t.term_id for t in load_glossary(settings.resolved_glossary_path()).complete_terms()
+    }
+    assert [s.term_id for s in series] == list(MACRO_SERIES_TERMS)
+    assert set(MACRO_SERIES_TERMS) <= complete
+    assert [s.id for s in series] == [
+        "CPIAUCSL", "PCEPILFE", "UNRATE", "PAYEMS", "GDPC1", "FEDFUNDS",
+        "DGS2", "DGS10", "T10Y2Y", "BAMLH0A0HYM2", "VIXCLS",
+    ]  # fmt: skip

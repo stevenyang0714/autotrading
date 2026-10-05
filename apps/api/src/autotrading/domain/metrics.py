@@ -33,6 +33,22 @@ SEC_XBRL_METRICS = (
     "stock_based_compensation",
 )
 
+# FRED series shown on the Macro page (M0.6): reported values with vintages, one term per
+# series in config/macro_series.yaml (a test keeps the two in step).
+MACRO_SERIES_TERMS = (
+    "macro_cpi",
+    "macro_core_pce",
+    "macro_unemployment_rate",
+    "macro_nonfarm_payrolls",
+    "macro_real_gdp",
+    "macro_fed_funds",
+    "macro_treasury_2y",
+    "macro_treasury_10y",
+    "macro_curve_10y_2y",
+    "macro_hy_oas",
+    "macro_vix",
+)
+
 METRICS: tuple[MetricDefinition, ...] = (
     MetricDefinition(
         term_id="data_freshness",
@@ -46,5 +62,13 @@ METRICS: tuple[MetricDefinition, ...] = (
             computed_by="autotrading.adapters.sec.concepts.METRIC_MAPPINGS",
         )
         for metric_id in SEC_XBRL_METRICS
+    ),
+    *(
+        MetricDefinition(
+            term_id=term_id,
+            methodology_version="0.1.0",
+            computed_by="autotrading.adapters.fred.series.FredSeriesJob",
+        )
+        for term_id in MACRO_SERIES_TERMS
     ),
 )

@@ -157,6 +157,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/macro/series": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Series */
+        get: operations["list_series_macro_series_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/macro/series/{series_id}/observations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Series Observations */
+        get: operations["series_observations_macro_series__series_id__observations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -294,6 +328,16 @@ export interface components {
             /** Url */
             url: string;
         };
+        /** FirstRelease */
+        FirstRelease: {
+            /** Value */
+            value: string;
+            /**
+             * Vintage
+             * Format: date
+             */
+            vintage: string;
+        };
         /** Fundamentals */
         Fundamentals: {
             annual: components["schemas"]["FactTable"];
@@ -416,12 +460,48 @@ export interface components {
             /** Ticker */
             ticker: string;
         };
+        /** MacroSeriesList */
+        MacroSeriesList: {
+            /** Last Refresh At */
+            last_refresh_at: string | null;
+            /** Series */
+            series: components["schemas"]["SeriesSummary"][];
+        };
         /** MetricRow */
         MetricRow: {
             /** Cells */
             cells: (components["schemas"]["FactCell"] | null)[];
             /** Metric Id */
             metric_id: string;
+        };
+        /** ObservationOut */
+        ObservationOut: {
+            first_release: components["schemas"]["FirstRelease"] | null;
+            /**
+             * Observation Date
+             * Format: date
+             */
+            observation_date: string;
+            /** Period End */
+            period_end: string | null;
+            /**
+             * Published At
+             * Format: date-time
+             */
+            published_at: string;
+            /** Published At Precision */
+            published_at_precision: string;
+            /** Revised */
+            revised: boolean;
+            /** Source Url */
+            source_url: string;
+            /** Value */
+            value: string;
+            /**
+             * Vintage
+             * Format: date
+             */
+            vintage: string;
         };
         /** PeriodColumn */
         PeriodColumn: {
@@ -483,6 +563,43 @@ export interface components {
             window_end: string | null;
             /** Window Start */
             window_start: string | null;
+        };
+        /** SeriesObservations */
+        SeriesObservations: {
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Last Refresh At */
+            last_refresh_at: string | null;
+            /** Observations */
+            observations: components["schemas"]["ObservationOut"][];
+            series: components["schemas"]["SeriesOut"];
+        };
+        /** SeriesOut */
+        SeriesOut: {
+            /** Frequency */
+            frequency: string | null;
+            /** Id */
+            id: string;
+            /** Last Updated */
+            last_updated: string | null;
+            /** Seasonal Adjustment Short */
+            seasonal_adjustment_short: string | null;
+            /** Term Id */
+            term_id: string;
+            /** Title */
+            title: string | null;
+            /** Units */
+            units: string | null;
+            /** Units Short */
+            units_short: string | null;
+        };
+        /** SeriesSummary */
+        SeriesSummary: {
+            latest: components["schemas"]["ObservationOut"] | null;
+            series: components["schemas"]["SeriesOut"];
         };
         /** SourceHealth */
         SourceHealth: {
@@ -780,6 +897,61 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Fundamentals"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_series_macro_series_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MacroSeriesList"];
+                };
+            };
+        };
+    };
+    series_observations_macro_series__series_id__observations_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                series_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeriesObservations"];
                 };
             };
             /** @description Validation Error */

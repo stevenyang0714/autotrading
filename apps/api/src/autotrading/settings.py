@@ -52,6 +52,8 @@ class Settings(BaseSettings):
     # SEC fair access policy: "Name email@example.com", sent as the User-Agent of every SEC
     # request (errata E8). Personal data, so typed as a secret and never logged.
     sec_user_agent: SecretStr | None = None
+    # FRED / ALFRED API key (M0.6). Sent only as a query parameter; never stored or logged.
+    fred_api_key: SecretStr | None = None
 
     # Ingestion retries (Dramatiq, exponential backoff); after the last one -> dead letter.
     ingestion_max_retries: int = 5

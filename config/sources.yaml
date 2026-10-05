@@ -27,10 +27,10 @@ sources:
     tier: 1
     license_status: restricted
     note: Free API under FRED terms; some series carry third-party copyright.
-    access_status: pending_review   # needs FRED_API_KEY in .env
+    access_status: active           # FRED_API_KEY set in .env, 2026-10-06
     update_cadence: daily
-    freshness_sla_seconds: 172800
-    enabled: false                  # M0.6
+    freshness_sla_seconds: 172800   # 2 days; refreshed daily at 10:15 SGT (M0.6)
+    enabled: true                   # M0.6
     priority: 20
     topics: [macro, rates, inflation, labor, credit]
     rate_limit_per_second: 1

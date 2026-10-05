@@ -21,6 +21,7 @@ x-app-env: &app-env
   S3_BUCKET: ${S3_BUCKET:-raw-payloads}
   LIVE_TRADING_ENABLED: ${LIVE_TRADING_ENABLED:-false}
   SEC_USER_AGENT: ${SEC_USER_AGENT:-}
+  FRED_API_KEY: ${FRED_API_KEY:-}
   CONFIG_DIR: /app/config
   GLOSSARY_PATH: /app/glossary/glossary_seed.yaml
 

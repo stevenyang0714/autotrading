@@ -1,18 +1,14 @@
 """SEC refresh orchestration (M0.5): which runs to create, without touching the broker.
 
 A refresh is one `sec.tickers` run followed, once it succeeds, by one `sec.company` run per
-universe equity and per linked predecessor issuer (ADR-014). All runs share a window, which is
-part of their idempotency key:
-- scheduled (daily 10:00 SGT): the Singapore calendar day, so a repeated trigger the same day
-  is skipped;
-- manual (`make sec-refresh`): from the start of that day to now, so it always runs.
+universe equity and per linked predecessor issuer (ADR-014). All runs share one refresh window
+(ingestion/schedule.py); the schedule runs daily at 10:00 SGT.
 """
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 from uuid import UUID
-from zoneinfo import ZoneInfo
 
 import yaml
 from sqlalchemy import or_, select
@@ -23,16 +19,9 @@ from autotrading.adapters.sec.tickers import NAMESPACE, SOURCE_ID, Predecessor, 
 from autotrading.db.models import EntityRelationship, Identifier, IngestionRun, Instrument, Source
 from autotrading.ingestion.job import Window
 from autotrading.ingestion.runner import IngestionRunner
+from autotrading.ingestion.schedule import refresh_window
 
-REFRESH_TIMEZONE = ZoneInfo("Asia/Singapore")
 REFRESH_HOUR = 10
-
-
-def refresh_window(now: datetime, *, manual: bool) -> Window:
-    day_start = now.astimezone(REFRESH_TIMEZONE).replace(hour=0, minute=0, second=0, microsecond=0)
-    start = day_start.astimezone(UTC)
-    end = now.astimezone(UTC) if manual else (day_start + timedelta(days=1)).astimezone(UTC)
-    return Window(start=start, end=end)
 
 
 def universe_equities(config_dir: Path) -> list[str]:

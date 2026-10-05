@@ -37,11 +37,24 @@ export type CompleteTermId =
   | "license_status"
   | "long_term_debt_current"
   | "long_term_debt_noncurrent"
+  | "macro_core_pce"
+  | "macro_cpi"
+  | "macro_curve_10y_2y"
+  | "macro_fed_funds"
+  | "macro_hy_oas"
+  | "macro_nonfarm_payrolls"
+  | "macro_real_gdp"
+  | "macro_treasury_10y"
+  | "macro_treasury_2y"
+  | "macro_unemployment_rate"
+  | "macro_vix"
   | "net_income"
+  | "observation_date"
   | "operating_cash_flow"
   | "operating_income"
   | "page_data_health"
   | "page_instruments"
+  | "page_macro"
   | "planned_phase"
   | "point_in_time"
   | "predecessor_issuer"
@@ -52,7 +65,8 @@ export type CompleteTermId =
   | "share_repurchases"
   | "source_tier"
   | "stock_based_compensation"
-  | "update_cadence";
+  | "update_cadence"
+  | "vintage";
 
 export interface GlossaryTerm {
   term_id: CompleteTermId;
@@ -802,6 +816,255 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     ],
     "methodology_version": "0.1.0"
   },
+  "macro_core_pce": {
+    "term_id": "macro_core_pce",
+    "display_name": "Core PCE Price Index",
+    "category": "macro",
+    "short_definition": "Price index of personal consumption expenditures excluding food and energy.",
+    "full_definition": "The Federal Reserve's preferred inflation gauge, published monthly by the Bureau of Economic Analysis as an index level (2017 = 100).",
+    "formula": "FRED series PCEPILFE, value as published in the vintage shown",
+    "unit": "Index 2017=100",
+    "example": "August 2026: 130.455, released 2026-09-30.",
+    "direction": "Faster rise = more underlying inflation",
+    "interpretation": "The 12-month change is compared with the Fed's 2% inflation target.",
+    "why_it_matters": "It anchors the Fed's reading of underlying inflation.",
+    "source": "U.S. Bureau of Economic Analysis via FRED (PCEPILFE)",
+    "source_url": "https://fred.stlouisfed.org/series/PCEPILFE",
+    "as_of": "2026-10-06",
+    "update_cadence": "monthly",
+    "caveats": "Revised with every release and in annual and comprehensive updates.",
+    "related_terms": [
+      "macro_cpi",
+      "vintage"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "macro_cpi": {
+    "term_id": "macro_cpi",
+    "display_name": "CPI (All Items)",
+    "category": "macro",
+    "short_definition": "Consumer price index for all urban consumers, all items, seasonally adjusted.",
+    "full_definition": "The headline US consumer price index published monthly by the Bureau of Labor Statistics, as an index level (1982-84 = 100). Inflation is its percentage change over a period.",
+    "formula": "FRED series CPIAUCSL, value as published in the vintage shown",
+    "unit": "Index 1982-1984=100",
+    "example": "August 2026: 334.131, released 2026-09-11.",
+    "direction": "Faster rise = more inflation",
+    "interpretation": "Compare the change over 12 months or annualized over 3 months, not the level.",
+    "why_it_matters": "Inflation drives Fed policy, rates and equity valuations.",
+    "source": "U.S. Bureau of Labor Statistics via FRED (CPIAUCSL)",
+    "source_url": "https://fred.stlouisfed.org/series/CPIAUCSL",
+    "as_of": "2026-10-06",
+    "update_cadence": "monthly",
+    "caveats": "Seasonal factors are revised each February, which changes earlier months.",
+    "related_terms": [
+      "macro_core_pce",
+      "vintage"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "macro_curve_10y_2y": {
+    "term_id": "macro_curve_10y_2y",
+    "display_name": "10Y-2Y Treasury Spread",
+    "category": "macro",
+    "short_definition": "10-year minus 2-year Treasury constant maturity yield.",
+    "full_definition": "The slope of the Treasury yield curve. Negative values (an inverted curve) have preceded most US recessions.",
+    "formula": "FRED series T10Y2Y, value as published in the vintage shown",
+    "unit": "Percentage points",
+    "example": "2026-10-02: 0.45 percentage points.",
+    "direction": "Lower or negative = more recession risk priced",
+    "interpretation": "Watch the turn from inverted back to positive as well as the inversion itself.",
+    "why_it_matters": "A widely used recession and regime indicator.",
+    "source": "Federal Reserve Bank of St. Louis (calculated from H.15) via FRED (T10Y2Y)",
+    "source_url": "https://fred.stlouisfed.org/series/T10Y2Y",
+    "as_of": "2026-10-06",
+    "update_cadence": "daily (business days)",
+    "caveats": "Signals have long and variable lead times.",
+    "related_terms": [
+      "macro_treasury_2y",
+      "macro_treasury_10y"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "macro_fed_funds": {
+    "term_id": "macro_fed_funds",
+    "display_name": "Fed Funds Rate",
+    "category": "macro",
+    "short_definition": "Monthly average of the effective federal funds rate.",
+    "full_definition": "The rate banks charge each other for overnight reserves, which the Federal Reserve steers with its policy target range. FRED publishes the monthly average.",
+    "formula": "FRED series FEDFUNDS, value as published in the vintage shown",
+    "unit": "Percent",
+    "example": "September 2026: 3.75%, released 2026-10-01.",
+    "direction": "Higher = tighter monetary policy",
+    "interpretation": "Compare with inflation for the real policy rate.",
+    "why_it_matters": "Sets the base cost of money for all other rates.",
+    "source": "Board of Governors of the Federal Reserve System via FRED (FEDFUNDS)",
+    "source_url": "https://fred.stlouisfed.org/series/FEDFUNDS",
+    "as_of": "2026-10-06",
+    "update_cadence": "monthly",
+    "caveats": "A monthly average; the daily rate moves on the day of a policy decision.",
+    "related_terms": [
+      "macro_treasury_2y"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "macro_hy_oas": {
+    "term_id": "macro_hy_oas",
+    "display_name": "High-Yield Credit Spread",
+    "category": "macro",
+    "short_definition": "Option-adjusted spread of the ICE BofA US High Yield Index over Treasuries.",
+    "full_definition": "The extra yield investors demand to hold US high-yield corporate bonds instead of Treasuries.",
+    "formula": "FRED series BAMLH0A0HYM2, value as published in the vintage shown",
+    "unit": "Percent",
+    "example": "2026-10-02: 3.10%.",
+    "direction": "Higher = more credit stress",
+    "interpretation": "Rapid widening often comes with equity drawdowns.",
+    "why_it_matters": "A fast gauge of credit conditions and risk appetite.",
+    "source": "ICE Data Indices via FRED (BAMLH0A0HYM2)",
+    "source_url": "https://fred.stlouisfed.org/series/BAMLH0A0HYM2",
+    "as_of": "2026-10-06",
+    "update_cadence": "daily (business days)",
+    "caveats": "ICE licensing limits FRED to about the last three years (from 2023-10-06 here); third-party copyright, personal use only.",
+    "related_terms": [
+      "macro_vix"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "macro_nonfarm_payrolls": {
+    "term_id": "macro_nonfarm_payrolls",
+    "display_name": "Nonfarm Payrolls",
+    "category": "macro",
+    "short_definition": "Total employees on nonfarm payrolls in the US, in thousands, seasonally adjusted.",
+    "full_definition": "From the monthly establishment survey of the Bureau of Labor Statistics. The monthly change is the headline jobs number; each month is revised in the next two releases and again in the annual benchmark.",
+    "formula": "FRED series PAYEMS, value as published in the vintage shown",
+    "unit": "Thousands of persons",
+    "example": "August 2026: 159,075 thousand at first release (2026-09-04), revised to 159,015 thousand (2026-10-02).",
+    "direction": "Higher = more jobs",
+    "interpretation": "Look at the monthly change and at how earlier months were revised.",
+    "why_it_matters": "Large revisions change the picture markets traded on at the time.",
+    "source": "U.S. Bureau of Labor Statistics via FRED (PAYEMS)",
+    "source_url": "https://fred.stlouisfed.org/series/PAYEMS",
+    "as_of": "2026-10-06",
+    "update_cadence": "monthly",
+    "caveats": "First releases are often revised by tens of thousands; the annual benchmark can move the level further.",
+    "related_terms": [
+      "macro_unemployment_rate",
+      "vintage"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "macro_real_gdp": {
+    "term_id": "macro_real_gdp",
+    "display_name": "Real GDP",
+    "category": "macro",
+    "short_definition": "Inflation-adjusted gross domestic product, seasonally adjusted at an annual rate.",
+    "full_definition": "Quarterly output of the US economy from the Bureau of Economic Analysis, in chained dollars. Each quarter is estimated three times (advance, second, third) and revised in annual updates.",
+    "formula": "FRED series GDPC1, value as published in the vintage shown",
+    "unit": "Billions of chained 2017 dollars, annual rate",
+    "example": "Q2 2026: 24,408.011 billion, in the release of 2026-09-30.",
+    "direction": "Higher = larger economy",
+    "interpretation": "Growth is the annualized change from the previous quarter.",
+    "why_it_matters": "Defines expansions and recessions together with jobs data.",
+    "source": "U.S. Bureau of Economic Analysis via FRED (GDPC1)",
+    "source_url": "https://fred.stlouisfed.org/series/GDPC1",
+    "as_of": "2026-10-06",
+    "update_cadence": "quarterly",
+    "caveats": "Comprehensive revisions can rebase the whole history to a new reference year.",
+    "related_terms": [
+      "vintage"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "macro_treasury_10y": {
+    "term_id": "macro_treasury_10y",
+    "display_name": "10-Year Treasury Yield",
+    "category": "macro",
+    "short_definition": "Market yield on US Treasury securities at 10-year constant maturity.",
+    "full_definition": "Daily yield from the Federal Reserve's H.15 release, quoted on an investment basis.",
+    "formula": "FRED series DGS10, value as published in the vintage shown",
+    "unit": "Percent",
+    "example": "2026-10-01: 5.24%.",
+    "direction": "Higher = tighter financial conditions",
+    "interpretation": "The benchmark discount rate for long-duration assets such as growth stocks.",
+    "why_it_matters": "Drives mortgage rates and equity valuations.",
+    "source": "Board of Governors of the Federal Reserve System via FRED (DGS10)",
+    "source_url": "https://fred.stlouisfed.org/series/DGS10",
+    "as_of": "2026-10-06",
+    "update_cadence": "daily (business days)",
+    "caveats": "Published the next business day; holidays are missing.",
+    "related_terms": [
+      "macro_treasury_2y",
+      "macro_curve_10y_2y"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "macro_treasury_2y": {
+    "term_id": "macro_treasury_2y",
+    "display_name": "2-Year Treasury Yield",
+    "category": "macro",
+    "short_definition": "Market yield on US Treasury securities at 2-year constant maturity.",
+    "full_definition": "Daily yield from the Federal Reserve's H.15 release, quoted on an investment basis.",
+    "formula": "FRED series DGS2, value as published in the vintage shown",
+    "unit": "Percent",
+    "example": "2026-10-01: 4.78%.",
+    "direction": "Higher = markets expect higher policy rates",
+    "interpretation": "Moves most with expectations for the Fed's next steps.",
+    "why_it_matters": "The market's view of the policy path over the next two years.",
+    "source": "Board of Governors of the Federal Reserve System via FRED (DGS2)",
+    "source_url": "https://fred.stlouisfed.org/series/DGS2",
+    "as_of": "2026-10-06",
+    "update_cadence": "daily (business days)",
+    "caveats": "Published the next business day; holidays are missing.",
+    "related_terms": [
+      "macro_treasury_10y",
+      "macro_curve_10y_2y",
+      "macro_fed_funds"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "macro_unemployment_rate": {
+    "term_id": "macro_unemployment_rate",
+    "display_name": "Unemployment Rate",
+    "category": "macro",
+    "short_definition": "Share of the labor force that is unemployed, seasonally adjusted.",
+    "full_definition": "From the monthly household survey of the Bureau of Labor Statistics, released with the jobs report.",
+    "formula": "FRED series UNRATE, value as published in the vintage shown",
+    "unit": "Percent",
+    "example": "September 2026: 4.2%, released 2026-10-02.",
+    "direction": "Higher = weaker labor market",
+    "interpretation": "A rise of half a point or more from its recent low has often come with recessions.",
+    "why_it_matters": "The labor market is half of the Fed's dual mandate.",
+    "source": "U.S. Bureau of Labor Statistics via FRED (UNRATE)",
+    "source_url": "https://fred.stlouisfed.org/series/UNRATE",
+    "as_of": "2026-10-06",
+    "update_cadence": "monthly",
+    "caveats": "Seasonal factors are revised each January, which changes up to five years of history.",
+    "related_terms": [
+      "macro_nonfarm_payrolls"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "macro_vix": {
+    "term_id": "macro_vix",
+    "display_name": "VIX",
+    "category": "macro",
+    "short_definition": "CBOE Volatility Index: implied volatility of S&P 500 options over the next 30 days.",
+    "full_definition": "Daily closing level of the VIX, computed by Cboe from S&P 500 option prices.",
+    "formula": "FRED series VIXCLS, value as published in the vintage shown",
+    "unit": "Index",
+    "example": "2026-10-02 close: 15.31.",
+    "direction": "Higher = more expected volatility",
+    "interpretation": "Spikes mark stress; very low levels can mean complacency.",
+    "why_it_matters": "A standard measure of equity market fear.",
+    "source": "Chicago Board Options Exchange via FRED (VIXCLS)",
+    "source_url": "https://fred.stlouisfed.org/series/VIXCLS",
+    "as_of": "2026-10-06",
+    "update_cadence": "daily (business days)",
+    "caveats": "Third-party copyright, personal use only; an index level, not a percentage.",
+    "related_terms": [
+      "macro_hy_oas"
+    ],
+    "methodology_version": "0.1.0"
+  },
   "net_income": {
     "term_id": "net_income",
     "display_name": "Net Income",
@@ -822,6 +1085,29 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "eps_diluted",
       "restated_flag"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "observation_date": {
+    "term_id": "observation_date",
+    "display_name": "Observation Date",
+    "category": "macro",
+    "short_definition": "The date FRED uses to label a value; the first day of the period it covers.",
+    "full_definition": "Monthly values are labelled with the first of the month, quarterly with the first day of the quarter, daily with the day itself. It is not the release date: August 2026 CPI is labelled 2026-08-01 and was released on 2026-09-11.",
+    "formula": "FRED observation date = start of the period",
+    "unit": "date",
+    "example": "CPI for August 2026 is the observation 2026-08-01 (334.131).",
+    "direction": "N/A",
+    "interpretation": "Read the label as the period, and the vintage as when it became public.",
+    "why_it_matters": "Confusing the period with the release date would let a backtest see data early.",
+    "source": "FRED API documentation (observation dates)",
+    "source_url": "https://fred.stlouisfed.org/docs/api/fred/series_observations.html",
+    "as_of": "2026-10-06",
+    "update_cadence": "per release",
+    "caveats": "Daily market series skip weekends and holidays; FRED marks missing days with a dot, which is not stored.",
+    "related_terms": [
+      "vintage",
+      "reporting_period"
     ],
     "methodology_version": "0.1.0"
   },
@@ -916,6 +1202,30 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "point_in_time",
       "restated_flag",
       "accession_number"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "page_macro": {
+    "term_id": "page_macro",
+    "display_name": "Macro",
+    "category": "navigation",
+    "short_definition": "Key US macro series with every published revision, as known at a chosen date.",
+    "full_definition": "System page listing the series in config/macro_series.yaml from FRED / ALFRED. Each series page shows recent observations as they were public at an As known on date, the vintage each value comes from, and the first release of values revised since. Charts follow in M0.9.",
+    "formula": "not a calculation; reads GET /macro/series and /macro/series/{id}/observations",
+    "unit": "page",
+    "example": "Nonfarm payrolls as known on 2026-09-30 show August 2026 at 159,075 thousand; today the revised 159,015 thousand.",
+    "direction": "N/A",
+    "interpretation": "Check what a release said at the time before comparing it with today's revised figure.",
+    "why_it_matters": "Macro signals and backtests must use first releases, not later revisions.",
+    "source": "Milestone M0.6 (FRED / ALFRED adapter)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M0_foundation.md",
+    "as_of": "2026-10-06",
+    "update_cadence": "live (each page load); FRED data refreshed daily at 10:15 SGT",
+    "caveats": "Only the series in the registry; titles and units come from FRED.",
+    "related_terms": [
+      "vintage",
+      "point_in_time",
+      "observation_date"
     ],
     "methodology_version": "0.1.0"
   },
@@ -1171,6 +1481,29 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "freshness_sla",
       "data_freshness"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "vintage": {
+    "term_id": "vintage",
+    "display_name": "Vintage",
+    "category": "provenance",
+    "short_definition": "A version of a data value as published at a specific time.",
+    "full_definition": "For macro series, ALFRED records each value with the date it was first published (its real-time start). When a later release revises the value, the new figure is a new vintage and the earlier one stays queryable. On the Macro page, Released is the vintage date of the value shown and Revised marks a value that changed since its first release.",
+    "formula": "ALFRED realtime_start of the value; counted as public from the end of that day in New York (ADR-012, ADR-015)",
+    "unit": "date",
+    "example": "Nonfarm payrolls for August 2026: first released on 2026-09-04 as 159,075 thousand, revised on 2026-10-02 to 159,015 thousand.",
+    "direction": "N/A",
+    "interpretation": "Revised data creates a new vintage; old vintages stay queryable.",
+    "why_it_matters": "Lets the system reproduce what the market knew on any date.",
+    "source": "ALFRED (Archival FRED), Federal Reserve Bank of St. Louis; ADR-015",
+    "source_url": "https://alfred.stlouisfed.org/",
+    "as_of": "2026-10-06",
+    "update_cadence": "per release",
+    "caveats": "ALFRED's archive starts at a different date per series; values first published before that carry the archive start as their vintage, which is later than the real release.",
+    "related_terms": [
+      "point_in_time",
+      "restated_flag"
     ],
     "methodology_version": "0.1.0"
   }

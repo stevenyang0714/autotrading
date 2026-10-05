@@ -23,11 +23,11 @@ from autotrading.adapters.sec.parsing import (
     publication_time,
     select_values,
 )
-from autotrading.adapters.sec.refresh import refresh_window
 from autotrading.adapters.sec.tickers import parse_tickers
 from autotrading.domain.metrics import SEC_XBRL_METRICS
 from autotrading.domain.provenance import end_of_day
 from autotrading.ingestion.job import idempotency_key
+from autotrading.ingestion.schedule import refresh_window
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "sec"
 UA = "Test Runner test@example.com"

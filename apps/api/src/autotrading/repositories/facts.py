@@ -10,11 +10,11 @@ system time, so only an earlier system_time returns it.
 """
 
 from collections import defaultdict
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
-from typing import Any
+from typing import Any, Protocol
 from uuid import UUID, uuid4
 
 from sqlalchemy import ColumnElement, Select, and_, func, or_, select, update
@@ -140,77 +140,45 @@ class FinancialFactRepository:
         actor: str,
         reason: RevisionReason = "restatement",
     ) -> BatchResult:
-        """`insert` for a whole filing history of one entity: existing versions are read in one
-        query, facts are applied in publication order, and conflicts are collected instead of
-        raised so one bad value does not discard the rest of the batch."""
+        """`insert` for a whole filing history of one entity (see `apply_versions`)."""
         set_actor(self.session, actor)
-        ordered = sorted(facts, key=lambda fact: fact.provenance.published_at)
-        if not ordered:
+        incoming = [
+            Incoming(
+                item=fact,
+                key=fact.fact_key(),
+                published_at=fact.provenance.published_at,
+                value=fact.value,
+                label=f"{fact.metric_id} {fact.period_start}..{fact.period_end} "
+                f"({fact.accession_id})",
+            )
+            for fact in facts
+        ]
+        if not incoming:
             return BatchResult(0, 0, [])
-        entity_ids = {fact.entity_id for fact in ordered}
-        metric_ids = {fact.metric_id for fact in ordered}
-        current: dict[tuple[Any, ...], list[StoredVersion[FinancialFact]]] = defaultdict(list)
-        max_version: dict[tuple[Any, ...], int] = defaultdict(int)
         existing = self.session.scalars(
             select(FinancialFact)
-            .where(FinancialFact.entity_id.in_(entity_ids), FinancialFact.metric_id.in_(metric_ids))
+            .where(
+                FinancialFact.entity_id.in_({i.item.entity_id for i in incoming}),
+                FinancialFact.metric_id.in_({i.item.metric_id for i in incoming}),
+            )
             .order_by(FinancialFact.published_at, FinancialFact.recorded_at, FinancialFact.id)
         )
-        for row in existing:
-            key = row_key(row)
-            max_version[key] = max(max_version[key], row.version)
-            if row.superseded_at is None:
-                current[key].append(StoredVersion(row, row.published_at, row.value))
 
-        inserted, unchanged, conflicts = 0, 0, []
-        # One publication reporting several values for one fact key: none of them is stored,
-        # whatever is stored already stays current, and the disagreement counts once.
-        values_per_publication: dict[tuple[Any, ...], set[Decimal]] = defaultdict(set)
-        for fact in ordered:
-            values_per_publication[(*fact.fact_key(), fact.provenance.published_at)].add(fact.value)
-        reported: set[tuple[Any, ...]] = set()
-
-        new_rows: list[FinancialFact] = []
-        for fact in ordered:
-            key = fact.fact_key()
-            publication = (*key, fact.provenance.published_at)
-            if len(values_per_publication[publication]) > 1:
-                if publication not in reported:
-                    reported.add(publication)
-                    conflicts.append(
-                        f"{fact.metric_id} {fact.period_start}..{fact.period_end} "
-                        f"({fact.accession_id}): one publication reports "
-                        f"{sorted(values_per_publication[publication])}"
-                    )
-                continue
-            decision = decide_version(current[key], fact.provenance.published_at, fact.value)
-            if isinstance(decision, Conflict):
-                conflicts.append(
-                    f"{fact.metric_id} {fact.period_start}..{fact.period_end} "
-                    f"({fact.accession_id}): {decision.reason}"
-                )
-                continue
-            if isinstance(decision, Unchanged):
-                unchanged += 1
-                continue
-            latest = decision.supersedes.ref if decision.supersedes is not None else None
-            max_version[key] += 1
-            row = self._build_row(
+        def build(
+            fact: FinancialFactIn, version: int, latest: FinancialFact | None
+        ) -> FinancialFact:
+            return self._build_row(
                 fact,
-                version=max_version[key],
-                # New rows get their id from the Python default, so a later fact in the same
-                # batch can point at one before it is flushed.
+                version=version,
                 supersedes=latest.id if latest is not None else None,
                 reason=reason if latest is not None else None,
                 restated=latest is not None,
             )
-            row.id = uuid4()
-            new_rows.append(row)
-            current[key].append(StoredVersion(row, fact.provenance.published_at, fact.value))
-            inserted += 1
+
+        new_rows, result = apply_versions(existing, row_key, incoming, build)
         self.session.add_all(new_rows)
         self.session.flush()
-        return BatchResult(inserted, unchanged, conflicts)
+        return result
 
     def correct(self, fact_id: UUID, corrected: FinancialFactIn, *, actor: str) -> FinancialFact:
         """Fix our own error: supersede the wrong row in system time and store the right value."""
@@ -285,7 +253,9 @@ class FinancialFactRepository:
         reason: RevisionReason | None,
         restated: bool,
     ) -> FinancialFact:
+        # The id is set here, not at flush, so a later version in the same batch can point at it.
         return FinancialFact(
+            id=uuid4(),
             **fact.model_dump(exclude={"provenance"}),
             **fact.provenance.model_dump(),
             version=version,
@@ -293,3 +263,84 @@ class FinancialFactRepository:
             revision_reason=reason,
             restated_flag=restated,
         )
+
+
+class VersionedRow(Protocol):
+    """The columns `apply_versions` reads from a stored fact version."""
+
+    @property
+    def id(self) -> UUID: ...
+    @property
+    def version(self) -> int: ...
+    @property
+    def superseded_at(self) -> datetime | None: ...
+    @property
+    def published_at(self) -> datetime: ...
+    @property
+    def value(self) -> Decimal: ...
+
+
+@dataclass(frozen=True)
+class Incoming[ItemT]:
+    item: ItemT
+    key: tuple[Any, ...]
+    published_at: datetime
+    value: Decimal
+    label: str  # names the value in conflict messages
+
+
+def apply_versions[RowT: VersionedRow, ItemT](
+    existing: Iterable[RowT],
+    key_of: Callable[[RowT], tuple[Any, ...]],
+    incoming: Iterable[Incoming[ItemT]],
+    build: Callable[[ItemT, int, RowT | None], RowT],
+) -> tuple[list[RowT], BatchResult]:
+    """Version a batch of incoming values against the stored ones (ADR-012, ADR-013).
+
+    `existing` must be every stored row of the keys concerned (superseded ones too, for the
+    version numbers), ordered by publication time. Values are applied in publication order with
+    `decide_version`; conflicts are collected, not raised, so one bad value does not discard
+    the batch. `build(item, version, supersedes)` makes a new row for a new version.
+    """
+    current: dict[tuple[Any, ...], list[StoredVersion[RowT]]] = defaultdict(list)
+    max_version: dict[tuple[Any, ...], int] = defaultdict(int)
+    for row in existing:
+        key = key_of(row)
+        max_version[key] = max(max_version[key], row.version)
+        if row.superseded_at is None:
+            current[key].append(StoredVersion(row, row.published_at, row.value))
+
+    ordered = sorted(incoming, key=lambda i: i.published_at)
+    # One publication reporting several values for one key: none of them is stored, whatever
+    # is stored already stays current, and the disagreement counts once.
+    values_per_publication: dict[tuple[Any, ...], set[Decimal]] = defaultdict(set)
+    for item in ordered:
+        values_per_publication[(*item.key, item.published_at)].add(item.value)
+    reported: set[tuple[Any, ...]] = set()
+
+    inserted, unchanged, conflicts = 0, 0, []
+    new_rows: list[RowT] = []
+    for item in ordered:
+        publication = (*item.key, item.published_at)
+        if len(values_per_publication[publication]) > 1:
+            if publication not in reported:
+                reported.add(publication)
+                conflicts.append(
+                    f"{item.label}: one publication reports "
+                    f"{sorted(values_per_publication[publication])}"
+                )
+            continue
+        decision = decide_version(current[item.key], item.published_at, item.value)
+        if isinstance(decision, Conflict):
+            conflicts.append(f"{item.label}: {decision.reason}")
+            continue
+        if isinstance(decision, Unchanged):
+            unchanged += 1
+            continue
+        latest = decision.supersedes.ref if decision.supersedes is not None else None
+        max_version[item.key] += 1
+        row = build(item.item, max_version[item.key], latest)
+        new_rows.append(row)
+        current[item.key].append(StoredVersion(row, item.published_at, item.value))
+        inserted += 1
+    return new_rows, BatchResult(inserted, unchanged, conflicts)
