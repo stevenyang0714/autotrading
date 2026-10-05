@@ -72,8 +72,10 @@ Delivered with M0.3: `config/sources.yaml` synced by `make migrate`; read-only A
 - After the validator exists, add a Claude Code hook in `.claude/settings.json` that runs the glossary check after edits under `apps/web/` (ask the user before changing settings).
 
 **Acceptance**
-- [ ] Deliberately adding a metric without a glossary entry fails CI (prove it in the PR, then revert).
-- [ ] Tooltip and popover work on desktop and a mobile viewport (Playwright).
+- [x] Deliberately adding a metric without a glossary entry fails CI (prove it in the PR, then revert). Proof in PR description; permanently guarded by `@ts-expect-error` cases in `Metric.test.tsx` and the numbers-without-tooltip test.
+- [x] Tooltip and popover work on desktop and a mobile viewport (Playwright).
+
+Delivered with M0.4: glossary registry (`glossary_terms`, migration 0003, synced by `make migrate`; `GET /glossary`, `/glossary/{term_id}`), generated `apps/web/src/generated/{glossary,api}.ts` (`make gen`, drift-checked in CI), `<Metric>` with portal tooltips/popovers, the Data Health page (`/system/data-health`), nav and planned pages through the glossary (errata E13), backend metric registry, Playwright e2e in the compose-smoke CI job (`make e2e`).
 
 ## M0.5 SEC EDGAR adapter (filings + XBRL facts)
 **Build**
@@ -87,6 +89,18 @@ Delivered with M0.3: `config/sources.yaml` synced by `make migrate`; read-only A
 - [ ] Facts ingested for every equity in `config/universe.yaml`.
 - [ ] Test (recorded real fixture): a restated value produces two versions; `as_of()` before the restatement filing returns the original.
 - [ ] Every fact links to its accession number and filing URL.
+
+## M0.5b Minimal instrument page (pulled forward from M0.9, Steven 2026-10-05)
+**Build**
+- `/instruments/[ticker]` for the equities in `config/universe.yaml`: key XBRL facts from M0.5 (revenue, net income, diluted EPS, share repurchases, diluted shares, cash, debt) with period, value, unit, filing link and accession number.
+- A point-in-time toggle: "as known on date X" uses `as_of(known_at=...)` (ADR-012); restated values show the restatement badge and link the earlier version.
+- Every number through `<Metric>`; each XBRL metric gets a complete glossary entry and a backend `METRICS` registration.
+- No prices, news or valuation yet (M0.7, M0.8, Phase 1).
+
+**Acceptance**
+- [ ] AAPL page shows real SEC values that match the filing they link to.
+- [ ] Switching "as known on" to a date before a restatement shows the original value.
+- [ ] No number without a tooltip (unit test + Playwright).
 
 ## M0.6 FRED / ALFRED adapter (macro with vintages)
 **Build**
@@ -124,7 +138,7 @@ Delivered with M0.3: `config/sources.yaml` synced by `make migrate`; read-only A
 ## M0.9 Phase 0 dashboard (first working screens)
 **Build**
 - **Data Health:** delivered in M0.4 (pulled forward); extend here if Phase 0 sources need more detail.
-- **Instrument page:** price + feed badge, recent filings, key XBRL facts with as-of and filing links, related news groups.
+- **Instrument page:** extend the M0.5b page with price + feed badge and related news groups.
 - **Macro page:** series charts with vintage toggle.
 - **News feed:** filter by ticker/source/tier; duplicate groups collapsed.
 - **Audit log viewer** (read-only).

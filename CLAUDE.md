@@ -64,7 +64,10 @@ Defined in the root `Makefile` (`make help` lists them). Keep this list current:
 - `make fmt` — auto-format and auto-fix
 - `make migrate` — apply Alembic migrations and sync `config/sources.yaml` into the Source Registry, inside the api container (idempotent; run after `make up`)
 - New migration: hand-write it in `apps/api/migrations/versions/`, update `db/models.py`, and keep `alembic check` clean (tested). Facts are written only through `repositories/` (ADR-007, ADR-012).
+- `make gen` — regenerate `apps/web/openapi.json` and `apps/web/src/generated/` (glossary + API types) after changing the glossary or the API; CI fails if they are stale
+- `make e2e` — Playwright browser tests against the running stack (desktop + mobile)
 - `make dev-web` — Next.js dev server on http://127.0.0.1:3000
+- Glossary: edit `docs/glossary/glossary_seed.yaml`, then `make gen` and `make migrate`. A complete term's content change needs a `methodology_version` bump. UI code renders metrics only through `<Metric termId=...>`
 - Health: `curl http://127.0.0.1:8000/health` (dependencies) and `/health/live` (process only)
 
 ## Repo layout

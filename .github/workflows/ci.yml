@@ -38,6 +38,10 @@ jobs:
       - run: uv run mypy
       - run: uv run mypy --strict src/autotrading/domain
       - run: uv run pytest -m "not integration"
+      - name: OpenAPI schema is up to date (run `make gen`)
+        run: |
+          uv run python -m autotrading.openapi_dump ../web/openapi.json
+          git diff --exit-code -- ../web/openapi.json
 
   frontend:
     name: frontend (eslint, tsc, vitest)
@@ -57,15 +61,19 @@ jobs:
           cache: pnpm
           cache-dependency-path: apps/web/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
+      - name: Generated glossary and API types are up to date (run `make gen`)
+        run: |
+          pnpm -s gen
+          git diff --exit-code -- src/generated
       - run: pnpm -s lint
       - run: pnpm -s typecheck
       - run: pnpm -s test
 
   compose-smoke:
-    name: compose smoke (make up, integration tests, /health)
+    name: compose smoke (make up, integration tests, /health, e2e)
     needs: [backend, frontend]
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v7
@@ -79,6 +87,26 @@ jobs:
       - run: make migrate
       - run: make test-integration
       - run: curl -fsS http://127.0.0.1:8000/health
+      - uses: pnpm/action-setup@v6
+        with:
+          package_json_file: apps/web/package.json
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: apps/web/pnpm-lock.yaml
+      - run: cd apps/web && pnpm install --frozen-lockfile
+      - run: cd apps/web && pnpm exec playwright install --with-deps chromium
+      - run: make e2e
+        env:
+          CI: "true"
+      - name: Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report
+          retention-days: 7
       - name: Service status on failure
         if: failure()
         run: make ps && docker compose -f infra/docker-compose.yml --project-directory . logs --tail=200

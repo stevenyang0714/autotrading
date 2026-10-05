@@ -21,10 +21,12 @@ x-app-env: &app-env
   S3_BUCKET: ${S3_BUCKET:-raw-payloads}
   LIVE_TRADING_ENABLED: ${LIVE_TRADING_ENABLED:-false}
   CONFIG_DIR: /app/config
+  GLOSSARY_PATH: /app/glossary/glossary_seed.yaml
 
 # Repo config (sources.yaml, universe.yaml), read-only inside the app containers.
 x-app-volumes: &app-volumes
   - ./config:/app/config:ro
+  - ./docs/glossary:/app/glossary:ro
 
 x-app-depends: &app-depends
   db:
@@ -137,8 +139,14 @@ services:
   web:
     build: apps/web
     image: autotrading-web:local
+    environment:
+      # Server-side calls from Next.js to the API over the compose network (M0.4, D2).
+      API_URL: http://api:8000
     ports:
       - "127.0.0.1:3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
       interval: 5s

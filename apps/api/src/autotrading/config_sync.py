@@ -1,8 +1,10 @@
-"""Load config/sources.yaml into the Source Registry (M0.3).
+"""Load repo config into the database (run by `make migrate`).
 
-Run with `python -m autotrading.config_sync` (part of `make migrate`). Upserts by id and only
-writes rows whose values changed, so re-running is a no-op and the audit log stays quiet.
-Sources missing from the file are left untouched and reported.
+- config/sources.yaml -> Source Registry (M0.3). Upserts by id and only writes rows whose
+  values changed, so re-running is a no-op and the audit log stays quiet. Sources missing from
+  the file are left untouched and reported.
+- docs/glossary/glossary_seed.yaml -> glossary_terms (M0.4). Registers new versions of
+  complete terms; refuses changed content under an existing methodology_version.
 """
 
 from dataclasses import dataclass, field
@@ -15,7 +17,8 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from autotrading.db.models import Source
+from autotrading.db.models import GlossaryTermRow, Source
+from autotrading.domain.glossary import GlossaryFile
 from autotrading.domain.provenance import LicenseStatus
 from autotrading.infra.db import make_engine
 from autotrading.repositories.audit import set_actor
@@ -92,19 +95,63 @@ def sync_sources(session: Session, config: SourcesFile) -> SyncResult:
     return result
 
 
+class GlossaryVersionError(ValueError):
+    """A complete term's content changed without a methodology_version bump."""
+
+
+@dataclass
+class GlossarySyncResult:
+    created: list[str] = field(default_factory=list)
+    unchanged: list[str] = field(default_factory=list)
+
+
+def load_glossary(path: Path) -> GlossaryFile:
+    return GlossaryFile.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
+
+
+def sync_glossary(session: Session, glossary: GlossaryFile) -> GlossarySyncResult:
+    result = GlossarySyncResult()
+    for term in glossary.complete_terms():
+        sha = term.content_sha256()
+        existing = session.get(GlossaryTermRow, (term.term_id, term.methodology_version))
+        if existing is not None:
+            if existing.content_sha256 != sha:
+                raise GlossaryVersionError(
+                    f"glossary term {term.term_id} changed but methodology_version "
+                    f"{term.methodology_version} was not bumped"
+                )
+            result.unchanged.append(term.term_id)
+            continue
+        session.add(
+            GlossaryTermRow(
+                **term.model_dump(exclude={"status"}),
+                content_sha256=sha,
+            )
+        )
+        result.created.append(term.term_id)
+    session.flush()
+    return result
+
+
 def main() -> None:
     settings = get_settings()
-    path = settings.resolved_config_dir() / "sources.yaml"
+    sources_path = settings.resolved_config_dir() / "sources.yaml"
+    glossary_path = settings.resolved_glossary_path()
     engine = make_engine(settings)
     try:
         with Session(engine) as session:
-            result = sync_sources(session, load_sources(path))
+            sources = sync_sources(session, load_sources(sources_path))
+            glossary = sync_glossary(session, load_glossary(glossary_path))
             session.commit()
     finally:
         engine.dispose()
     print(
-        f"sources.yaml synced: created={result.created} updated={result.updated} "
-        f"unchanged={len(result.unchanged)} not_in_config={result.not_in_config}"
+        f"sources.yaml synced: created={sources.created} updated={sources.updated} "
+        f"unchanged={len(sources.unchanged)} not_in_config={sources.not_in_config}"
+    )
+    print(
+        f"glossary synced: new term versions={len(glossary.created)} "
+        f"unchanged={len(glossary.unchanged)}"
     )
 
 

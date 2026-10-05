@@ -1,0 +1,983 @@
+{
+  "components": {
+    "schemas": {
+      "ComponentHealth": {
+        "properties": {
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "latency_ms": {
+            "title": "Latency Ms",
+            "type": "number"
+          },
+          "status": {
+            "enum": [
+              "ok",
+              "down",
+              "stale"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "latency_ms",
+          "detail"
+        ],
+        "title": "ComponentHealth",
+        "type": "object"
+      },
+      "DataHealthReport": {
+        "properties": {
+          "checked_at": {
+            "format": "date-time",
+            "title": "Checked At",
+            "type": "string"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/SourceHealth"
+            },
+            "title": "Sources",
+            "type": "array"
+          }
+        },
+        "required": [
+          "checked_at",
+          "sources"
+        ],
+        "title": "DataHealthReport",
+        "type": "object"
+      },
+      "DeadLetterOut": {
+        "properties": {
+          "attempts": {
+            "title": "Attempts",
+            "type": "integer"
+          },
+          "error_class": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Class"
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          },
+          "failed_at": {
+            "format": "date-time",
+            "title": "Failed At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "ingestion_run_id": {
+            "format": "uuid",
+            "title": "Ingestion Run Id",
+            "type": "string"
+          },
+          "job": {
+            "title": "Job",
+            "type": "string"
+          },
+          "params": {
+            "additionalProperties": true,
+            "title": "Params",
+            "type": "object"
+          },
+          "resolution": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution"
+          },
+          "resolved_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved At"
+          },
+          "source_id": {
+            "title": "Source Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "ingestion_run_id",
+          "source_id",
+          "job",
+          "params",
+          "attempts",
+          "error_class",
+          "error_message",
+          "failed_at",
+          "resolved_at",
+          "resolution"
+        ],
+        "title": "DeadLetterOut",
+        "type": "object"
+      },
+      "GlossaryTermDetail": {
+        "properties": {
+          "term": {
+            "$ref": "#/components/schemas/GlossaryTermOut"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/GlossaryVersion"
+            },
+            "title": "Versions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "term",
+          "versions"
+        ],
+        "title": "GlossaryTermDetail",
+        "type": "object"
+      },
+      "GlossaryTermOut": {
+        "properties": {
+          "as_of": {
+            "title": "As Of",
+            "type": "string"
+          },
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "caveats": {
+            "title": "Caveats",
+            "type": "string"
+          },
+          "direction": {
+            "title": "Direction",
+            "type": "string"
+          },
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "example": {
+            "title": "Example",
+            "type": "string"
+          },
+          "formula": {
+            "title": "Formula",
+            "type": "string"
+          },
+          "full_definition": {
+            "title": "Full Definition",
+            "type": "string"
+          },
+          "interpretation": {
+            "title": "Interpretation",
+            "type": "string"
+          },
+          "loaded_at": {
+            "format": "date-time",
+            "title": "Loaded At",
+            "type": "string"
+          },
+          "methodology_version": {
+            "title": "Methodology Version",
+            "type": "string"
+          },
+          "related_terms": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Related Terms",
+            "type": "array"
+          },
+          "short_definition": {
+            "title": "Short Definition",
+            "type": "string"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "source_url": {
+            "title": "Source Url",
+            "type": "string"
+          },
+          "term_id": {
+            "title": "Term Id",
+            "type": "string"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          },
+          "update_cadence": {
+            "title": "Update Cadence",
+            "type": "string"
+          },
+          "why_it_matters": {
+            "title": "Why It Matters",
+            "type": "string"
+          }
+        },
+        "required": [
+          "term_id",
+          "methodology_version",
+          "display_name",
+          "category",
+          "short_definition",
+          "full_definition",
+          "formula",
+          "unit",
+          "example",
+          "direction",
+          "interpretation",
+          "why_it_matters",
+          "source",
+          "source_url",
+          "as_of",
+          "update_cadence",
+          "caveats",
+          "related_terms",
+          "loaded_at"
+        ],
+        "title": "GlossaryTermOut",
+        "type": "object"
+      },
+      "GlossaryVersion": {
+        "properties": {
+          "loaded_at": {
+            "format": "date-time",
+            "title": "Loaded At",
+            "type": "string"
+          },
+          "methodology_version": {
+            "title": "Methodology Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "methodology_version",
+          "loaded_at"
+        ],
+        "title": "GlossaryVersion",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "HealthReport": {
+        "properties": {
+          "checked_at": {
+            "format": "date-time",
+            "title": "Checked At",
+            "type": "string"
+          },
+          "components": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ComponentHealth"
+            },
+            "title": "Components",
+            "type": "object"
+          },
+          "status": {
+            "enum": [
+              "ok",
+              "degraded",
+              "down"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "checked_at",
+          "components"
+        ],
+        "title": "HealthReport",
+        "type": "object"
+      },
+      "RunOut": {
+        "properties": {
+          "attempt": {
+            "title": "Attempt",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "error_class": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Class"
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "job": {
+            "title": "Job",
+            "type": "string"
+          },
+          "params": {
+            "additionalProperties": true,
+            "title": "Params",
+            "type": "object"
+          },
+          "raw_payload_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Raw Payload Keys",
+            "type": "array"
+          },
+          "rows_inserted": {
+            "title": "Rows Inserted",
+            "type": "integer"
+          },
+          "rows_unchanged": {
+            "title": "Rows Unchanged",
+            "type": "integer"
+          },
+          "source_id": {
+            "title": "Source Id",
+            "type": "string"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "window_end": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Window End"
+          },
+          "window_start": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Window Start"
+          }
+        },
+        "required": [
+          "id",
+          "source_id",
+          "job",
+          "params",
+          "window_start",
+          "window_end",
+          "status",
+          "attempt",
+          "started_at",
+          "finished_at",
+          "rows_inserted",
+          "rows_unchanged",
+          "raw_payload_keys",
+          "error_class",
+          "error_message",
+          "created_at"
+        ],
+        "title": "RunOut",
+        "type": "object"
+      },
+      "SourceHealth": {
+        "properties": {
+          "access_status": {
+            "title": "Access Status",
+            "type": "string"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "freshness": {
+            "anyOf": [
+              {
+                "enum": [
+                  "fresh",
+                  "stale",
+                  "failing"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Freshness"
+          },
+          "freshness_sla_seconds": {
+            "title": "Freshness Sla Seconds",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "last_run": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RunOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "last_success_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Success At"
+          },
+          "license_status": {
+            "title": "License Status",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "open_dead_letters": {
+            "title": "Open Dead Letters",
+            "type": "integer"
+          },
+          "rate_limit_burst": {
+            "title": "Rate Limit Burst",
+            "type": "integer"
+          },
+          "rate_limit_per_second": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Rate Limit Per Second",
+            "type": "string"
+          },
+          "tier": {
+            "title": "Tier",
+            "type": "integer"
+          },
+          "topics": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Topics",
+            "type": "array"
+          },
+          "update_cadence": {
+            "title": "Update Cadence",
+            "type": "string"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "url",
+          "tier",
+          "license_status",
+          "access_status",
+          "enabled",
+          "update_cadence",
+          "freshness_sla_seconds",
+          "rate_limit_per_second",
+          "rate_limit_burst",
+          "topics",
+          "freshness",
+          "last_success_at",
+          "last_run",
+          "open_dead_letters"
+        ],
+        "title": "SourceHealth",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "Global Market Intelligence API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/data-health": {
+      "get": {
+        "operationId": "data_health_data_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataHealthReport"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Data Health",
+        "tags": [
+          "data health"
+        ]
+      }
+    },
+    "/dead-letters": {
+      "get": {
+        "operationId": "dead_letters_dead_letters_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "unresolved",
+            "required": false,
+            "schema": {
+              "default": true,
+              "title": "Unresolved",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "source_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeadLetterOut"
+                  },
+                  "title": "Response Dead Letters Dead Letters Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Dead Letters",
+        "tags": [
+          "data health"
+        ]
+      }
+    },
+    "/glossary": {
+      "get": {
+        "operationId": "list_terms_glossary_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "category",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/GlossaryTermOut"
+                  },
+                  "title": "Response List Terms Glossary Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Terms",
+        "tags": [
+          "glossary"
+        ]
+      }
+    },
+    "/glossary/{term_id}": {
+      "get": {
+        "operationId": "get_term_glossary__term_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "term_id",
+            "required": true,
+            "schema": {
+              "title": "Term Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GlossaryTermDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Term",
+        "tags": [
+          "glossary"
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthReport"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthReport"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Health",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/health/live": {
+      "get": {
+        "operationId": "live_health_live_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Live Health Live Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Live",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/ingestion-runs": {
+      "get": {
+        "operationId": "ingestion_runs_ingestion_runs_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "source_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RunOut"
+                  },
+                  "title": "Response Ingestion Runs Ingestion Runs Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ingestion Runs",
+        "tags": [
+          "data health"
+        ]
+      }
+    }
+  }
+}

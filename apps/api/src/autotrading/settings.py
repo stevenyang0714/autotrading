@@ -46,6 +46,8 @@ class Settings(BaseSettings):
 
     # Repo config (universe.yaml, sources.yaml). Containers mount it at /app/config.
     config_dir: Path | None = None
+    # Glossary registry seed. Containers mount docs/glossary at /app/glossary.
+    glossary_path: Path | None = None
 
     # Ingestion retries (Dramatiq, exponential backoff); after the last one -> dead letter.
     ingestion_max_retries: int = 5
@@ -61,6 +63,14 @@ class Settings(BaseSettings):
         if env_file is None:
             raise RuntimeError("CONFIG_DIR is not set and no repo root was found")
         return env_file.parent / "config"
+
+    def resolved_glossary_path(self) -> Path:
+        if self.glossary_path is not None:
+            return self.glossary_path
+        env_file = find_env_file()
+        if env_file is None:
+            raise RuntimeError("GLOSSARY_PATH is not set and no repo root was found")
+        return env_file.parent / "docs" / "glossary" / "glossary_seed.yaml"
 
     @field_validator("live_trading_enabled")
     @classmethod
