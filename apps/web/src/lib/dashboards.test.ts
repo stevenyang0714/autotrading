@@ -49,3 +49,13 @@ describe("dashboard registry", () => {
     expect(plannedLabel(3)).toBe("Planned — Phase 3");
   });
 });
+
+describe("dashboard glossary terms (errata E13)", () => {
+  it("gives every dashboard its own complete glossary term", async () => {
+    const { GLOSSARY } = await import("@/generated/glossary");
+    for (const dashboard of DASHBOARDS) {
+      expect(dashboard.termId).toBe(`dashboard_${dashboard.id}`);
+      expect(GLOSSARY[dashboard.termId].display_name).toBe(dashboard.label);
+    }
+  });
+});

@@ -298,6 +298,46 @@ class DeadLetter(MutableRowMixin, Base):
     resolution: Mapped[str | None] = mapped_column(Text)
 
 
+# ---------- glossary registry (M0.4, append-only) ----------
+
+
+class GlossaryTermRow(Base):
+    """One immutable version of a complete glossary term (02 §22).
+
+    Loaded from docs/glossary/glossary_seed.yaml by `make migrate`; only `complete` terms are
+    registered. Changing a term's content requires a new methodology_version.
+    """
+
+    __tablename__ = "glossary_terms"
+    __table_args__ = (
+        CheckConstraint("term_id ~ '^[a-z][a-z0-9_]*$'", name="term_id_format"),
+        CheckConstraint("content_sha256 ~ '^[0-9a-f]{64}$'", name="content_sha256_format"),
+        CheckConstraint("source_url ~ '^https?://'", name="source_url_scheme"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    term_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    methodology_version: Mapped[str] = mapped_column(Text, primary_key=True)
+    display_name: Mapped[str] = mapped_column(Text)
+    category: Mapped[str] = mapped_column(Text)
+    short_definition: Mapped[str] = mapped_column(Text)
+    full_definition: Mapped[str] = mapped_column(Text)
+    formula: Mapped[str] = mapped_column(Text)
+    unit: Mapped[str] = mapped_column(Text)
+    example: Mapped[str] = mapped_column(Text)
+    direction: Mapped[str] = mapped_column(Text)
+    interpretation: Mapped[str] = mapped_column(Text)
+    why_it_matters: Mapped[str] = mapped_column(Text)
+    source: Mapped[str] = mapped_column(Text)
+    source_url: Mapped[str] = mapped_column(Text)
+    as_of: Mapped[str] = mapped_column(Text)
+    update_cadence: Mapped[str] = mapped_column(Text)
+    caveats: Mapped[str] = mapped_column(Text)
+    related_terms: Mapped[list[str]] = mapped_column(ARRAY(Text))
+    content_sha256: Mapped[str] = mapped_column(Text)
+    loaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
 # ---------- facts (append-only, bitemporal) ----------
 
 

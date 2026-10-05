@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from sqlalchemy.orm import Session, sessionmaker
 
 from autotrading.api.data_health import router as data_health_router
+from autotrading.api.glossary import router as glossary_router
 from autotrading.api.health import HealthChecker
 from autotrading.api.health import router as health_router
 from autotrading.infra.dependencies import Dependencies
@@ -49,6 +50,7 @@ def create_app(
     app = FastAPI(title="Global Market Intelligence API", version="0.1.0", lifespan=lifespan)
     app.include_router(health_router)
     app.include_router(data_health_router)
+    app.include_router(glossary_router)
     return app
 
 

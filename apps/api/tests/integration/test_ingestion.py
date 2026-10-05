@@ -3,9 +3,11 @@ sync and the Data Health API. Uses the throwaway test database, a throwaway buck
 namespaced Redis keys; the development data is never touched."""
 
 import json
+import os
 import time
 from collections.abc import Iterator
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any, ClassVar
 from uuid import UUID, uuid4
 
@@ -407,3 +409,35 @@ def test_data_health_reports_freshness(engine: Engine, sessions: sessionmaker[Se
     assert by_id[failing]["freshness"] == "failing"
     assert by_id[off]["freshness"] is None
     assert by_id[fresh]["last_run"]["status"] == "succeeded"
+
+
+# ---------- web fixtures (opt-in recorder) ----------
+
+
+@pytest.mark.skipif(
+    not os.environ.get("RECORD_WEB_FIXTURES"),
+    reason="recorder: set RECORD_WEB_FIXTURES=1 to refresh apps/web/tests/fixtures/api",
+)
+def test_record_web_fixtures(sessions: sessionmaker[Session]) -> None:
+    """Records real API responses (this module's test data) for the web unit tests.
+
+    Runs last in the module, after the runs, dead letters and freshness cases above exist.
+    """
+    target = Path(__file__).resolve().parents[3] / "web" / "tests" / "fixtures" / "api"
+    target.mkdir(parents=True, exist_ok=True)
+    with TestClient(create_app(health_checker=OkChecker(), sessions=sessions)) as client:
+        for name, path, params in (
+            ("data-health", "/data-health", {}),
+            ("ingestion-runs", "/ingestion-runs", {"limit": 20}),
+            ("dead-letters", "/dead-letters", {}),
+        ):
+            response = client.get(path, params=params)
+            assert response.status_code == 200
+            record = {
+                "recorded_at": datetime.now(UTC).isoformat(),
+                "recorded_from": "integration test database via FastAPI TestClient "
+                "(tests/integration/test_ingestion.py)",
+                "endpoint": path,
+                "response": response.json(),
+            }
+            (target / f"{name}.json").write_text(json.dumps(record, indent=2) + "\n")

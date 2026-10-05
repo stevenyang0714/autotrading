@@ -15,7 +15,7 @@ export NEXT_TELEMETRY_DISABLED := 1
 export COREPACK_ENABLE_DOWNLOAD_PROMPT := 0
 
 .DEFAULT_GOAL := help
-.PHONY: help setup up down ps logs migrate test test-unit test-integration lint lint-api lint-web fmt dev-web
+.PHONY: help setup up down ps logs migrate gen test test-unit test-integration e2e lint lint-api lint-web fmt dev-web
 
 help: ## Show available targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  %-18s %s\n", $$1, $$2}'
@@ -40,6 +40,10 @@ migrate: ## Apply Alembic migrations and sync config/sources.yaml (inside the ap
 	$(COMPOSE) exec -T api alembic upgrade head
 	$(COMPOSE) exec -T api python -m autotrading.config_sync
 
+gen: ## Regenerate apps/web/src/generated (glossary + API types) and apps/web/openapi.json
+	cd $(API) && uv run python -m autotrading.openapi_dump ../web/openapi.json
+	cd $(WEB) && pnpm -s gen
+
 test: test-unit test-integration ## Full test suite (needs `make up`)
 
 test-unit: ## Backend and frontend unit tests (no stack needed)
@@ -48,6 +52,9 @@ test-unit: ## Backend and frontend unit tests (no stack needed)
 
 test-integration: ## Tests against the running stack; fails, never skips, if it is down
 	cd $(API) && uv run pytest -m integration
+
+e2e: ## Playwright browser tests against the running stack (needs `make up` + `make migrate`)
+	cd $(WEB) && pnpm exec playwright test
 
 lint: lint-api lint-web ## ruff, mypy, eslint, tsc
 
