@@ -44,6 +44,7 @@ APP_TABLES = {
     "raw_payloads",
     "dead_letters",
     "glossary_terms",
+    "filings",
 }
 FEB = datetime(2025, 2, 1, 21, 5, tzinfo=UTC)
 AUG = datetime(2025, 8, 1, 20, 30, tzinfo=UTC)
@@ -110,6 +111,8 @@ def test_guardrails_exist(engine: Engine) -> None:
         "dead_letters_audit",
         "glossary_terms_append_only",
         "glossary_terms_no_truncate",
+        "filings_append_only",
+        "filings_no_truncate",
     } <= triggers
     assert exclusions == {"ex_identifiers_value_period", "ex_identifiers_subject_period"}
 

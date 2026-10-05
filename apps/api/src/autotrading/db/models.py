@@ -36,6 +36,7 @@ from autotrading.db.mixins import (
     LICENSE_STATUSES,
     FactMixin,
     MutableRowMixin,
+    ProvenanceMixin,
     bitemporal_constraints,
     provenance_constraints,
     sql_in,
@@ -234,6 +235,8 @@ class IngestionRun(MutableRowMixin, Base):
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     rows_inserted: Mapped[int] = mapped_column(Integer, server_default=text("0"))
     rows_unchanged: Mapped[int] = mapped_column(Integer, server_default=text("0"))
+    # Values not stored because they contradict a stored value of the same publication (M0.5).
+    rows_conflicted: Mapped[int] = mapped_column(Integer, server_default=text("0"))
     raw_payload_keys: Mapped[list[str]] = mapped_column(ARRAY(Text), server_default=text("'{}'"))
     error_class: Mapped[str | None] = mapped_column(Text)
     error_message: Mapped[str | None] = mapped_column(Text)
@@ -398,6 +401,52 @@ class FinancialFact(FactMixin, Base):
         Uuid, ForeignKey("financial_facts.id")
     )
     revision_reason: Mapped[str | None] = mapped_column(Text)
+    # Raw XBRL concept the value was read from, e.g. "us-gaap:NetIncomeLoss" (M0.5).
+    source_concept: Mapped[str | None] = mapped_column(Text)
+
+
+# ---------- filings (M0.5, append-only) ----------
+
+
+class Filing(ProvenanceMixin, Base):
+    """One SEC filing as listed by the submissions API, per filer entity.
+
+    Append-only: a trigger rejects UPDATE and DELETE. published_at is the EDGAR acceptance
+    time (ADR-013); source_url is the filing index page.
+    """
+
+    __tablename__ = "filings"
+    __table_args__ = (
+        *provenance_constraints(),
+        CheckConstraint(r"accession_number ~ '^\d{10}-\d{2}-\d{6}$'", name="accession_format"),
+        CheckConstraint(r"cik ~ '^\d{10}$'", name="cik_format"),
+        CheckConstraint("form <> ''", name="form_not_empty"),
+        UniqueConstraint(
+            "entity_id", "accession_number", name="uq_filings_entity_id_accession_number"
+        ),
+        Index("ix_filings_entity_id_filing_date", "entity_id", "filing_date"),
+        Index("ix_filings_accession_number", "accession_number"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    entity_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("entities.id"))
+    cik: Mapped[str] = mapped_column(Text)
+    accession_number: Mapped[str] = mapped_column(Text)
+    form: Mapped[str] = mapped_column(Text)
+    filing_date: Mapped[date] = mapped_column(Date)
+    accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    report_date: Mapped[date | None] = mapped_column(Date)
+    primary_document: Mapped[str | None] = mapped_column(Text)
+    primary_doc_description: Mapped[str | None] = mapped_column(Text)
+    items: Mapped[str | None] = mapped_column(Text)
+    is_xbrl: Mapped[bool] = mapped_column(Boolean, server_default=text("false"))
+    is_inline_xbrl: Mapped[bool] = mapped_column(Boolean, server_default=text("false"))
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
 
 
 # ---------- audit (append-only, written by triggers) ----------

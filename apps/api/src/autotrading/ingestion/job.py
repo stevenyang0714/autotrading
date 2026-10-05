@@ -58,6 +58,8 @@ class StoreContext:
 class StoreResult:
     inserted: int
     unchanged: int
+    # Values left out because they contradict a stored value of the same publication.
+    conflicted: int = 0
 
 
 class IngestionJob(ABC):

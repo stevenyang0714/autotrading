@@ -46,6 +46,10 @@ class IngestionRunner:
         self._limiter = limiter
         self._registry = JOB_REGISTRY if registry is None else registry
 
+    @property
+    def sessions(self) -> sessionmaker[Session]:
+        return self._sessions
+
     def create_run(self, job: str, params: dict[str, Any], window: Window | None = None) -> UUID:
         """Record a queued run; the caller then sends its id to the run_ingestion actor."""
         job_class = self._job_class(job)
@@ -109,6 +113,7 @@ class IngestionRunner:
                         finished_at=func.now(),
                         rows_inserted=result.inserted,
                         rows_unchanged=result.unchanged,
+                        rows_conflicted=result.conflicted,
                         raw_payload_keys=[payload.object_key for payload in stored],
                         error_class=None,
                         error_message=None,
