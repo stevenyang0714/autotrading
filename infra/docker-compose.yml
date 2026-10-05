@@ -1,0 +1,144 @@
+# Local stack (ADR-003). Run through the Makefile, which sets --project-directory to the
+# repo root, so relative paths below and `${VAR}` interpolation from `.env` use the root.
+#
+# Rules:
+# - Every published port binds to 127.0.0.1 only (errata E12).
+# - Each service receives only the variables listed under `environment:`; `.env` is never
+#   passed in wholesale. Container addresses point at service names, not localhost.
+# - Data lives in named volumes, never inside the repo.
+# - Do not run `docker compose config` or `docker inspect`: both print resolved secrets.
+
+name: autotrading
+
+x-app-env: &app-env
+  APP_ENV: ${APP_ENV:-local}
+  DISPLAY_TZ: ${DISPLAY_TZ:-Asia/Singapore}
+  DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-app}@db:5432/${POSTGRES_DB:-autotrading}
+  REDIS_URL: redis://redis:6379/0
+  S3_ENDPOINT_URL: http://objectstore:9000
+  S3_ACCESS_KEY: ${S3_ACCESS_KEY:-minioadmin}
+  S3_SECRET_KEY: ${S3_SECRET_KEY:-minioadmin}
+  S3_BUCKET: ${S3_BUCKET:-raw-payloads}
+  LIVE_TRADING_ENABLED: ${LIVE_TRADING_ENABLED:-false}
+
+x-app-depends: &app-depends
+  db:
+    condition: service_healthy
+  redis:
+    condition: service_healthy
+  objectstore:
+    condition: service_healthy
+
+services:
+  db:
+    image: timescale/timescaledb:2.30.2-pg16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
+      POSTGRES_DB: ${POSTGRES_DB:-autotrading}
+      TIMESCALEDB_TELEMETRY: "off"
+      TS_TUNE_MEMORY: 1GB
+      TS_TUNE_NUM_CPUS: "2"
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      # TCP check, so the first-boot init phase (socket only) does not count as ready.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  redis:
+    image: redis:8.10-alpine
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  objectstore:
+    # Silo: maintained MinIO fork (ADR-011). Standard image bundles curl and mcli.
+    image: pgsty/silo:RELEASE.2026-09-16T00-00-00Z
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:-minioadmin}
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    volumes:
+      - objectstore-data:/data
+    healthcheck:
+      test: ["CMD", "silo", "healthcheck", "ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  api:
+    build: apps/api
+    image: autotrading-api:local
+    environment: *app-env
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on: *app-depends
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/live', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  worker:
+    image: autotrading-api:local
+    pull_policy: never
+    command: ["dramatiq", "autotrading.jobs.actors", "--processes", "1", "--threads", "2"]
+    environment: *app-env
+    depends_on: *app-depends
+    healthcheck:
+      # Healthy once it has processed a heartbeat job from the scheduler.
+      test: ["CMD", "python", "-m", "autotrading.jobs.healthcheck", "worker"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+    restart: unless-stopped
+
+  scheduler:
+    image: autotrading-api:local
+    pull_policy: never
+    command: ["python", "-m", "autotrading.jobs.scheduler"]
+    environment: *app-env
+    depends_on: *app-depends
+    healthcheck:
+      test: ["CMD", "python", "-m", "autotrading.jobs.healthcheck", "scheduler"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+    restart: unless-stopped
+
+  web:
+    build: apps/web
+    image: autotrading-web:local
+    ports:
+      - "127.0.0.1:3000:3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+volumes:
+  db-data:
+  redis-data:
+  objectstore-data:

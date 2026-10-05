@@ -75,3 +75,9 @@ Add to 02 §27.1: **LLM API usage** — proposed MVP cap USD 50/month with usage
 ## E12. Deployment safety
 
 A deployed instance must never be reachable without authentication. Until a deployment ADR exists, the stack runs locally only.
+
+## E13. Glossary scope includes dashboard labels and planned-phase labels
+
+01 §22 requires a `?` on dashboard labels; 02 §22 and CLAUDE.md list metrics, scores, badges, statuses, risk measures and strategies only. Resolution (approved by Steven, 2026-10-04): use the stricter 01 scope.
+- The 15 dashboard labels (02 §21) and the `planned_phase` status label ("Planned — Phase N") each get a glossary entry.
+- The entries and the switch to `<Metric>` / glossary rendering land in M0.4. In M0.1 the nav and planned pages render plain text, because the glossary component does not exist yet.
