@@ -1,0 +1,21 @@
+# secrets
+.env
+.env.*
+!.env.example
+# claude code personal settings
+.claude/settings.local.json
+# python
+.venv/
+__pycache__/
+*.pyc
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+# node
+node_modules/
+.next/
+# local data
+data/
+*.dump
+# os
+.DS_Store

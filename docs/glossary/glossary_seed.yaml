@@ -1,0 +1,598 @@
+# Glossary Registry seed — loaded in M0.4
+# Schema = 02 §22 (17 fields) + `direction` (02 §32.1) + `status`.
+# status: seed     -> core fields written; NOT allowed in UI yet
+#         complete -> all 17 fields filled; allowed in UI
+# M0.4 must complete (full_definition, example, source, source_url, as_of) every
+# term used by Phase 0 screens and flip it to `complete`. Do not change term_id or direction.
+# Direction rules: Risk Score higher = worse; Source Tier lower number = stronger (errata E2).
+
+version: 0.1.0
+terms:
+
+  # ---------- Phase 0: market data ----------
+  - term_id: last_price
+    display_name: Last Price
+    category: market_data
+    short_definition: Most recent trade price received from the market data feed.
+    formula: "last trade print from provider; see feed_status"
+    unit: currency per share
+    direction: N/A
+    interpretation: Market price at the shown as-of time, not a fair value.
+    why_it_matters: Basis for valuation gaps, timing and execution checks.
+    caveats: Single-venue feeds (e.g. IEX) can differ from consolidated prices; check feed status and freshness.
+    related_terms: [bid, ask, feed_status, data_freshness]
+    update_cadence: intraday
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: bid
+    display_name: Bid
+    category: market_data
+    short_definition: Highest price a buyer is currently quoting.
+    formula: "best bid from provider quote"
+    unit: currency per share
+    direction: N/A
+    interpretation: Approximate price available if selling immediately.
+    why_it_matters: Together with ask, defines spread and execution cost.
+    caveats: Venue-specific on single-venue feeds.
+    related_terms: [ask, last_price]
+    update_cadence: intraday
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: ask
+    display_name: Ask
+    category: market_data
+    short_definition: Lowest price a seller is currently quoting.
+    formula: "best ask from provider quote"
+    unit: currency per share
+    direction: N/A
+    interpretation: Approximate price available if buying immediately.
+    why_it_matters: Together with bid, defines spread and execution cost.
+    caveats: Venue-specific on single-venue feeds.
+    related_terms: [bid, last_price]
+    update_cadence: intraday
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: volume
+    display_name: Volume
+    category: market_data
+    short_definition: Number of shares traded in the period.
+    formula: "sum of trade sizes in the bar or session"
+    unit: shares
+    direction: Higher = more trading activity
+    interpretation: Context for liquidity and the strength of price moves.
+    why_it_matters: Feeds liquidity checks and market confirmation.
+    caveats: Single-venue feeds report only that venue's volume.
+    related_terms: [last_price, feed_status]
+    update_cadence: intraday / daily
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: feed_status
+    display_name: Feed Status
+    category: data_quality
+    short_definition: Label stating what kind of data a value comes from.
+    formula: "enum: live_consolidated | live_single_venue | delayed | end_of_day | stale | unavailable | fixture | demo"
+    unit: label
+    direction: N/A
+    interpretation: Tells you whether a number is live, delayed, stale, test or demo data.
+    why_it_matters: Prevents stale or test data from being mistaken for live data.
+    caveats: fixture and demo values can never enter the execution path.
+    related_terms: [data_freshness, last_price]
+    update_cadence: per observation
+    methodology_version: 0.1.0
+    status: seed
+
+  # ---------- Phase 0: provenance and data quality ----------
+  - term_id: data_freshness
+    display_name: Data Freshness
+    category: data_quality
+    short_definition: Time since the latest successful update compared with its expected cadence.
+    formula: "now - last_successful_ingest; compared to source freshness SLA -> fresh | stale | failing"
+    unit: state + duration
+    direction: Longer age = staler
+    interpretation: stale means the value is older than it should be for its source.
+    why_it_matters: Stale inputs can block signals and execution eligibility.
+    caveats: Some sources update only per filing or weekly, so their SLA is long.
+    related_terms: [feed_status, as_of]
+    update_cadence: continuous
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: source_tier
+    display_name: Source Tier
+    category: provenance
+    short_definition: Reliability class of a source, from Tier 1 (strongest) to Tier 4 (weakest).
+    formula: "Tier 1 primary official/issuer/licensed feed; Tier 2 professional media/licensed data; Tier 3 expert/social/specialist; Tier 4 unverified"
+    unit: label (1-4)
+    direction: Lower tier number = stronger evidence
+    interpretation: Trade-critical facts need Tier 1 confirmation.
+    why_it_matters: Weights evidence and blocks weak-source-only signals.
+    caveats: A tier describes the source type, not the author's personal credibility.
+    related_terms: [confidence, duplicate_group]
+    update_cadence: per source configuration
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: as_of
+    display_name: As-of
+    category: provenance
+    short_definition: Timestamp the displayed value refers to.
+    formula: "provider or filing timestamp, stored UTC, shown SGT and ET"
+    unit: timestamp
+    direction: N/A
+    interpretation: The value describes the world at this time, not now.
+    why_it_matters: Avoids mixing current and historical information.
+    caveats: Differs from ingested time, which is when we received it.
+    related_terms: [data_freshness, point_in_time]
+    update_cadence: per observation
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: point_in_time
+    display_name: Point-in-Time
+    category: methodology
+    short_definition: Using only information that was known at a given timestamp.
+    formula: "query facts with recorded_at <= known_at and not superseded at known_at"
+    unit: concept
+    direction: N/A
+    interpretation: Historical views and backtests see the data as it existed then.
+    why_it_matters: Required to avoid look-ahead bias.
+    caveats: Only as good as the vintage history the provider exposes.
+    related_terms: [vintage, look_ahead_bias, restated_flag]
+    update_cadence: N/A
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: vintage
+    display_name: Vintage
+    category: provenance
+    short_definition: A version of a data value as published at a specific time.
+    formula: "FRED/ALFRED real-time period or filing accession for financial facts"
+    unit: date range or accession
+    direction: N/A
+    interpretation: Revised data creates a new vintage; old vintages stay queryable.
+    why_it_matters: Lets the system reproduce what the market knew on any date.
+    caveats: Not every provider publishes vintages.
+    related_terms: [point_in_time, restated_flag]
+    update_cadence: per release
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: restated_flag
+    display_name: Restated
+    category: provenance
+    short_definition: Marks a financial value that replaced an earlier reported value for the same period.
+    formula: "true when a later filing reports a different value for the same metric and period"
+    unit: boolean
+    direction: N/A
+    interpretation: The figure changed after first publication; earlier version retained.
+    why_it_matters: Restatements can signal accounting changes and affect backtests.
+    caveats: Small differences can come from XBRL tagging, not true restatements.
+    related_terms: [vintage, filing_date, accession_number]
+    update_cadence: per filing
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: filing_date
+    display_name: Filing Date
+    category: provenance
+    short_definition: Date a document was filed with the regulator and became public.
+    formula: "from SEC submissions metadata"
+    unit: date
+    direction: N/A
+    interpretation: Information was not public before this date.
+    why_it_matters: Point-in-time logic uses filing date, not period end.
+    caveats: Acceptance time can be after market close; use the timestamp when available.
+    related_terms: [accession_number, point_in_time]
+    update_cadence: per filing
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: accession_number
+    display_name: Accession Number
+    category: provenance
+    short_definition: SEC's unique identifier for a filing.
+    formula: "from SEC submissions metadata"
+    unit: identifier
+    direction: N/A
+    interpretation: Click-through link to the exact source document.
+    why_it_matters: Makes every financial fact traceable to its filing.
+    caveats: Amendments have their own accession numbers.
+    related_terms: [filing_date, restated_flag]
+    update_cadence: per filing
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: license_status
+    display_name: License / Access Status
+    category: provenance
+    short_definition: Whether we are permitted to store and display a source's data, and how.
+    formula: "enum: public | licensed_personal | licensed_redistribution | restricted | unknown"
+    unit: label
+    direction: N/A
+    interpretation: Shows the usage rights attached to the data.
+    why_it_matters: Prevents unlicensed storage or display.
+    caveats: Provider terms change; re-verify periodically.
+    related_terms: [source_tier]
+    update_cadence: per source configuration
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: confidence
+    display_name: Confidence
+    category: data_quality
+    short_definition: Parsing or extraction confidence attached to an observation.
+    formula: "0-1; deterministic parsers = 1.0; heuristic or model extraction = measured confidence"
+    unit: ratio 0-1
+    direction: Higher = more reliable extraction
+    interpretation: Low values need verification before use.
+    why_it_matters: Low-confidence data can be excluded from signals.
+    caveats: Measures extraction quality, not whether the underlying claim is true.
+    related_terms: [source_tier]
+    update_cadence: per observation
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: duplicate_group
+    display_name: Duplicate Group
+    category: data_quality
+    short_definition: Cluster of news items or posts that repeat the same underlying story.
+    formula: "canonical URL + normalized title similarity -> duplicate_group_id"
+    unit: identifier
+    direction: N/A
+    interpretation: Ten copies of one story count as one piece of evidence.
+    why_it_matters: Enforces evidence independence in signal convergence.
+    caveats: Similarity thresholds can over- or under-group.
+    related_terms: [source_tier]
+    update_cadence: per ingest
+    methodology_version: 0.1.0
+    status: seed
+
+  # ---------- Later phases: v2 seed terms (02 §32.1) ----------
+  - term_id: buyback_intensity
+    display_name: Buyback Intensity
+    category: corporate_action
+    short_definition: Actual repurchases relative to market cap or FCF.
+    formula: "Repurchase Value / Market Cap (or / FCF)"
+    unit: "%"
+    direction: Higher = more intensive, not automatically better
+    interpretation: Scale of capital returned through repurchases.
+    why_it_matters: Separates real buyback activity from announcements.
+    caveats: Does not by itself imply undervaluation or future outperformance.
+    related_terms: [net_share_reduction]
+    update_cadence: per filing
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: net_share_reduction
+    display_name: Net Share Reduction
+    category: corporate_action
+    short_definition: Share repurchase effect net of issuance and dilution.
+    formula: "Buyback shares - dilution shares (SBC, issuance, option exercise)"
+    unit: shares or %
+    direction: Higher = greater per-share benefit
+    interpretation: The buyback effect that actually reaches shareholders.
+    why_it_matters: Gross buybacks can hide heavy SBC dilution.
+    caveats: Depends on consistent diluted share counts across filings.
+    related_terms: [buyback_intensity]
+    update_cadence: per filing
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: thesis_score
+    display_name: Thesis Score
+    category: score
+    short_definition: Strength of the economic or investment thesis.
+    formula: "model-specific 0-100; versioned rule"
+    unit: score 0-100
+    direction: Higher = better
+    interpretation: How well evidence supports the causal story.
+    why_it_matters: Answers "why", separate from "when".
+    caveats: Model output, not certainty.
+    related_terms: [timing_score, execution_score, risk_score]
+    update_cadence: per signal update
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: timing_score
+    display_name: Timing Score
+    category: score
+    short_definition: Strength of current market confirmation.
+    formula: "model-specific 0-100; versioned rule"
+    unit: score 0-100
+    direction: Higher = better
+    interpretation: Whether price, volume or options currently support acting.
+    why_it_matters: Answers "when", separate from valuation.
+    caveats: Not a valuation measure.
+    related_terms: [thesis_score, market_confirmation]
+    update_cadence: daily / intraday
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: execution_score
+    display_name: Execution Score
+    category: score
+    short_definition: Order quality based on liquidity, spread and risk.
+    formula: "model-specific 0-100; versioned rule"
+    unit: score 0-100
+    direction: Higher = better
+    interpretation: How cleanly a trade could be executed now.
+    why_it_matters: Avoids good ideas with bad execution.
+    caveats: Not a prediction of returns.
+    related_terms: [thesis_score, risk_score]
+    update_cadence: intraday
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: risk_score
+    display_name: Risk Score
+    category: score
+    short_definition: Severity of risk a trade adds to the portfolio.
+    formula: "model-specific 0-100; versioned rule"
+    unit: score 0-100
+    direction: Higher = worse
+    interpretation: Higher values call for smaller size or no trade.
+    why_it_matters: Feeds the risk gate, which can veto.
+    caveats: Never average directly with positive-direction scores.
+    related_terms: [thesis_score, var, expected_shortfall]
+    update_cadence: per portfolio snapshot
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: disclosure_lag
+    display_name: Disclosure Lag
+    category: provenance
+    short_definition: Delay between trade date and filing date.
+    formula: "Filing Date - Trade Date"
+    unit: days
+    direction: Higher = staler
+    interpretation: How old the information was when it became public.
+    why_it_matters: Congress PTRs can be weeks old when published.
+    caveats: Does not tell you the filer's current holdings.
+    related_terms: [reported_trade]
+    update_cadence: per filing
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: market_confirmation
+    display_name: Market Confirmation
+    category: signal
+    short_definition: Extent to which price, volume or options support a thesis.
+    formula: "model-specific; versioned rule"
+    unit: score
+    direction: Higher = more confirmation
+    interpretation: The market is behaving consistently with the thesis.
+    why_it_matters: Required for L3 trade candidates.
+    caveats: Strong confirmation may mean the move is already priced in.
+    related_terms: [timing_score, catalyst]
+    update_cadence: daily / intraday
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: catalyst
+    display_name: Catalyst
+    category: signal
+    short_definition: Future identifiable event that can reprice an asset.
+    formula: "event + expected date window"
+    unit: event/date
+    direction: N/A
+    interpretation: What could make the market recognize the thesis.
+    why_it_matters: Defines the expected time window for a thesis.
+    caveats: A catalyst is possible, not certain.
+    related_terms: [invalidation, market_confirmation]
+    update_cadence: per event
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: invalidation
+    display_name: Invalidation
+    category: risk
+    short_definition: Condition that makes a thesis fail.
+    formula: "explicit monitorable rule or threshold"
+    unit: rule
+    direction: N/A
+    interpretation: If this happens, the thesis is wrong and the position is reviewed.
+    why_it_matters: Every thesis must state what would prove it wrong.
+    caveats: Must be monitorable with available data.
+    related_terms: [catalyst]
+    update_cadence: continuous
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: regime
+    display_name: Regime
+    category: macro
+    short_definition: Current macro and market stress state.
+    formula: "state machine: NORMAL | ELEVATED | HIGH | CRISIS"
+    unit: state
+    direction: N/A
+    interpretation: Higher-stress states reduce new risk and raise hedging.
+    why_it_matters: Changes position sizing and strategy eligibility.
+    caveats: Detects fragility, does not predict black swans.
+    related_terms: [tail_risk]
+    update_cadence: daily
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: tail_risk
+    display_name: Tail Risk
+    category: risk
+    short_definition: Low-probability, high-impact loss or fragility risk.
+    formula: "risk class from stress indicators"
+    unit: risk class
+    direction: N/A
+    interpretation: Describes vulnerability to extreme moves.
+    why_it_matters: Drives hedging and gross exposure limits.
+    caveats: Not a forecast of a specific event.
+    related_terms: [regime, expected_shortfall]
+    update_cadence: daily
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: look_ahead_bias
+    display_name: Look-ahead Bias
+    category: methodology
+    short_definition: Future information leaking into a historical test.
+    formula: "validation failure"
+    unit: concept
+    direction: N/A
+    interpretation: Inflates backtest results unrealistically.
+    why_it_matters: Backtests with this bias cannot be trusted.
+    caveats: Often subtle (e.g. using restated data or period end instead of filing date).
+    related_terms: [point_in_time, survivorship_bias]
+    update_cadence: N/A
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: survivorship_bias
+    display_name: Survivorship Bias
+    category: methodology
+    short_definition: Excluding companies that were delisted or acquired.
+    formula: "validation failure"
+    unit: concept
+    direction: N/A
+    interpretation: Makes historical performance look better than reality.
+    why_it_matters: Backtests need universes that include dead names.
+    caveats: Requires a dataset with delisted securities (OD-7).
+    related_terms: [look_ahead_bias, point_in_time]
+    update_cadence: N/A
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: var
+    display_name: VaR
+    category: risk
+    short_definition: Loss threshold not expected to be exceeded at a stated confidence over a horizon.
+    formula: "distribution-dependent; method and confidence shown"
+    unit: currency or %
+    direction: Higher = more risk
+    interpretation: A reference loss level, not the worst case.
+    why_it_matters: Common portfolio risk limit input.
+    caveats: Underestimates tail losses under non-normal returns.
+    related_terms: [expected_shortfall, risk_score]
+    update_cadence: daily
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: expected_shortfall
+    display_name: Expected Shortfall
+    category: risk
+    short_definition: Average loss beyond the VaR threshold.
+    formula: "conditional tail loss; method and confidence shown"
+    unit: currency or %
+    direction: Higher = more risk
+    interpretation: How bad losses are when they exceed VaR.
+    why_it_matters: Better captures tail risk than VaR alone.
+    caveats: Depends on distribution assumptions and sample.
+    related_terms: [var, tail_risk]
+    update_cadence: daily
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: gross_exposure
+    display_name: Gross Exposure
+    category: risk
+    short_definition: Absolute long plus short market value relative to capital.
+    formula: "sum(abs(market values)) / capital"
+    unit: "%"
+    direction: Higher = more leverage
+    interpretation: Total size of positions regardless of direction.
+    why_it_matters: Controls leverage.
+    caveats: Says nothing about direction; see net exposure.
+    related_terms: [net_exposure]
+    update_cadence: per portfolio snapshot
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: net_exposure
+    display_name: Net Exposure
+    category: risk
+    short_definition: Long minus short market value relative to capital.
+    formula: "(long - short) / capital"
+    unit: "%"
+    direction: Higher = more directional (long)
+    interpretation: How directional the portfolio is.
+    why_it_matters: Main driver of market sensitivity.
+    caveats: Ignores beta differences between positions.
+    related_terms: [gross_exposure]
+    update_cadence: per portfolio snapshot
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: implied_volatility
+    display_name: Implied Volatility (IV)
+    category: options
+    short_definition: Volatility implied by option prices.
+    formula: "inferred from option price via pricing model"
+    unit: "% annualized"
+    direction: Higher = more implied vol
+    interpretation: Market's priced expectation of future movement.
+    why_it_matters: Context for options trades, hedges and expected move.
+    caveats: Affected by liquidity and model choice; differs from realized volatility.
+    related_terms: [iv_percentile, skew]
+    update_cadence: intraday
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: iv_percentile
+    display_name: IV Percentile
+    category: options
+    short_definition: Current IV's percentile within its historical distribution.
+    formula: "percentile(IV history over fixed window)"
+    unit: "%"
+    direction: Higher = more expensive relative context
+    interpretation: Whether options are pricey versus their own history.
+    why_it_matters: Helps choose between buying and selling volatility.
+    caveats: Window length must be fixed and shown.
+    related_terms: [implied_volatility]
+    update_cadence: daily
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: skew
+    display_name: Skew
+    category: options
+    short_definition: Shape of implied volatility across strikes.
+    formula: "surface-derived; method shown"
+    unit: vol points
+    direction: Context dependent
+    interpretation: Steep downside skew signals demand for crash protection.
+    why_it_matters: Reveals tail-risk pricing.
+    caveats: Definitions vary; always show the method.
+    related_terms: [implied_volatility, tail_risk]
+    update_cadence: daily
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: reported_trade
+    display_name: Reported Trade
+    category: positioning
+    short_definition: A publicly disclosed trade event (government or insider filing).
+    formula: "official disclosure record"
+    unit: event
+    direction: N/A
+    interpretation: Something was traded in the past and disclosed later.
+    why_it_matters: Slow-moving idea input, never live copy-trading.
+    caveats: Not a current position. Amounts are often ranges.
+    related_terms: [disclosure_lag]
+    update_cadence: per filing
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: policy_status
+    display_name: Policy Status
+    category: policy
+    short_definition: Lifecycle stage of a policy action.
+    formula: "state machine: statement | proposal | signed | effective | implementation | challenged_modified | expired_replaced"
+    unit: state
+    direction: N/A
+    interpretation: Separates talk from enforceable rules.
+    why_it_matters: Only effective or implemented policies enter causal models with full weight.
+    caveats: Status can change through courts or revisions.
+    related_terms: [catalyst]
+    update_cadence: per official update
+    methodology_version: 0.1.0
+    status: seed

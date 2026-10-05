@@ -1,0 +1,25 @@
+# Seed universe for Phase 0 data-coverage testing ONLY. Not an investment view.
+# Keep it small to bound API usage. Edit freely.
+version: 0.1.0
+equities:
+  # mix of mega-caps and companies with long repurchase histories (useful for Phase 1 buyback testing)
+  - AAPL
+  - MSFT
+  - GOOGL
+  - META
+  - NVDA
+  - JPM
+  - XOM
+  - AZO
+  - ORLY
+  - LOW
+etfs:
+  # broad market, rates, commodities, sectors (useful for Phase 2 regime / rotation research)
+  - SPY
+  - QQQ
+  - IWM
+  - TLT
+  - IEF
+  - GLD
+  - XLE
+  - XLK
