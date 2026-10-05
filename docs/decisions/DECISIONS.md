@@ -157,6 +157,31 @@ Resolves the XOM gap in ADR-013.
   - **Overlap:** the 11 periods both XOM issuers report (2025-2026) are equal.
 - **Limits:** only `successor_issuer` exists. Spin-offs and mergers (where history does not simply continue) need their own types and rules before they are modelled.
 
+## ADR-015 FRED / ALFRED vintages — Accepted (2026-10-06, approved by Steven with the M0.6 plan)
+Applies ADR-007 and ADR-012 to macro series (M0.6). Code: `apps/api/src/autotrading/adapters/fred/`.
+- **Storage:**
+  - `macro_series` is the registry: series ids from `config/macro_series.yaml`, metadata from FRED. Rows are mutable and audited.
+  - `macro_observations` is an append-only bitemporal fact table with key (`series_id`, `observation_date`).
+  - Each ALFRED real-time period is a version. A later vintage with a different value is a new version with `revision_reason = revision`. Versioning uses the same `decide_version` / `apply_versions` rules as financial facts.
+- **Publication time:**
+  - A vintage's `realtime_start` is a date, so the value counts as public from the end of that day in New York (precision `day`, ADR-012). Example: CPI released at 08:30 ET counts as known at 23:59:59 ET.
+  - ALFRED's archive starts at a different date per series. Values published before it carry the archive start as their vintage. That is later than the true release, never earlier.
+- **Fetching:**
+  - Each run reads all vintages: the series record, its vintage dates, then observations over the full real-time range, paged by 100,000.
+  - FRED serves at most 2,000 vintage dates per request. Daily market series have 3,000-5,000, so they are read in real-time windows of at most 1,900 vintages.
+  - A value that spans two windows comes back once per window. The repeat is classified unchanged, so it is never stored twice.
+  - Missing values (`.`) are not stored. A value that disappears is the tombstone gap noted in ADR-012.
+- **API key:**
+  - FRED accepts the key only as a query parameter. It lives in Settings as a secret.
+  - Stored and shown URLs are built without it (`public_url`). Observations link to `https://fred.stlouisfed.org/series/<ID>`.
+  - Errors name the public URL and are raised without exception chaining.
+  - httpx2/httpcore2 request logging is limited to warnings.
+  - Recorded fixtures are checked for the key before the manifest is written.
+- **Refresh:** daily at 10:15 SGT, plus `make fred-refresh`. There is one `fred.series` run per enabled series, in the shared refresh window (`ingestion/schedule.py`).
+- **Limits:**
+  - ICE BofA series (BAMLH0A0HYM2) are limited by ICE licensing to about the last three years on FRED (from 2023-10-06 at first ingest).
+  - ICE and Cboe series carry third-party copyright: personal use only (ADR-001).
+
 ---
 
 ## Open decisions (owner: Steven)
