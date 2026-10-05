@@ -1,4 +1,8 @@
-"""Declarative base with a fixed constraint naming convention (migrations use the same names)."""
+"""Declarative base with a fixed constraint naming convention (migrations use the same names).
+
+CHECK constraints take the suffix only (`name="license_status"`): the convention adds the
+`ck_<table>_` prefix, in models and in migrations alike.
+"""
 
 from sqlalchemy import MetaData
 from sqlalchemy.orm import DeclarativeBase
