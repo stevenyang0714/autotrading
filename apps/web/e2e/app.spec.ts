@@ -34,6 +34,8 @@ test("every page loads without console errors", async ({ page }) => {
     "/system/data-health",
     "/instruments",
     "/instruments/AAPL",
+    "/macro",
+    "/macro/PAYEMS",
     ...DASHBOARD_SLUGS.map((s) => `/dashboards/${s}`),
   ];
   for (const path of pages) {
@@ -60,9 +62,11 @@ test("Data Health shows the registered sources from the live API", async ({ page
     await expect(page.getByRole("table")).toBeVisible();
     const freshness = (name: RegExp) =>
       page.getByRole("row", { name }).locator('[data-term-id="data_freshness"]');
-    // SEC EDGAR is enabled (M0.5): judged, whatever its state; FRED is not enabled yet.
+    // SEC EDGAR (M0.5) and FRED (M0.6) are enabled: judged, whatever their state.
+    // GDELT is not enabled until M0.8.
     await expect(freshness(/SEC EDGAR/)).toHaveText(/^(Fresh|Stale|Failing)$/);
-    await expect(freshness(/FRED/)).toHaveText("Not enabled");
+    await expect(freshness(/FRED/)).toHaveText(/^(Fresh|Stale|Failing)$/);
+    await expect(freshness(/GDELT/)).toHaveText("Not enabled");
   }
 });
 
@@ -88,6 +92,9 @@ for (const path of [
   "/instruments/AAPL",
   "/instruments/AAPL?known_on=2010-01-27",
   "/instruments/XOM",
+  "/macro",
+  "/macro/PAYEMS",
+  "/macro/PAYEMS?known_on=2026-09-30",
 ]) {
   test(`numbers on ${path} are all explained`, async ({ page }) => {
     await page.goto(path);
@@ -136,6 +143,25 @@ test("XOM shows its predecessor issuer", async ({ page }) => {
   await expect(page.getByRole("list", { name: "Predecessor issuers" })).toContainText(
     "Exxon Mobil Corp",
   );
+});
+
+// ---------- macro page (M0.6) ----------
+
+test("PAYEMS: As known on before the revision shows the first release", async ({ page }) => {
+  const august = () => page.locator('tr[data-date="2026-08-01"]');
+  await page.goto("/macro/PAYEMS?known_on=2026-09-30");
+  await expect(august()).toContainText("159,075");
+  await expect(august()).not.toContainText("Revised");
+
+  await page.getByRole("link", { name: "Today" }).click();
+  await expect(page).not.toHaveURL(/known_on/);
+  await expect(august()).toContainText("Revised");
+  await expect(august()).toContainText("159,075 on 2026-09-04");
+});
+
+test("unknown macro series returns 404", async ({ page }) => {
+  const response = await page.goto("/macro/NOPE");
+  expect(response?.status()).toBe(404);
 });
 
 test("unknown instrument returns 404", async ({ page }) => {

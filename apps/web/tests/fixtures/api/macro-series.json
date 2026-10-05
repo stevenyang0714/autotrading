@@ -1,0 +1,174 @@
+{
+  "recorded_at": "2026-10-05T17:28:42.446229+00:00",
+  "recorded_from": "recorded FRED fixtures replayed into the integration test database (tests/integration/test_macro.py)",
+  "endpoint": "/macro/series",
+  "params": {},
+  "response": {
+    "series": [
+      {
+        "series": {
+          "id": "CPIAUCSL",
+          "term_id": "macro_cpi",
+          "title": "Consumer Price Index for All Urban Consumers: All Items in U.S. City Average",
+          "units": "Index 1982-1984=100",
+          "units_short": "Index 1982-1984=100",
+          "frequency": "Monthly",
+          "seasonal_adjustment_short": "SA",
+          "last_updated": "2026-09-11T13:37:49Z"
+        },
+        "latest": {
+          "observation_date": "2026-08-01",
+          "period_end": "2026-08-31",
+          "value": "334.131",
+          "vintage": "2026-09-11",
+          "published_at": "2026-09-12T03:59:59.999999Z",
+          "published_at_precision": "day",
+          "source_url": "https://fred.stlouisfed.org/series/CPIAUCSL",
+          "revised": false,
+          "first_release": null
+        }
+      },
+      {
+        "series": {
+          "id": "PCEPILFE",
+          "term_id": "macro_core_pce",
+          "title": null,
+          "units": null,
+          "units_short": null,
+          "frequency": null,
+          "seasonal_adjustment_short": null,
+          "last_updated": null
+        },
+        "latest": null
+      },
+      {
+        "series": {
+          "id": "UNRATE",
+          "term_id": "macro_unemployment_rate",
+          "title": null,
+          "units": null,
+          "units_short": null,
+          "frequency": null,
+          "seasonal_adjustment_short": null,
+          "last_updated": null
+        },
+        "latest": null
+      },
+      {
+        "series": {
+          "id": "PAYEMS",
+          "term_id": "macro_nonfarm_payrolls",
+          "title": "All Employees, Total Nonfarm",
+          "units": "Thousands of Persons",
+          "units_short": "Thous. of Persons",
+          "frequency": "Monthly",
+          "seasonal_adjustment_short": "SA",
+          "last_updated": "2026-10-02T13:24:33Z"
+        },
+        "latest": {
+          "observation_date": "2026-09-01",
+          "period_end": "2026-09-30",
+          "value": "159044",
+          "vintage": "2026-10-02",
+          "published_at": "2026-10-03T03:59:59.999999Z",
+          "published_at_precision": "day",
+          "source_url": "https://fred.stlouisfed.org/series/PAYEMS",
+          "revised": false,
+          "first_release": null
+        }
+      },
+      {
+        "series": {
+          "id": "GDPC1",
+          "term_id": "macro_real_gdp",
+          "title": null,
+          "units": null,
+          "units_short": null,
+          "frequency": null,
+          "seasonal_adjustment_short": null,
+          "last_updated": null
+        },
+        "latest": null
+      },
+      {
+        "series": {
+          "id": "FEDFUNDS",
+          "term_id": "macro_fed_funds",
+          "title": null,
+          "units": null,
+          "units_short": null,
+          "frequency": null,
+          "seasonal_adjustment_short": null,
+          "last_updated": null
+        },
+        "latest": null
+      },
+      {
+        "series": {
+          "id": "DGS2",
+          "term_id": "macro_treasury_2y",
+          "title": null,
+          "units": null,
+          "units_short": null,
+          "frequency": null,
+          "seasonal_adjustment_short": null,
+          "last_updated": null
+        },
+        "latest": null
+      },
+      {
+        "series": {
+          "id": "DGS10",
+          "term_id": "macro_treasury_10y",
+          "title": null,
+          "units": null,
+          "units_short": null,
+          "frequency": null,
+          "seasonal_adjustment_short": null,
+          "last_updated": null
+        },
+        "latest": null
+      },
+      {
+        "series": {
+          "id": "T10Y2Y",
+          "term_id": "macro_curve_10y_2y",
+          "title": null,
+          "units": null,
+          "units_short": null,
+          "frequency": null,
+          "seasonal_adjustment_short": null,
+          "last_updated": null
+        },
+        "latest": null
+      },
+      {
+        "series": {
+          "id": "BAMLH0A0HYM2",
+          "term_id": "macro_hy_oas",
+          "title": null,
+          "units": null,
+          "units_short": null,
+          "frequency": null,
+          "seasonal_adjustment_short": null,
+          "last_updated": null
+        },
+        "latest": null
+      },
+      {
+        "series": {
+          "id": "VIXCLS",
+          "term_id": "macro_vix",
+          "title": null,
+          "units": null,
+          "units_short": null,
+          "frequency": null,
+          "seasonal_adjustment_short": null,
+          "last_updated": null
+        },
+        "latest": null
+      }
+    ],
+    "last_refresh_at": "2026-10-05T17:28:42.275244Z"
+  }
+}

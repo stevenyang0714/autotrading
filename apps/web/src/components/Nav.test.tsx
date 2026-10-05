@@ -23,12 +23,13 @@ describe("Nav", () => {
     );
   });
 
-  it("has a System group with Data Health and Instruments", () => {
+  it("has a System group with Data Health, Instruments and Macro", () => {
     render(<Nav />);
     const links = linksIn("System");
     expect(links.map((link) => [link.textContent, link.getAttribute("href")])).toEqual([
       ["Data Health", "/system/data-health"],
       ["Instruments", "/instruments"],
+      ["Macro", "/macro"],
     ]);
   });
 

@@ -3,20 +3,20 @@ import Link from "next/link";
 import { Metric } from "@/components/Metric";
 
 /**
- * "As known on" date (M0.5b): a plain GET form, so it works without client JavaScript and the
- * chosen date stays in the URL (?known_on=YYYY-MM-DD). The date means the end of that day in
- * Singapore time; the page shows the exact timestamp it used.
+ * "As known on" date (M0.5b, reused by the Macro page in M0.6): a plain GET form, so it works
+ * without client JavaScript and the chosen date stays in the URL (?known_on=YYYY-MM-DD). The
+ * date means the end of that day in Singapore time; the page shows the exact timestamp used.
  */
 export function AsKnownOnForm({
-  ticker,
+  href,
   knownOn,
   invalid = false,
 }: {
-  ticker: string;
+  /** The page the form reloads, without query string. */
+  href: string;
   knownOn?: string;
   invalid?: boolean;
 }) {
-  const href = `/instruments/${encodeURIComponent(ticker)}`;
   return (
     <form method="get" action={href} className="flex flex-wrap items-center gap-2 text-sm">
       <label htmlFor="known_on">

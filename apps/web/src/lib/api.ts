@@ -81,3 +81,45 @@ export async function loadFundamentals(
     return { status: "unavailable" };
   }
 }
+
+// ---------- macro (M0.6) ----------
+
+export type MacroSeriesList = components["schemas"]["MacroSeriesList"];
+export type MacroSeriesSummary = components["schemas"]["SeriesSummary"];
+export type MacroSeries = components["schemas"]["SeriesOut"];
+export type SeriesObservations = components["schemas"]["SeriesObservations"];
+export type MacroObservation = components["schemas"]["ObservationOut"];
+
+/** The macro series registry with each series' latest value, or null when the API is down. */
+export async function loadMacroSeries(): Promise<MacroSeriesList | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/macro/series", { cache: "no-store" });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export type SeriesObservationsResult =
+  | { status: "ok"; data: SeriesObservations }
+  | { status: "not_found" }
+  | { status: "unavailable" };
+
+/** The latest observations of one series as known at `knownAt` (ISO timestamp; default now). */
+export async function loadSeriesObservations(
+  seriesId: string,
+  knownAt?: string,
+): Promise<SeriesObservationsResult> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data, response } = await client.GET("/macro/series/{series_id}/observations", {
+      params: { path: { series_id: seriesId }, query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    if (data) return { status: "ok", data };
+    return response.status === 404 ? { status: "not_found" } : { status: "unavailable" };
+  } catch {
+    return { status: "unavailable" };
+  }
+}

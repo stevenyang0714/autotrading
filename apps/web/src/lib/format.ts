@@ -39,3 +39,8 @@ export function exactReported(value: string, unit: string): string {
   const sign = value.startsWith("-") ? "-" : "";
   return `${sign}${grouped}${fraction ? `.${fraction}` : ""} ${unit}`;
 }
+
+/** "159,526" or "4.33": a reported value with thousands separators, every digit kept. */
+export function groupDigits(value: string): string {
+  return exactReported(value, "").trimEnd();
+}

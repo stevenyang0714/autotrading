@@ -7,7 +7,7 @@ import type { EntityOut, FactCell, FactTable, FilingRef, Fundamentals } from "@/
 import { exactReported, formatReported } from "@/lib/format";
 import { formatSgtEt } from "@/lib/time";
 
-import { AsKnownOnForm } from "./AsKnownOnForm";
+import { AsKnownOnForm } from "@/components/AsKnownOnForm";
 
 type TableMetric = Extract<
   CompleteTermId,
@@ -90,7 +90,11 @@ export function FundamentalsView({ data, knownOn, invalidKnownOn }: Props) {
             </span>
           ) : null}
         </p>
-        <AsKnownOnForm ticker={data.ticker} knownOn={knownOn} invalid={invalidKnownOn} />
+        <AsKnownOnForm
+          href={`/instruments/${encodeURIComponent(data.ticker)}`}
+          knownOn={knownOn}
+          invalid={invalidKnownOn}
+        />
         <p className="text-sm text-neutral-400">
           Showing what was public by{" "}
           <Metric termId="point_in_time" icon={false}>
