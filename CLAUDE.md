@@ -67,7 +67,7 @@ Defined in the root `Makefile` (`make help` lists them). Keep this list current:
 - `make gen` — regenerate `apps/web/openapi.json` and `apps/web/src/generated/` (glossary + API types) after changing the glossary or the API; CI fails if they are stale
 - `make e2e` — Playwright browser tests against the running stack (desktop + mobile)
 - `make dev-web` — Next.js dev server on http://127.0.0.1:3000
-- Glossary: edit `docs/glossary/glossary_seed.yaml`, then `make gen` and `make migrate`. A complete term's content change needs a `methodology_version` bump. UI code renders metrics only through `<Metric termId=...>`
+- Glossary: edit `docs/glossary/glossary_seed.yaml`, then `make gen` and `make migrate`. A complete term's content change needs a `methodology_version` bump. UI code renders metrics only through `<Metric termId=...>`. A PostToolUse hook (`.claude/hooks/glossary-check.sh`) regenerates the glossary types and runs `tsc` after edits under `apps/web/src` or to the glossary; a failure is reported back immediately
 - Health: `curl http://127.0.0.1:8000/health` (dependencies) and `/health/live` (process only)
 
 ## Repo layout

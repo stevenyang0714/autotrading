@@ -69,7 +69,7 @@ Delivered with M0.3: `config/sources.yaml` synced by `make migrate`; read-only A
 - Complete the seed entries needed by Phase 0 screens (status `seed` → `complete`).
 - Per errata E13: add glossary entries for the 15 dashboard labels and the `planned_phase` status label, and render the nav and planned pages through the glossary component.
 - Install Playwright and its browsers here, not earlier, to save disk space.
-- After the validator exists, add a Claude Code hook in `.claude/settings.json` that runs the glossary check after edits under `apps/web/` (ask the user before changing settings).
+- After the validator exists, add a Claude Code hook in `.claude/settings.json` that runs the glossary check after edits under `apps/web/` (ask the user before changing settings). Done 2026-10-05 with Steven's approval: `.claude/hooks/glossary-check.sh`.
 
 **Acceptance**
 - [x] Deliberately adding a metric without a glossary entry fails CI (prove it in the PR, then revert). Proof in PR description; permanently guarded by `@ts-expect-error` cases in `Metric.test.tsx` and the numbers-without-tooltip test.
