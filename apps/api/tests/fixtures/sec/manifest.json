@@ -1,0 +1,28 @@
+{
+  "recorded_at": "2026-10-05T14:19:29+00:00",
+  "files": {
+    "https://www.sec.gov/files/company_tickers_exchange.json": "company_tickers_exchange.json",
+    "https://data.sec.gov/submissions/CIK0000320193.json": "submissions_CIK0000320193.json",
+    "https://data.sec.gov/submissions/CIK0000320193-submissions-001.json": "CIK0000320193-submissions-001.json",
+    "https://data.sec.gov/api/xbrl/companyfacts/CIK0000320193.json": "companyfacts_CIK0000320193.json"
+  },
+  "trimmed": {
+    "company_tickers_exchange.json": "data rows limited to config/universe.yaml equities",
+    "companyfacts_CIK0000320193.json": "us-gaap concepts limited to adapters/sec/concepts.py"
+  },
+  "restatement_case": {
+    "metric_id": "net_income",
+    "period": [
+      "2007-09-30",
+      "2008-09-27"
+    ],
+    "original": {
+      "accession": "0001193125-09-214859",
+      "value": "4834000000"
+    },
+    "restated": {
+      "accession": "0001193125-10-012091",
+      "value": "6119000000"
+    }
+  }
+}

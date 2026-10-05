@@ -1,9 +1,9 @@
 {
-  "recorded_at": "2026-10-05T13:08:22.209755+00:00",
+  "recorded_at": "2026-10-05T14:24:20.890189+00:00",
   "recorded_from": "integration test database via FastAPI TestClient (tests/integration/test_ingestion.py)",
   "endpoint": "/data-health",
   "response": {
-    "checked_at": "2026-10-05T13:08:22.199689Z",
+    "checked_at": "2026-10-05T14:24:20.873908Z",
     "sources": [
       {
         "id": "sec_edgar",
@@ -11,8 +11,8 @@
         "url": "https://www.sec.gov/search-filings/edgar-application-programming-interfaces",
         "tier": 1,
         "license_status": "public",
-        "access_status": "pending_review",
-        "enabled": false,
+        "access_status": "active",
+        "enabled": true,
         "update_cadence": "per_filing",
         "freshness_sla_seconds": 172800,
         "rate_limit_per_second": "5.000",
@@ -22,7 +22,7 @@
           "fundamentals",
           "corporate_actions"
         ],
-        "freshness": null,
+        "freshness": "stale",
         "last_success_at": null,
         "last_run": null,
         "open_dead_letters": 0
@@ -117,8 +117,8 @@
         "open_dead_letters": 0
       },
       {
-        "id": "failing_8ead21",
-        "name": "failing_8ead21",
+        "id": "failing_ad2b47",
+        "name": "failing_ad2b47",
         "url": "https://example.com",
         "tier": 1,
         "license_status": "public",
@@ -130,10 +130,10 @@
         "rate_limit_burst": 1,
         "topics": [],
         "freshness": "failing",
-        "last_success_at": "2026-10-05T12:48:22.158255Z",
+        "last_success_at": "2026-10-05T14:04:20.847988Z",
         "last_run": {
-          "id": "e6ec2c05-d835-47be-b6e5-ce723cfbcf1c",
-          "source_id": "failing_8ead21",
+          "id": "74257128-c2fa-4e4a-9923-0a4cb9a92ebf",
+          "source_id": "failing_ad2b47",
           "job": "test.fake_filing",
           "params": {},
           "window_start": null,
@@ -141,19 +141,20 @@
           "status": "failed",
           "attempt": 1,
           "started_at": null,
-          "finished_at": "2026-10-05T13:03:22.158255Z",
+          "finished_at": "2026-10-05T14:19:20.847988Z",
           "rows_inserted": 0,
           "rows_unchanged": 0,
+          "rows_conflicted": 0,
           "raw_payload_keys": [],
           "error_class": null,
           "error_message": null,
-          "created_at": "2026-10-05T13:08:22.158255Z"
+          "created_at": "2026-10-05T14:24:20.847988Z"
         },
         "open_dead_letters": 0
       },
       {
-        "id": "fresh_8ead21",
-        "name": "fresh_8ead21",
+        "id": "fresh_ad2b47",
+        "name": "fresh_ad2b47",
         "url": "https://example.com",
         "tier": 1,
         "license_status": "public",
@@ -165,10 +166,10 @@
         "rate_limit_burst": 1,
         "topics": [],
         "freshness": "fresh",
-        "last_success_at": "2026-10-05T12:58:22.158255Z",
+        "last_success_at": "2026-10-05T14:14:20.847988Z",
         "last_run": {
-          "id": "9273da1b-9fb0-4ceb-a4ed-9e7fe7399187",
-          "source_id": "fresh_8ead21",
+          "id": "49ad2b87-41f2-429b-8f00-a6ec7f7548fc",
+          "source_id": "fresh_ad2b47",
           "job": "test.fake_filing",
           "params": {},
           "window_start": null,
@@ -176,19 +177,20 @@
           "status": "succeeded",
           "attempt": 1,
           "started_at": null,
-          "finished_at": "2026-10-05T12:58:22.158255Z",
+          "finished_at": "2026-10-05T14:14:20.847988Z",
           "rows_inserted": 0,
           "rows_unchanged": 0,
+          "rows_conflicted": 0,
           "raw_payload_keys": [],
           "error_class": null,
           "error_message": null,
-          "created_at": "2026-10-05T13:08:22.158255Z"
+          "created_at": "2026-10-05T14:24:20.847988Z"
         },
         "open_dead_letters": 0
       },
       {
-        "id": "off_8ead21",
-        "name": "off_8ead21",
+        "id": "off_ad2b47",
+        "name": "off_ad2b47",
         "url": "https://example.com",
         "tier": 1,
         "license_status": "public",
@@ -205,8 +207,8 @@
         "open_dead_letters": 0
       },
       {
-        "id": "stale_8ead21",
-        "name": "stale_8ead21",
+        "id": "stale_ad2b47",
+        "name": "stale_ad2b47",
         "url": "https://example.com",
         "tier": 1,
         "license_status": "public",
@@ -218,10 +220,10 @@
         "rate_limit_burst": 1,
         "topics": [],
         "freshness": "stale",
-        "last_success_at": "2026-10-05T11:08:22.158255Z",
+        "last_success_at": "2026-10-05T12:24:20.847988Z",
         "last_run": {
-          "id": "8a832654-2902-4c82-8970-db200acfb422",
-          "source_id": "stale_8ead21",
+          "id": "7f230816-787e-4cda-a951-3ec8ed588e75",
+          "source_id": "stale_ad2b47",
           "job": "test.fake_filing",
           "params": {},
           "window_start": null,
@@ -229,13 +231,14 @@
           "status": "succeeded",
           "attempt": 1,
           "started_at": null,
-          "finished_at": "2026-10-05T11:08:22.158255Z",
+          "finished_at": "2026-10-05T12:24:20.847988Z",
           "rows_inserted": 0,
           "rows_unchanged": 0,
+          "rows_conflicted": 0,
           "raw_payload_keys": [],
           "error_class": null,
           "error_message": null,
-          "created_at": "2026-10-05T13:08:22.158255Z"
+          "created_at": "2026-10-05T14:24:20.847988Z"
         },
         "open_dead_letters": 0
       },
@@ -253,29 +256,30 @@
         "rate_limit_burst": 100,
         "topics": [],
         "freshness": null,
-        "last_success_at": "2026-10-05T13:08:22.136681Z",
+        "last_success_at": "2026-10-05T14:24:20.832378Z",
         "last_run": {
-          "id": "76635c46-23ed-4e42-82e0-2a7b74aa4b3c",
+          "id": "21e5ffa9-40d5-4087-87da-09c2a2d45267",
           "source_id": "test_source",
           "job": "test.fake_filing",
           "params": {
             "value": "7",
-            "entity_id": "3300e249-38a4-44ec-8aa3-6515e7cbc99b"
+            "entity_id": "8e4408a2-afe5-43bf-ab06-a039a0ec5173"
           },
           "window_start": null,
           "window_end": null,
           "status": "succeeded",
           "attempt": 1,
-          "started_at": "2026-10-05T13:08:22.118436Z",
-          "finished_at": "2026-10-05T13:08:22.136681Z",
+          "started_at": "2026-10-05T14:24:20.822480Z",
+          "finished_at": "2026-10-05T14:24:20.832378Z",
           "rows_inserted": 1,
           "rows_unchanged": 0,
+          "rows_conflicted": 0,
           "raw_payload_keys": [
-            "raw/test_source/6c/6c7c6a261ba56c87d700a26cef209f2a650cab679dbe79890c96c5a99ee017d3"
+            "raw/test_source/a5/a586e0b47c017359a89917724e511bbf6ec82748b7668babb522edc7b3cc3240"
           ],
           "error_class": null,
           "error_message": null,
-          "created_at": "2026-10-05T13:08:22.113152Z"
+          "created_at": "2026-10-05T14:24:20.819276Z"
         },
         "open_dead_letters": 1
       }

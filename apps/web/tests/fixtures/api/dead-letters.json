@@ -1,20 +1,20 @@
 {
-  "recorded_at": "2026-10-05T13:08:22.220962+00:00",
+  "recorded_at": "2026-10-05T14:24:20.897441+00:00",
   "recorded_from": "integration test database via FastAPI TestClient (tests/integration/test_ingestion.py)",
   "endpoint": "/dead-letters",
   "response": [
     {
-      "id": "ac91c693-e4e9-4cf1-ae2a-22ba819265bd",
-      "ingestion_run_id": "b14becea-298b-42a3-b5cd-69f9dae6a2fa",
+      "id": "d5207d05-1612-49f4-b811-f1f791b0829f",
+      "ingestion_run_id": "bfb2ea36-da4c-437e-b5a3-c37554a649a5",
       "source_id": "test_source",
       "job": "test.always_fails",
       "params": {
-        "attempt": "be8007f649aa43a0a022b375987215f8"
+        "attempt": "97ae3034a1904f10975e46f0193fb59e"
       },
       "attempts": 3,
       "error_class": "RuntimeError",
       "error_message": "provider returned 500 for https://example.com/x?api_key=***",
-      "failed_at": "2026-10-05T13:08:20.775834Z",
+      "failed_at": "2026-10-05T14:24:19.516607Z",
       "resolved_at": null,
       "resolution": null
     }

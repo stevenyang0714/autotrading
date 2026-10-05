@@ -11,10 +11,11 @@ sources:
     url: https://www.sec.gov/search-filings/edgar-application-programming-interfaces
     tier: 1
     license_status: public
-    access_status: pending_review   # needs SEC_USER_AGENT (name + email) in .env
+    note: Free public API; fair access policy requires a User-Agent with name and email.
+    access_status: active           # SEC_USER_AGENT (name + email) set in .env, 2026-10-05
     update_cadence: per_filing
-    freshness_sla_seconds: 172800   # 2 days
-    enabled: false                  # M0.5
+    freshness_sla_seconds: 172800   # 2 days; refreshed daily at 10:00 SGT (M0.5)
+    enabled: true                   # M0.5
     priority: 10
     topics: [filings, fundamentals, corporate_actions]
     rate_limit_per_second: 5        # errata E8: well under SEC's 10 requests/second

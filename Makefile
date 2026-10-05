@@ -15,7 +15,7 @@ export NEXT_TELEMETRY_DISABLED := 1
 export COREPACK_ENABLE_DOWNLOAD_PROMPT := 0
 
 .DEFAULT_GOAL := help
-.PHONY: help setup up down ps logs migrate gen test test-unit test-integration e2e lint lint-api lint-web fmt dev-web
+.PHONY: help setup up down ps logs migrate sec-refresh gen test test-unit test-integration e2e lint lint-api lint-web fmt dev-web
 
 help: ## Show available targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  %-18s %s\n", $$1, $$2}'
@@ -39,6 +39,9 @@ logs: ## Follow service logs (filter with SERVICE=api)
 migrate: ## Apply Alembic migrations and sync config/sources.yaml (inside the api container)
 	$(COMPOSE) exec -T api alembic upgrade head
 	$(COMPOSE) exec -T api python -m autotrading.config_sync
+
+sec-refresh: ## Queue an SEC EDGAR refresh now (tickers, then filings + XBRL facts per company)
+	$(COMPOSE) exec -T api python -m autotrading.jobs.sec_refresh
 
 gen: ## Regenerate apps/web/src/generated (glossary + API types) and apps/web/openapi.json
 	cd $(API) && uv run python -m autotrading.openapi_dump ../web/openapi.json

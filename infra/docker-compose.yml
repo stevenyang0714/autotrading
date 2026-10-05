@@ -20,6 +20,7 @@ x-app-env: &app-env
   S3_SECRET_KEY: ${S3_SECRET_KEY:-minioadmin}
   S3_BUCKET: ${S3_BUCKET:-raw-payloads}
   LIVE_TRADING_ENABLED: ${LIVE_TRADING_ENABLED:-false}
+  SEC_USER_AGENT: ${SEC_USER_AGENT:-}
   CONFIG_DIR: /app/config
   GLOSSARY_PATH: /app/glossary/glossary_seed.yaml
 

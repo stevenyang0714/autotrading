@@ -99,12 +99,42 @@ Refines ADR-007, which did not define what `known_at` is compared with.
 - **Our own correction** (e.g. a parser error):
   - The wrong row gets `superseded_at` (the only permitted UPDATE), and a new row is stored with `revision_reason = correction`.
   - An earlier `system_time` reproduces what this database said before the fix.
-- **Unchanged values:** a repeated value (e.g. a prior-year comparative repeated in a later 10-K) is not a new version. Versions must be ingested in publication order; otherwise the repository raises `FactConflictError`.
+- **Unchanged values:** a repeated value (e.g. a prior-year comparative repeated in a later 10-K) is not a new version. Versions must be ingested in publication order; otherwise the repository raises `FactConflictError`. ADR-013 refines how re-read and conflicting values are classified.
 - **Date-only publication times** are stored as the end of that day in America/New_York with `published_at_precision = day`, so a backtest never sees a same-day release early. Exact timestamps use precision `exact`.
 - **System time comes from the database clock:** triggers set `recorded_at` on insert and `superseded_at` on supersede. Application code cannot backdate either.
 - **Known gaps:**
   - A source withdrawing an observation (no replacement value) cannot be represented yet; design a tombstone when a source first needs it.
   - Backtests and signals must record the `(known_at, system_time)` pair they used (Phase 2).
+
+## ADR-013 SEC EDGAR ingestion rules — Accepted (2026-10-05, approved by Steven with the M0.5 plan)
+Applies ADR-007 and ADR-012 to SEC data (M0.5). Code: `apps/api/src/autotrading/adapters/sec/`.
+- **Publication time is the EDGAR acceptance time, in true UTC.**
+  - Checked on 2026-10-05: `acceptanceDateTime` in the submissions JSON is real UTC, not Eastern time labelled as UTC. EDGAR index pages show Eastern time, for example AAPL 8-K 0000320193-26-000018: JSON `2026-07-30T20:30:28.000Z`, index page "2026-07-30 16:30:28". The plan's working assumption ("ET labelled as UTC") was wrong.
+  - Acceptances after 17:30 ET get the next business day as filing date (about 20% of filings), so the acceptance time, not the filing date, is when the filing became public.
+  - Fallback: an acceptance of exactly `00:00:00Z` is a date-only placeholder (4 of 192,986 filings, old JPM FWPs), and a missing one has no time. Both use the end of the filing date in New York, precision `day` (ADR-012).
+  - Every XBRL value takes the acceptance time of the filing (accession) that reported it; `source_url` is that filing's EDGAR index page; `raw_payload_sha256` is the company-facts response.
+- **Concepts:** `concepts.py` maps 14 metrics to us-gaap concepts in priority order. For each filing and period, the highest-priority concept that filing reports wins, and the concept is stored in `financial_facts.source_concept`.
+  - Only concepts with the same meaning are listed. Three fallbacks are wider, and the glossary caveats name them: `LongTermDebtAndCapitalLeaseObligations(Current)` includes finance leases, `PaymentsToAcquireProductiveAssets` includes intangibles, and `AllocatedShareBasedCompensationExpense` is used when `ShareBasedCompensation` is absent.
+  - A metric a company does not report stays unavailable and is never approximated. Examples: gross profit for Alphabet, Meta and JPMorgan; operating income and capex for JPMorgan.
+  - Only unit-consistent values are read: USD, shares, USD/shares. EPS tagged `pure` is ignored.
+- **Total debt is not stored.** Its components are stored as reported: `long_term_debt_noncurrent`, `long_term_debt_current` and `commercial_paper`. Phase 1 derives total debt as a defined, glossary-backed metric.
+- **Versions** (refines ADR-012, `domain/facts.py: decide_version`):
+  - **Unchanged:** an incoming value equal to the version known at its own publication time. Re-reading a full history after a restatement is therefore not a conflict.
+  - **New version:** a later, different value. It is stored as a restatement.
+  - **Conflict:** two different values from one publication (one filing, one period), or a new value older than the newest stored version. The batch path stores none of the disagreeing values, keeps the current version and counts the conflict in `ingestion_runs.rows_conflicted`, so the run still succeeds. The single-fact `insert` still raises.
+  - **Stock splits:** splits make later filings report different per-share values and share counts for past periods (Alphabet 20-for-1 in 2022, O'Reilly 15-for-1 in 2025). These are stored as restatement versions, as reported. Phase 1 per-share analytics must handle split adjustment explicitly.
+- **Refresh:**
+  - **Schedule:** daily at 10:00 SGT (APScheduler cron). `make sec-refresh` queues the same runs manually.
+  - **Chain:** a `sec.tickers` run comes first. Its Dramatiq `on_success` callback queues one `sec.company` run per universe equity.
+  - **Windows:** the window is part of the idempotency key. A scheduled run uses the Singapore calendar day, so a repeated trigger is skipped. A manual run uses the start of the day to now, so it always runs.
+  - **Cost of one refresh:** about 60 requests at no more than 5 per second, roughly 30 seconds in total. Every run fetches all filing pages; JPMorgan alone lists about 168k filings, mostly 424B2 note supplements.
+  - **Storage:** raw responses are content-addressed, so unchanged pages are stored once. Conditional requests (If-Modified-Since) are a later optimization.
+- **Filings index:** every form is stored, append-only, one row per (entity, accession).
+- **Identifiers:**
+  - `valid_from` is when this platform first saw a ticker/CIK mapping. SEC's ticker file has no history.
+  - When a ticker moves to another CIK, its old period is closed.
+  - When a company's old ticker disappears from the file, its instrument keeps its identity and gets the new ticker (a rename).
+- **Known gap: XOM.** On 2026-07-01, Exxon Mobil moved under a new holding company (8-K12B). SEC now maps XOM to ExxonMobil Holdings Corp (CIK 0002115436), which so far has only one XBRL filing. The history before the reorganization sits under Exxon Mobil Corp (CIK 0000034088) and is not linked. Linking needs a predecessor/successor relation between entities. Proposed for M0.5b or Phase 1, after Steven's approval.
 
 ---
 

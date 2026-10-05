@@ -49,6 +49,10 @@ class Settings(BaseSettings):
     # Glossary registry seed. Containers mount docs/glossary at /app/glossary.
     glossary_path: Path | None = None
 
+    # SEC fair access policy: "Name email@example.com", sent as the User-Agent of every SEC
+    # request (errata E8). Personal data, so typed as a secret and never logged.
+    sec_user_agent: SecretStr | None = None
+
     # Ingestion retries (Dramatiq, exponential backoff); after the last one -> dead letter.
     ingestion_max_retries: int = 5
     ingestion_min_backoff_ms: int = 15_000

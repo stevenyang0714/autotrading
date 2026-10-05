@@ -1,6 +1,8 @@
 """FinancialFact contract (02 §28, errata E1) and fact-version semantics (ADR-012)."""
 
-from datetime import date
+from collections.abc import Sequence
+from dataclasses import dataclass
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Literal, Self
 from uuid import UUID
@@ -32,6 +34,8 @@ class FinancialFactIn(BaseModel):
     filed_at: AwareDatetime | None = None
     accession_id: str | None = None
     vintage: str | None = None
+    # Raw concept the value was read from, e.g. "us-gaap:NetIncomeLoss" (traceability).
+    source_concept: str | None = None
     provenance: Provenance
 
     @model_validator(mode="after")
@@ -43,3 +47,66 @@ class FinancialFactIn(BaseModel):
     def fact_key(self) -> FinancialFactKey:
         """Identity of the logical fact across versions: entity, metric, unit and period."""
         return (self.entity_id, self.metric_id, self.unit, self.period_start, self.period_end)
+
+
+@dataclass(frozen=True)
+class StoredVersion[RefT]:
+    """A current (not superseded) version of one fact key, as the version check sees it."""
+
+    ref: RefT
+    published_at: datetime
+    value: Decimal
+
+
+@dataclass(frozen=True)
+class Unchanged[RefT]:
+    """The value was already known at that publication time; nothing to write."""
+
+    version: StoredVersion[RefT]
+
+
+@dataclass(frozen=True)
+class NewVersion[RefT]:
+    """Write a new version; `supersedes` is the version it restates (None for the first)."""
+
+    supersedes: StoredVersion[RefT] | None
+
+
+@dataclass(frozen=True)
+class Conflict:
+    reason: str
+
+
+type VersionDecision[RefT] = Unchanged[RefT] | NewVersion[RefT] | Conflict
+
+
+def decide_version[RefT](
+    versions: Sequence[StoredVersion[RefT]], published_at: datetime, value: Decimal
+) -> VersionDecision[RefT]:
+    """Classify an incoming value against the current versions of its fact key.
+
+    `versions` must be ordered by publication time (ties: storage order). Re-reading old
+    filings is harmless: a value equal to the version known at its own publication time is
+    unchanged, even after a later restatement. Two values for one publication, or a value
+    published before the newest stored version, are conflicts: facts are stored in
+    publication order (ADR-012).
+    """
+    prior: StoredVersion[RefT] | None = None
+    newer_exists = False
+    for version in versions:
+        if version.published_at <= published_at:
+            prior = version
+        else:
+            newer_exists = True
+    if prior is not None and prior.value == value:
+        return Unchanged(prior)
+    if prior is not None and prior.published_at == published_at:
+        return Conflict(
+            f"two values for one publication at {published_at.isoformat()}: "
+            f"{prior.value} stored, {value} received"
+        )
+    if newer_exists:
+        return Conflict(
+            f"value published at {published_at.isoformat()} is older than the newest stored version"
+        )
+    return NewVersion(prior)

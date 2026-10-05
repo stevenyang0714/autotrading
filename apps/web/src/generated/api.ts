@@ -295,6 +295,8 @@ export interface components {
             };
             /** Raw Payload Keys */
             raw_payload_keys: string[];
+            /** Rows Conflicted */
+            rows_conflicted: number;
             /** Rows Inserted */
             rows_inserted: number;
             /** Rows Unchanged */
