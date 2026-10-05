@@ -10,7 +10,7 @@ from autotrading.infra.heartbeat import Component, probe_heartbeat
 from autotrading.infra.redis_client import make_redis
 from autotrading.settings import get_settings
 
-COMPONENTS: dict[str, Component] = {"worker": "worker", "scheduler": "scheduler"}
+COMPONENTS: dict[str, Component] = {"worker": "worker", "scheduler": "scheduler", "queue": "queue"}
 
 
 def main(argv: list[str]) -> int:

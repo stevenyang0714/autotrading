@@ -14,7 +14,7 @@ class FakeChecker:
         background: dict[str, ProbeResult] | None = None,
     ) -> None:
         self._core = core or {"database": OK, "redis": OK, "object_store": OK}
-        self._background = background or {"worker": OK, "scheduler": OK}
+        self._background = background or {"worker": OK, "scheduler": OK, "queue": OK}
 
     def core(self) -> dict[str, ProbeResult]:
         return self._core
@@ -44,7 +44,14 @@ def test_all_green() -> None:
     assert body["status"] == "ok"
     components = body["components"]
     assert isinstance(components, dict)
-    assert set(components) == {"database", "redis", "object_store", "worker", "scheduler"}
+    assert set(components) == {
+        "database",
+        "redis",
+        "object_store",
+        "worker",
+        "scheduler",
+        "queue",
+    }
 
 
 def test_core_dependency_down_returns_503() -> None:

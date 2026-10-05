@@ -62,7 +62,7 @@ Defined in the root `Makefile` (`make help` lists them). Keep this list current:
 - `make test` — full suite: `make test-unit` (pytest + vitest, no stack) and `make test-integration` (needs `make up`; fails, never skips, when the stack is down). Schema tests run in throwaway `autotrading_*_test` databases, never the dev database.
 - `make lint` — ruff, ruff format --check, mypy (strict on `domain/`), eslint, tsc
 - `make fmt` — auto-format and auto-fix
-- `make migrate` — apply Alembic migrations inside the api container (creates the schema; run after `make up` on a fresh volume)
+- `make migrate` — apply Alembic migrations and sync `config/sources.yaml` into the Source Registry, inside the api container (idempotent; run after `make up`)
 - New migration: hand-write it in `apps/api/migrations/versions/`, update `db/models.py`, and keep `alembic check` clean (tested). Facts are written only through `repositories/` (ADR-007, ADR-012).
 - `make dev-web` — Next.js dev server on http://127.0.0.1:3000
 - Health: `curl http://127.0.0.1:8000/health` (dependencies) and `/health/live` (process only)

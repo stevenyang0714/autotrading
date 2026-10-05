@@ -20,6 +20,11 @@ x-app-env: &app-env
   S3_SECRET_KEY: ${S3_SECRET_KEY:-minioadmin}
   S3_BUCKET: ${S3_BUCKET:-raw-payloads}
   LIVE_TRADING_ENABLED: ${LIVE_TRADING_ENABLED:-false}
+  CONFIG_DIR: /app/config
+
+# Repo config (sources.yaml, universe.yaml), read-only inside the app containers.
+x-app-volumes: &app-volumes
+  - ./config:/app/config:ro
 
 x-app-depends: &app-depends
   db:
@@ -87,6 +92,7 @@ services:
     build: apps/api
     image: autotrading-api:local
     environment: *app-env
+    volumes: *app-volumes
     ports:
       - "127.0.0.1:8000:8000"
     depends_on: *app-depends
@@ -102,6 +108,7 @@ services:
     pull_policy: never
     command: ["dramatiq", "autotrading.jobs.actors", "--processes", "1", "--threads", "2"]
     environment: *app-env
+    volumes: *app-volumes
     depends_on: *app-depends
     healthcheck:
       # Healthy once it has processed a heartbeat job from the scheduler.
@@ -117,6 +124,7 @@ services:
     pull_policy: never
     command: ["python", "-m", "autotrading.jobs.scheduler"]
     environment: *app-env
+    volumes: *app-volumes
     depends_on: *app-depends
     healthcheck:
       test: ["CMD", "python", "-m", "autotrading.jobs.healthcheck", "scheduler"]

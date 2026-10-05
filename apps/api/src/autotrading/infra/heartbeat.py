@@ -1,8 +1,10 @@
 """Liveness heartbeats for background components, stored as expiring Redis keys.
 
-The scheduler writes its own heartbeat and enqueues the `heartbeat` actor; the worker
-writes its heartbeat when it runs that actor. A fresh worker key therefore proves the
-whole scheduler -> queue -> worker path works.
+- worker: written by a thread inside the worker process (alive even when idle).
+- scheduler: written by the scheduler on every tick.
+- queue: written by the `heartbeat` actor that the scheduler enqueues; a fresh key proves the
+  whole scheduler -> Redis queue -> worker path works.
+Each failure therefore shows up on its own component (QE 2026-10-05 finding 1).
 """
 
 from datetime import UTC, datetime
@@ -10,7 +12,7 @@ from typing import Literal, Protocol
 
 from autotrading.infra.probes import ProbeResult, run_probe
 
-Component = Literal["worker", "scheduler"]
+Component = Literal["worker", "scheduler", "queue"]
 
 HEARTBEAT_INTERVAL_SECONDS = 30
 HEARTBEAT_TTL_SECONDS = 90
