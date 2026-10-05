@@ -126,7 +126,12 @@ Delivered with M0.4: glossary registry (`glossary_terms`, migration 0003, synced
 - Live refresh on 2026-10-06: 11/11 series succeeded in about 52 s, 0 conflicts. Six point-in-time values match FRED's own vintage queries, including GDPC1 Q2 2026 at 24,270.599 as known on 2026-08-15 and 24,408.011 today.
 - Daily series are read in real-time windows under FRED's limit of 2,000 vintage dates (ADR-015).
 - BAMLH0A0HYM2 history starts 2023-10-06 (ICE licensing on FRED).
-- Charts are M0.9.
+- Added on this branch at Steven's request (ADR-016):
+  - home Overview dashboard: six macro blocks with ten computed indicators, SVG charts and rule-based insights that cite their vintages;
+  - Chinese hints for every glossary term;
+  - per-page data freshness, with the next scheduled refresh;
+  - a live Build Progress page.
+- The overview pulls the macro charts of M0.9 forward. M0.9 keeps the larger series charts with a vintage toggle, the news feed and the audit log.
 
 ## M0.7 Market data adapter (PriceProvider)
 **Build**

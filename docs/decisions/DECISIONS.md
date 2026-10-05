@@ -182,6 +182,43 @@ Applies ADR-007 and ADR-012 to macro series (M0.6). Code: `apps/api/src/autotrad
   - ICE BofA series (BAMLH0A0HYM2) are limited by ICE licensing to about the last three years on FRED (from 2023-10-06 at first ingest).
   - ICE and Cboe series carry third-party copyright: personal use only (ADR-001).
 
+## ADR-016 Overview dashboard, Chinese hints, freshness and build progress — Accepted (2026-10-06, approved by Steven with the M0.6 additions plan)
+Added on the M0.6 branch at Steven's request. The overview pulls parts of M0.9 forward: charts, and the home screen as the first working dashboard.
+- **Computed indicators:**
+  - Ten indicators are pure functions in `domain/indicators.py`:
+    - CPI and core PCE inflation over 12 months;
+    - payroll change and prior-month revision;
+    - the Sahm rule indicator;
+    - annualized real GDP growth;
+    - the real fed funds rate;
+    - the yield curve state and streak;
+    - the HY spread percentile and the 1-year VIX percentile.
+  - Each has a complete glossary term and a METRICS registration (methodology 0.1.0).
+  - Inputs are values known at the chosen time (`as_of`), so a past date reproduces the dashboard as it could be computed then.
+  - Streaks and the HY percentile read the full stored history. A streak that reaches the first stored observation is reported as such ("throughout the data stored").
+- **Insights are rules, not inference:**
+  - Each block's sentence is a template filled with computed values.
+  - Labels come from thresholds stated in the glossary: the Fed's 2% target, the 0.50 pp Sahm trigger, and the 25th/75th percentile bands.
+  - Every sentence lists the observations and vintages it used. No language model writes them (ADR-009 stays proposed).
+  - They are not forecasts or advice.
+- **Charts:**
+  - Server-rendered SVG sparklines, with no chart library and no client JavaScript.
+  - Each `<figure>` carries `data-metric` for its term, so its axis labels count as explained numbers.
+- **Chinese hints:**
+  - `docs/glossary/glossary_zh.yaml` holds a name and a one-line hint for every complete term (tested).
+  - They are presentation only: not part of the 17 fields of 02 §22 and not in the content hash, so editing a hint needs no methodology_version bump.
+  - Shown in tooltips, and as small labels via `<Metric zh>`. English stays primary.
+- **Freshness:**
+  - `ingestion/schedule.py` `SCHEDULES` is the single source of refresh times; the scheduler reads it.
+  - `/data-health` reports `next_refresh_at`.
+  - Pages show, per source, the freshness state, last refresh, next refresh and how old the newest value shown is.
+  - Date-only releases count from the end of their New York day (ADR-012), so a release can be "not yet public" for part of the next Singapore morning.
+- **Build progress:**
+  - `/system/progress` parses `docs/` (milestone checkboxes, ROADMAP phases, STATUS, open decisions) on every request.
+  - Containers mount `docs/` read-only, so edits show without a rebuild.
+  - A milestone counts as done only when all checks are ticked and STATUS no longer marks it pending.
+- **Not included: intraday data.** It needs the M0.7 price feed: Steven decides OD-1 and checks OD-9 (Alpaca account and data keys) first.
+
 ---
 
 ## Open decisions (owner: Steven)
