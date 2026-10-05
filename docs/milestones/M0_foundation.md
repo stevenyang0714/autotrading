@@ -20,9 +20,9 @@ Work one sub-milestone at a time, in order. Each one ends with the Build Output 
 - Fill in the Commands section of CLAUDE.md.
 
 **Acceptance**
-- [ ] `make up` brings up all services; `/health` returns all green.
-- [ ] `make test` and `make lint` pass locally and in CI.
-- [ ] Web shell loads; all 15 nav entries present; no numeric placeholders anywhere.
+- [x] `make up` brings up all services; `/health` returns all green.
+- [x] `make test` and `make lint` pass locally and in CI.
+- [x] Web shell loads; all 15 nav entries present; no numeric placeholders anywhere.
 
 ## M0.2 Core schema, canonical registries, bitemporal facts
 **Build**
@@ -34,10 +34,10 @@ Work one sub-milestone at a time, in order. Each one ends with the Build Output 
 - `audit_log` (append-only): actor, action, object type/id, before/after hash, timestamp.
 
 **Acceptance**
-- [ ] Migrations upgrade and downgrade cleanly on an empty DB.
-- [ ] Test: attempting to change S1–S12 or family IDs fails.
-- [ ] Test: UPDATE/DELETE on a fact table is rejected; a correction creates a new version and `as_of()` returns the old value for an earlier `known_at`.
-- [ ] Test: inserting an observation without required provenance fields fails validation.
+- [x] Migrations upgrade and downgrade cleanly on an empty DB.
+- [x] Test: attempting to change S1–S12 or family IDs fails.
+- [x] Test: UPDATE/DELETE on a fact table is rejected; a correction creates a new version and `as_of()` returns the old value for an earlier `known_at`. Per ADR-012 this holds for source-side corrections (restatements/revisions, new `published_at`); our own corrections are visible at the old value only for an earlier `system_time`. Both are tested.
+- [x] Test: inserting an observation without required provenance fields fails validation.
 
 ## M0.3 Ingestion framework
 **Build**

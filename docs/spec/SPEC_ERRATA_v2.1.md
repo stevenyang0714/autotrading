@@ -81,3 +81,9 @@ A deployed instance must never be reachable without authentication. Until a depl
 01 §22 requires a `?` on dashboard labels; 02 §22 and CLAUDE.md list metrics, scores, badges, statuses, risk measures and strategies only. Resolution (approved by Steven, 2026-10-04): use the stricter 01 scope.
 - The 15 dashboard labels (02 §21) and the `planned_phase` status label ("Planned — Phase N") each get a glossary entry.
 - The entries and the switch to `<Metric>` / glossary rendering land in M0.4. In M0.1 the nav and planned pages render plain text, because the glossary component does not exist yet.
+
+## E14. Strategy registry wording and fact-table timestamps
+
+Approved by Steven, 2026-10-05 (M0.2 plan).
+- **Strategy unlock conditions:** 02 §18 (the strategy registry) and 02 §30 (the permission matrix) word the same conditions slightly differently, e.g. S2 "OOS + event timing + cost" vs "OOS + event-timing + costs". The `strategies` table uses the §18 wording. The meaning is the same; §30 is treated as an abbreviation.
+- **Fact-table timestamps:** E1 requires `created_at`, `updated_at` and `version` on every object; ADR-007 names system time `recorded_at` / `superseded_at`. On append-only fact tables, `created_at` ≡ `recorded_at`, the only possible update is setting `superseded_at` (ADR-012), and `version` numbers the versions of one fact key. No duplicate columns are added. Mutable tables (sources, entities, instruments, identifiers) carry `created_at`, `updated_at` and `version`, maintained by a trigger.

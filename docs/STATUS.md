@@ -4,12 +4,14 @@ Update at the end of every session (Claude Code) — newest entry on top of the 
 
 ## Current
 - Phase: 0 — Foundation
-- Sub-milestone: M0.1 Repo scaffold and local stack — LOCAL ACCEPTANCE PASSED; CI run pending (needs the GitHub repo)
-- Blockers: none in code. User actions: set git identity, publish the private GitHub repo.
+- Sub-milestone: M0.2 Core schema, canonical registries, bitemporal facts — LOCAL ACCEPTANCE PASSED; PR + CI pending
+- Next: M0.3 Ingestion framework (loads `config/sources.yaml` into `sources`, adds `ingestion_runs` and links facts via `ingestion_run_id` / `raw_payload_sha256`)
+- Blockers: none
 - Open decisions due soon: OD-1 (before M0.7), OD-9 (before M0.7)
 
 ## Log
 | Date | Sub-milestone | Result | Notes / known gaps |
 |---|---|---|---|
-| 2026-10-05 | M0.1 | Local acceptance passed. `make up`: all 7 services healthy. `/health`: 200, all 5 components ok (timescaledb 2.30.2 available, bucket exists, worker + scheduler heartbeats fresh). `make test`: pytest 17 unit + 3 integration, vitest 25. `make lint` green. `make migrate` runs (no revisions yet). Redis stopped → `/health` 503 naming redis; recovers on restart. All published ports bound to 127.0.0.1. Web shell checked at desktop and mobile widths: 15 nav entries, no numbers outside "Planned — Phase N" | Repo moved out of iCloud to `~/Developer/autotrading`. ADR-011 (Silo replaces MinIO), errata E13 (dashboard labels in glossary, M0.4), dashboard → phase map in ROADMAP. Fixed during verification: dev-only type stubs were imported at runtime (moved under TYPE_CHECKING); Make 3.81 could not find the per-user Docker CLI (resolved explicitly). Pending: CI run on GitHub |
+| 2026-10-05 | M0.2 | Local acceptance passed. Baseline migration 0001: registries (families 1–10, S1–S12, tiers 1–4) seeded and immutable; `sources`, `entities`, `instruments`, `identifiers` (exclusion constraints on validity periods, per namespace); `financial_facts` append-only bitemporal; `audit_log` via triggers. Tests: pytest 51 unit + 34 integration (migration up/down/up on an empty DB, `alembic check` clean, registry immutability, fact UPDATE/DELETE/TRUNCATE refused, restatement vs `known_at`, own correction vs `system_time`, date-only publication, provenance NOT NULL, identifier overlap, audit). `make lint` green. Dev DB migrated to 0001; `/health` all ok | ADR-012 (knowledge time = `published_at`; system time from DB clock; date-only → end of NY day), errata E14 (§18 wording; fact timestamps). CI: runner pinned to ubuntu-24.04, uv cache glob fixed. Known gaps: source withdrawal (tombstone) not modelled; sources table empty until M0.3; no UI change |
+| 2026-10-05 | M0.1 | Done. PR #1 merged; CI green on the PR and on `main`. `make up`: 7 services healthy; `/health` all ok; `make test` and `make lint` green; Redis-down → 503; ports on 127.0.0.1; web shell checked at desktop and mobile widths | Repo moved out of iCloud to `~/Developer/autotrading`. ADR-011 (Silo replaces MinIO), errata E13 (dashboard labels in glossary, M0.4), dashboard → phase map in ROADMAP |
 | 2026-10-04 | Kit created | Specs v2 + errata v2.1 + ADRs + M0 plan | Ready for M0.1 |
