@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { SeriesView } from "@/components/macro/SeriesView";
-import { loadSeriesObservations } from "@/lib/api";
+import { loadSeriesObservations, loadSourceHealth } from "@/lib/api";
 import { endOfDaySgt } from "@/lib/time";
 
 // Point-in-time data: always read live, never serve a cached page.
@@ -21,7 +21,10 @@ export default async function SeriesPage({ params, searchParams }: PageProps<"/m
   const knownOn = typeof query.known_on === "string" && query.known_on ? query.known_on : undefined;
   const knownAt = knownOn ? endOfDaySgt(knownOn) : null;
 
-  const result = await loadSeriesObservations(series, knownAt ?? undefined);
+  const [result, sources] = await Promise.all([
+    loadSeriesObservations(series, knownAt ?? undefined),
+    loadSourceHealth(),
+  ]);
   if (result.status === "not_found") notFound();
   if (result.status === "unavailable") {
     return (
@@ -43,6 +46,7 @@ export default async function SeriesPage({ params, searchParams }: PageProps<"/m
       data={result.data}
       knownOn={knownAt ? knownOn : undefined}
       invalidKnownOn={Boolean(knownOn) && knownAt === null}
+      sources={sources}
     />
   );
 }

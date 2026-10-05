@@ -123,3 +123,47 @@ export async function loadSeriesObservations(
     return { status: "unavailable" };
   }
 }
+
+// ---------- overview, freshness, progress (M0.6, ADR-016) ----------
+
+export type Overview = components["schemas"]["Overview"];
+export type OverviewBlock = components["schemas"]["Block"];
+export type OverviewIndicator = components["schemas"]["Indicator"];
+export type OverviewChart = components["schemas"]["Chart"];
+export type Progress = components["schemas"]["Progress"];
+
+/** The macro dashboard as known at `knownAt` (ISO timestamp; default now), or null. */
+export async function loadOverview(knownAt?: string): Promise<Overview | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/overview", {
+      params: { query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Source registry with freshness and next scheduled refresh, or null. */
+export async function loadSourceHealth(): Promise<SourceHealth[] | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/data-health", { cache: "no-store" });
+    return data?.sources ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Build progress parsed from the project documents, or null. */
+export async function loadProgress(): Promise<Progress | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/progress", { cache: "no-store" });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}

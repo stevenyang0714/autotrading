@@ -23,13 +23,15 @@ describe("Nav", () => {
     );
   });
 
-  it("has a System group with Data Health, Instruments and Macro", () => {
+  it("has a System group with the Phase 0 pages", () => {
     render(<Nav />);
     const links = linksIn("System");
     expect(links.map((link) => [link.textContent, link.getAttribute("href")])).toEqual([
+      ["Overview", "/"],
       ["Data Health", "/system/data-health"],
       ["Instruments", "/instruments"],
       ["Macro", "/macro"],
+      ["Build Progress", "/system/progress"],
     ]);
   });
 

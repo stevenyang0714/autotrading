@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-05T17:28:42.446229+00:00",
+  "recorded_at": "2026-10-05T18:13:35.601629+00:00",
   "recorded_from": "recorded FRED fixtures replayed into the integration test database (tests/integration/test_macro.py)",
   "endpoint": "/macro/series",
   "params": {},
@@ -32,27 +32,47 @@
         "series": {
           "id": "PCEPILFE",
           "term_id": "macro_core_pce",
-          "title": null,
-          "units": null,
-          "units_short": null,
-          "frequency": null,
-          "seasonal_adjustment_short": null,
-          "last_updated": null
+          "title": "Personal Consumption Expenditures Excluding Food and Energy (Chain-Type Price Index)",
+          "units": "Index 2017=100",
+          "units_short": "Index 2017=100",
+          "frequency": "Monthly",
+          "seasonal_adjustment_short": "SA",
+          "last_updated": "2026-09-30T12:43:28Z"
         },
-        "latest": null
+        "latest": {
+          "observation_date": "2026-08-01",
+          "period_end": "2026-08-31",
+          "value": "130.455",
+          "vintage": "2026-09-30",
+          "published_at": "2026-10-01T03:59:59.999999Z",
+          "published_at_precision": "day",
+          "source_url": "https://fred.stlouisfed.org/series/PCEPILFE",
+          "revised": false,
+          "first_release": null
+        }
       },
       {
         "series": {
           "id": "UNRATE",
           "term_id": "macro_unemployment_rate",
-          "title": null,
-          "units": null,
-          "units_short": null,
-          "frequency": null,
-          "seasonal_adjustment_short": null,
-          "last_updated": null
+          "title": "Unemployment Rate",
+          "units": "Percent",
+          "units_short": "%",
+          "frequency": "Monthly",
+          "seasonal_adjustment_short": "SA",
+          "last_updated": "2026-10-02T13:24:37Z"
         },
-        "latest": null
+        "latest": {
+          "observation_date": "2026-09-01",
+          "period_end": "2026-09-30",
+          "value": "4.2",
+          "vintage": "2026-10-02",
+          "published_at": "2026-10-03T03:59:59.999999Z",
+          "published_at_precision": "day",
+          "source_url": "https://fred.stlouisfed.org/series/UNRATE",
+          "revised": false,
+          "first_release": null
+        }
       },
       {
         "series": {
@@ -81,94 +101,167 @@
         "series": {
           "id": "GDPC1",
           "term_id": "macro_real_gdp",
-          "title": null,
-          "units": null,
-          "units_short": null,
-          "frequency": null,
-          "seasonal_adjustment_short": null,
-          "last_updated": null
+          "title": "Real Gross Domestic Product",
+          "units": "Billions of Chained 2017 Dollars",
+          "units_short": "Bil. of Chn. 2017 $",
+          "frequency": "Quarterly",
+          "seasonal_adjustment_short": "SAAR",
+          "last_updated": "2026-09-30T12:53:55Z"
         },
-        "latest": null
+        "latest": {
+          "observation_date": "2026-04-01",
+          "period_end": "2026-06-30",
+          "value": "24408.011",
+          "vintage": "2026-09-30",
+          "published_at": "2026-10-01T03:59:59.999999Z",
+          "published_at_precision": "day",
+          "source_url": "https://fred.stlouisfed.org/series/GDPC1",
+          "revised": true,
+          "first_release": {
+            "value": "24270.599",
+            "vintage": "2026-07-30"
+          }
+        }
       },
       {
         "series": {
           "id": "FEDFUNDS",
           "term_id": "macro_fed_funds",
-          "title": null,
-          "units": null,
-          "units_short": null,
-          "frequency": null,
-          "seasonal_adjustment_short": null,
-          "last_updated": null
+          "title": "Federal Funds Effective Rate",
+          "units": "Percent",
+          "units_short": "%",
+          "frequency": "Monthly",
+          "seasonal_adjustment_short": "NSA",
+          "last_updated": "2026-10-01T20:16:52Z"
         },
-        "latest": null
+        "latest": {
+          "observation_date": "2026-09-01",
+          "period_end": "2026-09-30",
+          "value": "3.75",
+          "vintage": "2026-10-01",
+          "published_at": "2026-10-02T03:59:59.999999Z",
+          "published_at_precision": "day",
+          "source_url": "https://fred.stlouisfed.org/series/FEDFUNDS",
+          "revised": false,
+          "first_release": null
+        }
       },
       {
         "series": {
           "id": "DGS2",
           "term_id": "macro_treasury_2y",
-          "title": null,
-          "units": null,
-          "units_short": null,
-          "frequency": null,
-          "seasonal_adjustment_short": null,
-          "last_updated": null
+          "title": "Market Yield on U.S. Treasury Securities at 2-Year Constant Maturity, Quoted on an Investment Basis",
+          "units": "Percent",
+          "units_short": "%",
+          "frequency": "Daily",
+          "seasonal_adjustment_short": "NSA",
+          "last_updated": "2026-10-02T20:16:40Z"
         },
-        "latest": null
+        "latest": {
+          "observation_date": "2026-10-01",
+          "period_end": "2026-10-01",
+          "value": "4.78",
+          "vintage": "2026-10-02",
+          "published_at": "2026-10-03T03:59:59.999999Z",
+          "published_at_precision": "day",
+          "source_url": "https://fred.stlouisfed.org/series/DGS2",
+          "revised": false,
+          "first_release": null
+        }
       },
       {
         "series": {
           "id": "DGS10",
           "term_id": "macro_treasury_10y",
-          "title": null,
-          "units": null,
-          "units_short": null,
-          "frequency": null,
-          "seasonal_adjustment_short": null,
-          "last_updated": null
+          "title": "Market Yield on U.S. Treasury Securities at 10-Year Constant Maturity, Quoted on an Investment Basis",
+          "units": "Percent",
+          "units_short": "%",
+          "frequency": "Daily",
+          "seasonal_adjustment_short": "NSA",
+          "last_updated": "2026-10-02T20:16:37Z"
         },
-        "latest": null
+        "latest": {
+          "observation_date": "2026-10-01",
+          "period_end": "2026-10-01",
+          "value": "5.24",
+          "vintage": "2026-10-02",
+          "published_at": "2026-10-03T03:59:59.999999Z",
+          "published_at_precision": "day",
+          "source_url": "https://fred.stlouisfed.org/series/DGS10",
+          "revised": false,
+          "first_release": null
+        }
       },
       {
         "series": {
           "id": "T10Y2Y",
           "term_id": "macro_curve_10y_2y",
-          "title": null,
-          "units": null,
-          "units_short": null,
-          "frequency": null,
-          "seasonal_adjustment_short": null,
-          "last_updated": null
+          "title": "10-Year Treasury Constant Maturity Minus 2-Year Treasury Constant Maturity",
+          "units": "Percent",
+          "units_short": "%",
+          "frequency": "Daily",
+          "seasonal_adjustment_short": "NSA",
+          "last_updated": "2026-10-02T21:04:27Z"
         },
-        "latest": null
+        "latest": {
+          "observation_date": "2026-10-02",
+          "period_end": "2026-10-02",
+          "value": "0.45",
+          "vintage": "2026-10-02",
+          "published_at": "2026-10-03T03:59:59.999999Z",
+          "published_at_precision": "day",
+          "source_url": "https://fred.stlouisfed.org/series/T10Y2Y",
+          "revised": false,
+          "first_release": null
+        }
       },
       {
         "series": {
           "id": "BAMLH0A0HYM2",
           "term_id": "macro_hy_oas",
-          "title": null,
-          "units": null,
-          "units_short": null,
-          "frequency": null,
-          "seasonal_adjustment_short": null,
-          "last_updated": null
+          "title": "ICE BofA US High Yield Index Option-Adjusted Spread",
+          "units": "Percent",
+          "units_short": "%",
+          "frequency": "Daily, Close",
+          "seasonal_adjustment_short": "NSA",
+          "last_updated": "2026-10-05T14:11:54Z"
         },
-        "latest": null
+        "latest": {
+          "observation_date": "2026-10-02",
+          "period_end": "2026-10-02",
+          "value": "3.1",
+          "vintage": "2026-10-02",
+          "published_at": "2026-10-03T03:59:59.999999Z",
+          "published_at_precision": "day",
+          "source_url": "https://fred.stlouisfed.org/series/BAMLH0A0HYM2",
+          "revised": false,
+          "first_release": null
+        }
       },
       {
         "series": {
           "id": "VIXCLS",
           "term_id": "macro_vix",
-          "title": null,
-          "units": null,
-          "units_short": null,
-          "frequency": null,
-          "seasonal_adjustment_short": null,
-          "last_updated": null
+          "title": "CBOE Volatility Index: VIX",
+          "units": "Index",
+          "units_short": "Index",
+          "frequency": "Daily, Close",
+          "seasonal_adjustment_short": "NSA",
+          "last_updated": "2026-10-05T13:37:34Z"
         },
-        "latest": null
+        "latest": {
+          "observation_date": "2026-10-02",
+          "period_end": "2026-10-02",
+          "value": "15.31",
+          "vintage": "2026-10-02",
+          "published_at": "2026-10-03T03:59:59.999999Z",
+          "published_at_precision": "day",
+          "source_url": "https://fred.stlouisfed.org/series/VIXCLS",
+          "revised": false,
+          "first_release": null
+        }
       }
     ],
-    "last_refresh_at": "2026-10-05T17:28:42.275244Z"
+    "last_refresh_at": "2026-10-05T18:13:35.081376Z"
   }
 }

@@ -172,6 +172,12 @@ export interface SystemPageDef {
 
 export const SYSTEM_PAGES: readonly SystemPageDef[] = [
   {
+    id: "overview",
+    href: "/",
+    label: "Overview",
+    termId: "page_overview",
+  },
+  {
     id: "data_health",
     href: "/system/data-health",
     label: "Data Health",
@@ -188,6 +194,12 @@ export const SYSTEM_PAGES: readonly SystemPageDef[] = [
     href: "/macro",
     label: "Macro",
     termId: "page_macro",
+  },
+  {
+    id: "progress",
+    href: "/system/progress",
+    label: "Build Progress",
+    termId: "page_progress",
   },
 ];
 

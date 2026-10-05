@@ -1,19 +1,36 @@
 import Link from "next/link";
 
 import { Metric } from "@/components/Metric";
-import type { MacroSeriesList, MacroSeriesSummary } from "@/lib/api";
+import { SourceFreshness } from "@/components/SourceFreshness";
+import type { MacroSeriesList, MacroSeriesSummary, SourceHealth } from "@/lib/api";
 import { groupDigits } from "@/lib/format";
 import { completeTermId } from "@/lib/glossary";
 import { formatSgtEt } from "@/lib/time";
 
 /** Macro index (M0.6): each registry series with its latest value. null = API unreachable. */
-export function MacroList({ data }: { data: MacroSeriesList | null }) {
+export function MacroList({
+  data,
+  sources,
+}: {
+  data: MacroSeriesList | null;
+  sources?: SourceHealth[] | null;
+}) {
+  const newest = data?.series
+    .map((s) => s.latest?.published_at)
+    .filter((v): v is string => Boolean(v))
+    .sort()
+    .at(-1);
   return (
     <section className="space-y-6">
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold">
-          <Metric termId="page_macro">Macro</Metric>
+          <Metric termId="page_macro" zh>
+            Macro
+          </Metric>
         </h1>
+        {sources !== undefined ? (
+          <SourceFreshness sources={sources} ids={["fred"]} newestPublishedAt={newest} />
+        ) : null}
         {data?.last_refresh_at ? (
           <p className="text-sm text-neutral-500">
             Last FRED refresh{" "}

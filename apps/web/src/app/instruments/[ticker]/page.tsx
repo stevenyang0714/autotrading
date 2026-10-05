@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { FundamentalsView } from "@/components/instruments/FundamentalsView";
-import { loadFundamentals } from "@/lib/api";
+import { loadFundamentals, loadSourceHealth } from "@/lib/api";
 import { endOfDaySgt } from "@/lib/time";
 
 // Point-in-time data: always read live, never serve a cached page.
@@ -24,7 +24,10 @@ export default async function InstrumentPage({
   const knownOn = typeof query.known_on === "string" && query.known_on ? query.known_on : undefined;
   const knownAt = knownOn ? endOfDaySgt(knownOn) : null;
 
-  const result = await loadFundamentals(ticker, knownAt ?? undefined);
+  const [result, sources] = await Promise.all([
+    loadFundamentals(ticker, knownAt ?? undefined),
+    loadSourceHealth(),
+  ]);
   if (result.status === "not_found") notFound();
   if (result.status === "unavailable") {
     return (
@@ -46,6 +49,7 @@ export default async function InstrumentPage({
       data={result.data}
       knownOn={knownAt ? knownOn : undefined}
       invalidKnownOn={Boolean(knownOn) && knownAt === null}
+      sources={sources}
     />
   );
 }

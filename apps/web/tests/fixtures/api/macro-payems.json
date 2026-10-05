@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-05T17:28:42.458590+00:00",
+  "recorded_at": "2026-10-05T18:13:35.611836+00:00",
   "recorded_from": "recorded FRED fixtures replayed into the integration test database (tests/integration/test_macro.py)",
   "endpoint": "/macro/series/PAYEMS/observations",
   "params": {},
@@ -14,7 +14,7 @@
       "seasonal_adjustment_short": "SA",
       "last_updated": "2026-10-02T13:24:33Z"
     },
-    "known_at": "2026-10-05T17:28:42.447209Z",
+    "known_at": "2026-10-05T18:13:35.603176Z",
     "observations": [
       {
         "observation_date": "2026-09-01",
@@ -350,6 +350,6 @@
         }
       }
     ],
-    "last_refresh_at": "2026-10-05T17:28:42.275244Z"
+    "last_refresh_at": "2026-10-05T18:13:35.081376Z"
   }
 }

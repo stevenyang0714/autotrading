@@ -36,6 +36,7 @@ test("every page loads without console errors", async ({ page }) => {
     "/instruments/AAPL",
     "/macro",
     "/macro/PAYEMS",
+    "/system/progress",
     ...DASHBOARD_SLUGS.map((s) => `/dashboards/${s}`),
   ];
   for (const path of pages) {
@@ -95,6 +96,9 @@ for (const path of [
   "/macro",
   "/macro/PAYEMS",
   "/macro/PAYEMS?known_on=2026-09-30",
+  "/",
+  "/?known_on=2026-09-30",
+  "/system/progress",
 ]) {
   test(`numbers on ${path} are all explained`, async ({ page }) => {
     await page.goto(path);
@@ -143,6 +147,53 @@ test("XOM shows its predecessor issuer", async ({ page }) => {
   await expect(page.getByRole("list", { name: "Predecessor issuers" })).toContainText(
     "Exxon Mobil Corp",
   );
+});
+
+// ---------- overview, freshness, progress (M0.6, ADR-016) ----------
+// Content checks use past "As known on" dates, so they hold as new data arrives.
+
+test("Overview shows six blocks with charts and cited insights", async ({ page }) => {
+  await page.goto("/?known_on=2026-10-05");
+  for (const id of ["inflation", "labor", "growth", "policy", "curve", "risk"]) {
+    const block = page.locator(`[data-block="${id}"]`);
+    await expect(block.locator("svg[role=img]")).toBeVisible();
+    await expect(block).toContainText("Based on");
+  }
+  await expect(page.locator('[data-block="labor"]')).toContainText(
+    "Aug 2026 revised -60K from its first release",
+  );
+});
+
+test("Overview as known before the payroll revision", async ({ page }) => {
+  await page.goto("/?known_on=2026-09-30");
+  await expect(page.locator('[data-block="labor"]')).toContainText("in Aug 2026");
+  await expect(page.locator('[data-block="labor"]')).not.toContainText("revised -60K");
+});
+
+test("pages show how fresh their data is", async ({ page }) => {
+  for (const path of ["/", "/macro", "/instruments/AAPL"]) {
+    await page.goto(path);
+    const freshness = page.getByRole("list", { name: "Data freshness" });
+    await expect(freshness).toBeVisible();
+    await expect(freshness.locator('[data-term-id="data_freshness"]').first()).toBeVisible();
+  }
+});
+
+test("Build Progress reads the milestones", async ({ page }) => {
+  await page.goto("/system/progress");
+  await expect(page.locator('[data-milestone="M0.1"]')).toHaveAttribute("data-status", "done");
+  await expect(page.getByRole("list", { name: "Open decisions" })).toContainText("OD-1");
+});
+
+test.describe("Chinese hints", () => {
+  test.skip(({ isMobile }) => isMobile, "hover is a desktop interaction");
+
+  test("key labels carry a Chinese name and tooltips explain in Chinese", async ({ page }) => {
+    await page.goto("/?known_on=2026-10-05");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("總覽");
+    await page.getByText("非農就業人數").first().hover();
+    await expect(page.getByRole("tooltip")).toContainText("非農就業人數");
+  });
 });
 
 // ---------- macro page (M0.6) ----------

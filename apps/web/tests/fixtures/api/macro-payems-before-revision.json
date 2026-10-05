@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-05T17:28:42.468041+00:00",
+  "recorded_at": "2026-10-05T18:13:35.652757+00:00",
   "recorded_from": "recorded FRED fixtures replayed into the integration test database (tests/integration/test_macro.py)",
   "endpoint": "/macro/series/PAYEMS/observations",
   "params": {
@@ -352,6 +352,6 @@
         }
       }
     ],
-    "last_refresh_at": "2026-10-05T17:28:42.275244Z"
+    "last_refresh_at": "2026-10-05T18:13:35.081376Z"
   }
 }

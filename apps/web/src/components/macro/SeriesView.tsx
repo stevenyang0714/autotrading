@@ -2,8 +2,9 @@ import Link from "next/link";
 
 import { AsKnownOnForm } from "@/components/AsKnownOnForm";
 import { Metric } from "@/components/Metric";
+import { SourceFreshness } from "@/components/SourceFreshness";
 import type { CompleteTermId } from "@/generated/glossary";
-import type { MacroObservation, SeriesObservations } from "@/lib/api";
+import type { MacroObservation, SeriesObservations, SourceHealth } from "@/lib/api";
 import { groupDigits } from "@/lib/format";
 import { completeTermId } from "@/lib/glossary";
 import { formatSgtEt } from "@/lib/time";
@@ -12,13 +13,14 @@ interface Props {
   data: SeriesObservations;
   knownOn?: string;
   invalidKnownOn?: boolean;
+  sources?: SourceHealth[] | null;
 }
 
 /**
  * One macro series (M0.6): the latest observations as known at `data.known_at` (ADR-012,
  * ADR-015). A revised value shows its first release. Every number renders through <Metric>.
  */
-export function SeriesView({ data, knownOn, invalidKnownOn }: Props) {
+export function SeriesView({ data, knownOn, invalidKnownOn, sources }: Props) {
   const { series } = data;
   const termId = completeTermId(series.term_id) ?? "page_macro";
   return (
@@ -32,8 +34,17 @@ export function SeriesView({ data, knownOn, invalidKnownOn }: Props) {
           </Link>
         </p>
         <h1 className="text-2xl font-semibold">
-          <Metric termId={termId}>{series.title ?? series.id}</Metric>
+          <Metric termId={termId} zh>
+            {series.title ?? series.id}
+          </Metric>
         </h1>
+        {sources !== undefined ? (
+          <SourceFreshness
+            sources={sources}
+            ids={["fred"]}
+            newestPublishedAt={knownOn ? null : data.observations[0]?.published_at}
+          />
+        ) : null}
         <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-neutral-400">
           <a
             href={`https://fred.stlouisfed.org/series/${series.id}`}

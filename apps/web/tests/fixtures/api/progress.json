@@ -1,0 +1,225 @@
+{
+  "recorded_at": "2026-10-05T18:13:35.822584+00:00",
+  "recorded_from": "recorded FRED fixtures replayed into the integration test database (tests/integration/test_macro.py)",
+  "endpoint": "/progress",
+  "params": {},
+  "response": {
+    "read_at": "2026-10-05T18:13:35.821905Z",
+    "current": {
+      "Phase": "0 \u2014 Foundation",
+      "Sub-milestone": "M0.6 FRED / ALFRED adapter + Macro page \u2014 LOCAL ACCEPTANCE PASSED; PR + CI pending",
+      "Next": "M0.7 market data (needs OD-1 and OD-9 decided first), then M0.8 news",
+      "Blockers": "none",
+      "Open decisions due soon": "OD-1 (before M0.7), OD-9 (before M0.7)"
+    },
+    "milestones": [
+      {
+        "id": "M0.1",
+        "title": "Repo scaffold and local stack",
+        "done": 3,
+        "total": 3,
+        "status": "done"
+      },
+      {
+        "id": "M0.2",
+        "title": "Core schema, canonical registries, bitemporal facts",
+        "done": 4,
+        "total": 4,
+        "status": "done"
+      },
+      {
+        "id": "M0.3",
+        "title": "Ingestion framework",
+        "done": 3,
+        "total": 3,
+        "status": "done"
+      },
+      {
+        "id": "M0.4",
+        "title": "Glossary Registry and validation (system contract, 02 \u00a722)",
+        "done": 2,
+        "total": 2,
+        "status": "done"
+      },
+      {
+        "id": "M0.5",
+        "title": "SEC EDGAR adapter (filings + XBRL facts)",
+        "done": 3,
+        "total": 3,
+        "status": "done"
+      },
+      {
+        "id": "M0.5b",
+        "title": "Minimal instrument page (pulled forward from M0.9, Steven 2026-10-05)",
+        "done": 4,
+        "total": 4,
+        "status": "done"
+      },
+      {
+        "id": "M0.6",
+        "title": "FRED / ALFRED adapter (macro with vintages)",
+        "done": 2,
+        "total": 2,
+        "status": "in_progress"
+      },
+      {
+        "id": "M0.7",
+        "title": "Market data adapter (PriceProvider)",
+        "done": 0,
+        "total": 3,
+        "status": "not_started"
+      },
+      {
+        "id": "M0.8",
+        "title": "English news adapter (GDELT + RSS)",
+        "done": 0,
+        "total": 3,
+        "status": "not_started"
+      },
+      {
+        "id": "M0.9",
+        "title": "Phase 0 dashboard (first working screens)",
+        "done": 0,
+        "total": 2,
+        "status": "not_started"
+      },
+      {
+        "id": "M0.10",
+        "title": "Phase 0 exit report",
+        "done": 0,
+        "total": 0,
+        "status": "not_started"
+      }
+    ],
+    "phases": [
+      {
+        "number": 1,
+        "scope": "Fundamental Research Record, valuation (DCF / reverse DCF / multiples with visible assumptions), Buyback engine (authorization vs actual vs net share reduction), Earnings (actual vs prior + guidance + reaction), paper j\u2026",
+        "blocking": "OD-2, OD-3"
+      },
+      {
+        "number": 2,
+        "scope": "Macro regime engine, momentum/factor engine, Portfolio Risk cockpit, ETF rotation research, Strategy Lab walk-forward",
+        "blocking": "OD-7 (backtests cannot report performance without it), OD-8"
+      },
+      {
+        "number": 3,
+        "scope": "World / physical / policy: causal graph, Event Transmission dashboard, Policy Monitor with lifecycle states, LLM-assisted extraction (ADR-009)",
+        "blocking": "OD-6"
+      },
+      {
+        "number": 4,
+        "scope": "X researcher watchlists (official API, budget circuit breaker), thesis-change detection, Congress PTR ingestion and lag analytics, Corporate Insider (Form 4)",
+        "blocking": "\u2014"
+      },
+      {
+        "number": 5,
+        "scope": "Options analytics and hedges, order preview, IBKR paper adapter (Alpaca paper as secondary), reconciliation, kill switch",
+        "blocking": "OD-4, OD-9"
+      },
+      {
+        "number": 6,
+        "scope": "Selective auto-execution for validated sleeves only (S1\u2013S4 candidates)",
+        "blocking": "\u2014"
+      }
+    ],
+    "open_decisions": [
+      {
+        "id": "OD-1",
+        "decision": "Confirm ADR-001 (single-user, personal, no redistribution)",
+        "needed_by": "Before M0.7",
+        "default": "Build as assumed"
+      },
+      {
+        "id": "OD-2",
+        "decision": "Alert delivery channel outside the app (email / Telegram / Slack / push)",
+        "needed_by": "Phase 1",
+        "default": "In-app Alerts Center only"
+      },
+      {
+        "id": "OD-3",
+        "decision": "Point-in-time consensus estimates provider",
+        "needed_by": "Phase 1 (S2)",
+        "default": "Consensus shown as `Data unavailable`"
+      },
+      {
+        "id": "OD-4",
+        "decision": "Options data provider and budget.",
+        "needed_by": "Phase 5, or earlier if Steven pulls options flow forward",
+        "default": "No options data"
+      },
+      {
+        "id": "OD-5",
+        "decision": "Short interest / borrow data provider",
+        "needed_by": "Before SHORT eligibility",
+        "default": "SHORT ideas alert-only"
+      },
+      {
+        "id": "OD-6",
+        "decision": "Physical data sources (candidates to evaluate: NASA FIRMS fire data, NOAA climate data, port/shipping data vendors)",
+        "needed_by": "Phase 3",
+        "default": "Not ingested"
+      },
+      {
+        "id": "OD-7",
+        "decision": "Survivorship-free historical dataset including delisted names",
+        "needed_by": "Before Phase 2 backtests",
+        "default": "Backtests blocked from reporting performance"
+      },
+      {
+        "id": "OD-8",
+        "decision": "Cloud provider, auth method, backups",
+        "needed_by": "Phase 2 exit",
+        "default": "Local only"
+      },
+      {
+        "id": "OD-9",
+        "decision": "Verify account eligibility from Singapore for Alpaca and Interactive Brokers (data + paper)",
+        "needed_by": "Before M0.7 / Phase 5",
+        "default": "Alpaca assumed; verify at signup"
+      }
+    ],
+    "log": [
+      {
+        "date": "2026-10-06",
+        "milestone": "M0.6",
+        "result": "Local acceptance passed."
+      },
+      {
+        "date": "2026-10-05",
+        "milestone": "M0.5b",
+        "result": "Done (PR #8 merged; CI green)."
+      },
+      {
+        "date": "2026-10-05",
+        "milestone": "M0.5",
+        "result": "Done (PR #7 merged; CI green on the PR)."
+      },
+      {
+        "date": "2026-10-05",
+        "milestone": "M0.4",
+        "result": "Local acceptance passed."
+      },
+      {
+        "date": "2026-10-05",
+        "milestone": "M0.3",
+        "result": "Done (PR #4 merged a WIP snapshot; PR #5 completed it; CI green)."
+      },
+      {
+        "date": "2026-10-05",
+        "milestone": "M0.2",
+        "result": "Done."
+      },
+      {
+        "date": "2026-10-05",
+        "milestone": "M0.1",
+        "result": "Done."
+      },
+      {
+        "date": "2026-10-04",
+        "milestone": "Kit created",
+        "result": "Specs v2 + errata v2.1 + ADRs + M0 plan"
+      }
+    ]
+  }
+}
