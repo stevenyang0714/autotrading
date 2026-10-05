@@ -47,6 +47,7 @@ class Dependencies:
         return {
             "worker": probe_heartbeat(self.redis, "worker"),
             "scheduler": probe_heartbeat(self.redis, "scheduler"),
+            "queue": probe_heartbeat(self.redis, "queue"),
         }
 
     def close(self) -> None:

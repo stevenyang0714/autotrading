@@ -9,7 +9,7 @@ from autotrading.settings import get_settings
 
 pytestmark = pytest.mark.integration
 
-# The first worker heartbeat needs the scheduler -> queue -> worker round trip.
+# The first queue heartbeat needs the scheduler -> queue -> worker round trip.
 HEALTH_WAIT_SECONDS = 60
 
 
@@ -27,7 +27,7 @@ def test_health_all_green(api_url: str) -> None:
     body: dict[str, Any] = response.json()
     assert response.status_code == 200, body
     assert body["status"] == "ok", body
-    for name in ("database", "redis", "object_store", "worker", "scheduler"):
+    for name in ("database", "redis", "object_store", "worker", "scheduler", "queue"):
         assert body["components"][name]["status"] == "ok", (name, body)
 
 

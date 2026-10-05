@@ -48,12 +48,15 @@ Work one sub-milestone at a time, in order. Each one ends with the Build Output 
 - Freshness monitor: per source, compare latest successful ingest with its SLA → `fresh` / `stale` / `failing`.
 
 **Acceptance**
-- [ ] Test: same job run twice inserts no duplicates.
-- [ ] Test: a job forced to fail lands in dead-letter after N retries and is visible via API.
-- [ ] Test: freshness flips to `stale` when the SLA is exceeded (time-mocked).
+- [x] Test: same job run twice inserts no duplicates.
+- [x] Test: a job forced to fail lands in dead-letter after N retries and is visible via API.
+- [x] Test: freshness flips to `stale` when the SLA is exceeded (time-mocked).
+
+Delivered with M0.3: `config/sources.yaml` synced by `make migrate`; read-only API `GET /data-health`, `/ingestion-runs`, `/dead-letters`. The Data Health page moved to the start of M0.4 (Steven, 2026-10-05).
 
 ## M0.4 Glossary Registry and validation (system contract, 02 §22)
 **Build**
+- **First:** the `<Metric>` component and the **Data Health page** (`/system/data-health`, nav group "System"), built on `GET /data-health`. It shows sources, freshness, last runs, open dead letters and license/access status, all through `<Metric>` with glossary tooltips. Complete the glossary terms it uses (`data_freshness`, `license_status`, `source_tier`, `ingestion_status`, `dead_letter`). Pulled forward from M0.9 (Steven, 2026-10-05).
 - Load `docs/glossary/glossary_seed.yaml` into a `glossary_terms` table (versioned) and expose `GET /glossary` and `GET /glossary/{term_id}`.
 - Generate a TypeScript union type `GlossaryTermId` from the registry at build time.
 - `<Metric termId=... value=... asOf=... feedStatus=...>` component: desktop hover → compact tooltip; mobile tap → help popover. It is the only allowed way to render a metric, score, badge, status, risk measure or strategy label.
@@ -120,7 +123,7 @@ Work one sub-milestone at a time, in order. Each one ends with the Build Output 
 
 ## M0.9 Phase 0 dashboard (first working screens)
 **Build**
-- **Data Health:** sources, freshness status, last runs, dead-letter items, license/access status.
+- **Data Health:** delivered in M0.4 (pulled forward); extend here if Phase 0 sources need more detail.
 - **Instrument page:** price + feed badge, recent filings, key XBRL facts with as-of and filing links, related news groups.
 - **Macro page:** series charts with vintage toggle.
 - **News feed:** filter by ticker/source/tier; duplicate groups collapsed.

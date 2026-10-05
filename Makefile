@@ -36,8 +36,9 @@ ps: ## Show service status
 logs: ## Follow service logs (filter with SERVICE=api)
 	$(COMPOSE) logs -f --tail=100 $(SERVICE)
 
-migrate: ## Apply Alembic migrations inside the api container
+migrate: ## Apply Alembic migrations and sync config/sources.yaml (inside the api container)
 	$(COMPOSE) exec -T api alembic upgrade head
+	$(COMPOSE) exec -T api python -m autotrading.config_sync
 
 test: test-unit test-integration ## Full test suite (needs `make up`)
 

@@ -106,7 +106,7 @@ def data_health(session: SessionDep) -> DataHealthReport:
             select(IngestionRun.source_id, func.max(IngestionRun.finished_at))
             .where(IngestionRun.status == "succeeded")
             .group_by(IngestionRun.source_id)
-        ).tuples()
+        ).all()
     )
     latest_finished = {
         source_id: status
@@ -115,7 +115,7 @@ def data_health(session: SessionDep) -> DataHealthReport:
             .where(IngestionRun.status.in_(FINISHED_STATUSES))
             .ext(distinct_on(IngestionRun.source_id))
             .order_by(IngestionRun.source_id, IngestionRun.finished_at.desc())
-        ).tuples()
+        ).all()
     }
     last_runs = {
         run.source_id: run
@@ -130,7 +130,7 @@ def data_health(session: SessionDep) -> DataHealthReport:
             select(DeadLetter.source_id, func.count())
             .where(DeadLetter.resolved_at.is_(None))
             .group_by(DeadLetter.source_id)
-        ).tuples()
+        ).all()
     )
 
     report = []

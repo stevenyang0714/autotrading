@@ -19,18 +19,19 @@ from autotrading.ingestion.actors import declare_ingestion_actor
 from autotrading.ingestion.rate_limit import TokenBucketLimiter
 from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
-from autotrading.jobs.broker import configure_broker
+from autotrading.jobs.broker import WorkerHeartbeat, configure_broker
 from autotrading.settings import get_settings
 
 _settings = get_settings()
 broker = configure_broker(_settings)
 _redis = make_redis(_settings)
+broker.add_middleware(WorkerHeartbeat(lambda: write_heartbeat(_redis, "worker")))
 
 
 @dramatiq.actor(queue_name="system", max_retries=0, time_limit=10_000, broker=broker)
 def heartbeat() -> None:
-    """Record that the worker is consuming jobs. Enqueued by the scheduler."""
-    write_heartbeat(_redis, "worker")
+    """Prove the scheduler -> queue -> worker path. Enqueued by the scheduler."""
+    write_heartbeat(_redis, "queue")
 
 
 @lru_cache

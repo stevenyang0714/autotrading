@@ -251,6 +251,37 @@ terms:
     methodology_version: 0.1.0
     status: seed
 
+  # ---------- Phase 0: ingestion (M0.3) ----------
+  - term_id: ingestion_status
+    display_name: Ingestion Status
+    category: data_quality
+    short_definition: State of one data-ingestion run for a source.
+    formula: "enum: queued | running | succeeded | failed | dead_lettered | skipped"
+    unit: label
+    direction: N/A
+    interpretation: skipped means an identical run already succeeded, so nothing was fetched again; dead_lettered means every retry failed.
+    why_it_matters: Shows whether the latest data actually arrived and whether a failure needs attention.
+    caveats: A failed run may still be retried; only dead_lettered is final.
+    related_terms: [data_freshness, dead_letter]
+    update_cadence: per run
+    methodology_version: 0.1.0
+    status: seed
+
+  - term_id: dead_letter
+    display_name: Dead Letter
+    category: data_quality
+    short_definition: An ingestion job that still failed after its last automatic retry.
+    formula: "run status = dead_lettered after max_retries with exponential backoff"
+    unit: count
+    direction: Higher = more unresolved failures
+    interpretation: Each open dead letter is data that did not arrive and needs a look.
+    why_it_matters: Missing data can make a source stale and block signals that depend on it.
+    caveats: Resolving a dead letter is a manual, audited action.
+    related_terms: [ingestion_status, data_freshness]
+    update_cadence: per run
+    methodology_version: 0.1.0
+    status: seed
+
   # ---------- Later phases: v2 seed terms (02 §32.1) ----------
   - term_id: buyback_intensity
     display_name: Buyback Intensity
