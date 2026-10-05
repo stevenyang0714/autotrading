@@ -44,7 +44,23 @@ class Settings(BaseSettings):
     s3_secret_key: SecretStr = SecretStr("minioadmin")
     s3_bucket: str = "raw-payloads"
 
+    # Repo config (universe.yaml, sources.yaml). Containers mount it at /app/config.
+    config_dir: Path | None = None
+
+    # Ingestion retries (Dramatiq, exponential backoff); after the last one -> dead letter.
+    ingestion_max_retries: int = 5
+    ingestion_min_backoff_ms: int = 15_000
+    ingestion_max_backoff_ms: int = 600_000
+
     live_trading_enabled: bool = False
+
+    def resolved_config_dir(self) -> Path:
+        if self.config_dir is not None:
+            return self.config_dir
+        env_file = find_env_file()
+        if env_file is None:
+            raise RuntimeError("CONFIG_DIR is not set and no repo root was found")
+        return env_file.parent / "config"
 
     @field_validator("live_trading_enabled")
     @classmethod
