@@ -36,3 +36,14 @@ export function formatDuration(seconds: number): string {
   }
   return `${seconds} s`;
 }
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** "As known on" a date = the end of that day in Singapore (ADR-005); null if not a real date. */
+export function endOfDaySgt(day: string): string | null {
+  if (!ISO_DATE.test(day)) return null;
+  const parsed = new Date(`${day}T23:59:59+08:00`);
+  // 23:59:59 SGT is 15:59:59 UTC the same day; a rolled-over date (e.g. 02-30) fails this.
+  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== day) return null;
+  return `${day}T23:59:59+08:00`;
+}

@@ -37,3 +37,47 @@ export async function loadDataHealth(): Promise<DataHealthData | null> {
     return null;
   }
 }
+
+// ---------- instruments (M0.5b) ----------
+
+export type InstrumentList = components["schemas"]["InstrumentList"];
+export type InstrumentSummary = components["schemas"]["InstrumentSummary"];
+export type Fundamentals = components["schemas"]["Fundamentals"];
+export type FactTable = components["schemas"]["FactTable"];
+export type FactCell = components["schemas"]["FactCell"];
+export type EntityOut = components["schemas"]["EntityOut"];
+export type FilingRef = components["schemas"]["FilingRef"];
+
+/** Universe stocks, or null when the API is unreachable. */
+export async function loadInstruments(): Promise<InstrumentList | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/instruments", { cache: "no-store" });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export type FundamentalsResult =
+  | { status: "ok"; data: Fundamentals }
+  | { status: "not_found" }
+  | { status: "unavailable" };
+
+/** One stock's fundamentals as known at `knownAt` (ISO timestamp; default now). */
+export async function loadFundamentals(
+  ticker: string,
+  knownAt?: string,
+): Promise<FundamentalsResult> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data, response } = await client.GET("/instruments/{ticker}/fundamentals", {
+      params: { path: { ticker }, query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    if (data) return { status: "ok", data };
+    return response.status === 404 ? { status: "not_found" } : { status: "unavailable" };
+  } catch {
+    return { status: "unavailable" };
+  }
+}

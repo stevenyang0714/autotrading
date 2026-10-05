@@ -23,3 +23,15 @@ etfs:
   - GLD
   - XLE
   - XLK
+
+# Earlier issuers whose SEC filings belong to an equity's history (ADR-014). The sec.tickers job
+# links them to the ticker's current issuer; the daily refresh ingests their filings too, and
+# the instrument page shows their figures where the current issuer has none.
+predecessors:
+  XOM:
+    # Exxon Mobil Corp became a subsidiary of ExxonMobil Holdings Corp on 2026-07-01.
+    - cik: "0000034088"
+      name: Exxon Mobil Corp
+      relationship: successor_issuer
+      effective_at: "2026-07-01T16:36:49Z"  # acceptance of the holding company's 8-K12B
+      evidence_accession: 0001193125-26-291990

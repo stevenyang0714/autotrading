@@ -6,7 +6,8 @@ import { DASHBOARDS } from "@/lib/dashboards";
 
 import { Nav } from "./Nav";
 
-vi.mock("next/navigation", () => ({ usePathname: () => "/dashboards/earnings" }));
+const route = vi.hoisted(() => ({ pathname: "/dashboards/earnings" }));
+vi.mock("next/navigation", () => ({ usePathname: () => route.pathname }));
 
 function linksIn(group: string) {
   return within(screen.getByRole("list", { name: group })).getAllByRole("link");
@@ -22,12 +23,26 @@ describe("Nav", () => {
     );
   });
 
-  it("has a System group with the Data Health page", () => {
+  it("has a System group with Data Health and Instruments", () => {
     render(<Nav />);
     const links = linksIn("System");
     expect(links.map((link) => [link.textContent, link.getAttribute("href")])).toEqual([
       ["Data Health", "/system/data-health"],
+      ["Instruments", "/instruments"],
     ]);
+  });
+
+  it("keeps Instruments highlighted on a stock page", () => {
+    route.pathname = "/instruments/AAPL";
+    try {
+      render(<Nav />);
+      const current = linksIn("System").filter(
+        (link) => link.getAttribute("aria-current") === "page",
+      );
+      expect(current.map((link) => link.textContent)).toEqual(["Instruments"]);
+    } finally {
+      route.pathname = "/dashboards/earnings";
+    }
   });
 
   it("marks the current dashboard", () => {

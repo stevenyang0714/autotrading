@@ -1,0 +1,41 @@
+{
+  "recorded_at": "2026-10-05T15:26:17.904787+00:00",
+  "recorded_from": "recorded SEC fixtures replayed into the integration test database (tests/integration/test_instruments.py)",
+  "endpoint": "/instruments",
+  "params": {},
+  "response": {
+    "instruments": [
+      {
+        "ticker": "AAPL",
+        "name": "Apple Inc.",
+        "cik": "0000320193",
+        "exchange": "XNAS",
+        "predecessors": [],
+        "latest_report": {
+          "accession": "0000320193-26-000020",
+          "form": "10-Q",
+          "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/0000320193-26-000020-index.htm",
+          "published_at": "2026-07-31T10:01:02Z",
+          "published_at_precision": "exact"
+        }
+      },
+      {
+        "ticker": "XOM",
+        "name": "ExxonMobil Holdings Corp",
+        "cik": "0002115436",
+        "exchange": "XNYS",
+        "predecessors": [
+          "Exxon Mobil Corp"
+        ],
+        "latest_report": {
+          "accession": "0000034088-26-000093",
+          "form": "10-Q",
+          "url": "https://www.sec.gov/Archives/edgar/data/2115436/000003408826000093/0000034088-26-000093-index.htm",
+          "published_at": "2026-08-03T18:55:38Z",
+          "published_at_precision": "exact"
+        }
+      }
+    ],
+    "last_refresh_at": "2026-10-05T15:26:17.809243Z"
+  }
+}

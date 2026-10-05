@@ -134,7 +134,28 @@ Applies ADR-007 and ADR-012 to SEC data (M0.5). Code: `apps/api/src/autotrading/
   - `valid_from` is when this platform first saw a ticker/CIK mapping. SEC's ticker file has no history.
   - When a ticker moves to another CIK, its old period is closed.
   - When a company's old ticker disappears from the file, its instrument keeps its identity and gets the new ticker (a rename).
-- **Known gap: XOM.** On 2026-07-01, Exxon Mobil moved under a new holding company (8-K12B). SEC now maps XOM to ExxonMobil Holdings Corp (CIK 0002115436), which so far has only one XBRL filing. The history before the reorganization sits under Exxon Mobil Corp (CIK 0000034088) and is not linked. Linking needs a predecessor/successor relation between entities. Proposed for M0.5b or Phase 1, after Steven's approval.
+- **XOM:** on 2026-07-01, Exxon Mobil moved under a new holding company (8-K12B), and SEC now maps XOM to ExxonMobil Holdings Corp (CIK 0002115436). The history before the reorganization, under Exxon Mobil Corp (CIK 0000034088), is linked by ADR-014 (M0.5b).
+
+## ADR-014 Successor issuers (entity relationships) — Accepted (2026-10-05, approved by Steven with the M0.5b plan)
+Resolves the XOM gap in ADR-013.
+- **Context:** after a holding-company reorganization, the listed stock's new issuer files under a new CIK. Its XBRL history starts at the reorganization. Years of history stay under the old issuer, which keeps filing (e.g. debt) but no longer has a ticker.
+- **Data model:**
+  - `entity_relationships` (migration 0005) links a predecessor entity to its successor with type `successor_issuer`.
+  - `effective_at` is when the successor took over: the acceptance time of the successor's 8-K12B (XOM: 2026-07-01 16:36:49 UTC).
+  - Each link carries its evidence (accession number and EDGAR index URL).
+  - Rows are mutable and audited, like identifiers.
+- **Curation:**
+  - Links are declared by hand in `config/universe.yaml` under `predecessors:`, with the filing as evidence.
+  - The `sec.tickers` job creates the predecessor entity, its CIK identifier and the link.
+  - Nothing is inferred automatically.
+- **Facts stay with their reporter:**
+  - The predecessor's filings and facts are ingested under its own entity. The daily refresh includes linked predecessors.
+  - No value is copied or re-attributed.
+- **Instrument page merge:**
+  - **Precedence:** for each metric, unit and period, the current issuer's value wins and the predecessor's fills the gaps. The page names the predecessor next to every value it supplied.
+  - **Issuer at a time:** before `effective_at`, the page names the predecessor as the issuer.
+  - **Overlap:** the 11 periods both XOM issuers report (2025-2026) are equal.
+- **Limits:** only `successor_issuer` exists. Spin-offs and mergers (where history does not simply continue) need their own types and rules before they are modelled.
 
 ---
 

@@ -1,0 +1,936 @@
+{
+  "recorded_at": "2026-10-05T15:26:17.994952+00:00",
+  "recorded_from": "recorded SEC fixtures replayed into the integration test database (tests/integration/test_instruments.py)",
+  "endpoint": "/instruments/AAPL/fundamentals",
+  "params": {},
+  "response": {
+    "ticker": "AAPL",
+    "exchange": "XNAS",
+    "known_at": "2026-10-05T15:26:17.905607Z",
+    "issuer": {
+      "id": "1bb16292-fa19-491c-98ba-6673b25f56ce",
+      "name": "Apple Inc.",
+      "cik": "0000320193",
+      "role": "issuer",
+      "succeeded_at": null,
+      "evidence_url": null,
+      "evidence_accession": null
+    },
+    "entities": [
+      {
+        "id": "1bb16292-fa19-491c-98ba-6673b25f56ce",
+        "name": "Apple Inc.",
+        "cik": "0000320193",
+        "role": "issuer",
+        "succeeded_at": null,
+        "evidence_url": null,
+        "evidence_accession": null
+      }
+    ],
+    "annual": {
+      "periods": [
+        {
+          "period_start": "2024-09-29",
+          "period_end": "2025-09-27"
+        },
+        {
+          "period_start": "2023-10-01",
+          "period_end": "2024-09-28"
+        },
+        {
+          "period_start": "2022-09-25",
+          "period_end": "2023-09-30"
+        }
+      ],
+      "rows": [
+        {
+          "metric_id": "revenue",
+          "cells": [
+            {
+              "value": "416161000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": "2024-09-29",
+              "period_end": "2025-09-27",
+              "fiscal_period": "FY-2025",
+              "source_concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+              "filing": {
+                "accession": "0000320193-25-000079",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
+                "published_at": "2025-10-31T10:01:26Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "391035000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": "2023-10-01",
+              "period_end": "2024-09-28",
+              "fiscal_period": "FY-2024",
+              "source_concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+              "filing": {
+                "accession": "0000320193-24-000123",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/0000320193-24-000123-index.htm",
+                "published_at": "2024-11-01T10:01:36Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "383285000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": "2022-09-25",
+              "period_end": "2023-09-30",
+              "fiscal_period": "FY-2023",
+              "source_concept": "us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax",
+              "filing": {
+                "accession": "0000320193-23-000106",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/0000320193-23-000106-index.htm",
+                "published_at": "2023-11-02T22:08:27Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            }
+          ]
+        },
+        {
+          "metric_id": "gross_profit",
+          "cells": [
+            {
+              "value": "195201000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": "2024-09-29",
+              "period_end": "2025-09-27",
+              "fiscal_period": "FY-2025",
+              "source_concept": "us-gaap:GrossProfit",
+              "filing": {
+                "accession": "0000320193-25-000079",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
+                "published_at": "2025-10-31T10:01:26Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "180683000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": "2023-10-01",
+              "period_end": "2024-09-28",
+              "fiscal_period": "FY-2024",
+              "source_concept": "us-gaap:GrossProfit",
+              "filing": {
+                "accession": "0000320193-24-000123",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/0000320193-24-000123-index.htm",
+                "published_at": "2024-11-01T10:01:36Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "169148000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": "2022-09-25",
+              "period_end": "2023-09-30",
+              "fiscal_period": "FY-2023",
+              "source_concept": "us-gaap:GrossProfit",
+              "filing": {
+                "accession": "0000320193-23-000106",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/0000320193-23-000106-index.htm",
+                "published_at": "2023-11-02T22:08:27Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            }
+          ]
+        },
+        {
+          "metric_id": "operating_income",
+          "cells": [
+            {
+              "value": "133050000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": "2024-09-29",
+              "period_end": "2025-09-27",
+              "fiscal_period": "FY-2025",
+              "source_concept": "us-gaap:OperatingIncomeLoss",
+              "filing": {
+                "accession": "0000320193-25-000079",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
+                "published_at": "2025-10-31T10:01:26Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "123216000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": "2023-10-01",
+              "period_end": "2024-09-28",
+              "fiscal_period": "FY-2024",
+              "source_concept": "us-gaap:OperatingIncomeLoss",
+              "filing": {
+                "accession": "0000320193-24-000123",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/0000320193-24-000123-index.htm",
+                "published_at": "2024-11-01T10:01:36Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "114301000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": "2022-09-25",
+              "period_end": "2023-09-30",
+              "fiscal_period": "FY-2023",
+              "source_concept": "us-gaap:OperatingIncomeLoss",
+              "filing": {
+                "accession": "0000320193-23-000106",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/0000320193-23-000106-index.htm",
+                "published_at": "2023-11-02T22:08:27Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            }
+          ]
+        },
+        {
+          "metric_id": "net_income",
+          "cells": [
+            {
+              "value": "112010000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": "2024-09-29",
+              "period_end": "2025-09-27",
+              "fiscal_period": "FY-2025",
+              "source_concept": "us-gaap:NetIncomeLoss",
+              "filing": {
+                "accession": "0000320193-25-000079",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
+                "published_at": "2025-10-31T10:01:26Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "93736000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": "2023-10-01",
+              "period_end": "2024-09-28",
+              "fiscal_period": "FY-2024",
+              "source_concept": "us-gaap:NetIncomeLoss",
+              "filing": {
+                "accession": "0000320193-24-000123",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/0000320193-24-000123-index.htm",
+                "published_at": "2024-11-01T10:01:36Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "96995000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": "2022-09-25",
+              "period_end": "2023-09-30",
+              "fiscal_period": "FY-2023",
+              "source_concept": "us-gaap:NetIncomeLoss",
+              "filing": {
+                "accession": "0000320193-23-000106",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/0000320193-23-000106-index.htm",
+                "published_at": "2023-11-02T22:08:27Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            }
+          ]
+        },
+        {
+          "metric_id": "eps_diluted",
+          "cells": [
+            {
+              "value": "7.46",
+              "unit": "USD/shares",
+              "currency": "USD",
+              "period_start": "2024-09-29",
+              "period_end": "2025-09-27",
+              "fiscal_period": "FY-2025",
+              "source_concept": "us-gaap:EarningsPerShareDiluted",
+              "filing": {
+                "accession": "0000320193-25-000079",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
+                "published_at": "2025-10-31T10:01:26Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "6.08",
+              "unit": "USD/shares",
+              "currency": "USD",
+              "period_start": "2023-10-01",
+              "period_end": "2024-09-28",
+              "fiscal_period": "FY-2024",
+              "source_concept": "us-gaap:EarningsPerShareDiluted",
+              "filing": {
+                "accession": "0000320193-24-000123",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/0000320193-24-000123-index.htm",
+                "published_at": "2024-11-01T10:01:36Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "6.13",
+              "unit": "USD/shares",
+              "currency": "USD",
+              "period_start": "2022-09-25",
+              "period_end": "2023-09-30",
+              "fiscal_period": "FY-2023",
+              "source_concept": "us-gaap:EarningsPerShareDiluted",
+              "filing": {
+                "accession": "0000320193-23-000106",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/0000320193-23-000106-index.htm",
+                "published_at": "2023-11-02T22:08:27Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            }
+          ]
+        },
+        {
+          "metric_id": "diluted_shares",
+          "cells": [
+            {
+              "value": "15004697000",
+              "unit": "shares",
+              "currency": null,
+              "period_start": "2024-09-29",
+              "period_end": "2025-09-27",
+              "fiscal_period": "FY-2025",
+              "source_concept": "us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding",
+              "filing": {
+                "accession": "0000320193-25-000079",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
+                "published_at": "2025-10-31T10:01:26Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "15408095000",
+              "unit": "shares",
+              "currency": null,
+              "period_start": "2023-10-01",
+              "period_end": "2024-09-28",
+              "fiscal_period": "FY-2024",
+              "source_concept": "us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding",
+              "filing": {
+                "accession": "0000320193-24-000123",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/0000320193-24-000123-index.htm",
+                "published_at": "2024-11-01T10:01:36Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "15812547000",
+              "unit": "shares",
+              "currency": null,
+              "period_start": "2022-09-25",
+              "period_end": "2023-09-30",
+              "fiscal_period": "FY-2023",
+              "source_concept": "us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding",
+              "filing": {
+                "accession": "0000320193-23-000106",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/0000320193-23-000106-index.htm",
+                "published_at": "2023-11-02T22:08:27Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            }
+          ]
+        },
+        {
+          "metric_id": "operating_cash_flow",
+          "cells": [
+            {
+              "value": "111482000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": "2024-09-29",
+              "period_end": "2025-09-27",
+              "fiscal_period": "FY-2025",
+              "source_concept": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+              "filing": {
+                "accession": "0000320193-25-000079",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
+                "published_at": "2025-10-31T10:01:26Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "118254000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": "2023-10-01",
+              "period_end": "2024-09-28",
+              "fiscal_period": "FY-2024",
+              "source_concept": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+              "filing": {
+                "accession": "0000320193-24-000123",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/0000320193-24-000123-index.htm",
+                "published_at": "2024-11-01T10:01:36Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "110543000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": "2022-09-25",
+              "period_end": "2023-09-30",
+              "fiscal_period": "FY-2023",
+              "source_concept": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+              "filing": {
+                "accession": "0000320193-23-000106",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/0000320193-23-000106-index.htm",
+                "published_at": "2023-11-02T22:08:27Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            }
+          ]
+        },
+        {
+          "metric_id": "capex",
+          "cells": [
+            {
+              "value": "12715000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": "2024-09-29",
+              "period_end": "2025-09-27",
+              "fiscal_period": "FY-2025",
+              "source_concept": "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment",
+              "filing": {
+                "accession": "0000320193-25-000079",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
+                "published_at": "2025-10-31T10:01:26Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "9447000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": "2023-10-01",
+              "period_end": "2024-09-28",
+              "fiscal_period": "FY-2024",
+              "source_concept": "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment",
+              "filing": {
+                "accession": "0000320193-24-000123",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/0000320193-24-000123-index.htm",
+                "published_at": "2024-11-01T10:01:36Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "10959000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": "2022-09-25",
+              "period_end": "2023-09-30",
+              "fiscal_period": "FY-2023",
+              "source_concept": "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment",
+              "filing": {
+                "accession": "0000320193-23-000106",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/0000320193-23-000106-index.htm",
+                "published_at": "2023-11-02T22:08:27Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            }
+          ]
+        },
+        {
+          "metric_id": "share_repurchases",
+          "cells": [
+            {
+              "value": "90711000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": "2024-09-29",
+              "period_end": "2025-09-27",
+              "fiscal_period": "FY-2025",
+              "source_concept": "us-gaap:PaymentsForRepurchaseOfCommonStock",
+              "filing": {
+                "accession": "0000320193-25-000079",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
+                "published_at": "2025-10-31T10:01:26Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "94949000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": "2023-10-01",
+              "period_end": "2024-09-28",
+              "fiscal_period": "FY-2024",
+              "source_concept": "us-gaap:PaymentsForRepurchaseOfCommonStock",
+              "filing": {
+                "accession": "0000320193-24-000123",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/0000320193-24-000123-index.htm",
+                "published_at": "2024-11-01T10:01:36Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "77550000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": "2022-09-25",
+              "period_end": "2023-09-30",
+              "fiscal_period": "FY-2023",
+              "source_concept": "us-gaap:PaymentsForRepurchaseOfCommonStock",
+              "filing": {
+                "accession": "0000320193-23-000106",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/0000320193-23-000106-index.htm",
+                "published_at": "2023-11-02T22:08:27Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            }
+          ]
+        },
+        {
+          "metric_id": "stock_based_compensation",
+          "cells": [
+            {
+              "value": "12863000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": "2024-09-29",
+              "period_end": "2025-09-27",
+              "fiscal_period": "FY-2025",
+              "source_concept": "us-gaap:ShareBasedCompensation",
+              "filing": {
+                "accession": "0000320193-25-000079",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
+                "published_at": "2025-10-31T10:01:26Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "11688000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": "2023-10-01",
+              "period_end": "2024-09-28",
+              "fiscal_period": "FY-2024",
+              "source_concept": "us-gaap:ShareBasedCompensation",
+              "filing": {
+                "accession": "0000320193-24-000123",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/0000320193-24-000123-index.htm",
+                "published_at": "2024-11-01T10:01:36Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "10833000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": "2022-09-25",
+              "period_end": "2023-09-30",
+              "fiscal_period": "FY-2023",
+              "source_concept": "us-gaap:ShareBasedCompensation",
+              "filing": {
+                "accession": "0000320193-23-000106",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/0000320193-23-000106-index.htm",
+                "published_at": "2023-11-02T22:08:27Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            }
+          ]
+        }
+      ]
+    },
+    "balance_sheet": {
+      "periods": [
+        {
+          "period_start": null,
+          "period_end": "2026-06-27"
+        },
+        {
+          "period_start": null,
+          "period_end": "2025-09-27"
+        },
+        {
+          "period_start": null,
+          "period_end": "2024-09-28"
+        }
+      ],
+      "rows": [
+        {
+          "metric_id": "cash",
+          "cells": [
+            {
+              "value": "39544000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": null,
+              "period_end": "2026-06-27",
+              "fiscal_period": "Q3-2026",
+              "source_concept": "us-gaap:CashAndCashEquivalentsAtCarryingValue",
+              "filing": {
+                "accession": "0000320193-26-000020",
+                "form": "10-Q",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/0000320193-26-000020-index.htm",
+                "published_at": "2026-07-31T10:01:02Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "35934000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": null,
+              "period_end": "2025-09-27",
+              "fiscal_period": "FY-2025",
+              "source_concept": "us-gaap:CashAndCashEquivalentsAtCarryingValue",
+              "filing": {
+                "accession": "0000320193-25-000079",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
+                "published_at": "2025-10-31T10:01:26Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "29943000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": null,
+              "period_end": "2024-09-28",
+              "fiscal_period": "FY-2024",
+              "source_concept": "us-gaap:CashAndCashEquivalentsAtCarryingValue",
+              "filing": {
+                "accession": "0000320193-24-000123",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/0000320193-24-000123-index.htm",
+                "published_at": "2024-11-01T10:01:36Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            }
+          ]
+        },
+        {
+          "metric_id": "long_term_debt_current",
+          "cells": [
+            {
+              "value": "11007000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": null,
+              "period_end": "2026-06-27",
+              "fiscal_period": "Q3-2026",
+              "source_concept": "us-gaap:LongTermDebtCurrent",
+              "filing": {
+                "accession": "0000320193-26-000020",
+                "form": "10-Q",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/0000320193-26-000020-index.htm",
+                "published_at": "2026-07-31T10:01:02Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "12350000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": null,
+              "period_end": "2025-09-27",
+              "fiscal_period": "FY-2025",
+              "source_concept": "us-gaap:LongTermDebtCurrent",
+              "filing": {
+                "accession": "0000320193-25-000079",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
+                "published_at": "2025-10-31T10:01:26Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "10912000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": null,
+              "period_end": "2024-09-28",
+              "fiscal_period": "FY-2024",
+              "source_concept": "us-gaap:LongTermDebtCurrent",
+              "filing": {
+                "accession": "0000320193-24-000123",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/0000320193-24-000123-index.htm",
+                "published_at": "2024-11-01T10:01:36Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            }
+          ]
+        },
+        {
+          "metric_id": "long_term_debt_noncurrent",
+          "cells": [
+            {
+              "value": "71340000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": null,
+              "period_end": "2026-06-27",
+              "fiscal_period": "Q3-2026",
+              "source_concept": "us-gaap:LongTermDebtNoncurrent",
+              "filing": {
+                "accession": "0000320193-26-000020",
+                "form": "10-Q",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/0000320193-26-000020-index.htm",
+                "published_at": "2026-07-31T10:01:02Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "78328000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": null,
+              "period_end": "2025-09-27",
+              "fiscal_period": "FY-2025",
+              "source_concept": "us-gaap:LongTermDebtNoncurrent",
+              "filing": {
+                "accession": "0000320193-25-000079",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
+                "published_at": "2025-10-31T10:01:26Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "85750000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": null,
+              "period_end": "2024-09-28",
+              "fiscal_period": "FY-2024",
+              "source_concept": "us-gaap:LongTermDebtNoncurrent",
+              "filing": {
+                "accession": "0000320193-24-000123",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/0000320193-24-000123-index.htm",
+                "published_at": "2024-11-01T10:01:36Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            }
+          ]
+        },
+        {
+          "metric_id": "commercial_paper",
+          "cells": [
+            {
+              "value": "1997000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": null,
+              "period_end": "2026-06-27",
+              "fiscal_period": "Q3-2026",
+              "source_concept": "us-gaap:CommercialPaper",
+              "filing": {
+                "accession": "0000320193-26-000020",
+                "form": "10-Q",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/0000320193-26-000020-index.htm",
+                "published_at": "2026-07-31T10:01:02Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "7979000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": null,
+              "period_end": "2025-09-27",
+              "fiscal_period": "FY-2025",
+              "source_concept": "us-gaap:CommercialPaper",
+              "filing": {
+                "accession": "0000320193-25-000079",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
+                "published_at": "2025-10-31T10:01:26Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            },
+            {
+              "value": "9967000000",
+              "unit": "USD",
+              "currency": "USD",
+              "period_start": null,
+              "period_end": "2024-09-28",
+              "fiscal_period": "FY-2024",
+              "source_concept": "us-gaap:CommercialPaper",
+              "filing": {
+                "accession": "0000320193-24-000123",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/0000320193-24-000123-index.htm",
+                "published_at": "2024-11-01T10:01:36Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "1bb16292-fa19-491c-98ba-6673b25f56ce"
+            }
+          ]
+        }
+      ]
+    },
+    "last_refresh_at": "2026-10-05T15:26:17.809243Z"
+  }
+}

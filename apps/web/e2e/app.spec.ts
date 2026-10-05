@@ -29,7 +29,14 @@ function trackConsoleErrors(page: Page): string[] {
 
 test("every page loads without console errors", async ({ page }) => {
   const errors = trackConsoleErrors(page);
-  for (const path of ["/", "/system/data-health", ...DASHBOARD_SLUGS.map((s) => `/dashboards/${s}`)]) {
+  const pages = [
+    "/",
+    "/system/data-health",
+    "/instruments",
+    "/instruments/AAPL",
+    ...DASHBOARD_SLUGS.map((s) => `/dashboards/${s}`),
+  ];
+  for (const path of pages) {
     const response = await page.goto(path);
     expect(response?.status(), path).toBe(200);
     await expect(page.locator("h1")).toBeVisible();
@@ -59,9 +66,8 @@ test("Data Health shows the registered sources from the live API", async ({ page
   }
 });
 
-test("numbers on Data Health are all explained", async ({ page }) => {
-  await page.goto("/system/data-health");
-  const offenders = await page.evaluate(() => {
+async function unexplainedNumbers(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
     const walker = document.createTreeWalker(document.querySelector("main")!, NodeFilter.SHOW_TEXT);
     const found: string[] = [];
     while (walker.nextNode()) {
@@ -74,7 +80,67 @@ test("numbers on Data Health are all explained", async ({ page }) => {
     }
     return found;
   });
-  expect(offenders).toEqual([]);
+}
+
+for (const path of [
+  "/system/data-health",
+  "/instruments",
+  "/instruments/AAPL",
+  "/instruments/AAPL?known_on=2010-01-27",
+  "/instruments/XOM",
+]) {
+  test(`numbers on ${path} are all explained`, async ({ page }) => {
+    await page.goto(path);
+    expect(await unexplainedNumbers(page)).toEqual([]);
+  });
+}
+
+// ---------- instrument page (M0.5b) ----------
+
+function fy2008NetIncome(page: Page) {
+  // Columns: newest fiscal year first; as known in January 2010 that is FY2009, then FY2008.
+  return page
+    .getByRole("table", { name: "Annual results" })
+    .getByRole("row")
+    .filter({ has: page.locator('th [data-term-id="net_income"]') })
+    .locator("td")
+    .nth(1);
+}
+
+test("AAPL: As known on before the 2010 10-K/A shows the original FY2008 net income", async ({
+  page,
+}) => {
+  await page.goto("/instruments/AAPL?known_on=2010-01-25");
+  await expect(fy2008NetIncome(page)).toContainText("$4.834B");
+  await expect(fy2008NetIncome(page)).not.toContainText("Restated");
+
+  await page.locator("#known_on").fill("2010-01-27");
+  await page.getByRole("button", { name: "Show" }).click();
+  await expect(page).toHaveURL(/known_on=2010-01-27/);
+  await expect(fy2008NetIncome(page)).toContainText("$6.119B");
+  await expect(fy2008NetIncome(page)).toContainText("Restated");
+  await expect(fy2008NetIncome(page)).toContainText("was $4.834B");
+});
+
+test("AAPL values link to the SEC filing that reported them", async ({ page }) => {
+  await page.goto("/instruments/AAPL");
+  const link = page.getByRole("link", { name: "10-K 0000320193-25-000079" }).first();
+  await expect(link).toHaveAttribute(
+    "href",
+    "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
+  );
+});
+
+test("XOM shows its predecessor issuer", async ({ page }) => {
+  await page.goto("/instruments/XOM");
+  await expect(page.getByRole("list", { name: "Predecessor issuers" })).toContainText(
+    "Exxon Mobil Corp",
+  );
+});
+
+test("unknown instrument returns 404", async ({ page }) => {
+  const response = await page.goto("/instruments/NOPE");
+  expect(response?.status()).toBe(404);
 });
 
 test.describe("desktop tooltips", () => {
