@@ -9,6 +9,7 @@ dependencies = [
     "boto3>=1.43.108",
     "dramatiq[redis]>=2.2,<3",
     "fastapi>=0.142.2",
+    "httpx2>=2.13.1",
     "psycopg[binary]>=3.3.6",
     "pydantic>=2",
     "pydantic-settings>=2.15.0",
@@ -28,7 +29,6 @@ packages = ["src/autotrading"]
 [dependency-groups]
 dev = [
     "boto3-stubs[s3]>=1.43.108",
-    "httpx2>=2.13.1",
     "mypy>=2.4.0",
     "pytest>=9.1.1",
     "ruff>=0.16.10",

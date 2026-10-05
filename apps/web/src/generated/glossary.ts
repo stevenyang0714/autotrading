@@ -7,6 +7,9 @@ export const GLOSSARY_VERSION = "0.1.0";
 export type CompleteTermId =
   | "access_status"
   | "as_of"
+  | "capex"
+  | "cash"
+  | "commercial_paper"
   | "dashboard_alerts_center"
   | "dashboard_congress_trades"
   | "dashboard_corporate_actions"
@@ -24,13 +27,24 @@ export type CompleteTermId =
   | "dashboard_x_expert_watch"
   | "data_freshness"
   | "dead_letter"
+  | "diluted_shares"
+  | "eps_diluted"
   | "freshness_sla"
+  | "gross_profit"
   | "ingestion_status"
   | "license_status"
+  | "long_term_debt_current"
+  | "long_term_debt_noncurrent"
+  | "net_income"
+  | "operating_cash_flow"
+  | "operating_income"
   | "page_data_health"
   | "planned_phase"
   | "rate_limit"
+  | "revenue"
+  | "share_repurchases"
   | "source_tier"
+  | "stock_based_compensation"
   | "update_cadence";
 
 export interface GlossaryTerm {
@@ -98,6 +112,75 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "data_freshness",
       "point_in_time"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "capex": {
+    "term_id": "capex",
+    "display_name": "Capital Expenditure",
+    "category": "fundamentals",
+    "short_definition": "Cash paid for property, plant and equipment in the period.",
+    "full_definition": "Read from us-gaap PaymentsToAcquirePropertyPlantAndEquipment, or PaymentsToAcquireProductiveAssets when a company reports only that (NVIDIA since 2019; it also includes intangible assets). Shown as a positive payment.",
+    "formula": "reported us-gaap:PaymentsToAcquirePropertyPlantAndEquipment, else us-gaap:PaymentsToAcquireProductiveAssets",
+    "unit": "USD",
+    "example": "Apple's FY2025 10-K reports $12.715 billion of payments for property, plant and equipment.",
+    "direction": "Higher = more investment, not automatically better",
+    "interpretation": "Operating cash flow minus capex approximates free cash flow; compare capex with depreciation for growth versus maintenance.",
+    "why_it_matters": "Investment needs compete with buybacks and dividends for the same cash.",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), us-gaap capital expenditure concepts",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-05",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "The fallback concept includes intangible assets; banks usually do not report capex.",
+    "related_terms": [
+      "operating_cash_flow"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "cash": {
+    "term_id": "cash",
+    "display_name": "Cash and Cash Equivalents",
+    "category": "fundamentals",
+    "short_definition": "Cash and very short-term liquid investments on the balance sheet date.",
+    "full_definition": "Read from us-gaap CashAndCashEquivalentsAtCarryingValue at the period end. Marketable securities and restricted cash are not included. Banks tag cash differently (e.g. cash and due from banks); those are not substituted.",
+    "formula": "reported us-gaap:CashAndCashEquivalentsAtCarryingValue at period end",
+    "unit": "USD",
+    "example": "Apple's balance sheet at 2025-09-27 reports cash and cash equivalents of $35.934 billion.",
+    "direction": "Higher = more liquidity, not automatically better",
+    "interpretation": "Compare with debt due within a year; large companies often hold more in marketable securities than in cash.",
+    "why_it_matters": "Shows the immediate liquidity available for operations, buybacks and debt repayment.",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), us-gaap:CashAndCashEquivalentsAtCarryingValue",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-05",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "A point-in-time balance; it can swing around quarter ends.",
+    "related_terms": [
+      "long_term_debt_current",
+      "commercial_paper"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "commercial_paper": {
+    "term_id": "commercial_paper",
+    "display_name": "Commercial Paper",
+    "category": "fundamentals",
+    "short_definition": "Short-term unsecured borrowing, usually due within 270 days.",
+    "full_definition": "Read from us-gaap CommercialPaper at the period end. Broader short-term borrowing lines are not substituted. A debt component; total debt is derived in Phase 1 (ADR-013).",
+    "formula": "reported us-gaap:CommercialPaper at period end",
+    "unit": "USD",
+    "example": "Apple's balance sheet at 2025-09-27 reports commercial paper of $7.979 billion.",
+    "direction": "Higher = more short-term funding",
+    "interpretation": "Large balances need continuous rollover; watch them when credit spreads widen.",
+    "why_it_matters": "Short-term funding can disappear quickly in a credit squeeze.",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), us-gaap:CommercialPaper",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-05",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "Many companies have none; missing means not reported, not necessarily zero.",
+    "related_terms": [
+      "long_term_debt_current",
+      "long_term_debt_noncurrent",
+      "cash"
     ],
     "methodology_version": "0.1.0"
   },
@@ -478,6 +561,54 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     ],
     "methodology_version": "0.1.0"
   },
+  "diluted_shares": {
+    "term_id": "diluted_shares",
+    "display_name": "Diluted Shares",
+    "category": "fundamentals",
+    "short_definition": "Average number of shares in the period, including shares options and convertibles could add.",
+    "full_definition": "Read from us-gaap WeightedAverageNumberOfDilutedSharesOutstanding. It is a weighted average over the period, not the count on the last day.",
+    "formula": "reported us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding",
+    "unit": "shares",
+    "example": "Apple's FY2025 10-K reports 15,004,697,000 diluted weighted average shares.",
+    "direction": "Lower over time = more per-share value for holders",
+    "interpretation": "A falling count usually reflects buybacks exceeding dilution from stock compensation.",
+    "why_it_matters": "Shows whether buybacks actually reduce the share count after dilution.",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-05",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "Stock splits change past counts in later filings; companies with several share classes may tag only some periods.",
+    "related_terms": [
+      "eps_diluted",
+      "share_repurchases",
+      "stock_based_compensation"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "eps_diluted": {
+    "term_id": "eps_diluted",
+    "display_name": "Diluted EPS",
+    "category": "fundamentals",
+    "short_definition": "Net income per share, counting shares that options and convertibles could add.",
+    "full_definition": "Read from us-gaap EarningsPerShareDiluted in USD per share as reported. Values tagged with another unit are ignored.",
+    "formula": "reported us-gaap:EarningsPerShareDiluted (net income / diluted weighted average shares)",
+    "unit": "USD per share",
+    "example": "Apple's FY2025 10-K reports diluted EPS of $7.46.",
+    "direction": "Higher = more profit per share",
+    "interpretation": "Growth in EPS faster than net income means the share count is shrinking.",
+    "why_it_matters": "The per-share profit that price-to-earnings ratios and earnings surprises use.",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), us-gaap:EarningsPerShareDiluted",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-05",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "Stock splits change past EPS in later filings (Alphabet 20-for-1 in 2022); such changes are stored as new versions, not adjusted.",
+    "related_terms": [
+      "net_income",
+      "diluted_shares",
+      "restated_flag"
+    ],
+    "methodology_version": "0.1.0"
+  },
   "freshness_sla": {
     "term_id": "freshness_sla",
     "display_name": "Freshness SLA",
@@ -498,6 +629,29 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "data_freshness",
       "update_cadence"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "gross_profit": {
+    "term_id": "gross_profit",
+    "display_name": "Gross Profit",
+    "category": "fundamentals",
+    "short_definition": "Revenue minus the direct cost of the goods and services sold.",
+    "full_definition": "Read from us-gaap GrossProfit as the company tagged it. Many companies, such as Alphabet, Meta and banks, do not report a gross profit line; the platform then shows it as unavailable and does not compute it from other lines.",
+    "formula": "reported us-gaap:GrossProfit; equals revenue - cost of revenue when reported",
+    "unit": "USD",
+    "example": "Apple's FY2025 10-K reports gross profit of $195.201 billion.",
+    "direction": "Higher = more profit before operating expenses",
+    "interpretation": "Divide by revenue for gross margin; a falling margin can mean pricing pressure or rising input costs.",
+    "why_it_matters": "Shows how much each sale contributes before overheads, research and marketing.",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), us-gaap:GrossProfit",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-05",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "Not reported by every company; cost classification differs between companies.",
+    "related_terms": [
+      "revenue",
+      "operating_income"
     ],
     "methodology_version": "0.1.0"
   },
@@ -544,6 +698,123 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "access_status",
       "source_tier"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "long_term_debt_current": {
+    "term_id": "long_term_debt_current",
+    "display_name": "Long-Term Debt (current portion)",
+    "category": "fundamentals",
+    "short_definition": "Part of long-term borrowings that falls due within one year.",
+    "full_definition": "Read from us-gaap LongTermDebtCurrent, or LongTermDebtAndCapitalLeaseObligationsCurrent when a company reports only that. A debt component; total debt is derived in Phase 1 (ADR-013).",
+    "formula": "reported us-gaap:LongTermDebtCurrent, else us-gaap:LongTermDebtAndCapitalLeaseObligationsCurrent",
+    "unit": "USD",
+    "example": "Apple's balance sheet at 2025-09-27 reports current term debt of $12.350 billion.",
+    "direction": "Higher = more debt to repay or refinance soon",
+    "interpretation": "Compare with cash and operating cash flow to judge refinancing needs.",
+    "why_it_matters": "Near-term maturities are a liquidity risk when credit markets tighten.",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), us-gaap current long-term debt concepts",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-05",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "Not every company tags this line separately; missing means not reported, not zero.",
+    "related_terms": [
+      "long_term_debt_noncurrent",
+      "commercial_paper",
+      "cash"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "long_term_debt_noncurrent": {
+    "term_id": "long_term_debt_noncurrent",
+    "display_name": "Long-Term Debt (non-current)",
+    "category": "fundamentals",
+    "short_definition": "Borrowings due after more than one year, on the balance sheet date.",
+    "full_definition": "Read from us-gaap LongTermDebtNoncurrent, or LongTermDebtAndCapitalLeaseObligations when a company reports only that (it also includes finance lease obligations). One of three debt components the platform stores; total debt is derived from them in Phase 1 (ADR-013).",
+    "formula": "reported us-gaap:LongTermDebtNoncurrent, else us-gaap:LongTermDebtAndCapitalLeaseObligations",
+    "unit": "USD",
+    "example": "Apple's balance sheet at 2025-09-27 reports non-current term debt of $78.328 billion.",
+    "direction": "Higher = more leverage",
+    "interpretation": "Read together with the current portion, commercial paper and cash.",
+    "why_it_matters": "Leverage changes the risk of equity and the room for buybacks.",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), us-gaap long-term debt concepts",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-05",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "The fallback concept includes finance leases; banks report debt differently and may show it as unavailable.",
+    "related_terms": [
+      "long_term_debt_current",
+      "commercial_paper",
+      "cash"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "net_income": {
+    "term_id": "net_income",
+    "display_name": "Net Income",
+    "category": "fundamentals",
+    "short_definition": "Profit attributable to the company's shareholders after all costs, interest and taxes.",
+    "full_definition": "Read from us-gaap NetIncomeLoss, the amount attributable to the parent's shareholders. Profit including non-controlling interests (ProfitLoss) is a different concept and is not used.",
+    "formula": "reported us-gaap:NetIncomeLoss",
+    "unit": "USD",
+    "example": "Apple's FY2025 10-K reports net income of $112.010 billion.",
+    "direction": "Higher = more profit for shareholders",
+    "interpretation": "Check one-off items and tax effects before reading a change as a trend.",
+    "why_it_matters": "The base of earnings per share and of most valuation multiples.",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), us-gaap:NetIncomeLoss",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-05",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "A later filing may restate a past period (e.g. Apple's FY2008 net income was restated in a January 2010 10-K/A); both versions are kept.",
+    "related_terms": [
+      "eps_diluted",
+      "restated_flag"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "operating_cash_flow": {
+    "term_id": "operating_cash_flow",
+    "display_name": "Operating Cash Flow",
+    "category": "fundamentals",
+    "short_definition": "Cash generated by the business's operations in the period.",
+    "full_definition": "Read from us-gaap NetCashProvidedByUsedInOperatingActivities on the cash flow statement. Negative values mean operations used cash. Quarterly filings report year-to-date periods.",
+    "formula": "reported us-gaap:NetCashProvidedByUsedInOperatingActivities",
+    "unit": "USD",
+    "example": "Apple's FY2025 10-K reports operating cash flow of $111.482 billion.",
+    "direction": "Higher = more cash from operations",
+    "interpretation": "Compare with net income; a large gap can point to working-capital swings or accounting accruals.",
+    "why_it_matters": "Cash, not accounting profit, funds buybacks, dividends and investment.",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), us-gaap:NetCashProvidedByUsedInOperatingActivities",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-05",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "For banks it moves with trading assets and loans (JPMorgan's 2025 value is negative), so it is not comparable with industrial companies.",
+    "related_terms": [
+      "capex",
+      "net_income"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "operating_income": {
+    "term_id": "operating_income",
+    "display_name": "Operating Income",
+    "category": "fundamentals",
+    "short_definition": "Profit from the core business after operating expenses, before interest and taxes.",
+    "full_definition": "Read from us-gaap OperatingIncomeLoss as reported. Negative values are operating losses. Banks such as JPMorgan do not report this line; it is then unavailable.",
+    "formula": "reported us-gaap:OperatingIncomeLoss",
+    "unit": "USD",
+    "example": "Apple's FY2025 10-K reports operating income of $133.050 billion.",
+    "direction": "Higher = more profitable operations",
+    "interpretation": "Divide by revenue for operating margin; compare with prior periods to see operating leverage.",
+    "why_it_matters": "Separates the profitability of the business from financing and tax effects.",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), us-gaap:OperatingIncomeLoss",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-05",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "One-off charges are included as reported; no adjustments are made.",
+    "related_terms": [
+      "revenue",
+      "net_income"
     ],
     "methodology_version": "0.1.0"
   },
@@ -616,6 +887,53 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     ],
     "methodology_version": "0.1.0"
   },
+  "revenue": {
+    "term_id": "revenue",
+    "display_name": "Revenue",
+    "category": "fundamentals",
+    "short_definition": "Total sales the company reported for the period, before any costs.",
+    "full_definition": "The top line of the income statement as tagged in the company's XBRL filing. The platform reads, in priority order, us-gaap RevenueFromContractWithCustomerExcludingAssessedTax (ASC 606, since 2018), Revenues, SalesRevenueNet (before 2018) and, for banks, RevenuesNetOfInterestExpense. Quarterly filings also report year-to-date periods; each period is stored separately.",
+    "formula": "reported value of the highest-priority revenue concept in the filing, per period",
+    "unit": "USD",
+    "example": "Apple's FY2025 10-K (year ended 2025-09-27) reports revenue of $416.161 billion.",
+    "direction": "Higher = larger business; growth matters more than level",
+    "interpretation": "Compare like periods (quarter with quarter, year with year) and look at the change, not the level alone.",
+    "why_it_matters": "Revenue growth is the base of most fundamental and earnings analysis.",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), us-gaap revenue concepts",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-05",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "Concept changes across years (e.g. ASC 606 in 2018) can shift what is included; the source concept is kept with every value.",
+    "related_terms": [
+      "gross_profit",
+      "operating_income",
+      "restated_flag"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "share_repurchases": {
+    "term_id": "share_repurchases",
+    "display_name": "Share Repurchases",
+    "category": "fundamentals",
+    "short_definition": "Cash the company paid to buy back its own common stock in the period.",
+    "full_definition": "Read from us-gaap PaymentsForRepurchaseOfCommonStock on the cash flow statement: actual cash spent, not authorizations or announcements.",
+    "formula": "reported us-gaap:PaymentsForRepurchaseOfCommonStock",
+    "unit": "USD",
+    "example": "Apple's FY2025 10-K reports $90.711 billion of common stock repurchases.",
+    "direction": "Higher = more capital returned, not automatically better",
+    "interpretation": "Compare with stock-based compensation and the change in diluted shares to see the net effect.",
+    "why_it_matters": "The base of buyback intensity and net share reduction in Phase 1.",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), us-gaap:PaymentsForRepurchaseOfCommonStock",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-05",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "Cash timing can differ from trade dates; excise taxes and accelerated programs can shift amounts between periods.",
+    "related_terms": [
+      "diluted_shares",
+      "stock_based_compensation"
+    ],
+    "methodology_version": "0.1.0"
+  },
   "source_tier": {
     "term_id": "source_tier",
     "display_name": "Source Tier",
@@ -636,6 +954,29 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "license_status",
       "access_status"
+    ],
+    "methodology_version": "0.1.0"
+  },
+  "stock_based_compensation": {
+    "term_id": "stock_based_compensation",
+    "display_name": "Stock-Based Compensation",
+    "category": "fundamentals",
+    "short_definition": "Non-cash expense for shares and options granted to employees in the period.",
+    "full_definition": "Read from us-gaap ShareBasedCompensation (the add-back on the cash flow statement), or AllocatedShareBasedCompensationExpense when a company reports only that.",
+    "formula": "reported us-gaap:ShareBasedCompensation, else us-gaap:AllocatedShareBasedCompensationExpense",
+    "unit": "USD",
+    "example": "Apple's FY2025 10-K reports $12.863 billion of share-based compensation.",
+    "direction": "Higher = more dilution pressure",
+    "interpretation": "Buybacks first offset this dilution; only repurchases beyond it reduce the share count.",
+    "why_it_matters": "Separates real buyback benefit from buybacks that only absorb employee grants.",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), us-gaap share-based compensation concepts",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-05",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "The two concepts can differ slightly (e.g. capitalized amounts or tax effects).",
+    "related_terms": [
+      "share_repurchases",
+      "diluted_shares"
     ],
     "methodology_version": "0.1.0"
   },
