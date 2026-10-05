@@ -51,9 +51,11 @@ test("Data Health shows the registered sources from the live API", async ({ page
   }
   if (!isMobile) {
     await expect(page.getByRole("table")).toBeVisible();
-    await expect(page.locator('tbody [data-term-id="data_freshness"]').first()).toHaveText(
-      "Not enabled",
-    );
+    const freshness = (name: RegExp) =>
+      page.getByRole("row", { name }).locator('[data-term-id="data_freshness"]');
+    // SEC EDGAR is enabled (M0.5): judged, whatever its state; FRED is not enabled yet.
+    await expect(freshness(/SEC EDGAR/)).toHaveText(/^(Fresh|Stale|Failing)$/);
+    await expect(freshness(/FRED/)).toHaveText("Not enabled");
   }
 });
 

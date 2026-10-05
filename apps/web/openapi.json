@@ -411,6 +411,10 @@
             "title": "Raw Payload Keys",
             "type": "array"
           },
+          "rows_conflicted": {
+            "title": "Rows Conflicted",
+            "type": "integer"
+          },
           "rows_inserted": {
             "title": "Rows Inserted",
             "type": "integer"
@@ -477,6 +481,7 @@
           "finished_at",
           "rows_inserted",
           "rows_unchanged",
+          "rows_conflicted",
           "raw_payload_keys",
           "error_class",
           "error_message",

@@ -86,9 +86,13 @@ Delivered with M0.4: glossary registry (`glossary_terms`, migration 0003, synced
 - Requests send `SEC_USER_AGENT`; throttle to ≤ 5 req/s; cache responses.
 
 **Acceptance**
-- [ ] Facts ingested for every equity in `config/universe.yaml`.
-- [ ] Test (recorded real fixture): a restated value produces two versions; `as_of()` before the restatement filing returns the original.
-- [ ] Every fact links to its accession number and filing URL.
+- [x] Facts ingested for every equity in `config/universe.yaml`. Live `make sec-refresh` on 2026-10-05: 11 runs succeeded; 9,948 facts and 192,986 filings for all 10 equities. XOM has only 22 facts, see the ADR-013 known gap.
+- [x] Test (recorded real fixture): a restated value produces two versions; `as_of()` before the restatement filing returns the original. Case: Apple FY2008 net income, $4.834bn in the 10-K of 2009-10-27, restated to $6.119bn in the 10-K/A of 2010-01-25 (`tests/integration/test_sec.py`).
+- [x] Every fact links to its accession number and filing URL (EDGAR index page). Spot check: AAPL FY2025 revenue of $416,161m matches "Total net sales" in the 10-K, accepted 2025-10-31 06:01:26 ET.
+
+**Notes (M0.5)**
+- "Total debt" is stored as three reported components; Phase 1 derives the total (ADR-013).
+- Cache: raw responses are content-addressed in the object store; conditional requests are deferred (ADR-013).
 
 ## M0.5b Minimal instrument page (pulled forward from M0.9, Steven 2026-10-05)
 **Build**

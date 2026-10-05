@@ -252,7 +252,7 @@ function Runs({ runs }: { runs: IngestionRun[] }) {
       </h2>
       {runs.length === 0 ? (
         <p className="text-sm text-neutral-500">
-          No ingestion runs yet. Runs appear once a source is enabled; SEC EDGAR is next.
+          No ingestion runs yet. Runs appear after the first scheduled or manual refresh of an enabled source.
         </p>
       ) : (
         <ul className="divide-y divide-neutral-800 text-sm" aria-label="Recent ingestion runs">
