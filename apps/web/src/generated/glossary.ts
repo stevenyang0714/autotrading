@@ -11,6 +11,8 @@ export type CompleteTermId =
   | "capex"
   | "cash"
   | "commercial_paper"
+  | "core_pce_inflation_yoy"
+  | "cpi_inflation_yoy"
   | "dashboard_alerts_center"
   | "dashboard_congress_trades"
   | "dashboard_corporate_actions"
@@ -26,13 +28,16 @@ export type CompleteTermId =
   | "dashboard_portfolio_risk"
   | "dashboard_strategy_lab"
   | "dashboard_x_expert_watch"
+  | "data_age"
   | "data_freshness"
   | "dead_letter"
+  | "dev_log"
   | "diluted_shares"
   | "eps_diluted"
   | "filing_date"
   | "freshness_sla"
   | "gross_profit"
+  | "hy_oas_percentile"
   | "ingestion_status"
   | "license_status"
   | "long_term_debt_current"
@@ -48,25 +53,38 @@ export type CompleteTermId =
   | "macro_treasury_2y"
   | "macro_unemployment_rate"
   | "macro_vix"
+  | "milestone_status"
   | "net_income"
+  | "next_refresh"
   | "observation_date"
+  | "open_decision"
   | "operating_cash_flow"
   | "operating_income"
   | "page_data_health"
   | "page_instruments"
   | "page_macro"
+  | "page_overview"
+  | "page_progress"
+  | "payrolls_monthly_change"
+  | "payrolls_prior_month_revision"
   | "planned_phase"
   | "point_in_time"
   | "predecessor_issuer"
   | "rate_limit"
+  | "real_fed_funds_rate"
+  | "real_gdp_growth_annualized"
   | "reporting_period"
   | "restated_flag"
   | "revenue"
+  | "rule_insight"
+  | "sahm_rule_indicator"
   | "share_repurchases"
   | "source_tier"
   | "stock_based_compensation"
   | "update_cadence"
-  | "vintage";
+  | "vintage"
+  | "vix_percentile_1y"
+  | "yield_curve_inversion";
 
 export interface GlossaryTerm {
   term_id: CompleteTermId;
@@ -87,6 +105,9 @@ export interface GlossaryTerm {
   caveats: string;
   related_terms: string[];
   methodology_version: string;
+  /** Chinese name and one-line hint (docs/glossary/glossary_zh.yaml); presentation only. */
+  name_zh?: string;
+  hint_zh?: string;
 }
 
 export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
@@ -111,7 +132,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "license_status",
       "data_freshness"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "存取狀態",
+    "hint_zh": "是否已具備取得這個來源資料的條件（例如 API key）。"
   },
   "accession_number": {
     "term_id": "accession_number",
@@ -134,7 +157,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "filing_date",
       "restated_flag"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "申報編號",
+    "hint_zh": "SEC 為每份申報指定的唯一編號，可連到原始文件。"
   },
   "as_of": {
     "term_id": "as_of",
@@ -157,7 +182,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "data_freshness",
       "point_in_time"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "資料時間",
+    "hint_zh": "資料所反映的時間點。"
   },
   "capex": {
     "term_id": "capex",
@@ -179,7 +206,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "operating_cash_flow"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "資本支出",
+    "hint_zh": "購置廠房、設備等固定資產支付的現金。"
   },
   "cash": {
     "term_id": "cash",
@@ -202,7 +231,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "long_term_debt_current",
       "commercial_paper"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "現金及約當現金",
+    "hint_zh": "期末的現金與極短期、高流動性投資。"
   },
   "commercial_paper": {
     "term_id": "commercial_paper",
@@ -226,7 +257,59 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "long_term_debt_noncurrent",
       "cash"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "商業本票",
+    "hint_zh": "短期無擔保借款，通常 270 天內到期。"
+  },
+  "core_pce_inflation_yoy": {
+    "term_id": "core_pce_inflation_yoy",
+    "display_name": "Core PCE Inflation (y/y)",
+    "category": "macro_indicator",
+    "short_definition": "Change in the core PCE price index over the last 12 months, in percent.",
+    "full_definition": "The Federal Reserve's preferred inflation gauge, computed from the core PCE values known at the chosen time. Labelled above, at or below the 2% target after rounding to one decimal.",
+    "formula": "(core PCE latest month / same month a year earlier - 1) x 100",
+    "unit": "percent",
+    "example": "August 2026: 3.0% (3.01%); as known on 2026-09-30, July 2026 was 3.3%.",
+    "direction": "Higher = faster underlying inflation",
+    "interpretation": "Above 2% means inflation is running over the Fed's target.",
+    "why_it_matters": "The anchor of the Fed's inflation reading and of the real policy rate here.",
+    "source": "Computed from FRED PCEPILFE (BEA)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/indicators.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "monthly",
+    "caveats": "Each release revises earlier months, so the value as known at a date can differ from today's.",
+    "related_terms": [
+      "macro_core_pce",
+      "real_fed_funds_rate"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "核心 PCE 年增率",
+    "hint_zh": "核心 PCE 與 12 個月前相比的變動百分比，對照聯準會 2% 目標。"
+  },
+  "cpi_inflation_yoy": {
+    "term_id": "cpi_inflation_yoy",
+    "display_name": "CPI Inflation (y/y)",
+    "category": "macro_indicator",
+    "short_definition": "Change in the consumer price index over the last 12 months, in percent.",
+    "full_definition": "Computed from the CPI values known at the chosen time: the latest month against the same month a year earlier. Labelled above, at or below the Fed's 2% target after rounding to one decimal.",
+    "formula": "(CPI latest month / CPI same month a year earlier - 1) x 100",
+    "unit": "percent",
+    "example": "August 2026: 3.4% (3.35%).",
+    "direction": "Higher = faster inflation",
+    "interpretation": "Compare with core PCE and with the 2% target; CPI usually runs above PCE.",
+    "why_it_matters": "Headline inflation drives rate expectations and real returns.",
+    "source": "Computed from FRED CPIAUCSL (BLS)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/indicators.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "monthly",
+    "caveats": "The Fed's 2% target refers to PCE, not CPI; the comparison is a reference point.",
+    "related_terms": [
+      "macro_cpi",
+      "core_pce_inflation_yoy"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "CPI 年增率",
+    "hint_zh": "CPI 與 12 個月前相比的變動百分比。"
   },
   "dashboard_alerts_center": {
     "term_id": "dashboard_alerts_center",
@@ -248,7 +331,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "planned_phase"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "警示中心",
+    "hint_zh": "所有警示與通知（Phase 1）。"
   },
   "dashboard_congress_trades": {
     "term_id": "dashboard_congress_trades",
@@ -270,7 +355,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "planned_phase"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "國會交易",
+    "hint_zh": "美國議員申報的交易與申報延遲（Phase 4）。"
   },
   "dashboard_corporate_actions": {
     "term_id": "dashboard_corporate_actions",
@@ -292,7 +379,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "planned_phase"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "公司行動",
+    "hint_zh": "買回、股利、分割等公司行動（Phase 1）。"
   },
   "dashboard_earnings": {
     "term_id": "dashboard_earnings",
@@ -314,7 +403,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "planned_phase"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "財報季",
+    "hint_zh": "實際財報與前期比較、財測與市場反應（Phase 1）。"
   },
   "dashboard_event_transmission": {
     "term_id": "dashboard_event_transmission",
@@ -336,7 +427,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "planned_phase"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "事件傳導",
+    "hint_zh": "事件如何經由產業鏈影響資產（Phase 3）。"
   },
   "dashboard_execution": {
     "term_id": "dashboard_execution",
@@ -358,7 +451,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "planned_phase"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "下單執行",
+    "hint_zh": "下單預覽與模擬帳戶（Phase 5）。"
   },
   "dashboard_fundamental_research": {
     "term_id": "dashboard_fundamental_research",
@@ -380,7 +475,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "planned_phase"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "基本面研究",
+    "hint_zh": "財報、估值與買回分析（Phase 1）。"
   },
   "dashboard_global_monitor": {
     "term_id": "dashboard_global_monitor",
@@ -402,7 +499,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "planned_phase"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "全球監控",
+    "hint_zh": "全球事件、實體與政策的總覽（Phase 3）。"
   },
   "dashboard_market_regime": {
     "term_id": "dashboard_market_regime",
@@ -424,7 +523,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "planned_phase"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "市場環境",
+    "hint_zh": "總經與市場所處的狀態判斷（Phase 2）。"
   },
   "dashboard_opportunity_radar": {
     "term_id": "dashboard_opportunity_radar",
@@ -446,7 +547,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "planned_phase"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "機會雷達",
+    "hint_zh": "依訊號篩選出的研究候選標的（Phase 2）。"
   },
   "dashboard_options_vol": {
     "term_id": "dashboard_options_vol",
@@ -468,7 +571,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "planned_phase"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "選擇權與波動率",
+    "hint_zh": "選擇權分析與避險（Phase 5）。"
   },
   "dashboard_policy_monitor": {
     "term_id": "dashboard_policy_monitor",
@@ -490,7 +595,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "planned_phase"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "政策監控",
+    "hint_zh": "政策提案到實施的生命週期（Phase 3）。"
   },
   "dashboard_portfolio_risk": {
     "term_id": "dashboard_portfolio_risk",
@@ -512,7 +619,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "planned_phase"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "投組風險",
+    "hint_zh": "部位風險與風險否決規則（Phase 2）。"
   },
   "dashboard_strategy_lab": {
     "term_id": "dashboard_strategy_lab",
@@ -534,7 +643,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "planned_phase"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "策略實驗室",
+    "hint_zh": "模擬交易日誌與回測（Phase 1–2）。"
   },
   "dashboard_x_expert_watch": {
     "term_id": "dashboard_x_expert_watch",
@@ -556,7 +667,35 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "planned_phase"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "X 專家觀察",
+    "hint_zh": "追蹤研究者在 X 上的觀點變化（Phase 4）。"
+  },
+  "data_age": {
+    "term_id": "data_age",
+    "display_name": "Data Age",
+    "category": "data_quality",
+    "short_definition": "Time since the source published the newest value shown.",
+    "full_definition": "For a macro series, time since its newest vintage was released; for SEC data, time since the newest filing was accepted. Different from our last refresh, which is when we fetched it.",
+    "formula": "now - publication time of the newest value",
+    "unit": "duration",
+    "example": "CPI for August 2026, released 2026-09-11: about 25 days old on 2026-10-06.",
+    "direction": "Longer = older information",
+    "interpretation": "Monthly series are normally weeks old; daily ones a day or two.",
+    "why_it_matters": "Separates a stale source from a source that simply publishes rarely.",
+    "source": "Publication times from SEC and ALFRED (ADR-013, ADR-015)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/decisions/DECISIONS.md",
+    "as_of": "2026-10-06",
+    "update_cadence": "continuous",
+    "caveats": "Date-only releases count from the end of that day in New York.",
+    "related_terms": [
+      "next_refresh",
+      "data_freshness",
+      "vintage"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "資料年齡",
+    "hint_zh": "來源發布最新數值至今經過多久。"
   },
   "data_freshness": {
     "term_id": "data_freshness",
@@ -580,7 +719,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "ingestion_status",
       "as_of"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "資料新鮮度",
+    "hint_zh": "距離上次成功更新多久，和該來源的預期更新頻率比較。"
   },
   "dead_letter": {
     "term_id": "dead_letter",
@@ -603,7 +744,33 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "ingestion_status",
       "data_freshness"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "失敗佇列",
+    "hint_zh": "重試多次仍失敗的擷取工作，需要人工處理。"
+  },
+  "dev_log": {
+    "term_id": "dev_log",
+    "display_name": "Development Log",
+    "category": "navigation",
+    "short_definition": "Dated entries of what each step delivered, newest first.",
+    "full_definition": "The first sentence of each row in the log of docs/STATUS.md, written at the end of every step.",
+    "formula": "from docs/STATUS.md",
+    "unit": "text",
+    "example": "2026-10-06, M0.6: Local acceptance passed.",
+    "direction": "N/A",
+    "interpretation": "Read the full entry in STATUS.md for numbers and known gaps.",
+    "why_it_matters": "A short audit trail of the build.",
+    "source": "docs/STATUS.md",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/STATUS.md",
+    "as_of": "2026-10-06",
+    "update_cadence": "per step",
+    "caveats": "Text is quoted from the document; numbers in it are not metrics.",
+    "related_terms": [
+      "page_progress"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "開發紀錄",
+    "hint_zh": "每個步驟完成內容的紀錄，最新在前。"
   },
   "diluted_shares": {
     "term_id": "diluted_shares",
@@ -627,7 +794,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "share_repurchases",
       "stock_based_compensation"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "稀釋加權股數",
+    "hint_zh": "期間內的加權平均股數，含潛在稀釋股份。"
   },
   "eps_diluted": {
     "term_id": "eps_diluted",
@@ -651,7 +820,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "diluted_shares",
       "restated_flag"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "稀釋每股盈餘",
+    "hint_zh": "考慮選擇權與可轉債潛在稀釋後的每股獲利。"
   },
   "filing_date": {
     "term_id": "filing_date",
@@ -674,7 +845,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "accession_number",
       "point_in_time"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "申報時間",
+    "hint_zh": "SEC 受理申報、資訊公開的時間。"
   },
   "freshness_sla": {
     "term_id": "freshness_sla",
@@ -697,7 +870,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "data_freshness",
       "update_cadence"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "新鮮度標準",
+    "hint_zh": "該來源可接受的最長未更新時間，超過即視為過期。"
   },
   "gross_profit": {
     "term_id": "gross_profit",
@@ -720,7 +895,34 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "revenue",
       "operating_income"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "毛利",
+    "hint_zh": "營收減去銷貨成本。"
+  },
+  "hy_oas_percentile": {
+    "term_id": "hy_oas_percentile",
+    "display_name": "HY Spread Percentile",
+    "category": "macro_indicator",
+    "short_definition": "Where today's high-yield credit spread ranks in its available history, from 0 to 100.",
+    "full_definition": "Share of stored observations of the ICE BofA US High Yield OAS that are at or below the latest one. Labelled low below the 25th percentile and high above the 75th.",
+    "formula": "count(values <= latest) / count(values) x 100",
+    "unit": "percentile",
+    "example": "2026-10-02: 3.10%, 57th percentile since 2023-10-06 (mid-range).",
+    "direction": "Higher = wider spreads, more credit stress",
+    "interpretation": "Low means credit is priced tightly by recent standards.",
+    "why_it_matters": "Credit spreads often widen before equity drawdowns.",
+    "source": "Computed from FRED BAMLH0A0HYM2 (ICE)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/indicators.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "daily (business days)",
+    "caveats": "History on FRED only goes back about three years (ICE licensing), so the ranking is short-term.",
+    "related_terms": [
+      "macro_hy_oas",
+      "vix_percentile_1y"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "高收益債利差百分位",
+    "hint_zh": "目前利差在可取得歷史中的排名（0–100）。"
   },
   "ingestion_status": {
     "term_id": "ingestion_status",
@@ -743,7 +945,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "data_freshness",
       "dead_letter"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "擷取狀態",
+    "hint_zh": "某次資料擷取的結果：成功、略過、失敗等。"
   },
   "license_status": {
     "term_id": "license_status",
@@ -766,7 +970,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "access_status",
       "source_tier"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "授權狀態",
+    "hint_zh": "這份資料可以怎麼使用：公開、個人授權或受限。"
   },
   "long_term_debt_current": {
     "term_id": "long_term_debt_current",
@@ -790,7 +996,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "commercial_paper",
       "cash"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "一年內到期長期負債",
+    "hint_zh": "長期借款中一年內到期的部分。"
   },
   "long_term_debt_noncurrent": {
     "term_id": "long_term_debt_noncurrent",
@@ -814,7 +1022,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "commercial_paper",
       "cash"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "長期負債（非流動）",
+    "hint_zh": "一年後才到期的借款。"
   },
   "macro_core_pce": {
     "term_id": "macro_core_pce",
@@ -837,7 +1047,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "macro_cpi",
       "vintage"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "核心 PCE 物價指數",
+    "hint_zh": "排除食品與能源的個人消費支出物價指數，聯準會偏好的通膨指標。"
   },
   "macro_cpi": {
     "term_id": "macro_cpi",
@@ -860,7 +1072,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "macro_core_pce",
       "vintage"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "消費者物價指數（CPI）",
+    "hint_zh": "美國都市消費者整體物價指數，季調後。"
   },
   "macro_curve_10y_2y": {
     "term_id": "macro_curve_10y_2y",
@@ -883,7 +1097,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "macro_treasury_2y",
       "macro_treasury_10y"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "10 年減 2 年利差",
+    "hint_zh": "殖利率曲線斜率；負值即「倒掛」。"
   },
   "macro_fed_funds": {
     "term_id": "macro_fed_funds",
@@ -905,7 +1121,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "macro_treasury_2y"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "聯邦基金利率",
+    "hint_zh": "銀行間隔夜拆款的有效利率（月平均），受聯準會政策引導。"
   },
   "macro_hy_oas": {
     "term_id": "macro_hy_oas",
@@ -927,7 +1145,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "macro_vix"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "高收益債利差",
+    "hint_zh": "高收益公司債相對美債的額外殖利率（OAS）。"
   },
   "macro_nonfarm_payrolls": {
     "term_id": "macro_nonfarm_payrolls",
@@ -950,7 +1170,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "macro_unemployment_rate",
       "vintage"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "非農就業人數",
+    "hint_zh": "美國非農業部門受雇總人數（千人），月增減即「非農數字」。"
   },
   "macro_real_gdp": {
     "term_id": "macro_real_gdp",
@@ -972,7 +1194,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "vintage"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "實質 GDP",
+    "hint_zh": "扣除物價因素後的國內生產毛額，季調年率。"
   },
   "macro_treasury_10y": {
     "term_id": "macro_treasury_10y",
@@ -995,7 +1219,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "macro_treasury_2y",
       "macro_curve_10y_2y"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "10 年期美債殖利率",
+    "hint_zh": "10 年期固定期限美國公債殖利率，長期資產的折現基準。"
   },
   "macro_treasury_2y": {
     "term_id": "macro_treasury_2y",
@@ -1019,7 +1245,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "macro_curve_10y_2y",
       "macro_fed_funds"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "2 年期美債殖利率",
+    "hint_zh": "2 年期固定期限美國公債殖利率，反映政策利率預期。"
   },
   "macro_unemployment_rate": {
     "term_id": "macro_unemployment_rate",
@@ -1041,7 +1269,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "macro_nonfarm_payrolls"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "失業率",
+    "hint_zh": "勞動力中失業者的比例，季調後。"
   },
   "macro_vix": {
     "term_id": "macro_vix",
@@ -1063,7 +1293,33 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "macro_hy_oas"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "VIX 恐慌指數",
+    "hint_zh": "S&P 500 選擇權隱含的未來 30 天波動率。"
+  },
+  "milestone_status": {
+    "term_id": "milestone_status",
+    "display_name": "Milestone Status",
+    "category": "navigation",
+    "short_definition": "Acceptance checks ticked for a milestone, and whether it is done, in progress or not started.",
+    "full_definition": "Done when every acceptance check is ticked and its PR is merged; in progress when some are ticked or it is the current sub-milestone; otherwise not started.",
+    "formula": "ticked checkboxes / all checkboxes under the milestone",
+    "unit": "count",
+    "example": "M0.5: 3 of 3, done.",
+    "direction": "Higher = closer to done",
+    "interpretation": "A milestone counts as done only after its PR is merged.",
+    "why_it_matters": "Shows where Phase 0 stands.",
+    "source": "docs/milestones/M0_foundation.md",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M0_foundation.md",
+    "as_of": "2026-10-06",
+    "update_cadence": "live (each page load)",
+    "caveats": "Milestones without checkboxes (e.g. reports) depend on STATUS only.",
+    "related_terms": [
+      "page_progress"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "里程碑狀態",
+    "hint_zh": "驗收項目完成數，以及完成、進行中或未開始。"
   },
   "net_income": {
     "term_id": "net_income",
@@ -1086,7 +1342,34 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "eps_diluted",
       "restated_flag"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "淨利",
+    "hint_zh": "歸屬於母公司股東的稅後淨利。"
+  },
+  "next_refresh": {
+    "term_id": "next_refresh",
+    "display_name": "Next Refresh",
+    "category": "data_quality",
+    "short_definition": "When the platform will next fetch this source on its schedule.",
+    "full_definition": "The next scheduled run of the source's daily refresh, in SGT and ET. Manual refreshes (make sec-refresh, make fred-refresh) can run at any time.",
+    "formula": "next daily slot after now (SEC 10:00 SGT, FRED 10:15 SGT)",
+    "unit": "timestamp",
+    "example": "FRED at 10:15 SGT is 22:15 ET the previous evening.",
+    "direction": "N/A",
+    "interpretation": "Data newer than the source's own release cannot arrive before this time.",
+    "why_it_matters": "Tells you how current the data can be.",
+    "source": "apps/api/src/autotrading/ingestion/schedule.py",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/ingestion/schedule.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "per source schedule",
+    "caveats": "Shown only for enabled, scheduled sources.",
+    "related_terms": [
+      "data_freshness",
+      "data_age"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "下次更新",
+    "hint_zh": "平台下一次依排程抓取這個來源的時間。"
   },
   "observation_date": {
     "term_id": "observation_date",
@@ -1109,7 +1392,33 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "vintage",
       "reporting_period"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "觀測日期",
+    "hint_zh": "FRED 標示數值的日期，為期間的第一天；不是公布日。"
+  },
+  "open_decision": {
+    "term_id": "open_decision",
+    "display_name": "Open Decision",
+    "category": "navigation",
+    "short_definition": "A decision only you can make, with when it is needed and what happens until then.",
+    "full_definition": "Rows of the open decisions table in DECISIONS.md (OD-n): the question, the milestone that needs it, and the default the build follows until you decide.",
+    "formula": "from docs/decisions/DECISIONS.md",
+    "unit": "label",
+    "example": "OD-9: verify Alpaca eligibility from Singapore, needed before M0.7.",
+    "direction": "N/A",
+    "interpretation": "Decisions due soon can block the next milestone.",
+    "why_it_matters": "Nothing that needs your approval is decided silently.",
+    "source": "docs/decisions/DECISIONS.md",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/decisions/DECISIONS.md",
+    "as_of": "2026-10-06",
+    "update_cadence": "per decision",
+    "caveats": "Shows the first sentence of each decision; the document has the details.",
+    "related_terms": [
+      "page_progress"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "待決事項",
+    "hint_zh": "需要你決定的事項、需要的時間點與決定前的預設做法。"
   },
   "operating_cash_flow": {
     "term_id": "operating_cash_flow",
@@ -1132,7 +1441,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "capex",
       "net_income"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "營業現金流",
+    "hint_zh": "本業營運在期間內產生的現金。"
   },
   "operating_income": {
     "term_id": "operating_income",
@@ -1155,7 +1466,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "revenue",
       "net_income"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "營業利益",
+    "hint_zh": "本業獲利，未計利息與稅。"
   },
   "page_data_health": {
     "term_id": "page_data_health",
@@ -1179,7 +1492,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "ingestion_status",
       "dead_letter"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "資料健康度",
+    "hint_zh": "所有資料來源的狀態、最近擷取紀錄與失敗項目。"
   },
   "page_instruments": {
     "term_id": "page_instruments",
@@ -1203,7 +1518,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "restated_flag",
       "accession_number"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "個股",
+    "hint_zh": "投資範圍內股票的 SEC 財報數字，可切換「當時已知」的版本。"
   },
   "page_macro": {
     "term_id": "page_macro",
@@ -1227,7 +1544,110 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "point_in_time",
       "observation_date"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "總經",
+    "hint_zh": "美國主要總經序列及其每次修正，可切換「當時已知」的版本。"
+  },
+  "page_overview": {
+    "term_id": "page_overview",
+    "display_name": "Overview",
+    "category": "navigation",
+    "short_definition": "The home dashboard: the US macro picture in six blocks, with charts and rule-based insights.",
+    "full_definition": "Inflation, labor, growth, policy rates, yield curve and risk, each with its latest values, computed indicators, a chart and one sentence built from fixed rules. Every sentence lists the observations and vintages it used, and an As known on date shows the dashboard as it could be computed then.",
+    "formula": "not a calculation; reads GET /overview",
+    "unit": "page",
+    "example": "As known on 2026-09-30, the labor block reports August payrolls before their October revision.",
+    "direction": "N/A",
+    "interpretation": "Start here for the macro picture, then open a series on the Macro page.",
+    "why_it_matters": "One screen for the state of the economy, without look-ahead.",
+    "source": "M0.6 overview (ADR-016)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/decisions/DECISIONS.md",
+    "as_of": "2026-10-06",
+    "update_cadence": "live (each page load); FRED data refreshed daily at 10:15 SGT",
+    "caveats": "Insights are fixed rules on reported data, not forecasts or advice.",
+    "related_terms": [
+      "page_macro",
+      "point_in_time"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "總覽",
+    "hint_zh": "首頁總經儀表板：六大區塊、圖表與規則式重點。"
+  },
+  "page_progress": {
+    "term_id": "page_progress",
+    "display_name": "Build Progress",
+    "category": "navigation",
+    "short_definition": "Live view of the build: milestones, acceptance checks, current step, open decisions and the log.",
+    "full_definition": "Parsed on every page load from the project documents (milestones, ROADMAP, STATUS and DECISIONS), so updates appear as soon as the documents change.",
+    "formula": "not a calculation; reads GET /progress",
+    "unit": "page",
+    "example": "M0.6 shows 2 of 2 acceptance checks while its PR is pending.",
+    "direction": "N/A",
+    "interpretation": "See what is done, what is in progress and what needs your decision.",
+    "why_it_matters": "Keeps the build visible without reading the repository.",
+    "source": "docs/STATUS.md and docs/milestones",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M0_foundation.md",
+    "as_of": "2026-10-06",
+    "update_cadence": "live (each page load)",
+    "caveats": "Reflects the documents, which are updated at the end of each step.",
+    "related_terms": [
+      "milestone_status",
+      "open_decision",
+      "dev_log"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "開發進度",
+    "hint_zh": "即時讀取專案文件的里程碑、驗收項目與待決事項。"
+  },
+  "payrolls_monthly_change": {
+    "term_id": "payrolls_monthly_change",
+    "display_name": "Payroll Change",
+    "category": "macro_indicator",
+    "short_definition": "Monthly change in nonfarm payrolls: the headline jobs number, in thousands.",
+    "full_definition": "The latest month of nonfarm payrolls minus the month before, both as known at the chosen time.",
+    "formula": "PAYEMS latest month - PAYEMS previous month",
+    "unit": "thousands of jobs",
+    "example": "September 2026: +29K.",
+    "direction": "Higher = more jobs added",
+    "interpretation": "Read with the revision to the previous month and the unemployment rate.",
+    "why_it_matters": "The most watched monthly labor market number.",
+    "source": "Computed from FRED PAYEMS (BLS)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/indicators.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "monthly",
+    "caveats": "The first estimate is often revised by tens of thousands in the next two releases.",
+    "related_terms": [
+      "macro_nonfarm_payrolls",
+      "payrolls_prior_month_revision"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "非農月增減",
+    "hint_zh": "最新一個月非農就業人數相對前一月的變化（千人）。"
+  },
+  "payrolls_prior_month_revision": {
+    "term_id": "payrolls_prior_month_revision",
+    "display_name": "Prior-Month Payroll Revision",
+    "category": "macro_indicator",
+    "short_definition": "How much the previous month's payrolls moved from their first release, in thousands.",
+    "full_definition": "The previous month's payroll level as known at the chosen time minus its first released level (its earliest ALFRED vintage). Negative means revised down.",
+    "formula": "PAYEMS previous month (current vintage) - PAYEMS previous month (first vintage)",
+    "unit": "thousands of jobs",
+    "example": "August 2026: first released at 159,075K on 2026-09-04, now 159,015K: -60K.",
+    "direction": "Negative = earlier strength overstated",
+    "interpretation": "Repeated downward revisions mean the first prints were too optimistic.",
+    "why_it_matters": "Markets trade the first release; revisions show what they got wrong.",
+    "source": "Computed from ALFRED vintages of PAYEMS (BLS)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/indicators.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "monthly",
+    "caveats": "Needs the first vintage of that month; months published before the ALFRED archive have none.",
+    "related_terms": [
+      "payrolls_monthly_change",
+      "vintage"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "前月非農修正",
+    "hint_zh": "前一個月的非農數字相對初值被修正了多少（千人）。"
   },
   "planned_phase": {
     "term_id": "planned_phase",
@@ -1249,7 +1669,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "page_data_health"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "預計階段",
+    "hint_zh": "這個儀表板預計在哪個開發階段開始有內容。"
   },
   "point_in_time": {
     "term_id": "point_in_time",
@@ -1273,7 +1695,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "look_ahead_bias",
       "restated_flag"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "時點資料",
+    "hint_zh": "只使用在該時間點之前已公開的資訊，避免用到「未來的資料」。"
   },
   "predecessor_issuer": {
     "term_id": "predecessor_issuer",
@@ -1296,7 +1720,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "accession_number",
       "point_in_time"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "前身發行人",
+    "hint_zh": "公司改組前的原發行公司，其財報屬於這檔股票的歷史。"
   },
   "rate_limit": {
     "term_id": "rate_limit",
@@ -1319,7 +1745,58 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "update_cadence",
       "access_status"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "請求速率上限",
+    "hint_zh": "平台每秒最多向該來源發出的請求數。"
+  },
+  "real_fed_funds_rate": {
+    "term_id": "real_fed_funds_rate",
+    "display_name": "Real Fed Funds Rate",
+    "category": "macro_indicator",
+    "short_definition": "Fed funds rate minus core PCE inflation, in percentage points.",
+    "full_definition": "The latest monthly effective fed funds rate minus the latest core PCE inflation over 12 months, both as known at the chosen time.",
+    "formula": "FEDFUNDS latest month - core PCE inflation (y/y)",
+    "unit": "percentage points",
+    "example": "September 2026: 3.75% - 3.01% = +0.74 pp.",
+    "direction": "Higher = tighter policy in real terms",
+    "interpretation": "Positive means the policy rate is above inflation.",
+    "why_it_matters": "Shows how restrictive monetary policy is after inflation.",
+    "source": "Computed from FRED FEDFUNDS and PCEPILFE",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/indicators.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "monthly",
+    "caveats": "The two inputs can refer to different months (core PCE is released later).",
+    "related_terms": [
+      "macro_fed_funds",
+      "core_pce_inflation_yoy"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "實質聯邦基金利率",
+    "hint_zh": "聯邦基金利率減去核心 PCE 年增率。"
+  },
+  "real_gdp_growth_annualized": {
+    "term_id": "real_gdp_growth_annualized",
+    "display_name": "Real GDP Growth (annualized)",
+    "category": "macro_indicator",
+    "short_definition": "Quarter-on-quarter growth of real GDP, expressed at an annual rate, in percent.",
+    "full_definition": "The latest quarter's real GDP against the previous quarter, compounded to a yearly rate, from the estimates known at the chosen time.",
+    "formula": "((GDP latest quarter / GDP previous quarter)^4 - 1) x 100",
+    "unit": "percent",
+    "example": "Q2 2026: 2.2% today; as known on 2026-09-30 it was 1.5%.",
+    "direction": "Higher = faster growth",
+    "interpretation": "Negative is labelled contraction.",
+    "why_it_matters": "The broadest measure of the economy's pace.",
+    "source": "Computed from FRED GDPC1 (BEA)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/indicators.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "quarterly",
+    "caveats": "Advance estimates are revised twice within months and again in annual updates.",
+    "related_terms": [
+      "macro_real_gdp"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "實質 GDP 年化季增率",
+    "hint_zh": "實質 GDP 季增率換算為年率。"
   },
   "reporting_period": {
     "term_id": "reporting_period",
@@ -1342,7 +1819,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "filing_date",
       "point_in_time"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "報告期間",
+    "hint_zh": "數值所描述的期間，以期末日標示；不是公布日。"
   },
   "restated_flag": {
     "term_id": "restated_flag",
@@ -1366,7 +1845,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "filing_date",
       "accession_number"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "重編",
+    "hint_zh": "後來的申報改寫了同一期間的數值，原值仍保留。"
   },
   "revenue": {
     "term_id": "revenue",
@@ -1390,7 +1871,58 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "operating_income",
       "restated_flag"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "營收",
+    "hint_zh": "公司在該期間報告的總銷售額，未扣除任何成本。"
+  },
+  "rule_insight": {
+    "term_id": "rule_insight",
+    "display_name": "Insight (rule-based)",
+    "category": "macro_indicator",
+    "short_definition": "One sentence per overview block, built from fixed rules on reported data.",
+    "full_definition": "Each sentence is a template filled with computed indicators and the latest values known at the chosen time; labels such as above target, triggered or low come from thresholds stated in the indicator's glossary entry. The observations and vintages used are listed under the sentence. No language model writes or interprets them.",
+    "formula": "template(indicators, thresholds); inputs listed with their vintages",
+    "unit": "text",
+    "example": "Payrolls +29K in Sep 2026; Aug 2026 revised -60K from its first release.",
+    "direction": "N/A",
+    "interpretation": "A factual summary, not a forecast or a recommendation.",
+    "why_it_matters": "Reads the dashboard in one line while staying traceable to the data.",
+    "source": "apps/api/src/autotrading/api/overview.py (ADR-016)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/api/overview.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "live (each page load)",
+    "caveats": "Only as current as the data shown; thresholds are reference points, not signals.",
+    "related_terms": [
+      "page_overview",
+      "vintage"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "規則式重點",
+    "hint_zh": "以固定規則與門檻由資料產生的一句摘要，列出所用數據與版本；不是預測或建議。"
+  },
+  "sahm_rule_indicator": {
+    "term_id": "sahm_rule_indicator",
+    "display_name": "Sahm Rule Indicator",
+    "category": "macro_indicator",
+    "short_definition": "Rise in the 3-month average unemployment rate above its low of the previous 12 months.",
+    "full_definition": "Claudia Sahm's recession indicator: the 3-month average of the unemployment rate minus the lowest 3-month average of the previous 12 months, in percentage points. A reading of 0.50 or more has marked the start of every US recession since 1970.",
+    "formula": "avg3(UNRATE latest) - min(avg3 over the previous 12 months)",
+    "unit": "percentage points",
+    "example": "September 2026: 0.00 pp, below the 0.50 trigger.",
+    "direction": "Higher = labor market deteriorating",
+    "interpretation": "0.50 or more is labelled triggered.",
+    "why_it_matters": "A simple, real-time recession signal.",
+    "source": "Computed from FRED UNRATE (BLS); rule by Claudia Sahm (2019)",
+    "source_url": "https://fred.stlouisfed.org/series/SAHMREALTIME",
+    "as_of": "2026-10-06",
+    "update_cadence": "monthly",
+    "caveats": "A rule of thumb, not a forecast; it has given false signals, and it uses values as known then, not later revisions.",
+    "related_terms": [
+      "macro_unemployment_rate"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "薩姆規則指標",
+    "hint_zh": "失業率 3 個月平均高於前 12 個月低點的幅度；≥ 0.50 個百分點視為觸發。"
   },
   "share_repurchases": {
     "term_id": "share_repurchases",
@@ -1413,7 +1945,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "diluted_shares",
       "stock_based_compensation"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "庫藏股買回",
+    "hint_zh": "公司實際支付買回自家股票的現金。"
   },
   "source_tier": {
     "term_id": "source_tier",
@@ -1436,7 +1970,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "license_status",
       "access_status"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "來源等級",
+    "hint_zh": "資料來源的可信程度，數字越小越權威（1 為官方來源）。"
   },
   "stock_based_compensation": {
     "term_id": "stock_based_compensation",
@@ -1459,7 +1995,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "share_repurchases",
       "diluted_shares"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "股票酬勞",
+    "hint_zh": "發給員工的股票與選擇權費用，屬非現金費用。"
   },
   "update_cadence": {
     "term_id": "update_cadence",
@@ -1482,7 +2020,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "freshness_sla",
       "data_freshness"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "更新頻率",
+    "hint_zh": "來源多久發布一次新資料。"
   },
   "vintage": {
     "term_id": "vintage",
@@ -1505,6 +2045,57 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "point_in_time",
       "restated_flag"
     ],
-    "methodology_version": "0.1.0"
+    "methodology_version": "0.1.0",
+    "name_zh": "版本（公布值）",
+    "hint_zh": "某個數值在某次發布時的版本；修正後舊版本仍保留可查。"
+  },
+  "vix_percentile_1y": {
+    "term_id": "vix_percentile_1y",
+    "display_name": "VIX Percentile (1y)",
+    "category": "macro_indicator",
+    "short_definition": "Where today's VIX ranks among its closes of the last 12 months, from 0 to 100.",
+    "full_definition": "Share of VIX closes in the last 365 days that are at or below the latest close. Labelled low below the 25th percentile and high above the 75th.",
+    "formula": "count(closes in 12 months <= latest) / count(closes in 12 months) x 100",
+    "unit": "percentile",
+    "example": "2026-10-02: 15.31, 15th percentile (low).",
+    "direction": "Higher = more fear",
+    "interpretation": "Low can mean calm or complacency; high marks stress.",
+    "why_it_matters": "Puts the VIX level in recent context.",
+    "source": "Computed from FRED VIXCLS (Cboe)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/indicators.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "daily (business days)",
+    "caveats": "A one-year window ranks against recent conditions only.",
+    "related_terms": [
+      "macro_vix",
+      "hy_oas_percentile"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "VIX 一年百分位",
+    "hint_zh": "目前 VIX 在過去 12 個月收盤值中的排名（0–100）。"
+  },
+  "yield_curve_inversion": {
+    "term_id": "yield_curve_inversion",
+    "display_name": "Yield Curve State",
+    "category": "macro_indicator",
+    "short_definition": "Whether the 10Y-2Y spread is below zero, and for how many trading days it has been on that side.",
+    "full_definition": "Inverted when the 10-year minus 2-year Treasury spread is negative. The count goes back to the last change of sign in the stored data, and the date it started is shown.",
+    "formula": "inverted = T10Y2Y < 0; streak = consecutive observations on the same side",
+    "unit": "label and trading days",
+    "example": "2026-10-02: positive for 518 trading days, since 2024-09-06.",
+    "direction": "Inverted = recession risk priced",
+    "interpretation": "The turn from inverted back to positive has often come shortly before recessions.",
+    "why_it_matters": "A widely watched regime and recession signal.",
+    "source": "Computed from FRED T10Y2Y",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/indicators.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "daily (business days)",
+    "caveats": "If the streak reaches the first stored observation, it may be longer than shown.",
+    "related_terms": [
+      "macro_curve_10y_2y"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "殖利率曲線狀態",
+    "hint_zh": "10 年減 2 年利差是否為負（倒掛），以及已維持多少交易日。"
   }
 } as Record<CompleteTermId, GlossaryTerm>;

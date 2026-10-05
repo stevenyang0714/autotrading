@@ -21,8 +21,6 @@ from autotrading.ingestion.job import Window
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.ingestion.schedule import refresh_window
 
-REFRESH_HOUR = 10
-
 
 def universe_equities(config_dir: Path) -> list[str]:
     data = yaml.safe_load((config_dir / "universe.yaml").read_text(encoding="utf-8"))

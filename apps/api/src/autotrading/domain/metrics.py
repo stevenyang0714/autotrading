@@ -49,6 +49,20 @@ MACRO_SERIES_TERMS = (
     "macro_vix",
 )
 
+# Indicators computed on the overview (M0.6, ADR-016): term id -> function in domain/indicators.
+OVERVIEW_INDICATORS = {
+    "cpi_inflation_yoy": "yoy_percent",
+    "core_pce_inflation_yoy": "yoy_percent",
+    "payrolls_monthly_change": "latest_change",
+    "payrolls_prior_month_revision": "revision",
+    "sahm_rule_indicator": "sahm_indicator",
+    "real_gdp_growth_annualized": "annualized_growth",
+    "real_fed_funds_rate": "yoy_percent",
+    "yield_curve_inversion": "inversion_streak",
+    "hy_oas_percentile": "percentile_rank",
+    "vix_percentile_1y": "percentile_rank",
+}
+
 METRICS: tuple[MetricDefinition, ...] = (
     MetricDefinition(
         term_id="data_freshness",
@@ -70,5 +84,13 @@ METRICS: tuple[MetricDefinition, ...] = (
             computed_by="autotrading.adapters.fred.series.FredSeriesJob",
         )
         for term_id in MACRO_SERIES_TERMS
+    ),
+    *(
+        MetricDefinition(
+            term_id=term_id,
+            methodology_version="0.1.0",
+            computed_by=f"autotrading.domain.indicators.{function}",
+        )
+        for term_id, function in OVERVIEW_INDICATORS.items()
     ),
 )

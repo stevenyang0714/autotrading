@@ -191,10 +191,85 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Overview */
+        get: operations["overview_overview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/progress": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Progress */
+        get: operations["progress_progress_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** Block */
+        Block: {
+            /** Charts */
+            charts: components["schemas"]["Chart"][];
+            /**
+             * Id
+             * @enum {string}
+             */
+            id: "inflation" | "labor" | "growth" | "policy" | "curve" | "risk";
+            /** Indicators */
+            indicators: components["schemas"]["Indicator"][];
+            insight: components["schemas"]["Insight"] | null;
+            /** Latest */
+            latest: components["schemas"]["LatestValue"][];
+            /** Title */
+            title: string;
+        };
+        /** Chart */
+        Chart: {
+            /** Points */
+            points: components["schemas"]["ChartPoint"][];
+            /** Term Id */
+            term_id: string;
+            /**
+             * Unit
+             * @enum {string}
+             */
+            unit: "percent" | "pp" | "thousands" | "observations" | "percentile" | "index";
+            /** Zero Line */
+            zero_line: boolean;
+        };
+        /** ChartPoint */
+        ChartPoint: {
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Value */
+            value: string;
+        };
         /** ComponentHealth */
         ComponentHealth: {
             /** Detail */
@@ -252,6 +327,17 @@ export interface components {
             resolved_at: string | null;
             /** Source Id */
             source_id: string;
+        };
+        /** DecisionOut */
+        DecisionOut: {
+            /** Decision */
+            decision: string;
+            /** Default */
+            default: string;
+            /** Id */
+            id: string;
+            /** Needed By */
+            needed_by: string;
         };
         /** EntityOut */
         EntityOut: {
@@ -439,6 +525,49 @@ export interface components {
              */
             status: "ok" | "degraded" | "down";
         };
+        /** Indicator */
+        Indicator: {
+            /**
+             * As Of
+             * Format: date
+             */
+            as_of: string;
+            /** Label */
+            label?: string | null;
+            /** Since */
+            since?: string | null;
+            /** Term Id */
+            term_id: string;
+            /**
+             * Unit
+             * @enum {string}
+             */
+            unit: "percent" | "pp" | "thousands" | "observations" | "percentile" | "index";
+            /** Value */
+            value: string;
+        };
+        /** InputRef */
+        InputRef: {
+            /**
+             * Observation Date
+             * Format: date
+             */
+            observation_date: string;
+            /** Series Id */
+            series_id: string;
+            /**
+             * Vintage
+             * Format: date
+             */
+            vintage: string;
+        };
+        /** Insight */
+        Insight: {
+            /** Inputs */
+            inputs: components["schemas"]["InputRef"][];
+            /** Text */
+            text: string;
+        };
         /** InstrumentList */
         InstrumentList: {
             /** Instruments */
@@ -460,6 +589,38 @@ export interface components {
             /** Ticker */
             ticker: string;
         };
+        /** LatestValue */
+        LatestValue: {
+            /**
+             * Observation Date
+             * Format: date
+             */
+            observation_date: string;
+            /** Series Id */
+            series_id: string;
+            /** Term Id */
+            term_id: string;
+            /** Title */
+            title: string | null;
+            /** Units Short */
+            units_short: string | null;
+            /** Value */
+            value: string;
+            /**
+             * Vintage
+             * Format: date
+             */
+            vintage: string;
+        };
+        /** LogOut */
+        LogOut: {
+            /** Date */
+            date: string;
+            /** Milestone */
+            milestone: string;
+            /** Result */
+            result: string;
+        };
         /** MacroSeriesList */
         MacroSeriesList: {
             /** Last Refresh At */
@@ -473,6 +634,19 @@ export interface components {
             cells: (components["schemas"]["FactCell"] | null)[];
             /** Metric Id */
             metric_id: string;
+        };
+        /** MilestoneOut */
+        MilestoneOut: {
+            /** Done */
+            done: number;
+            /** Id */
+            id: string;
+            /** Status */
+            status: string;
+            /** Title */
+            title: string;
+            /** Total */
+            total: number;
         };
         /** ObservationOut */
         ObservationOut: {
@@ -503,6 +677,18 @@ export interface components {
              */
             vintage: string;
         };
+        /** Overview */
+        Overview: {
+            /** Blocks */
+            blocks: components["schemas"]["Block"][];
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Last Refresh At */
+            last_refresh_at: string | null;
+        };
         /** PeriodColumn */
         PeriodColumn: {
             /**
@@ -513,11 +699,40 @@ export interface components {
             /** Period Start */
             period_start: string | null;
         };
+        /** PhaseOut */
+        PhaseOut: {
+            /** Blocking */
+            blocking: string;
+            /** Number */
+            number: number;
+            /** Scope */
+            scope: string;
+        };
         /** PreviousVersion */
         PreviousVersion: {
             filing: components["schemas"]["FilingRef"];
             /** Value */
             value: string;
+        };
+        /** Progress */
+        Progress: {
+            /** Current */
+            current: {
+                [key: string]: string;
+            };
+            /** Log */
+            log: components["schemas"]["LogOut"][];
+            /** Milestones */
+            milestones: components["schemas"]["MilestoneOut"][];
+            /** Open Decisions */
+            open_decisions: components["schemas"]["DecisionOut"][];
+            /** Phases */
+            phases: components["schemas"]["PhaseOut"][];
+            /**
+             * Read At
+             * Format: date-time
+             */
+            read_at: string;
         };
         /** RunOut */
         RunOut: {
@@ -620,6 +835,8 @@ export interface components {
             license_status: string;
             /** Name */
             name: string;
+            /** Next Refresh At */
+            next_refresh_at: string | null;
             /** Open Dead Letters */
             open_dead_letters: number;
             /** Rate Limit Burst */
@@ -961,6 +1178,58 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    overview_overview_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Overview"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    progress_progress_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Progress"];
                 };
             };
         };

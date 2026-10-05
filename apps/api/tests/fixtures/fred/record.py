@@ -3,8 +3,9 @@
     cd apps/api && uv run python -m tests.fixtures.fred.record
 
 Runs the real `fred.series` fetch (series record, vintage dates, observations over every
-vintage), so the recorded URLs are exactly what replay requests. Observations start in 2023
-(`observation_start`) to keep the files small; everything else is the unmodified response.
+vintage) for every series in config/macro_series.yaml, so the recorded URLs are exactly what
+replay requests. Observations start in 2023 (monthly, quarterly) or mid-2025 (daily) through
+`observation_start` to keep the files small; everything else is the unmodified response.
 URLs in manifest.json never contain the API key (ADR-015). Also picks a real revision case
 for the integration tests and fails if none exists.
 """
@@ -22,8 +23,22 @@ from autotrading.ingestion.job import FetchContext, Window
 from autotrading.settings import get_settings
 
 HERE = Path(__file__).resolve().parent
-OBSERVATION_START = "2023-01-01"
-SERIES = ("PAYEMS", "CPIAUCSL")
+MONTHLY_START, DAILY_START = "2023-01-01", "2025-06-01"
+# Series -> first observation date recorded. Enough for 36-month charts, 12-month changes and
+# the Sahm rule (monthly), 12 quarters (GDP) and one year of daily data.
+SERIES = {
+    "CPIAUCSL": MONTHLY_START,
+    "PCEPILFE": MONTHLY_START,
+    "UNRATE": MONTHLY_START,
+    "PAYEMS": MONTHLY_START,
+    "GDPC1": MONTHLY_START,
+    "FEDFUNDS": MONTHLY_START,
+    "DGS2": DAILY_START,
+    "DGS10": DAILY_START,
+    "T10Y2Y": DAILY_START,
+    "BAMLH0A0HYM2": DAILY_START,
+    "VIXCLS": DAILY_START,
+}
 
 
 def throttle() -> None:
@@ -33,10 +48,8 @@ def throttle() -> None:
 def main() -> None:
     key = get_settings().fred_api_key
     files: dict[str, str] = {}
-    for series_id in SERIES:
-        job = FredSeriesJob(
-            {"series_id": series_id, "observation_start": OBSERVATION_START}, Window()
-        )
+    for series_id, start in SERIES.items():
+        job = FredSeriesJob({"series_id": series_id, "observation_start": start}, Window())
         for i, payload in enumerate(job.fetch(FetchContext(run_id=uuid4(), acquire=throttle))):
             name = f"{series_id}_{i:02d}_{payload_kind(payload.source_url)}.json"
             (HERE / name).write_bytes(payload.content)
@@ -50,7 +63,7 @@ def main() -> None:
 
     manifest = {
         "recorded_at": datetime.now(UTC).isoformat(timespec="seconds"),
-        "observation_start": OBSERVATION_START,
+        "observation_start": SERIES,
         "files": files,
         "revision_case": _revision_case("PAYEMS", files),
     }

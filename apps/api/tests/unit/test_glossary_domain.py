@@ -59,3 +59,13 @@ def test_content_hash_tracks_content_not_status() -> None:
     assert term.content_sha256() == term.model_copy(update={"status": "seed"}).content_sha256()
     changed = term.model_copy(update={"caveats": term.caveats + " Updated."})
     assert changed.content_sha256() != term.content_sha256()
+
+
+def test_every_complete_term_has_a_chinese_hint() -> None:
+    import yaml
+
+    path = Settings(_env_file=None).resolved_glossary_path().with_name("glossary_zh.yaml")  # type: ignore[call-arg]
+    zh = yaml.safe_load(path.read_text(encoding="utf-8"))["terms"]
+    assert set(zh) == set(COMPLETE), "glossary_zh.yaml must cover exactly the complete terms"
+    for term_id, entry in zh.items():
+        assert set(entry) == {"name", "hint"} and entry["name"] and entry["hint"], term_id

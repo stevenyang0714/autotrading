@@ -48,6 +48,8 @@ class Settings(BaseSettings):
     config_dir: Path | None = None
     # Glossary registry seed. Containers mount docs/glossary at /app/glossary.
     glossary_path: Path | None = None
+    # Project documents for the progress page (M0.6). Containers mount docs/ at /app/docs.
+    docs_dir: Path | None = None
 
     # SEC fair access policy: "Name email@example.com", sent as the User-Agent of every SEC
     # request (errata E8). Personal data, so typed as a secret and never logged.
@@ -77,6 +79,14 @@ class Settings(BaseSettings):
         if env_file is None:
             raise RuntimeError("GLOSSARY_PATH is not set and no repo root was found")
         return env_file.parent / "docs" / "glossary" / "glossary_seed.yaml"
+
+    def resolved_docs_dir(self) -> Path:
+        if self.docs_dir is not None:
+            return self.docs_dir
+        env_file = find_env_file()
+        if env_file is None:
+            raise RuntimeError("DOCS_DIR is not set and no repo root was found")
+        return env_file.parent / "docs"
 
     @field_validator("live_trading_enabled")
     @classmethod

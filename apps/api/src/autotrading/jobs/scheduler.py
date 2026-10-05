@@ -10,12 +10,9 @@ from datetime import UTC, datetime
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
 
-from autotrading.adapters.fred.refresh import REFRESH_HOUR as FRED_HOUR
-from autotrading.adapters.fred.refresh import REFRESH_MINUTE as FRED_MINUTE
-from autotrading.adapters.sec.refresh import REFRESH_HOUR
 from autotrading.infra.heartbeat import HEARTBEAT_INTERVAL_SECONDS, write_heartbeat
 from autotrading.infra.redis_client import make_redis
-from autotrading.ingestion.schedule import REFRESH_TIMEZONE
+from autotrading.ingestion.schedule import REFRESH_TIMEZONE, SCHEDULES
 from autotrading.jobs import actors
 from autotrading.settings import get_settings
 
@@ -44,7 +41,11 @@ def main() -> None:
     # filings of that US day are in. A late start (scheduler down) still runs the same day.
     scheduler.add_job(
         lambda: actors.start_sec_refresh(manual=False),
-        CronTrigger(hour=REFRESH_HOUR, minute=0, timezone=REFRESH_TIMEZONE),
+        CronTrigger(
+            hour=SCHEDULES["sec_edgar"].hour,
+            minute=SCHEDULES["sec_edgar"].minute,
+            timezone=REFRESH_TIMEZONE,
+        ),
         id="sec_refresh",
         max_instances=1,
         coalesce=True,
@@ -53,7 +54,11 @@ def main() -> None:
     # FRED / ALFRED (M0.6): daily at 10:15 SGT, after SEC.
     scheduler.add_job(
         lambda: actors.start_fred_refresh(manual=False),
-        CronTrigger(hour=FRED_HOUR, minute=FRED_MINUTE, timezone=REFRESH_TIMEZONE),
+        CronTrigger(
+            hour=SCHEDULES["fred"].hour,
+            minute=SCHEDULES["fred"].minute,
+            timezone=REFRESH_TIMEZONE,
+        ),
         id="fred_refresh",
         max_instances=1,
         coalesce=True,

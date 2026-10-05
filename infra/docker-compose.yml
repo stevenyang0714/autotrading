@@ -24,11 +24,14 @@ x-app-env: &app-env
   FRED_API_KEY: ${FRED_API_KEY:-}
   CONFIG_DIR: /app/config
   GLOSSARY_PATH: /app/glossary/glossary_seed.yaml
+  DOCS_DIR: /app/docs
 
 # Repo config (sources.yaml, universe.yaml), read-only inside the app containers.
 x-app-volumes: &app-volumes
   - ./config:/app/config:ro
   - ./docs/glossary:/app/glossary:ro
+  # Project documents for the progress page (M0.6); read on each request, so edits show live.
+  - ./docs:/app/docs:ro
 
 x-app-depends: &app-depends
   db:

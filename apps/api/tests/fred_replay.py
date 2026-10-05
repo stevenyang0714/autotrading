@@ -20,7 +20,8 @@ from autotrading.ingestion.runner import IngestionRunner
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "fred"
 MANIFEST: dict[str, Any] = json.loads((FIXTURES / "manifest.json").read_text(encoding="utf-8"))
 DUMMY_KEY = "0123456789abcdef0123456789abcdef"
-RECORDED_SERIES = ("PAYEMS", "CPIAUCSL")
+# Series -> first recorded observation date (the job's observation_start when recorded).
+RECORDED_SERIES: dict[str, str] = MANIFEST["observation_start"]
 
 
 def serve(request: httpx.Request) -> httpx.Response:
@@ -47,11 +48,9 @@ def replay(runner: IngestionRunner, window: Window) -> list[UUID]:
     """One `fred.series` run per recorded series, with the recorded observation start."""
     run_ids = [
         runner.create_run(
-            FredSeriesJob.name,
-            {"series_id": series_id, "observation_start": MANIFEST["observation_start"]},
-            window,
+            FredSeriesJob.name, {"series_id": series_id, "observation_start": start}, window
         )
-        for series_id in RECORDED_SERIES
+        for series_id, start in RECORDED_SERIES.items()
     ]
     for run_id in run_ids:
         runner.execute(run_id)

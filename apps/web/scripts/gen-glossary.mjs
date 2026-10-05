@@ -9,6 +9,8 @@ import { parse } from "yaml";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const source = resolve(here, "../../../docs/glossary/glossary_seed.yaml");
+// Chinese hints (M0.6, ADR-016): presentation only, merged as name_zh / hint_zh.
+const zhSource = resolve(here, "../../../docs/glossary/glossary_zh.yaml");
 const target = resolve(here, "../src/generated/glossary.ts");
 
 // 02 §22, in order.
@@ -46,8 +48,20 @@ for (const term of complete) {
 }
 complete.sort((a, b) => a.term_id.localeCompare(b.term_id));
 
+const zh = parse(readFileSync(zhSource, "utf8")).terms ?? {};
+for (const id of Object.keys(zh)) {
+  if (!complete.some((term) => term.term_id === id)) {
+    throw new Error(`glossary_zh.yaml has ${id}, which is not a complete term`);
+  }
+}
 const entries = Object.fromEntries(
-  complete.map((term) => [term.term_id, Object.fromEntries(FIELDS.map((f) => [f, term[f]]))]),
+  complete.map((term) => [
+    term.term_id,
+    {
+      ...Object.fromEntries(FIELDS.map((f) => [f, term[f]])),
+      ...(zh[term.term_id] ? { name_zh: zh[term.term_id].name, hint_zh: zh[term.term_id].hint } : {}),
+    },
+  ]),
 );
 const ids = complete.map((term) => JSON.stringify(term.term_id)).join("\n  | ");
 
@@ -79,6 +93,9 @@ export interface GlossaryTerm {
   caveats: string;
   related_terms: string[];
   methodology_version: string;
+  /** Chinese name and one-line hint (docs/glossary/glossary_zh.yaml); presentation only. */
+  name_zh?: string;
+  hint_zh?: string;
 }
 
 export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = ${JSON.stringify(entries, null, 2)} as Record<CompleteTermId, GlossaryTerm>;

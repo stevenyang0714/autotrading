@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from autotrading.db.models import DeadLetter, IngestionRun, Source
 from autotrading.domain.freshness import FreshnessStatus, freshness_status
+from autotrading.ingestion.schedule import SCHEDULES
 
 router = APIRouter(tags=["data health"])
 
@@ -88,6 +89,7 @@ class SourceHealth(BaseModel):
     topics: list[str]
     freshness: FreshnessStatus | None  # None = disabled, not judged
     last_success_at: datetime | None
+    next_refresh_at: datetime | None  # next scheduled run; None = not enabled or not scheduled
     last_run: RunOut | None
     open_dead_letters: int
 
@@ -159,6 +161,11 @@ def data_health(session: SessionDep) -> DataHealthReport:
                     last_attempt_failed=latest_finished.get(source.id) in FAILED_STATUSES,
                 ),
                 last_success_at=last_success.get(source.id),
+                next_refresh_at=(
+                    SCHEDULES[source.id].next_after(now)
+                    if source.enabled and source.id in SCHEDULES
+                    else None
+                ),
                 last_run=RunOut.model_validate(last_run) if last_run else None,
                 open_dead_letters=open_dead_letters.get(source.id, 0),
             )

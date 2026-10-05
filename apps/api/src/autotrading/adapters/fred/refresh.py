@@ -1,5 +1,5 @@
 """FRED refresh orchestration (M0.6): one `fred.series` run per enabled registry series, in one
-refresh window (ingestion/schedule.py). Scheduled daily at 10:15 SGT, after SEC."""
+refresh window; the schedule is in ingestion/schedule.py (SCHEDULES)."""
 
 from datetime import datetime
 from uuid import UUID
@@ -11,8 +11,6 @@ from autotrading.adapters.fred.series import SOURCE_ID, FredSeriesJob
 from autotrading.db.models import MacroSeries, Source
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.ingestion.schedule import refresh_window
-
-REFRESH_HOUR, REFRESH_MINUTE = 10, 15
 
 
 def enabled_series(session: Session) -> list[str]:

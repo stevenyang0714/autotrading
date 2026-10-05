@@ -32,7 +32,7 @@ from autotrading.ingestion.runner import IngestionRunner
 from autotrading.main import create_app
 from autotrading.repositories.facts import as_of_query
 from autotrading.settings import get_settings
-from tests.fred_replay import MANIFEST, register_recorded, replay
+from tests.fred_replay import MANIFEST, RECORDED_SERIES, register_recorded, replay
 from tests.integration.conftest import alembic_config
 
 pytestmark = pytest.mark.integration
@@ -116,7 +116,9 @@ def value_known_at(session: Session, known_at: datetime) -> Decimal:
 def test_runs_store_every_vintage_and_the_series_metadata(
     runs: list[IngestionRun], engine: Engine
 ) -> None:
-    assert [(r.status, r.rows_conflicted) for r in runs] == [("succeeded", 0)] * 2
+    assert [(r.status, r.rows_conflicted) for r in runs] == [("succeeded", 0)] * len(
+        RECORDED_SERIES
+    )
     with Session(engine) as session:
         payems = session.get_one(MacroSeries, "PAYEMS")
         assert (payems.title, payems.frequency_short, payems.units) == (
@@ -165,7 +167,7 @@ def test_a_rerun_adds_nothing(runner: IngestionRunner, runs: list[IngestionRun])
         reruns = [session.get_one(IngestionRun, run_id) for run_id in rerun_ids]
     assert [(r.status, r.rows_inserted, r.rows_conflicted) for r in reruns] == [
         ("succeeded", 0, 0)
-    ] * 2
+    ] * len(RECORDED_SERIES)
 
 
 def test_the_api_key_is_never_stored(engine: Engine, runs: list[IngestionRun]) -> None:
@@ -199,7 +201,7 @@ def test_series_list_shows_the_registry_with_latest_values(client: TestClient) -
     assert list(by_id)[:2] == ["CPIAUCSL", "PCEPILFE"]  # registry order
     assert len(by_id) == 11
     assert by_id["PAYEMS"]["latest"]["observation_date"] == "2026-09-01"
-    assert by_id["GDPC1"]["latest"] is None  # not in the recorded fixtures
+    assert all(s["latest"] is not None for s in by_id.values())  # all 11 are recorded
     assert body["last_refresh_at"] is not None
 
 
@@ -227,6 +229,61 @@ def test_unknown_series_is_404(client: TestClient) -> None:
     assert client.get("/macro/series/NOPE/observations").status_code == 404
 
 
+# ---------- overview (ADR-016) ----------
+
+
+def blocks(client: TestClient, known_at: str | None = None) -> dict[str, dict[str, Any]]:
+    params = {"known_at": known_at} if known_at else {}
+    response = client.get("/overview", params=params)
+    assert response.status_code == 200, response.text
+    return {block["id"]: block for block in response.json()["blocks"]}
+
+
+def test_overview_has_six_blocks_with_charts_and_cited_insights(client: TestClient) -> None:
+    now = blocks(client)
+    assert list(now) == ["inflation", "labor", "growth", "policy", "curve", "risk"]
+    for block in now.values():
+        assert block["charts"] and block["charts"][0]["points"], block["id"]
+        assert block["insight"]["inputs"], block["id"]
+    labor = {i["term_id"]: i for i in now["labor"]["indicators"]}
+    assert labor["payrolls_monthly_change"]["value"] == "29"
+    assert labor["payrolls_prior_month_revision"]["value"] == "-60"
+    assert "Aug 2026 revised -60K from its first release" in now["labor"]["insight"]["text"]
+    revision_inputs = {
+        (i["observation_date"], i["vintage"]) for i in now["labor"]["insight"]["inputs"]
+    }
+    assert ("2026-08-01", FIRST["vintage"]) in revision_inputs  # the first release is cited
+    curve = now["curve"]["insight"]["text"]
+    assert "throughout the data stored" in curve  # recorded daily data starts in 2025
+
+
+def test_overview_as_known_before_the_revision(client: TestClient) -> None:
+    before = blocks(client, BEFORE_REVISION)
+    labor = {i["term_id"]: i for i in before["labor"]["indicators"]}
+    assert labor["payrolls_monthly_change"]["as_of"] == "2026-08-01"
+    assert "in Aug 2026" in before["labor"]["insight"]["text"]
+    for block in before.values():
+        for ref in block["insight"]["inputs"] if block["insight"] else []:
+            assert ref["vintage"] <= "2026-09-30", (block["id"], ref)
+
+
+def test_data_health_shows_the_next_scheduled_refresh(client: TestClient) -> None:
+    sources = {s["id"]: s for s in client.get("/data-health").json()["sources"]}
+    assert sources["fred"]["next_refresh_at"] is not None
+    assert sources["sec_edgar"]["next_refresh_at"] is not None
+    assert sources["gdelt"]["next_refresh_at"] is None  # not enabled
+
+
+def test_progress_reads_the_project_documents(client: TestClient) -> None:
+    body = client.get("/progress").json()
+    milestones = {m["id"]: m for m in body["milestones"]}
+    assert milestones["M0.1"]["status"] == "done"
+    assert milestones["M0.6"]["done"] == milestones["M0.6"]["total"] > 0
+    assert [p["number"] for p in body["phases"]] == [1, 2, 3, 4, 5, 6]
+    assert body["open_decisions"][0]["id"] == "OD-1"
+    assert body["current"]["Phase"].startswith("0")
+
+
 # ---------- web fixtures (opt-in recorder) ----------
 
 
@@ -244,6 +301,10 @@ def test_record_web_fixtures(client: TestClient) -> None:
             "/macro/series/PAYEMS/observations",
             {"known_at": BEFORE_REVISION},
         ),
+        ("overview", "/overview", {}),
+        ("overview-before-revision", "/overview", {"known_at": BEFORE_REVISION}),
+        ("progress", "/progress", {}),
+        ("data-health-sources", "/data-health", {}),
     ):
         response = client.get(path, params=params)
         assert response.status_code == 200
