@@ -1,0 +1,29 @@
+# Research watchlists, maintained by Steven.
+# Recording only: nothing here is fetched until the matching phase ships with a permitted,
+# licensed access path (02 §8–§10, CLAUDE.md "no unauthorized scraping").
+version: 0.1.0
+
+# Phase 4 — X / researcher watchlist (02 §9). Official X API only: pay-per-use,
+# MVP hard cap USD 100/month with 70/90/100% alerts (02 §27.1). Expert discourse and
+# thesis-change source; never a sole trade trigger (S10 alert only).
+x_accounts:
+  - handle: aleabitoreddit
+    url: https://x.com/aleabitoreddit
+    added: 2026-10-05
+
+# Manual cross-checks only, not data dependencies. Phase 4 ingests Congress PTRs from the
+# official House Clerk and Senate eFD disclosures (Tier 1); options flow needs a licensed
+# feed decided under OD-4.
+reference_sites:
+  - name: Capitol Trades
+    url: https://www.capitoltrades.com/trades
+    covers: Congress reported trades, aggregated by 2iQ from House Clerk and Senate eFD filings
+    access: website only; no public API
+    use: cross-check Phase 4 PTR ingestion
+    added: 2026-10-05
+  - name: Unusual Whales live options flow (free page)
+    url: https://unusualwhales.com/live-options-flow/free?limit=50&min_premium=25000&issue_types[]=Common%20Stock&issue_types[]=ADR&add_agg_trades=true
+    covers: "options flow (filter used: premium >= 25,000 USD, common stock and ADR)"
+    access: free page is delayed; real-time needs the paid API (candidate under OD-4)
+    use: manual reference
+    added: 2026-10-05
