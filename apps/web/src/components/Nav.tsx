@@ -61,7 +61,8 @@ export function Nav() {
             </h2>
             <ul className="space-y-1" aria-label={title}>
               {items.map((item) => {
-                const active = pathname === item.href;
+                // Sub-pages (e.g. /instruments/AAPL) keep their section highlighted.
+                const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
                 return (
                   <li key={item.key}>
                     <Metric termId={item.termId} icon={false} placement="right" className="w-full">
