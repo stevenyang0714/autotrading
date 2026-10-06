@@ -6,7 +6,7 @@ New ADRs are appended with the next number. Never edit an Accepted ADR in place;
 
 ---
 
-## ADR-001 Single-user personal tool, no redistribution — Assumed
+## ADR-001 Single-user personal tool, no redistribution — Accepted (2026-10-06, confirmed by Steven: OD-1)
 - Phases 0–6 serve one user (Steven). No customer-facing display or redistribution of market data.
 - Implication: individual data plans are acceptable after a license check; auth is single-user; no multi-tenant design.
 - Keep `user_id` columns so multi-user can be added later via a new ADR.
@@ -37,12 +37,13 @@ From 02 §27, with concrete tooling chosen so the agent does not drift:
 
 > MinIO in the service list superseded by ADR-011 (Silo locally).
 
-## ADR-004 Market data sequencing — Assumed
+## ADR-004 Market data sequencing — Accepted (2026-10-06, approved by Steven with the M0.7 plan)
 - Build a `PriceProvider` interface first.
 - First adapter: **Alpaca Market Data, Basic plan (free, IEX real-time)** for development and Phase 0 exit. `feed_status = live_single_venue`.
 - **Massive** remains the canonical primary provider. Its adapter is built behind the same interface and activated only when `MASSIVE_API_KEY` exists and the license check (individual, non-redistribution use) is recorded here.
 - Target activation point for Massive: before Phase 2 backtests or when consolidated quotes are needed, whichever comes first.
 - Provider pricing in the specs is a 2026-10-04 snapshot; re-verify before paying.
+- Status 2026-10-06 (M0.7): Alpaca is active on a free paper account (OD-9, Alpaca part verified). Massive is a placeholder in `adapters/massive/` that never reports itself configured. Details in ADR-017.
 
 ## ADR-005 Time policy — Accepted
 Store UTC (`timestamptz`) everywhere. Display Asia/Singapore by default; show America/New_York alongside for US market events, filings and earnings timestamps.
@@ -219,13 +220,67 @@ Added on the M0.6 branch at Steven's request. The overview pulls parts of M0.9 f
   - A milestone counts as done only when all checks are ticked and STATUS no longer marks it pending.
 - **Not included: intraday data.** It needs the M0.7 price feed: Steven decides OD-1 and checks OD-9 (Alpaca account and data keys) first.
 
+## ADR-017 Prices: Alpaca feed, feed status, market calendar — Accepted (2026-10-06, approved by Steven with the M0.7 plan)
+Applies ADR-004, ADR-006, ADR-007 and ADR-012 to prices (M0.7). Code: `apps/api/src/autotrading/adapters/alpaca/`, `domain/prices.py`, `domain/market_calendar.py`.
+- **Provider:**
+  - Alpaca Market Data, Basic plan (free), keys from a paper account.
+  - Real time is IEX only (one venue). Consolidated (SIP) real-time snapshots are refused (HTTP 403).
+  - Historical SIP daily bars are available from 2016, except the last 15 minutes.
+  - Behind `PriceProvider` (`domain/prices.py`). Massive is a placeholder that never reports itself configured.
+- **Safety:**
+  - The client reaches only `data.alpaca.markets`, and only the paths `/v2/stocks/` and `/v1/corporate-actions`. It refuses any other host or path, so no trading, account or order endpoint can be called.
+  - It refuses keys starting with `AK` (live accounts).
+  - Keys travel as headers; stored URLs and logs never contain them.
+  - Rate limit: 3 requests/second (burst 5) against the plan's 200/minute.
+- **Feed status (errata E4), per quote shown:**
+  - `live_single_venue`: market open and the IEX quote is at most 120 s old. Snapshots are polled every 60 s. Both instrument classes in the universe (equities, ETFs) use this SLA.
+  - `stale`: market open and the quote is older; or market closed and the newest quote is more than 5 minutes before the last close.
+  - `end_of_day`: market closed; the newest quote is the last session's close.
+  - `unavailable`: no key or no data. The API sends no number.
+  - `fixture`: recorded test data. Shown with or without a key, with a DEMO DATA banner (ADR-006).
+  - Daily closes are `end_of_day` (or `fixture`).
+- **Day change:** the IEX last trade against IEX's previous close (one venue on both sides). For a past date: the consolidated close against the previous close on the same split basis.
+- **Market calendar:**
+  - NYSE regular hours 09:30–16:00 ET; early closes at 13:00.
+  - Holidays and early closes for 2026–2028 are in `config/market_calendar.yaml`, copied from nyse.com on 2026-10-06.
+  - The file covers dates until 2028-12-31; extend it before then.
+- **Storage (migration 0008, TimescaleDB hypertables):**
+  - `market_quotes`: append-only observations (errata E1), one per instrument and quote time. Hypertable on `published_at`, 7-day chunks.
+  - `price_bars`: bitemporal facts keyed by (instrument, adjustment `raw` or `split`, bar time). Hypertable on `bar_time`, 1-year chunks.
+  - Hypertables need the time column in every unique index, so primary keys are (id, time) and `supersedes_id` has no foreign key.
+  - Default hypertable indexes are off, so the schema matches the models.
+  - Row and TRUNCATE triggers work on hypertables (checked on TimescaleDB 2.30).
+- **Publication time:**
+  - Raw daily bars count from the end of their New York day (precision `day`, ADR-012).
+  - Split-adjusted bars count from when they were fetched (precision `exact`): that basis is what the provider served then.
+- **Splits:**
+  - A run that sees a split (corporate actions) in its window fetches that symbol's whole split-adjusted history again. Changed closes become new versions (`revision`).
+  - Raw bars never change.
+- **Point in time:**
+  - A past date shows the raw closes known then.
+  - The year chart is the split-adjusted series re-based to that day: raw x factor(as-of day) / factor(day), where factor = raw / adjusted.
+  - The factor is snapped to the nearest fraction with a denominator up to 50 (a split ratio) when within 0.5%, because adjusted closes are rounded to cents. Days with no split since then show exactly their raw close.
+- **Schedules:**
+  - Snapshots run every minute while the market is open, and for 3 minutes after the close.
+  - Daily bars run at 06:30 SGT: the last 21 days, raw and split-adjusted.
+  - `make prices-backfill` (once, since 2016) and `make prices-refresh`.
+  - Data Health judges Alpaca by market session: a closed market does not make it stale, and the next refresh is the next open.
+  - The runs list shows the newest 3 runs per job.
+- **Universe:** ETFs in `config/universe.yaml` become instruments of type `etf`. Equities reuse their SEC instrument. Ticker identifiers use the `alpaca` namespace.
+- **Known gaps:**
+  - IEX is a small share of volume and its spread can be wide. Examples from 2026-10-05: SPY traded 1.09M shares on IEX against 44.9M consolidated; AAPL's IEX quote at the close was 316.31 / 349.69. Prices are always labelled `live_single_venue`.
+  - On a split's ex-date, the live IEX day change may compare across the split, because the provider's previous close is not adjusted. This is fixed once corporate actions are stored.
+  - Raw snapshot payloads (about 5–10 KB a minute, about 3 MB a session) have no retention policy yet.
+  - Closes are split-adjusted only. Dividends are not added back, so the chart is not total return.
+  - SEC and FRED data replayed in CI carry no feed status, so only prices trigger the DEMO DATA banner.
+  - Extended-hours trading is not covered.
+
 ---
 
 ## Open decisions (owner: Steven)
 
 | ID | Decision | Needed by | Default until decided |
 |---|---|---|---|
-| OD-1 | Confirm ADR-001 (single-user, personal, no redistribution) | Before M0.7 | Build as assumed |
 | OD-2 | Alert delivery channel outside the app (email / Telegram / Slack / push) | Phase 1 | In-app Alerts Center only |
 | OD-3 | Point-in-time consensus estimates provider | Phase 1 (S2) | Consensus shown as `Data unavailable` |
 | OD-4 | Options data provider and budget. Candidate (checked 2026-10-05; re-verify before paying): Unusual Whales API. Basic USD 150/month gives REST access to real-time flow; Advanced USD 375/month adds WebSocket streaming; a 15-minute-delayed tier is cheaper. Personal use only, no redistribution (fits ADR-001). Its free website flow is delayed, and scraping it is not allowed. | Phase 5, or earlier if Steven pulls options flow forward | No options data |
@@ -233,4 +288,7 @@ Added on the M0.6 branch at Steven's request. The overview pulls parts of M0.9 f
 | OD-6 | Physical data sources (candidates to evaluate: NASA FIRMS fire data, NOAA climate data, port/shipping data vendors) | Phase 3 | Not ingested |
 | OD-7 | Survivorship-free historical dataset including delisted names | Before Phase 2 backtests | Backtests blocked from reporting performance |
 | OD-8 | Cloud provider, auth method, backups | Phase 2 exit | Local only |
-| OD-9 | Verify account eligibility from Singapore for Alpaca and Interactive Brokers (data + paper) | Before M0.7 / Phase 5 | Alpaca assumed; verify at signup |
+| OD-9 | Verify account eligibility from Singapore for Interactive Brokers (data + paper). The Alpaca part was verified on 2026-10-06 (paper account; market data reachable from Singapore). | Phase 5 | No broker |
+
+## Decided
+- OD-1 (2026-10-06): Steven confirmed ADR-001: a personal tool, with no redistribution of data. ADR-001 is Accepted.

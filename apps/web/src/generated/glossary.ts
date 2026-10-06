@@ -8,6 +8,8 @@ export type CompleteTermId =
   | "access_status"
   | "accession_number"
   | "as_of"
+  | "ask"
+  | "bid"
   | "capex"
   | "cash"
   | "commercial_paper"
@@ -34,11 +36,13 @@ export type CompleteTermId =
   | "dev_log"
   | "diluted_shares"
   | "eps_diluted"
+  | "feed_status"
   | "filing_date"
   | "freshness_sla"
   | "gross_profit"
   | "hy_oas_percentile"
   | "ingestion_status"
+  | "last_price"
   | "license_status"
   | "long_term_debt_current"
   | "long_term_debt_noncurrent"
@@ -53,6 +57,7 @@ export type CompleteTermId =
   | "macro_treasury_2y"
   | "macro_unemployment_rate"
   | "macro_vix"
+  | "market_session"
   | "milestone_status"
   | "net_income"
   | "next_refresh"
@@ -67,9 +72,12 @@ export type CompleteTermId =
   | "page_progress"
   | "payrolls_monthly_change"
   | "payrolls_prior_month_revision"
+  | "pct_below_52w_high"
   | "planned_phase"
   | "point_in_time"
   | "predecessor_issuer"
+  | "price_change_1d"
+  | "price_history"
   | "rate_limit"
   | "real_fed_funds_rate"
   | "real_gdp_growth_annualized"
@@ -84,6 +92,7 @@ export type CompleteTermId =
   | "update_cadence"
   | "vintage"
   | "vix_percentile_1y"
+  | "volume"
   | "yield_curve_inversion";
 
 export interface GlossaryTerm {
@@ -185,6 +194,58 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "資料時間",
     "hint_zh": "資料所反映的時間點。"
+  },
+  "ask": {
+    "term_id": "ask",
+    "display_name": "Ask",
+    "category": "market_data",
+    "short_definition": "Lowest price a seller is currently quoting.",
+    "full_definition": "The best ask on the feed shown next to it; with the free Alpaca feed, the best ask on IEX only.",
+    "formula": "best ask from the provider quote",
+    "unit": "USD per share",
+    "example": "SPY ask 774.84 at the close on 2026-10-05 (IEX).",
+    "direction": "N/A",
+    "interpretation": "Approximate price available if buying immediately.",
+    "why_it_matters": "Together with bid, defines spread and execution cost.",
+    "source": "Alpaca Market Data, IEX feed",
+    "source_url": "https://docs.alpaca.markets/docs/about-market-data-api",
+    "as_of": "2026-10-06",
+    "update_cadence": "every minute during US market hours",
+    "caveats": "On one venue the spread can be much wider than the national best, especially around the open and close.",
+    "related_terms": [
+      "bid",
+      "last_price",
+      "feed_status"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "賣價",
+    "hint_zh": "目前賣方出的最低價（此交易所內）。"
+  },
+  "bid": {
+    "term_id": "bid",
+    "display_name": "Bid",
+    "category": "market_data",
+    "short_definition": "Highest price a buyer is currently quoting.",
+    "full_definition": "The best bid on the feed shown next to it; with the free Alpaca feed, the best bid on IEX only.",
+    "formula": "best bid from the provider quote",
+    "unit": "USD per share",
+    "example": "SPY bid 774.74 at the close on 2026-10-05 (IEX).",
+    "direction": "N/A",
+    "interpretation": "Approximate price available if selling immediately.",
+    "why_it_matters": "Together with ask, defines spread and execution cost.",
+    "source": "Alpaca Market Data, IEX feed",
+    "source_url": "https://docs.alpaca.markets/docs/about-market-data-api",
+    "as_of": "2026-10-06",
+    "update_cadence": "every minute during US market hours",
+    "caveats": "On one venue the spread can be much wider than the national best, especially around the open and close.",
+    "related_terms": [
+      "ask",
+      "last_price",
+      "feed_status"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "買價",
+    "hint_zh": "目前買方出的最高價（此交易所內）。"
   },
   "capex": {
     "term_id": "capex",
@@ -824,6 +885,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "稀釋每股盈餘",
     "hint_zh": "考慮選擇權與可轉債潛在稀釋後的每股獲利。"
   },
+  "feed_status": {
+    "term_id": "feed_status",
+    "display_name": "Feed Status",
+    "category": "market_data",
+    "short_definition": "How live and how complete the price next to it is.",
+    "full_definition": "Shown next to every price (errata E4). live_single_venue: market open and the IEX quote is at most 120 seconds old. stale: market open and the quote is older, or closed and the newest quote predates the close. end_of_day: market closed; the value is the last session's close. unavailable: no provider key or no data; no number is shown. fixture: recorded test data, with a DEMO DATA banner. live_consolidated and delayed are reserved for a consolidated feed (Massive, not active).",
+    "formula": "enum: live_consolidated | live_single_venue | delayed | end_of_day | stale | unavailable | fixture | demo",
+    "unit": "label",
+    "example": "After the close on 2026-10-05, SPY 774.74 shows end_of_day.",
+    "direction": "N/A",
+    "interpretation": "Only live_consolidated is a full-market real-time price; read every other status before acting.",
+    "why_it_matters": "Prevents single-venue, old or recorded prices from looking like the live market.",
+    "source": "SPEC_ERRATA E4; ADR-004, ADR-006, ADR-017",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/decisions/DECISIONS.md",
+    "as_of": "2026-10-06",
+    "update_cadence": "live (each page load)",
+    "caveats": "The 120-second rule assumes a liquid symbol; thinly traded ones can turn stale while the market is open.",
+    "related_terms": [
+      "last_price",
+      "market_session",
+      "data_freshness"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "報價狀態",
+    "hint_zh": "價格有多即時、多完整：單一交易所即時、收盤價、過期、無資料或測試資料。"
+  },
   "filing_date": {
     "term_id": "filing_date",
     "display_name": "Filing Date",
@@ -948,6 +1035,33 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "擷取狀態",
     "hint_zh": "某次資料擷取的結果：成功、略過、失敗等。"
+  },
+  "last_price": {
+    "term_id": "last_price",
+    "display_name": "Last Price",
+    "category": "market_data",
+    "short_definition": "Most recent trade price received from the market data feed.",
+    "full_definition": "The latest trade on the feed shown next to it. With the free Alpaca feed this is the latest IEX trade only, during and just after the US session; outside it, the last trade of the previous session. Day change compares it with the same feed's previous close.",
+    "formula": "latest trade print from the provider; see feed_status",
+    "unit": "USD per share",
+    "example": "SPY 774.74 at the close on 2026-10-05 (IEX), +0.66% on the day.",
+    "direction": "N/A",
+    "interpretation": "Market price at the shown as-of time, not a fair value.",
+    "why_it_matters": "Basis for valuation gaps, timing and execution checks.",
+    "source": "Alpaca Market Data, IEX feed (ADR-004)",
+    "source_url": "https://docs.alpaca.markets/docs/about-market-data-api",
+    "as_of": "2026-10-06",
+    "update_cadence": "every minute during US market hours",
+    "caveats": "Single-venue feeds (IEX) can differ from consolidated prices; always read with the feed status badge.",
+    "related_terms": [
+      "bid",
+      "ask",
+      "feed_status",
+      "price_change_1d"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "最新成交價",
+    "hint_zh": "行情來源最近一筆成交價；免費方案只有 IEX 單一交易所。"
   },
   "license_status": {
     "term_id": "license_status",
@@ -1296,6 +1410,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "VIX 恐慌指數",
     "hint_zh": "S&P 500 選擇權隱含的未來 30 天波動率。"
+  },
+  "market_session": {
+    "term_id": "market_session",
+    "display_name": "Market Session",
+    "category": "market_data",
+    "short_definition": "Whether the US stock market is open now, and when it next opens or last closed.",
+    "full_definition": "NYSE regular hours, 09:30 to 16:00 New York time (13:00 on early-close days), on weekdays that are not exchange holidays. Holidays and early closes come from the NYSE calendar in config/market_calendar.yaml.",
+    "formula": "weekday, not a holiday, 09:30 <= New York time < close",
+    "unit": "label",
+    "example": "Closed on 2026-11-26 (Thanksgiving); 13:00 close on 2026-11-27.",
+    "direction": "N/A",
+    "interpretation": "Live prices update only while the session is open.",
+    "why_it_matters": "Decides whether a quote should be live, end of day or stale.",
+    "source": "NYSE holidays and trading hours",
+    "source_url": "https://www.nyse.com/markets/hours-calendars",
+    "as_of": "2026-10-06",
+    "update_cadence": "per session",
+    "caveats": "Pre-market and after-hours trading are not covered.",
+    "related_terms": [
+      "feed_status",
+      "next_refresh"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "交易時段",
+    "hint_zh": "美股是否開盤（紐約時間 09:30–16:00，扣除假日與提早收盤）。"
   },
   "milestone_status": {
     "term_id": "milestone_status",
@@ -1649,6 +1788,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "前月非農修正",
     "hint_zh": "前一個月的非農數字相對初值被修正了多少（千人）。"
   },
+  "pct_below_52w_high": {
+    "term_id": "pct_below_52w_high",
+    "display_name": "Below 52-Week High",
+    "category": "market_data",
+    "short_definition": "How far the last price is below the highest close of the past year, in percent.",
+    "full_definition": "The highest split-adjusted consolidated close of the last 52 weeks (or the last price, if higher), compared with the last price. For a past date, closes and splits known then only.",
+    "formula": "(1 - last / max(closes in 52 weeks, last)) x 100",
+    "unit": "percent",
+    "example": "SPY 0.4% below its 52-week high on 2026-10-05.",
+    "direction": "Higher = further below the high",
+    "interpretation": "0 means at a new 52-week high.",
+    "why_it_matters": "A simple trend and drawdown context for a price.",
+    "source": "Computed from Alpaca SIP daily bars",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/prices.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "daily (live price intraday)",
+    "caveats": "Split-adjusted, not dividend-adjusted.",
+    "related_terms": [
+      "price_history",
+      "price_change_1d"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "距 52 週高點",
+    "hint_zh": "最新價低於過去一年最高收盤價多少百分比；0 代表創新高。"
+  },
   "planned_phase": {
     "term_id": "planned_phase",
     "display_name": "Planned Phase",
@@ -1723,6 +1887,56 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "前身發行人",
     "hint_zh": "公司改組前的原發行公司，其財報屬於這檔股票的歷史。"
+  },
+  "price_change_1d": {
+    "term_id": "price_change_1d",
+    "display_name": "Day Change",
+    "category": "market_data",
+    "short_definition": "Change of the last price against the previous close on the same feed, in percent.",
+    "full_definition": "Live: the latest IEX trade against IEX's previous-day close. For a past date: the consolidated close against the close before it.",
+    "formula": "(last price / previous close - 1) x 100",
+    "unit": "percent",
+    "example": "SPY +0.66% on 2026-10-05 (774.74 against 769.65, IEX).",
+    "direction": "Higher = rose more today",
+    "interpretation": "Read with the feed status; an IEX close can differ slightly from the official close.",
+    "why_it_matters": "The day's move puts news and macro releases in context.",
+    "source": "Computed from Alpaca Market Data",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/prices.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "every minute during US market hours",
+    "caveats": "Before the first trade of the day it shows the previous session's change.",
+    "related_terms": [
+      "last_price",
+      "pct_below_52w_high"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "當日漲跌幅",
+    "hint_zh": "最新價相對前一日收盤的變動百分比。"
+  },
+  "price_history": {
+    "term_id": "price_history",
+    "display_name": "Price History",
+    "category": "market_data",
+    "short_definition": "Daily closing prices of the past year, adjusted for stock splits.",
+    "full_definition": "Consolidated (SIP) daily closes, split-adjusted. For a past date the series is re-based to the splits known then and stops at the last close that was public, so later splits and prices never leak into the view.",
+    "formula": "split-adjusted SIP close per session, re-based to the as-of date",
+    "unit": "USD per share",
+    "example": "NVDA as known on 2024-06-07 shows closes near 1,209 USD; after its 10-for-1 split on 2024-06-10 the same days show near 121 USD.",
+    "direction": "N/A",
+    "interpretation": "Compare shapes and levels within one series; dividends are not added back.",
+    "why_it_matters": "Puts the last price in context of the past year.",
+    "source": "Alpaca Market Data, SIP daily bars (ADR-017)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/decisions/DECISIONS.md",
+    "as_of": "2026-10-06",
+    "update_cadence": "daily (06:30 SGT)",
+    "caveats": "Split-adjusted only, not total return.",
+    "related_terms": [
+      "pct_below_52w_high",
+      "last_price"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "價格走勢",
+    "hint_zh": "過去一年經股票分割調整的每日收盤價；查過去日期時只用當時已知的資料。"
   },
   "rate_limit": {
     "term_id": "rate_limit",
@@ -2073,6 +2287,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "VIX 一年百分位",
     "hint_zh": "目前 VIX 在過去 12 個月收盤值中的排名（0–100）。"
+  },
+  "volume": {
+    "term_id": "volume",
+    "display_name": "Volume",
+    "category": "market_data",
+    "short_definition": "Number of shares traded in the period.",
+    "full_definition": "Shares traded in the session so far on the feed shown. With the IEX feed this is IEX volume only, a small share of the consolidated market volume; daily bars use consolidated (SIP) volume.",
+    "formula": "sum of trade sizes in the bar or session",
+    "unit": "shares",
+    "example": "SPY traded 1,091,335 shares on IEX on 2026-10-05.",
+    "direction": "Higher = more trading activity",
+    "interpretation": "Context for liquidity and the strength of price moves.",
+    "why_it_matters": "Feeds liquidity checks and market confirmation.",
+    "source": "Alpaca Market Data (IEX for the session, SIP for daily bars)",
+    "source_url": "https://docs.alpaca.markets/docs/about-market-data-api",
+    "as_of": "2026-10-06",
+    "update_cadence": "intraday / daily",
+    "caveats": "Single-venue volume understates market activity; compare like with like.",
+    "related_terms": [
+      "last_price",
+      "feed_status"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "成交量",
+    "hint_zh": "期間內成交的股數；IEX 只是全市場的一小部分。"
   },
   "yield_curve_inversion": {
     "term_id": "yield_curve_inversion",

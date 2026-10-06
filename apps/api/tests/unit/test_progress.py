@@ -76,7 +76,7 @@ def test_real_documents_parse() -> None:
     decisions = parse_open_decisions(
         (docs / "decisions" / "DECISIONS.md").read_text(encoding="utf-8")
     )
-    assert [d.id for d in decisions][:2] == ["OD-1", "OD-2"]
+    assert [d.id for d in decisions][:2] == ["OD-2", "OD-3"]  # OD-1 decided 2026-10-06
     assert (current.get("Phase") or "").startswith("0")
 
 

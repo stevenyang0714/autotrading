@@ -93,4 +93,14 @@ METRICS: tuple[MetricDefinition, ...] = (
         )
         for term_id, function in OVERVIEW_INDICATORS.items()
     ),
+    MetricDefinition(
+        term_id="price_change_1d",
+        methodology_version="0.1.0",
+        computed_by="autotrading.domain.prices.change_percent",
+    ),
+    MetricDefinition(
+        term_id="pct_below_52w_high",
+        methodology_version="0.1.0",
+        computed_by="autotrading.domain.prices.below_high_percent",
+    ),
 )
