@@ -39,9 +39,7 @@ SHARE_COUNTS = {
 }
 SUM_OF_CLASSES = " (sum of classes)"
 # Read for balance identities in reconciliation, not stored as metrics.
-IDENTITY_CONCEPTS = frozenset(
-    {"us-gaap:Assets", "us-gaap:LiabilitiesAndStockholdersEquity", "us-gaap:LongTermDebt"}
-)
+IDENTITY_CONCEPTS = frozenset({"us-gaap:Assets", "us-gaap:LiabilitiesAndStockholdersEquity"})
 
 
 def instance_url(cik: str, accession: str, primary_document: str) -> str:

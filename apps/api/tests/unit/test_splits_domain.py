@@ -53,32 +53,42 @@ def test_no_adjustment_before_the_split_or_after_the_restatement() -> None:
     assert adjust("revenue", Decimal(1), FY2019_10K, TODAY, SPLITS) is None
 
 
-def version(value: str, reported_at: datetime, accession: str) -> ReportedVersion:
+def version(
+    value: str, reported_at: datetime, accession: str, metric: str = "eps_diluted"
+) -> ReportedVersion:
     return ReportedVersion(
-        "eps_diluted", date(2018, 9, 30), date(2019, 9, 28), Decimal(value), reported_at, accession
+        metric, date(2018, 9, 30), date(2019, 9, 28), Decimal(value), reported_at, accession
     )
 
 
+SPLIT_RESTATEMENT = [
+    version("11.89", FY2019_10K, "0000320193-19-000119"),
+    version("2.97", FY2020_10K, "0000320193-20-000096"),
+    version("4648913000", FY2019_10K, "0000320193-19-000119", "diluted_shares"),
+    version("18595651000", FY2020_10K, "0000320193-20-000096", "diluted_shares"),
+]
+
+
 def test_a_restatement_explained_by_a_recorded_split_is_not_flagged() -> None:
-    versions = [
-        version("11.89", FY2019_10K, "0000320193-19-000119"),
-        version("2.97", FY2020_10K, "0000320193-20-000096"),
-    ]
-    assert unexplained_splits(versions, SPLITS) == []
+    assert unexplained_splits(SPLIT_RESTATEMENT, SPLITS) == []
 
 
-def test_a_split_like_restatement_without_a_recorded_split_is_flagged() -> None:
-    versions = [
-        version("11.89", FY2019_10K, "0000320193-19-000119"),
-        version("2.97", FY2020_10K, "0000320193-20-000096"),
-    ]
-    [finding] = unexplained_splits(versions, [AAPL_2014])
+def test_eps_and_shares_restated_like_a_split_without_a_recorded_split_are_flagged() -> None:
+    [finding] = unexplained_splits(SPLIT_RESTATEMENT, [AAPL_2014])
     assert "ratio of about 4" in finding and "0000320193-20-000096" in finding
 
 
-def test_an_ordinary_restatement_is_not_a_split() -> None:
-    versions = [version("6.94", FY2019_10K, "a"), version("6.78", FY2020_10K, "b")]
+def test_an_eps_restatement_alone_is_not_a_split() -> None:
+    # Apple Q3 FY2009 EPS 1.35 -> 2.01 (revenue recognition change, 2010): about 2/3, but
+    # the share count did not move.
+    versions = [
+        version("1.35", FY2019_10K, "0001193125-09-153165"),
+        version("2.01", FY2020_10K, "0001193125-10-162840"),
+        version("909000000", FY2019_10K, "0001193125-09-153165", "diluted_shares"),
+        version("909000000", FY2020_10K, "0001193125-10-162840", "diluted_shares"),
+    ]
     assert unexplained_splits(versions, []) == []
+    assert unexplained_splits(versions[:2], []) == []
 
 
 def test_reviewed_split_list_is_valid_and_cites_8ks() -> None:

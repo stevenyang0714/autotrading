@@ -18,6 +18,7 @@ from autotrading.api.news import router as news_router
 from autotrading.api.overview import router as overview_router
 from autotrading.api.prices import router as prices_router
 from autotrading.api.progress import router as progress_router
+from autotrading.api.reconciliation import router as reconciliation_router
 from autotrading.infra.dependencies import Dependencies
 from autotrading.infra.object_store import ensure_bucket
 from autotrading.settings import get_settings
@@ -65,6 +66,7 @@ def create_app(
     app.include_router(overview_router)
     app.include_router(progress_router)
     app.include_router(prices_router)
+    app.include_router(reconciliation_router)
     return app
 
 

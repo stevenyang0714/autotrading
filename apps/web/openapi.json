@@ -1466,6 +1466,141 @@
         "title": "InstrumentSummary",
         "type": "object"
       },
+      "ItemOut": {
+        "properties": {
+          "check": {
+            "enum": [
+              "fact",
+              "identity",
+              "quarter",
+              "split"
+            ],
+            "title": "Check",
+            "type": "string"
+          },
+          "current_value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Value"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "filing_value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filing Value"
+          },
+          "metric_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metric Id"
+          },
+          "period_end": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period End"
+          },
+          "period_start": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Start"
+          },
+          "status": {
+            "enum": [
+              "match",
+              "mismatch",
+              "missing",
+              "extra",
+              "restated_later",
+              "ok",
+              "fail",
+              "flag"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "stored_accession": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stored Accession"
+          },
+          "stored_value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stored Value"
+          }
+        },
+        "required": [
+          "check",
+          "status",
+          "metric_id",
+          "period_start",
+          "period_end",
+          "filing_value",
+          "stored_value",
+          "current_value",
+          "stored_accession",
+          "detail"
+        ],
+        "title": "ItemOut",
+        "type": "object"
+      },
       "LatestPrices": {
         "properties": {
           "as_of": {
@@ -2560,6 +2695,160 @@
           "feed_status"
         ],
         "title": "QuoteOut",
+        "type": "object"
+      },
+      "ReconciliationDetail": {
+        "properties": {
+          "filing": {
+            "$ref": "#/components/schemas/ReconciliationOut"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ItemOut"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "filing",
+          "items"
+        ],
+        "title": "ReconciliationDetail",
+        "type": "object"
+      },
+      "ReconciliationList": {
+        "properties": {
+          "filings": {
+            "items": {
+              "$ref": "#/components/schemas/ReconciliationOut"
+            },
+            "title": "Filings",
+            "type": "array"
+          },
+          "methodology_version": {
+            "title": "Methodology Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "methodology_version",
+          "filings"
+        ],
+        "title": "ReconciliationList",
+        "type": "object"
+      },
+      "ReconciliationOut": {
+        "properties": {
+          "accession": {
+            "title": "Accession",
+            "type": "string"
+          },
+          "checked": {
+            "title": "Checked",
+            "type": "integer"
+          },
+          "checks_failed": {
+            "title": "Checks Failed",
+            "type": "integer"
+          },
+          "company": {
+            "title": "Company",
+            "type": "string"
+          },
+          "extra": {
+            "title": "Extra",
+            "type": "integer"
+          },
+          "filing_published_at": {
+            "format": "date-time",
+            "title": "Filing Published At",
+            "type": "string"
+          },
+          "filing_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filing Url"
+          },
+          "form": {
+            "title": "Form",
+            "type": "string"
+          },
+          "instance_url": {
+            "title": "Instance Url",
+            "type": "string"
+          },
+          "matched": {
+            "title": "Matched",
+            "type": "integer"
+          },
+          "methodology_version": {
+            "title": "Methodology Version",
+            "type": "string"
+          },
+          "mismatched": {
+            "title": "Mismatched",
+            "type": "integer"
+          },
+          "missing": {
+            "title": "Missing",
+            "type": "integer"
+          },
+          "recorded_at": {
+            "format": "date-time",
+            "title": "Recorded At",
+            "type": "string"
+          },
+          "restated_later": {
+            "title": "Restated Later",
+            "type": "integer"
+          },
+          "status": {
+            "enum": [
+              "pass",
+              "fail"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "ticker": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ticker"
+          }
+        },
+        "required": [
+          "ticker",
+          "company",
+          "accession",
+          "form",
+          "filing_published_at",
+          "filing_url",
+          "instance_url",
+          "status",
+          "checked",
+          "matched",
+          "mismatched",
+          "missing",
+          "extra",
+          "restated_later",
+          "checks_failed",
+          "methodology_version",
+          "recorded_at"
+        ],
+        "title": "ReconciliationOut",
         "type": "object"
       },
       "RunOut": {
@@ -4242,6 +4531,121 @@
         "summary": "Progress",
         "tags": [
           "progress"
+        ]
+      }
+    },
+    "/reconciliation": {
+      "get": {
+        "operationId": "reconciliations_reconciliation_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "pass",
+                    "fail"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "form",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "10-K",
+                    "10-Q"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Form"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReconciliationList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reconciliations",
+        "tags": [
+          "reconciliation"
+        ]
+      }
+    },
+    "/reconciliation/{accession}": {
+      "get": {
+        "operationId": "reconciliation_reconciliation__accession__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "accession",
+            "required": true,
+            "schema": {
+              "title": "Accession",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReconciliationDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reconciliation",
+        "tags": [
+          "reconciliation"
         ]
       }
     }

@@ -107,15 +107,30 @@ def _close(a: Fraction, b: Fraction, metric_id: str) -> bool:
     return abs(a - b) <= abs(b) / 200  # share counts are rounded to thousands or millions
 
 
+def _split_like(ratio: Fraction) -> Fraction | None:
+    for k in SPLIT_LIKE:
+        for candidate in (k, 1 / k):
+            if abs(ratio - candidate) <= candidate * SPLIT_LIKE_TOLERANCE:
+                return candidate
+    return None
+
+
 def unexplained_splits(versions: Iterable[ReportedVersion], splits: Sequence[Split]) -> list[str]:
-    """Restatements of per-share values or share counts whose ratio looks like a split that no
-    recorded split explains. Ordinary restatements (other ratios) are not reported here."""
+    """Restatements that look like a split no recorded split explains.
+
+    A split restates per-share amounts and share counts of a period together, in opposite
+    directions: diluted EPS divided by k and diluted shares multiplied by k in the same later
+    filing. Only that pattern is flagged; an EPS restatement alone (Apple's 2010 revenue
+    recognition change moved Q3 FY2009 EPS from 1.35 to 2.01) is an ordinary restatement.
+    """
+    ratios: dict[
+        tuple[str, date | None, date, str | None], tuple[Fraction, ReportedVersion, ReportedVersion]
+    ] = {}
     groups: dict[tuple[str, date | None, date], list[ReportedVersion]] = defaultdict(list)
     for version in versions:
-        if version.metric_id in ADJUSTED_METRICS:
+        if version.metric_id in ("eps_diluted", "diluted_shares"):
             groups[(version.metric_id, version.period_start, version.period_end)].append(version)
-    findings = []
-    for (metric_id, _, period_end), group in sorted(groups.items(), key=lambda kv: str(kv[0])):
+    for (metric_id, start, end), group in groups.items():
         group.sort(key=lambda v: v.reported_at)
         for older, newer in pairwise(group):
             moved = adjust(metric_id, older.value, older.reported_at, newer.reported_at, splits)
@@ -123,17 +138,22 @@ def unexplained_splits(versions: Iterable[ReportedVersion], splits: Sequence[Spl
             new = Fraction(newer.value)
             if new == 0 or old == 0 or _close(old, new, metric_id):
                 continue
+            # shares after per share before: EPS old/new, shares new/old
             ratio = old / new if metric_id in PER_SHARE_METRICS else new / old
-            for k in SPLIT_LIKE:
-                for candidate in (k, 1 / k):
-                    if abs(ratio - candidate) <= candidate * SPLIT_LIKE_TOLERANCE:
-                        findings.append(
-                            f"{metric_id} {period_end}: {older.value} ({older.accession}) became "
-                            f"{newer.value} ({newer.accession}), a ratio of about "
-                            f"{float(candidate):g} with no recorded split between them"
-                        )
-                        break
-                else:
-                    continue
-                break
+            ratios[(metric_id, start, end, newer.accession)] = (ratio, older, newer)
+    findings = []
+    for (metric_id, start, end, accession), (ratio, older, newer) in sorted(
+        ratios.items(), key=lambda kv: str(kv[0])
+    ):
+        if metric_id != "eps_diluted":
+            continue
+        shares = ratios.get(("diluted_shares", start, end, accession))
+        k = _split_like(ratio)
+        if k is None or shares is None or _split_like(shares[0]) != k:
+            continue
+        findings.append(
+            f"{end}: diluted EPS {older.value} ({older.accession}) became {newer.value} "
+            f"({newer.accession}) and diluted shares moved by the same ratio of about "
+            f"{float(k):g}, with no recorded split between them"
+        )
     return findings

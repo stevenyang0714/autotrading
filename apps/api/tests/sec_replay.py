@@ -5,6 +5,7 @@ the instrument page has real data without network access or a SEC_USER_AGENT.
 """
 
 import json
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 from uuid import UUID
@@ -86,6 +87,7 @@ def replay(
     window: Window,
     predecessors: dict[str, list[dict[str, Any]]],
     tickers: tuple[str, ...] = RECORDED_TICKERS,
+    before_instances: Callable[[], list[UUID]] | None = None,
 ) -> list[UUID]:
     """The tickers run, one company run per CIK, then the filing XBRL runs of the recorded
     instances, as a refresh would; returns run ids."""
@@ -94,12 +96,15 @@ def replay(
     )
     runner.execute(tickers_run)
     company_runs = create_company_runs(runner, tickers_run)
-    instance_runs = []
     for run_id in company_runs:
         runner.execute(run_id)
-        instance_run = create_filing_xbrl_run(runner, run_id, only=RECORDED_INSTANCES)
-        if instance_run is not None:
-            instance_runs.append(instance_run)
+    # e.g. the splits, which production fetches before the SEC refresh
+    between = before_instances() if before_instances else []
+    instance_runs = [
+        run
+        for company_run in company_runs
+        if (run := create_filing_xbrl_run(runner, company_run, only=RECORDED_INSTANCES))
+    ]
     for run_id in instance_runs:
         runner.execute(run_id)
-    return [tickers_run, *company_runs, *instance_runs]
+    return [tickers_run, *company_runs, *between, *instance_runs]

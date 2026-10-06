@@ -24,6 +24,8 @@ from sqlalchemy.engine import URL
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
+from autotrading.adapters.sec import reconcile
+from autotrading.adapters.sec.instance import parse_instance
 from autotrading.adapters.sec.refresh import (
     company_ciks,
     filing_xbrl_candidates,
@@ -34,8 +36,10 @@ from autotrading.db.models import (
     AuditLog,
     EntityRelationship,
     Filing,
+    FilingReconciliation,
     FinancialFact,
     IngestionRun,
+    ReconciliationItem,
     Source,
 )
 from autotrading.infra.object_store import make_s3_client
@@ -48,7 +52,7 @@ from autotrading.main import create_app
 from autotrading.settings import get_settings
 from tests import alpaca_replay
 from tests.integration.conftest import alembic_config
-from tests.sec_replay import RECORDED_INSTANCES, recorded_registry, replay
+from tests.sec_replay import FIXTURES, RECORDED_INSTANCES, recorded_registry, replay
 
 pytestmark = pytest.mark.integration
 
@@ -100,11 +104,13 @@ def replayed(sessions: sessionmaker[Session]) -> Iterator[list[IngestionRun]]:
         TokenBucketLimiter(make_redis(settings), prefix=f"test-ratelimit-{uuid4().hex[:8]}"),
         alpaca_replay.register_recorded(recorded_registry(), fixture=False),
     )
-    run_ids = replay(runner, WINDOW, universe_predecessors(settings.resolved_config_dir()))
-    # Splits since 2016 and the reviewed earlier ones (ADR-021).
-    splits = alpaca_replay.recorded_params("alpaca.splits")
-    run_ids.append(runner.create_run("alpaca.splits", splits, WINDOW))
-    runner.execute(run_ids[-1])
+    # Splits (since 2016, and the reviewed earlier ones) before the filing XBRL, as production.
+    run_ids = replay(
+        runner,
+        WINDOW,
+        universe_predecessors(settings.resolved_config_dir()),
+        before_instances=lambda: alpaca_replay.replay_splits(runner, WINDOW),
+    )
     with sessions() as session:
         yield [session.get_one(IngestionRun, run_id) for run_id in run_ids]
     for obj in s3.list_objects_v2(Bucket=bucket).get("Contents", []):
@@ -143,14 +149,14 @@ def ends(table: dict[str, Any]) -> list[str]:
 def test_replay_ingests_both_xom_issuers(
     replayed: list[IngestionRun], sessions: sessionmaker[Session]
 ) -> None:
-    # tickers, 4 companies (META included), filing XBRL of Apple and Meta, splits (ADR-021)
+    # tickers, 4 companies (META included), splits, filing XBRL of Apple and Meta (ADR-021)
     assert [(r.job, r.status) for r in replayed] == (
         [("sec.tickers", "succeeded")]
         + [("sec.company", "succeeded")] * 4
-        + [("sec.filing_xbrl", "succeeded")] * 2
         + [("alpaca.splits", "succeeded")]
+        + [("sec.filing_xbrl", "succeeded")] * 2
     )
-    read = [f["accession"] for r in replayed[5:7] for f in r.params["filings"]]
+    read = [f["accession"] for r in replayed[6:] for f in r.params["filings"]]
     assert sorted(read) == sorted(RECORDED_INSTANCES)
     with sessions() as session:
         assert company_ciks(session, ["XOM"]) == ["0000034088", "0002115436"]
@@ -326,6 +332,112 @@ def test_latest_values_carry_their_own_dates(client: TestClient) -> None:
     latest = {c["source_concept"].split(" ")[0]: c for c in fundamentals(client, "META")["latest"]}
     cover = latest["dei:EntityCommonStockSharesOutstanding"]
     assert cover["period_end"] >= "2026-01-23" and cover["unit"] == "shares"
+
+
+# ---------- filing reconciliation (ADR-021) ----------
+
+AAPL_10K, AAPL_10Q = "0000320193-25-000079", "0000320193-26-000020"
+
+
+def reconciliation(sessions: sessionmaker[Session], accession: str) -> FilingReconciliation:
+    with sessions() as session:
+        return session.scalars(
+            select(FilingReconciliation).where(FilingReconciliation.accession_number == accession)
+        ).one()
+
+
+def test_apple_latest_10k_reconciles_with_zero_mismatches(
+    replayed: list[IngestionRun], sessions: sessionmaker[Session]
+) -> None:
+    row = reconciliation(sessions, AAPL_10K)
+    assert (row.status, row.mismatched, row.missing, row.extra, row.checks_failed) == (
+        "pass",
+        0,
+        0,
+        0,
+        0,
+    )
+    assert row.checked == row.matched + row.restated_later
+    assert row.checked > 30
+    with sessions() as session:
+        identities = session.scalars(
+            select(ReconciliationItem).where(
+                ReconciliationItem.reconciliation_id == row.id,
+                ReconciliationItem.check_kind == "identity",
+            )
+        ).all()
+    assert identities and {i.status for i in identities} == {"ok"}
+
+
+def test_apple_latest_10q_quarters_match_the_reported_three_months(
+    replayed: list[IngestionRun], sessions: sessionmaker[Session]
+) -> None:
+    row = reconciliation(sessions, AAPL_10Q)
+    assert (row.status, row.mismatched, row.missing) == ("pass", 0, 0)
+    with sessions() as session:
+        quarters = session.scalars(
+            select(ReconciliationItem).where(
+                ReconciliationItem.reconciliation_id == row.id,
+                ReconciliationItem.check_kind == "quarter",
+            )
+        ).all()
+    assert quarters and {q.status for q in quarters} == {"ok"}
+
+
+def test_a_value_that_differs_from_the_filing_is_caught(
+    replayed: list[IngestionRun], sessions: sessionmaker[Session], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The filing's own XBRL with Apple's FY2025 revenue changed by $1: a mismatch."""
+    monkeypatch.setattr(reconcile, "METHODOLOGY_VERSION", "test-injected")
+    content = (FIXTURES / f"{AAPL_10K}_instance.xml").read_text(encoding="utf-8")
+    changed = content.replace(">416161000000<", ">416161000001<", 1)
+    assert changed != content
+    with sessions() as session:
+        filing = session.scalars(select(Filing).where(Filing.accession_number == AAPL_10K)).one()
+        run_id = session.scalars(select(IngestionRun.id)).first()
+        assert run_id is not None
+        row = reconcile.reconcile_filing(
+            session,
+            entity_id=filing.entity_id,
+            filing=filing,
+            instance=parse_instance(changed.encode()),
+            sums=[],
+            source_url="https://www.sec.gov/Archives/edgar/data/320193/x_htm.xml",
+            sha256="0" * 64,
+            run_id=run_id,
+            with_split_check=False,
+        )
+        assert row is not None and (row.status, row.mismatched) == ("fail", 1)
+        item = session.scalars(
+            select(ReconciliationItem).where(
+                ReconciliationItem.reconciliation_id == row.id,
+                ReconciliationItem.status == "mismatch",
+            )
+        ).one()
+        assert (item.metric_id, item.filing_value, item.stored_value) == (
+            "revenue",
+            Decimal(416161000001),
+            Decimal(416161000000),
+        )
+        session.rollback()
+
+
+def test_reconciliation_api_lists_latest_filings_and_their_items(client: TestClient) -> None:
+    listing = client.get("/reconciliation").json()
+    by_filing = {(f["ticker"], f["form"]): f for f in listing["filings"]}
+    assert by_filing[("AAPL", "10-K")]["accession"] == AAPL_10K
+    assert by_filing[("AAPL", "10-Q")]["accession"] == AAPL_10Q
+    assert {f["status"] for f in listing["filings"]} == {"pass"}
+    assert client.get("/reconciliation", params={"status": "fail"}).json()["filings"] == []
+    detail = client.get(f"/reconciliation/{AAPL_10K}").json()
+    assert detail["filing"]["instance_url"].endswith("aapl-20250927_htm.xml")
+    revenue = next(
+        i
+        for i in detail["items"]
+        if i["metric_id"] == "revenue" and i["period_end"] == "2025-09-27"
+    )
+    assert (revenue["status"], revenue["filing_value"]) == ("match", "416161000000")
+    assert client.get("/reconciliation/0000000000-00-000000").status_code == 404
 
 
 # ---------- API ----------

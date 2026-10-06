@@ -293,6 +293,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/reconciliation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reconciliations */
+        get: operations["reconciliations_reconciliation_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/reconciliation/{accession}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reconciliation */
+        get: operations["reconciliation_reconciliation__accession__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -792,6 +826,35 @@ export interface components {
             /** Ticker */
             ticker: string;
         };
+        /** ItemOut */
+        ItemOut: {
+            /**
+             * Check
+             * @enum {string}
+             */
+            check: "fact" | "identity" | "quarter" | "split";
+            /** Current Value */
+            current_value: string | null;
+            /** Detail */
+            detail: string | null;
+            /** Filing Value */
+            filing_value: string | null;
+            /** Metric Id */
+            metric_id: string | null;
+            /** Period End */
+            period_end: string | null;
+            /** Period Start */
+            period_start: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "match" | "mismatch" | "missing" | "extra" | "restated_later" | "ok" | "fail" | "flag";
+            /** Stored Accession */
+            stored_accession: string | null;
+            /** Stored Value */
+            stored_value: string | null;
+        };
         /** LatestPrices */
         LatestPrices: {
             /**
@@ -1154,6 +1217,65 @@ export interface components {
             symbol: string;
             /** Venue */
             venue?: string | null;
+        };
+        /** ReconciliationDetail */
+        ReconciliationDetail: {
+            filing: components["schemas"]["ReconciliationOut"];
+            /** Items */
+            items: components["schemas"]["ItemOut"][];
+        };
+        /** ReconciliationList */
+        ReconciliationList: {
+            /** Filings */
+            filings: components["schemas"]["ReconciliationOut"][];
+            /** Methodology Version */
+            methodology_version: string;
+        };
+        /** ReconciliationOut */
+        ReconciliationOut: {
+            /** Accession */
+            accession: string;
+            /** Checked */
+            checked: number;
+            /** Checks Failed */
+            checks_failed: number;
+            /** Company */
+            company: string;
+            /** Extra */
+            extra: number;
+            /**
+             * Filing Published At
+             * Format: date-time
+             */
+            filing_published_at: string;
+            /** Filing Url */
+            filing_url: string | null;
+            /** Form */
+            form: string;
+            /** Instance Url */
+            instance_url: string;
+            /** Matched */
+            matched: number;
+            /** Methodology Version */
+            methodology_version: string;
+            /** Mismatched */
+            mismatched: number;
+            /** Missing */
+            missing: number;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /** Restated Later */
+            restated_later: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pass" | "fail";
+            /** Ticker */
+            ticker: string | null;
         };
         /** RunOut */
         RunOut: {
@@ -1875,6 +1997,69 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Progress"];
+                };
+            };
+        };
+    };
+    reconciliations_reconciliation_get: {
+        parameters: {
+            query?: {
+                status?: ("pass" | "fail") | null;
+                form?: ("10-K" | "10-Q") | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReconciliationList"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reconciliation_reconciliation__accession__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accession: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReconciliationDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

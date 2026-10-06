@@ -91,3 +91,11 @@ def replay(runner: IngestionRunner, window: Window) -> list[UUID]:
     for run_id in run_ids:
         runner.execute(run_id)
     return run_ids
+
+
+def replay_splits(runner: IngestionRunner, window: Window) -> list[UUID]:
+    """The recorded `alpaca.splits` run alone: run before SEC's filing XBRL runs, as in
+    production (splits at 06:30 SGT, SEC at 10:00), so reconciliations see the splits."""
+    run_id = runner.create_run("alpaca.splits", recorded_params("alpaca.splits"), window)
+    runner.execute(run_id)
+    return [run_id]

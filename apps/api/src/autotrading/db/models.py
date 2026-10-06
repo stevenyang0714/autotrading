@@ -824,6 +824,94 @@ class SplitEvent(ProvenanceMixin, Base):
     )
 
 
+# ---------- filing reconciliation (M1.1) ----------
+
+RECONCILIATION_CHECKS = ("fact", "identity", "quarter", "split")
+RECONCILIATION_STATUSES = (
+    "match",
+    "mismatch",
+    "missing",
+    "extra",
+    "restated_later",
+    "ok",
+    "fail",
+    "flag",
+)
+
+
+class FilingReconciliation(Base):
+    """One filing checked against its own XBRL instance at one methodology version (ADR-021).
+    Append-only: a trigger rejects UPDATE and DELETE."""
+
+    __tablename__ = "filing_reconciliations"
+    __table_args__ = (
+        CheckConstraint(sql_in("status", ("pass", "fail")), name="status"),
+        CheckConstraint("source_url ~ '^https://'", name="source_url_scheme"),
+        UniqueConstraint(
+            "entity_id",
+            "accession_number",
+            "methodology_version",
+            name="uq_filing_reconciliations_filing_version",
+        ),
+        Index("ix_filing_reconciliations_entity_id_form", "entity_id", "form"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    entity_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("entities.id"))
+    accession_number: Mapped[str] = mapped_column(Text)
+    form: Mapped[str] = mapped_column(Text)
+    filing_published_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    source_url: Mapped[str] = mapped_column(Text)  # the instance
+    raw_payload_sha256: Mapped[str] = mapped_column(Text)
+    methodology_version: Mapped[str] = mapped_column(Text)
+    checked: Mapped[int] = mapped_column(Integer)
+    matched: Mapped[int] = mapped_column(Integer)
+    mismatched: Mapped[int] = mapped_column(Integer)
+    missing: Mapped[int] = mapped_column(Integer)
+    extra: Mapped[int] = mapped_column(Integer)
+    restated_later: Mapped[int] = mapped_column(Integer)
+    checks_failed: Mapped[int] = mapped_column(Integer)
+    status: Mapped[str] = mapped_column(Text)
+    ingestion_run_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("ingestion_runs.id"))
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class ReconciliationItem(Base):
+    """One check of a filing reconciliation. Append-only."""
+
+    __tablename__ = "reconciliation_items"
+    __table_args__ = (
+        CheckConstraint(sql_in("check_kind", RECONCILIATION_CHECKS), name="check_kind"),
+        CheckConstraint(sql_in("status", RECONCILIATION_STATUSES), name="status"),
+        Index("ix_reconciliation_items_reconciliation_id", "reconciliation_id"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    reconciliation_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid,
+        # Named explicitly: the convention's name would pass Postgres's 63-character limit.
+        ForeignKey("filing_reconciliations.id", name="fk_reconciliation_items_reconciliation_id"),
+    )
+    check_kind: Mapped[str] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(Text)
+    metric_id: Mapped[str | None] = mapped_column(Text)
+    period_start: Mapped[date | None] = mapped_column(Date)
+    period_end: Mapped[date | None] = mapped_column(Date)
+    filing_value: Mapped[Decimal | None] = mapped_column(Numeric)
+    stored_value: Mapped[Decimal | None] = mapped_column(Numeric)
+    current_value: Mapped[Decimal | None] = mapped_column(Numeric)
+    stored_accession: Mapped[str | None] = mapped_column(Text)
+    detail: Mapped[str | None] = mapped_column(Text)
+
+
 # ---------- audit (append-only, written by triggers) ----------
 
 

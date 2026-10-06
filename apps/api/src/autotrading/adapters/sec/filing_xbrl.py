@@ -5,7 +5,9 @@ fetch: the `{primary document}_htm.xml` instance SEC extracts from each inline X
 store: share counts a filing tags per class only, added up (instance.class_sums) and stored as
 facts of that filing at its stored acceptance time. All filings of the run are written in one
 batch in publication order, so a comparative repeated by a later filing never comes first.
-Class sets a filing does not confirm are not added; they are recorded as run notes.
+Class sets a filing does not confirm are not added; they are recorded as run notes. Then each
+filing is reconciled with what we store (adapters/sec/reconcile.py); the issuer-wide split
+check goes with the newest 10-K of the run. A failing reconciliation is a run note too.
 
 adapters/sec/refresh.py chooses the filings: one run per company and refresh, each filing read
 once per methodology version.
@@ -20,6 +22,7 @@ from autotrading.adapters.sec.client import SecClient
 from autotrading.adapters.sec.company import Stamp, fact_in
 from autotrading.adapters.sec.instance import class_sums, instance_url, parse_instance
 from autotrading.adapters.sec.parsing import normalize_cik
+from autotrading.adapters.sec.reconcile import reconcile_filing
 from autotrading.adapters.sec.tickers import NAMESPACE, SOURCE_ID
 from autotrading.db.models import Filing, Source
 from autotrading.domain.provenance import TimePrecision
@@ -83,15 +86,15 @@ class SecFilingXbrlJob(IngestionJob):
             )
         }
         stamp = Stamp(session.get_one(Source, SOURCE_ID), ctx.run_id)
-        rows, notes = [], []
+        rows, notes, parsed = [], [], []
         for payload in ctx.payloads:
             accession = documents[payload.source_url]
             filing = filings.get(accession)
             if filing is None:
                 raise FilingNotStoredError(f"filing {accession} of CIK {self.cik} is not stored")
-            sums = class_sums(
-                parse_instance(payload.content), accession, filing.form, filing.filing_date
-            )
+            instance = parse_instance(payload.content)
+            sums = class_sums(instance, accession, filing.form, filing.filing_date)
+            parsed.append((filing, payload, instance, sums.values))
             published: dict[str, tuple[datetime, TimePrecision]] = {
                 accession: (filing.published_at, cast(TimePrecision, filing.published_at_precision))
             }
@@ -100,6 +103,27 @@ class SecFilingXbrlJob(IngestionJob):
             ]
             notes += [f"{accession}: {finding}" for finding in sums.findings]
         result = FinancialFactRepository(session).insert_many(rows, actor=ACTOR)
+        session.flush()
+        ten_ks = [f for f, *_ in parsed if f.form == "10-K"] or [f for f, *_ in parsed]
+        split_checked = max(ten_ks, key=lambda f: f.filing_date) if ten_ks else None
+        for filing, payload, instance, values in parsed:
+            reconciliation = reconcile_filing(
+                session,
+                entity_id=entity_id,
+                filing=filing,
+                instance=instance,
+                sums=values,
+                source_url=payload.source_url,
+                sha256=payload.sha256,
+                run_id=ctx.run_id,
+                with_split_check=filing is split_checked,
+            )
+            if reconciliation is not None and reconciliation.status == "fail":
+                notes.append(
+                    f"{filing.accession_number}: reconciliation failed ("
+                    f"{reconciliation.mismatched} mismatched, {reconciliation.missing} missing, "
+                    f"{reconciliation.extra} extra, {reconciliation.checks_failed} checks failed)"
+                )
         return StoreResult(
             inserted=result.inserted,
             unchanged=result.unchanged,
