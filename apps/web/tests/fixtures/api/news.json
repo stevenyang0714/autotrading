@@ -1,0 +1,1144 @@
+{
+  "recorded_at": "2026-10-06T07:37:45.062253+00:00",
+  "recorded_from": "recorded GDELT and feed fixtures replayed into the integration test database (tests/integration/test_news.py)",
+  "endpoint": "/news",
+  "params": {
+    "limit": 30
+  },
+  "response": {
+    "known_at": "2026-10-06T07:37:45.050444Z",
+    "ticker": null,
+    "source_id": null,
+    "max_tier": null,
+    "kinds": [],
+    "story_count": 263,
+    "article_count": 343,
+    "newest_published_at": "2026-10-06T01:13:53Z",
+    "groups": [
+      {
+        "group_id": "e9101e09-933c-491b-a3e0-3660e19a6c63",
+        "lead": {
+          "id": "e9101e09-933c-491b-a3e0-3660e19a6c63",
+          "url": "https://www.whitehouse.gov/presidential-actions/2026/10/emergency-tax-relief-on-diesel-fuel/",
+          "title": "Emergency Tax Relief on Diesel Fuel",
+          "publisher": "The White House",
+          "publisher_domain": "whitehouse.gov",
+          "author": "The White House",
+          "snippet": "By the authority vested in me as President by the Constitution and the laws of the United States of America, it is hereby ordered: Section 1. Purpose and Policy. Farmers and truckers are essential to the American way of life. Restricted global diesel supply has led to rising prices, and these key\u2026",
+          "language": "en",
+          "source_country": null,
+          "kind": "official",
+          "source_id": "whitehouse_actions",
+          "source_tier": 1,
+          "published_at": "2026-10-06T01:13:53Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": []
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [],
+        "first_published_at": "2026-10-06T01:13:53Z",
+        "last_published_at": "2026-10-06T01:13:53Z"
+      },
+      {
+        "group_id": "a4393f03-5d0c-4baf-9157-74fc6301194b",
+        "lead": {
+          "id": "a4393f03-5d0c-4baf-9157-74fc6301194b",
+          "url": "https://www.federalreserve.gov/newsevents/pressreleases/orders20261005a.htm",
+          "title": "Federal Reserve Board announces approval of application by Isabella Bank Corporation",
+          "publisher": "Federal Reserve Board",
+          "publisher_domain": "federalreserve.gov",
+          "author": null,
+          "snippet": "Federal Reserve Board announces approval of application by Isabella Bank Corporation",
+          "language": "en",
+          "source_country": null,
+          "kind": "official",
+          "source_id": "fed_press",
+          "source_tier": 1,
+          "published_at": "2026-10-05T20:30:00Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": []
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [],
+        "first_published_at": "2026-10-05T20:30:00Z",
+        "last_published_at": "2026-10-05T20:30:00Z"
+      },
+      {
+        "group_id": "b969611e-5229-4234-8cc2-e56b8085a204",
+        "lead": {
+          "id": "b969611e-5229-4234-8cc2-e56b8085a204",
+          "url": "https://news.microsoft.com/windows-surface-october-2026-news/",
+          "title": "Join us at 10 a.m. PT on Wednesday, Oct. 7, for the latest on Windows and Microsoft Surface",
+          "publisher": "Microsoft News Center",
+          "publisher_domain": "news.microsoft.com",
+          "author": "sbaynes",
+          "snippet": null,
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "microsoft_news",
+          "source_tier": 1,
+          "published_at": "2026-10-05T17:38:17Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "MSFT",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "MSFT"
+        ],
+        "first_published_at": "2026-10-05T17:38:17Z",
+        "last_published_at": "2026-10-05T17:38:17Z"
+      },
+      {
+        "group_id": "3036336c-5e6b-441e-9bb8-c6737e5a83eb",
+        "lead": {
+          "id": "3036336c-5e6b-441e-9bb8-c6737e5a83eb",
+          "url": "https://www.microsoft.com/en-us/power-platform/blog/power-apps/your-ai-transformation-starts-with-what-youve-already-built/",
+          "title": "How Power Platform helps businesses build AI into existing apps",
+          "publisher": "Microsoft News Center",
+          "publisher_domain": "microsoft.com",
+          "author": "sbaynes",
+          "snippet": null,
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "microsoft_news",
+          "source_tier": 1,
+          "published_at": "2026-10-05T17:32:16Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "MSFT",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "MSFT"
+        ],
+        "first_published_at": "2026-10-05T17:32:16Z",
+        "last_published_at": "2026-10-05T17:32:16Z"
+      },
+      {
+        "group_id": "199ed03e-a3df-42d9-acc1-d437e8564b99",
+        "lead": {
+          "id": "199ed03e-a3df-42d9-acc1-d437e8564b99",
+          "url": "https://news.microsoft.com/source/asia/2026/09/29/supporting-communities-through-drought-providing-clean-water-in-karawang-and-bekasi/",
+          "title": "How Microsoft helped deliver clean water during Indonesia\u2019s drought emergency",
+          "publisher": "Microsoft News Center",
+          "publisher_domain": "news.microsoft.com",
+          "author": "sbaynes",
+          "snippet": null,
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "microsoft_news",
+          "source_tier": 1,
+          "published_at": "2026-10-05T17:25:16Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "MSFT",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "MSFT"
+        ],
+        "first_published_at": "2026-10-05T17:25:16Z",
+        "last_published_at": "2026-10-05T17:25:16Z"
+      },
+      {
+        "group_id": "f02e3850-0245-4683-acd2-a24170f1c6fb",
+        "lead": {
+          "id": "f02e3850-0245-4683-acd2-a24170f1c6fb",
+          "url": "https://blog.google/products-and-platforms/products/education/gemini-student-newscast/",
+          "title": "My eighth-grade students built our school newscast from scratch with Gemini.",
+          "publisher": "Google (The Keyword)",
+          "publisher_domain": "blog.google",
+          "author": "Tori EngelMiddle School Computer Science and Technology \u2013 Carriel Junior High, O\u2019Fallon, IL, U.S.",
+          "snippet": "Eighth graders built The Cougar Rumble newscast using Gemini and Google Docs. See how these students streamlined their production workflow today.",
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "google_blog",
+          "source_tier": 1,
+          "published_at": "2026-10-05T16:00:00Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "GOOGL",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "GOOGL"
+        ],
+        "first_published_at": "2026-10-05T16:00:00Z",
+        "last_published_at": "2026-10-05T16:00:00Z"
+      },
+      {
+        "group_id": "4ebdcd02-2fd8-4e09-8a93-2799e683f66b",
+        "lead": {
+          "id": "4ebdcd02-2fd8-4e09-8a93-2799e683f66b",
+          "url": "https://blog.google/products-and-platforms/products/education/media-teacher-gemini/",
+          "title": "Technology helps my students balance big creative ideas with tight deadlines.",
+          "publisher": "Google (The Keyword)",
+          "publisher_domain": "blog.google",
+          "author": "Michelle Bruno10-12th grade Video Media Production, Media Print, and Business Writing \u2013 William Allen High School, PA, U.S.",
+          "snippet": "Students use Google Drive for video assets and Sheets for production timelines to meet tight deadlines. See how these tools boost classroom output.",
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "google_blog",
+          "source_tier": 1,
+          "published_at": "2026-10-05T16:00:00Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "GOOGL",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "GOOGL"
+        ],
+        "first_published_at": "2026-10-05T16:00:00Z",
+        "last_published_at": "2026-10-05T16:00:00Z"
+      },
+      {
+        "group_id": "c53b791d-44a0-4faa-a167-2e7a41f7e12e",
+        "lead": {
+          "id": "c53b791d-44a0-4faa-a167-2e7a41f7e12e",
+          "url": "https://blog.google/products-and-platforms/products/education/teacher-voices-gemini-creativity/",
+          "title": "My students use Gemini to brainstorm creative ideas.",
+          "publisher": "Google (The Keyword)",
+          "publisher_domain": "blog.google",
+          "author": "Dr. Rayna Freedman5th Grade teacher \u2013Jordan/Jackson Elementary, Mansfield, MA. U.S.",
+          "snippet": "Fifth graders use Google Gemini to write songs about history and create art. See how this teacher integrates AI into the classroom.",
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "google_blog",
+          "source_tier": 1,
+          "published_at": "2026-10-05T16:00:00Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "GOOGL",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "GOOGL"
+        ],
+        "first_published_at": "2026-10-05T16:00:00Z",
+        "last_published_at": "2026-10-05T16:00:00Z"
+      },
+      {
+        "group_id": "360901e0-57ed-4585-98c4-99bb0a60ad6e",
+        "lead": {
+          "id": "360901e0-57ed-4585-98c4-99bb0a60ad6e",
+          "url": "https://blog.google/products-and-platforms/products/education/world-teachers-day-2026/",
+          "title": "World Teachers\u2019 Day 2026",
+          "publisher": "Google (The Keyword)",
+          "publisher_domain": "blog.google",
+          "author": null,
+          "snippet": "To celebrate World Teachers\u2019 Day 2026, educators share their stories about how they use tech in the classroom.",
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "google_blog",
+          "source_tier": 1,
+          "published_at": "2026-10-05T16:00:00Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "GOOGL",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "GOOGL"
+        ],
+        "first_published_at": "2026-10-05T16:00:00Z",
+        "last_published_at": "2026-10-05T16:00:00Z"
+      },
+      {
+        "group_id": "c41bc616-5a9b-4f61-9543-f0d3be5ea289",
+        "lead": {
+          "id": "c41bc616-5a9b-4f61-9543-f0d3be5ea289",
+          "url": "https://blog.google/products-and-platforms/products/education/education-officer-gemini/",
+          "title": "Technology is helping my fellow math teachers trade weekend prep for personalized learning.",
+          "publisher": "Google (The Keyword)",
+          "publisher_domain": "blog.google",
+          "author": "Kate ThomasEducation Officer \u2013 Catholic Education Wollongong, Australia",
+          "snippet": "Teachers use Gemini to build custom K-6 math worksheets and save hours of prep time. See how Google AI transforms classroom instruction.",
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "google_blog",
+          "source_tier": 1,
+          "published_at": "2026-10-05T16:00:00Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "GOOGL",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "GOOGL"
+        ],
+        "first_published_at": "2026-10-05T16:00:00Z",
+        "last_published_at": "2026-10-05T16:00:00Z"
+      },
+      {
+        "group_id": "b48dae44-1d34-478f-b0c9-91bee9d9dc53",
+        "lead": {
+          "id": "b48dae44-1d34-478f-b0c9-91bee9d9dc53",
+          "url": "https://blog.google/products-and-platforms/products/education/gemini-google-colab/",
+          "title": "I replaced traditional coding tests with real conversations about how my students solve problems using AI.",
+          "publisher": "Google (The Keyword)",
+          "publisher_domain": "blog.google",
+          "author": "Prof. Ts. Dr. Nurfadhlina Mohd SharefChief Digital Officer & Lecturer, Faculty of Computer Science and Information Technology \u2013 Universiti Putra, Malaysia",
+          "snippet": "Replace coding tests with AI-driven interviews using Google Gemini in Colab. See how this professor evaluates student judgment. Read the full report.",
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "google_blog",
+          "source_tier": 1,
+          "published_at": "2026-10-05T16:00:00Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "GOOGL",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "GOOGL"
+        ],
+        "first_published_at": "2026-10-05T16:00:00Z",
+        "last_published_at": "2026-10-05T16:00:00Z"
+      },
+      {
+        "group_id": "4d86fea4-2994-4c4b-9428-2fc5332e348c",
+        "lead": {
+          "id": "4d86fea4-2994-4c4b-9428-2fc5332e348c",
+          "url": "https://blog.google/products-and-platforms/products/education/special-education-gemini/",
+          "title": "Gemini helps me give a voice to students who cannot write.",
+          "publisher": "Google (The Keyword)",
+          "publisher_domain": "blog.google",
+          "author": "Eni WulandariSpecial Needs Teacher at SLB Negeri 2 Gunungkidul \u2013 Yogyakarta, Indonesia",
+          "snippet": "Special education teachers use Google Gemini to generate visual guides and voice prompts, empowering non-writing students. Read the full story.",
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "google_blog",
+          "source_tier": 1,
+          "published_at": "2026-10-05T16:00:00Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "GOOGL",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "GOOGL"
+        ],
+        "first_published_at": "2026-10-05T16:00:00Z",
+        "last_published_at": "2026-10-05T16:00:00Z"
+      },
+      {
+        "group_id": "24ca62ab-e39c-4f3e-ab06-429e5a00ef4a",
+        "lead": {
+          "id": "24ca62ab-e39c-4f3e-ab06-429e5a00ef4a",
+          "url": "https://blog.google/products-and-platforms/products/education/english-teacher-gemini/",
+          "title": "Gemini helps me bring hands-on learning into the classroom.",
+          "publisher": "Google (The Keyword)",
+          "publisher_domain": "blog.google",
+          "author": "Cheryl GraffSpecial Education Teacher - Lake View High School, Chicago, U.S.",
+          "snippet": "A teacher uses Google Gemini to design interactive role-playing simulations and nutrition lessons. See how AI boosts classroom engagement.",
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "google_blog",
+          "source_tier": 1,
+          "published_at": "2026-10-05T16:00:00Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "GOOGL",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "GOOGL"
+        ],
+        "first_published_at": "2026-10-05T16:00:00Z",
+        "last_published_at": "2026-10-05T16:00:00Z"
+      },
+      {
+        "group_id": "c2f03f72-5942-46b0-ba6b-305902dadef9",
+        "lead": {
+          "id": "c2f03f72-5942-46b0-ba6b-305902dadef9",
+          "url": "https://blog.google/products-and-platforms/products/education/teacher-voices-sweden/",
+          "title": "I use technology to give students a voice and become critical digital citizens.",
+          "publisher": "Google (The Keyword)",
+          "publisher_domain": "blog.google",
+          "author": "Rebecca BraunYear 7-9 Teacher, Digital Innovator, Democracy Developer and Central Education Developer \u2013 Innovitaskolan, Helsingborg, Sweden",
+          "snippet": "Empower students using Google Sites, Gemini, and Vids to build critical thinking skills. See how these tools help kids find their voice today.",
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "google_blog",
+          "source_tier": 1,
+          "published_at": "2026-10-05T16:00:00Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "GOOGL",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "GOOGL"
+        ],
+        "first_published_at": "2026-10-05T16:00:00Z",
+        "last_published_at": "2026-10-05T16:00:00Z"
+      },
+      {
+        "group_id": "34385663-f00a-43c4-9200-eed778409747",
+        "lead": {
+          "id": "34385663-f00a-43c4-9200-eed778409747",
+          "url": "https://blog.google/products-and-platforms/products/education/teacher-stories-gemini-middle-school/",
+          "title": "I teach my students that in the AI era, critical thinking comes first.",
+          "publisher": "Google (The Keyword)",
+          "publisher_domain": "blog.google",
+          "author": "Kavita KhannaGrade 6/7 Technology Elective Teacher and Team Lead \u2013 Impact Academy of Arts and Technology, Hayward, CA, U.S.",
+          "snippet": "A California teacher uses Gemini to streamline lesson planning in Google Drive. See how she prioritizes critical thinking in the AI era.",
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "google_blog",
+          "source_tier": 1,
+          "published_at": "2026-10-05T16:00:00Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "GOOGL",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "GOOGL"
+        ],
+        "first_published_at": "2026-10-05T16:00:00Z",
+        "last_published_at": "2026-10-05T16:00:00Z"
+      },
+      {
+        "group_id": "22ebdcb8-ae97-490d-86b6-cff6d9167d5d",
+        "lead": {
+          "id": "22ebdcb8-ae97-490d-86b6-cff6d9167d5d",
+          "url": "https://blog.google/products-and-platforms/products/education/science-teacher-gemini/",
+          "title": "Here\u2019s how I use technology to bring science to life in my classroom.",
+          "publisher": "Google (The Keyword)",
+          "publisher_domain": "blog.google",
+          "author": "Chanel JohnsonGifted 8th Grade Physical Science Teacher \u2013 Cedar Grove Middle School, Decatur, Georgia, U.S.",
+          "snippet": "See how this teacher uses Gemini and Gemini Notebook to build digital literacy and refine lesson plans. Read the full story to improve your teaching.",
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "google_blog",
+          "source_tier": 1,
+          "published_at": "2026-10-05T16:00:00Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "GOOGL",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "GOOGL"
+        ],
+        "first_published_at": "2026-10-05T16:00:00Z",
+        "last_published_at": "2026-10-05T16:00:00Z"
+      },
+      {
+        "group_id": "902276f2-f177-4ec6-b10c-9726995ed705",
+        "lead": {
+          "id": "902276f2-f177-4ec6-b10c-9726995ed705",
+          "url": "https://blogs.nvidia.com/blog/ai-breast-cancer-startups/",
+          "title": "From Scan to Treatment Plan, AI Helps Close Breast Cancer\u2019s Deadliest Gaps",
+          "publisher": "NVIDIA Newsroom",
+          "publisher_domain": "blogs.nvidia.com",
+          "author": "Chelsea Sumner",
+          "snippet": "Breast cancer is the most commonly diagnosed cancer among American women \u2014 yet the gaps in care are wide. A majority of women over age 40 skip the recommended annual screening. Radiologists are reading more mammograms with fewer colleagues. And when a diagnosis arrives, the tests that inform\u2026",
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "nvidia_newsroom",
+          "source_tier": 1,
+          "published_at": "2026-10-05T13:00:57Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "NVDA",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "NVDA"
+        ],
+        "first_published_at": "2026-10-05T13:00:57Z",
+        "last_published_at": "2026-10-05T13:00:57Z"
+      },
+      {
+        "group_id": "1d737d08-e86c-4bc6-a31d-6f123966ee6d",
+        "lead": {
+          "id": "1d737d08-e86c-4bc6-a31d-6f123966ee6d",
+          "url": "https://www.sec.gov/newsroom/press-releases/2026-101-sec-coordinates-global-financial-regulators-raise-fraud-awareness-during-world-investor-week",
+          "title": "SEC Coordinates with Global Financial Regulators to Raise Fraud Awareness During World Investor Week",
+          "publisher": "U.S. Securities and Exchange Commission",
+          "publisher_domain": "sec.gov",
+          "author": null,
+          "snippet": "The Securities and Exchange Commission, in coordination with other U.S. and global financial regulators, today issued a joint investor bulletin as part of World Investor Week (WIW). The bulletin encourages investors to be resilient in changing\u2026",
+          "language": "en",
+          "source_country": null,
+          "kind": "official",
+          "source_id": "sec_press",
+          "source_tier": 1,
+          "published_at": "2026-10-05T12:47:36Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": []
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [],
+        "first_published_at": "2026-10-05T12:47:36Z",
+        "last_published_at": "2026-10-05T12:47:36Z"
+      },
+      {
+        "group_id": "4b181179-8962-4684-84e2-3124de3af904",
+        "lead": {
+          "id": "4b181179-8962-4684-84e2-3124de3af904",
+          "url": "https://blog.google/products-and-platforms/products/search/holiday-travel-trends-2026/",
+          "title": "Wheels up: Trends and tips for 2026 holiday travel",
+          "publisher": "Google (The Keyword)",
+          "publisher_domain": "blog.google",
+          "author": "James ByersGroup Product Manager, Search",
+          "snippet": "Explore this year\u2019s trends and tips for holiday travel \u2014 from insights on booking the lowest fare to trending destinations for Thanksgiving and Christmas.",
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "google_blog",
+          "source_tier": 1,
+          "published_at": "2026-10-05T12:00:00Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "GOOGL",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "GOOGL"
+        ],
+        "first_published_at": "2026-10-05T12:00:00Z",
+        "last_published_at": "2026-10-05T12:00:00Z"
+      },
+      {
+        "group_id": "62c8628d-9ce4-40ff-8d14-2afa6a27ba2a",
+        "lead": {
+          "id": "62c8628d-9ce4-40ff-8d14-2afa6a27ba2a",
+          "url": "https://blog.google/products-and-platforms/products/education/making-ai-training-available-to-uk-and-ireland-educators/",
+          "title": "Making AI training available to UK and Ireland educators",
+          "publisher": "Google (The Keyword)",
+          "publisher_domain": "blog.google",
+          "author": "Fiona LawHead of New PartnershipsEducation",
+          "snippet": "Google's AI tools aim to help educators achieve their teaching goals and provide students with personalized learning experiences.",
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "google_blog",
+          "source_tier": 1,
+          "published_at": "2026-10-05T07:00:00Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "GOOGL",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "GOOGL"
+        ],
+        "first_published_at": "2026-10-05T07:00:00Z",
+        "last_published_at": "2026-10-05T07:00:00Z"
+      },
+      {
+        "group_id": "740c567f-ceef-4858-8573-c658cf13d4b0",
+        "lead": {
+          "id": "740c567f-ceef-4858-8573-c658cf13d4b0",
+          "url": "https://www.federalreserve.gov/newsevents/pressreleases/orders20261002a.htm",
+          "title": "Federal Reserve Board announces approval of application by Fleur Capital Corporation",
+          "publisher": "Federal Reserve Board",
+          "publisher_domain": "federalreserve.gov",
+          "author": null,
+          "snippet": "Federal Reserve Board announces approval of application by Fleur Capital Corporation",
+          "language": "en",
+          "source_country": null,
+          "kind": "official",
+          "source_id": "fed_press",
+          "source_tier": 1,
+          "published_at": "2026-10-02T20:45:00Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": []
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [],
+        "first_published_at": "2026-10-02T20:45:00Z",
+        "last_published_at": "2026-10-02T20:45:00Z"
+      },
+      {
+        "group_id": "8215243d-c6d9-4ed8-ab8f-92ab3a1e3b2b",
+        "lead": {
+          "id": "8215243d-c6d9-4ed8-ab8f-92ab3a1e3b2b",
+          "url": "https://www.federalreserve.gov/newsevents/pressreleases/bcreg20261002a.htm",
+          "title": "Federal Reserve Board announces it will extend, until November 4, the comment period on its proposal to modernize Regulation O",
+          "publisher": "Federal Reserve Board",
+          "publisher_domain": "federalreserve.gov",
+          "author": null,
+          "snippet": "Federal Reserve Board announces it will extend, until November 4, the comment period on its proposal to modernize Regulation O",
+          "language": "en",
+          "source_country": null,
+          "kind": "official",
+          "source_id": "fed_press",
+          "source_tier": 1,
+          "published_at": "2026-10-02T20:00:00Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": []
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [],
+        "first_published_at": "2026-10-02T20:00:00Z",
+        "last_published_at": "2026-10-02T20:00:00Z"
+      },
+      {
+        "group_id": "9b841aa3-09c3-442e-9fd2-2d26cba4a74a",
+        "lead": {
+          "id": "9b841aa3-09c3-442e-9fd2-2d26cba4a74a",
+          "url": "https://www.whitehouse.gov/presidential-actions/2026/10/national-manufacturing-day-2026/",
+          "title": "National Manufacturing Day, 2026",
+          "publisher": "The White House",
+          "publisher_domain": "whitehouse.gov",
+          "author": "The White House",
+          "snippet": "BY THE PRESIDENT OF THE UNITED STATES OF AMERICA A PROCLAMATION For 250 years, American workers have been the driving force behind our Nation\u2019s strength, prosperity, and industrial might. Their skill, ingenuity, and determination have fueled our economy and carried American manufacturing to new\u2026",
+          "language": "en",
+          "source_country": null,
+          "kind": "official",
+          "source_id": "whitehouse_actions",
+          "source_tier": 1,
+          "published_at": "2026-10-02T19:29:58Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": []
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [],
+        "first_published_at": "2026-10-02T19:29:58Z",
+        "last_published_at": "2026-10-02T19:29:58Z"
+      },
+      {
+        "group_id": "448f6cba-b8d8-4a1e-9739-cd38a6e9eeca",
+        "lead": {
+          "id": "448f6cba-b8d8-4a1e-9739-cd38a6e9eeca",
+          "url": "https://www.microsoft.com/en-us/security/blog/2026/10/01/insights-from-the-2026-microsoft-digital-defense-report/",
+          "title": "Microsoft Digital Defense Report: How AI is reshaping the cybersecurity landscape",
+          "publisher": "Microsoft News Center",
+          "publisher_domain": "microsoft.com",
+          "author": "sbaynes",
+          "snippet": null,
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "microsoft_news",
+          "source_tier": 1,
+          "published_at": "2026-10-02T17:45:11Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "MSFT",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "MSFT"
+        ],
+        "first_published_at": "2026-10-02T17:45:11Z",
+        "last_published_at": "2026-10-02T17:45:11Z"
+      },
+      {
+        "group_id": "518f7d27-80fa-4923-bb11-a3eb237f1862",
+        "lead": {
+          "id": "518f7d27-80fa-4923-bb11-a3eb237f1862",
+          "url": "https://blog.google/innovation-and-ai/technology/ai/google-ai-updates-september-2026/",
+          "title": "The latest AI news we announced in September 2026",
+          "publisher": "Google (The Keyword)",
+          "publisher_domain": "blog.google",
+          "author": "Blog Team",
+          "snippet": "Here are Google\u2019s latest AI updates from September 2026",
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "google_blog",
+          "source_tier": 1,
+          "published_at": "2026-10-02T15:00:00Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "GOOGL",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "GOOGL"
+        ],
+        "first_published_at": "2026-10-02T15:00:00Z",
+        "last_published_at": "2026-10-02T15:00:00Z"
+      },
+      {
+        "group_id": "4eeec39b-4962-4daa-b0ad-e2702dd902c3",
+        "lead": {
+          "id": "4eeec39b-4962-4daa-b0ad-e2702dd902c3",
+          "url": "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20261002a.htm",
+          "title": "Federal Reserve Board issues enforcement action with Ontario Bancorporation, Inc.",
+          "publisher": "Federal Reserve Board",
+          "publisher_domain": "federalreserve.gov",
+          "author": null,
+          "snippet": "Federal Reserve Board issues enforcement action with Ontario Bancorporation, Inc.",
+          "language": "en",
+          "source_country": null,
+          "kind": "official",
+          "source_id": "fed_press",
+          "source_tier": 1,
+          "published_at": "2026-10-02T15:00:00Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": []
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [],
+        "first_published_at": "2026-10-02T15:00:00Z",
+        "last_published_at": "2026-10-02T15:00:00Z"
+      },
+      {
+        "group_id": "772bead0-145f-4720-99af-bf131fe1911d",
+        "lead": {
+          "id": "772bead0-145f-4720-99af-bf131fe1911d",
+          "url": "https://blogs.nvidia.com/blog/local-ai-dgx-spark-64gb-sync/",
+          "title": "NVIDIA DGX Spark 64GB Gives Developers More Ways to Build and Scale Local AI",
+          "publisher": "NVIDIA Newsroom",
+          "publisher_domain": "blogs.nvidia.com",
+          "author": "Allen Bourgoyne",
+          "snippet": "Local AI is becoming more useful by the token. As AI agents move from experiments into everyday development, increasingly capable open models are shrinking to fit on more devices, giving builders more to run locally. Coming this month, NVIDIA DGX Spark will be available with 64GB of unified memory\u2026",
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "nvidia_newsroom",
+          "source_tier": 1,
+          "published_at": "2026-10-02T13:00:39Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "NVDA",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "NVDA"
+        ],
+        "first_published_at": "2026-10-02T13:00:39Z",
+        "last_published_at": "2026-10-02T13:00:39Z"
+      },
+      {
+        "group_id": "09807a12-6bdb-4063-b9ff-cd602856224b",
+        "lead": {
+          "id": "09807a12-6bdb-4063-b9ff-cd602856224b",
+          "url": "https://www.thenews.com.pk/latest/1418462-google-messages-finally-lets-you-copy-part-of-a-text",
+          "title": "Google Messages finally lets you copy part of a text",
+          "publisher": "thenews.com.pk",
+          "publisher_domain": "thenews.com.pk",
+          "author": null,
+          "snippet": null,
+          "language": "en",
+          "source_country": "Pakistan",
+          "kind": "article",
+          "source_id": "gdelt",
+          "source_tier": 4,
+          "published_at": "2026-10-02T10:45:00Z",
+          "time_basis": "first_seen",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "GOOGL",
+              "rule": "company_name",
+              "confidence": "0.800"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 4,
+        "tickers": [
+          "GOOGL"
+        ],
+        "first_published_at": "2026-10-02T10:45:00Z",
+        "last_published_at": "2026-10-02T10:45:00Z"
+      },
+      {
+        "group_id": "cfaa1fff-d530-45bb-ac71-684eb67eaf50",
+        "lead": {
+          "id": "cfaa1fff-d530-45bb-ac71-684eb67eaf50",
+          "url": "https://www.theepochtimes.com/us/new-mexico-asks-judge-to-fine-meta-up-to-40-billion-in-facebook-privacy-case-6097710",
+          "title": "New Mexico Asks Judge to Fine Meta up to $40 Billion in Facebook Privacy Case",
+          "publisher": "theepochtimes.com",
+          "publisher_domain": "theepochtimes.com",
+          "author": null,
+          "snippet": null,
+          "language": "en",
+          "source_country": "United States",
+          "kind": "article",
+          "source_id": "gdelt",
+          "source_tier": 4,
+          "published_at": "2026-10-02T10:45:00Z",
+          "time_basis": "first_seen",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "META",
+              "rule": "company_name",
+              "confidence": "0.800"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 4,
+        "tickers": [
+          "META"
+        ],
+        "first_published_at": "2026-10-02T10:45:00Z",
+        "last_published_at": "2026-10-02T10:45:00Z"
+      },
+      {
+        "group_id": "14330efe-201c-4b1f-b76a-ed4dc31fd84a",
+        "lead": {
+          "id": "14330efe-201c-4b1f-b76a-ed4dc31fd84a",
+          "url": "https://seekingalpha.com/article/4951536-the-risks-of-returning-to-hyper-concentration",
+          "title": "The Risks Of Returning To Hyper - Concentration ( NASDAQ : META )",
+          "publisher": "Seeking Alpha",
+          "publisher_domain": "seekingalpha.com",
+          "author": null,
+          "snippet": null,
+          "language": "en",
+          "source_country": "United States",
+          "kind": "article",
+          "source_id": "gdelt",
+          "source_tier": 3,
+          "published_at": "2026-10-02T10:45:00Z",
+          "time_basis": "first_seen",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "META",
+              "rule": "exchange_ticker",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 3,
+        "tickers": [
+          "META"
+        ],
+        "first_published_at": "2026-10-02T10:45:00Z",
+        "last_published_at": "2026-10-02T10:45:00Z"
+      }
+    ],
+    "sources": [
+      {
+        "id": "gdelt",
+        "name": "GDELT DOC 2.0 API",
+        "tier": 2,
+        "enabled": true
+      },
+      {
+        "id": "sec_press",
+        "name": "SEC press releases (RSS)",
+        "tier": 1,
+        "enabled": true
+      },
+      {
+        "id": "fed_press",
+        "name": "Federal Reserve press releases (RSS)",
+        "tier": 1,
+        "enabled": true
+      },
+      {
+        "id": "bls_releases",
+        "name": "BLS latest releases (RSS)",
+        "tier": 1,
+        "enabled": false
+      },
+      {
+        "id": "bea_releases",
+        "name": "BEA releases (RSS)",
+        "tier": 1,
+        "enabled": true
+      },
+      {
+        "id": "whitehouse_actions",
+        "name": "White House presidential actions (RSS)",
+        "tier": 1,
+        "enabled": true
+      },
+      {
+        "id": "apple_newsroom",
+        "name": "Apple Newsroom (RSS)",
+        "tier": 1,
+        "enabled": true
+      },
+      {
+        "id": "nvidia_newsroom",
+        "name": "NVIDIA Newsroom releases (RSS)",
+        "tier": 1,
+        "enabled": true
+      },
+      {
+        "id": "microsoft_news",
+        "name": "Microsoft News Center (RSS)",
+        "tier": 1,
+        "enabled": true
+      },
+      {
+        "id": "meta_newsroom",
+        "name": "Meta Newsroom (RSS)",
+        "tier": 1,
+        "enabled": true
+      },
+      {
+        "id": "google_blog",
+        "name": "Google, The Keyword blog (RSS)",
+        "tier": 1,
+        "enabled": true
+      }
+    ],
+    "attribution": "News discovery via the GDELT Project",
+    "attribution_url": "https://www.gdeltproject.org/"
+  }
+}

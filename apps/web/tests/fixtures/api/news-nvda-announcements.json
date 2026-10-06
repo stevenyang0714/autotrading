@@ -1,0 +1,316 @@
+{
+  "recorded_at": "2026-10-06T07:37:45.087638+00:00",
+  "recorded_from": "recorded GDELT and feed fixtures replayed into the integration test database (tests/integration/test_news.py)",
+  "endpoint": "/news",
+  "params": {
+    "ticker": "NVDA",
+    "kind": "press_release",
+    "limit": 6
+  },
+  "response": {
+    "known_at": "2026-10-06T07:37:45.078569Z",
+    "ticker": "NVDA",
+    "source_id": null,
+    "max_tier": null,
+    "kinds": [
+      "press_release"
+    ],
+    "story_count": 20,
+    "article_count": 20,
+    "newest_published_at": "2026-10-06T01:13:53Z",
+    "groups": [
+      {
+        "group_id": "902276f2-f177-4ec6-b10c-9726995ed705",
+        "lead": {
+          "id": "902276f2-f177-4ec6-b10c-9726995ed705",
+          "url": "https://blogs.nvidia.com/blog/ai-breast-cancer-startups/",
+          "title": "From Scan to Treatment Plan, AI Helps Close Breast Cancer\u2019s Deadliest Gaps",
+          "publisher": "NVIDIA Newsroom",
+          "publisher_domain": "blogs.nvidia.com",
+          "author": "Chelsea Sumner",
+          "snippet": "Breast cancer is the most commonly diagnosed cancer among American women \u2014 yet the gaps in care are wide. A majority of women over age 40 skip the recommended annual screening. Radiologists are reading more mammograms with fewer colleagues. And when a diagnosis arrives, the tests that inform\u2026",
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "nvidia_newsroom",
+          "source_tier": 1,
+          "published_at": "2026-10-05T13:00:57Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "NVDA",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "NVDA"
+        ],
+        "first_published_at": "2026-10-05T13:00:57Z",
+        "last_published_at": "2026-10-05T13:00:57Z"
+      },
+      {
+        "group_id": "772bead0-145f-4720-99af-bf131fe1911d",
+        "lead": {
+          "id": "772bead0-145f-4720-99af-bf131fe1911d",
+          "url": "https://blogs.nvidia.com/blog/local-ai-dgx-spark-64gb-sync/",
+          "title": "NVIDIA DGX Spark 64GB Gives Developers More Ways to Build and Scale Local AI",
+          "publisher": "NVIDIA Newsroom",
+          "publisher_domain": "blogs.nvidia.com",
+          "author": "Allen Bourgoyne",
+          "snippet": "Local AI is becoming more useful by the token. As AI agents move from experiments into everyday development, increasingly capable open models are shrinking to fit on more devices, giving builders more to run locally. Coming this month, NVIDIA DGX Spark will be available with 64GB of unified memory\u2026",
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "nvidia_newsroom",
+          "source_tier": 1,
+          "published_at": "2026-10-02T13:00:39Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "NVDA",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "NVDA"
+        ],
+        "first_published_at": "2026-10-02T13:00:39Z",
+        "last_published_at": "2026-10-02T13:00:39Z"
+      },
+      {
+        "group_id": "492c4fb1-2247-4acb-b5ee-29208121f4bf",
+        "lead": {
+          "id": "492c4fb1-2247-4acb-b5ee-29208121f4bf",
+          "url": "https://blogs.nvidia.com/blog/gpus-openai-gpt-6-astra-ultrafast/",
+          "title": "How NVIDIA GPUs Help Accelerate OpenAI\u2019s GPT-6 Astra Ultrafast",
+          "publisher": "NVIDIA Newsroom",
+          "publisher_domain": "blogs.nvidia.com",
+          "author": "Dion Harris",
+          "snippet": "GPT-6 Astra Ultrafast, running on NVIDIA Blackwell GPUs, is available now in the OpenAI API and to eligible ChatGPT Work and Codex users. Accelerated by inference optimizations through OpenAI\u2019s models that tap into the capabilities of the NVIDIA Blackwell architecture, Ultrafast offers up to 8x\u2026",
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "nvidia_newsroom",
+          "source_tier": 1,
+          "published_at": "2026-10-01T23:44:13Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "NVDA",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "NVDA"
+        ],
+        "first_published_at": "2026-10-01T23:44:13Z",
+        "last_published_at": "2026-10-01T23:44:13Z"
+      },
+      {
+        "group_id": "c0b570d5-841b-457e-a31c-b902e86c1b34",
+        "lead": {
+          "id": "c0b570d5-841b-457e-a31c-b902e86c1b34",
+          "url": "https://blogs.nvidia.com/blog/geforce-now-thursday-october-2026-games-list/",
+          "title": "Fall Into 25 New Games on GeForce NOW This October",
+          "publisher": "NVIDIA Newsroom",
+          "publisher_domain": "blogs.nvidia.com",
+          "author": "GeForce NOW Community",
+          "snippet": "Spooky season is streaming in. Alongside falling leaves, pumpkin spice and everything nice, 25 new games are joining GeForce NOW throughout October, including six ready to play this week. From a new CONTROL Resonant reward for Performance and Ultimate members to The Witcher 3: Wild Hunt \u2013\u2026",
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "nvidia_newsroom",
+          "source_tier": 1,
+          "published_at": "2026-10-01T13:00:54Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "NVDA",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "NVDA"
+        ],
+        "first_published_at": "2026-10-01T13:00:54Z",
+        "last_published_at": "2026-10-01T13:00:54Z"
+      },
+      {
+        "group_id": "057c6b1c-f777-4f56-9a18-e4672719c930",
+        "lead": {
+          "id": "057c6b1c-f777-4f56-9a18-e4672719c930",
+          "url": "https://blogs.nvidia.com/blog/productive-durable-fungible-ai-factories/",
+          "title": "Productive, Durable, Fungible: How NVIDIA AI Factories Maximize Return on Investment",
+          "publisher": "NVIDIA Newsroom",
+          "publisher_domain": "blogs.nvidia.com",
+          "author": "Shruti Koparkar",
+          "snippet": "AI factories are built by the megawatt, even by the gigawatt. Each megawatt factory costs roughly $60 million, and AI factory operators will only commit capital on that scale with a clear view of the return on investment. Three key things shape AI factory returns: Earning capacity: What the\u2026",
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "nvidia_newsroom",
+          "source_tier": 1,
+          "published_at": "2026-10-01T13:00:49Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "NVDA",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "NVDA"
+        ],
+        "first_published_at": "2026-10-01T13:00:49Z",
+        "last_published_at": "2026-10-01T13:00:49Z"
+      },
+      {
+        "group_id": "34a8cd16-05c4-4eda-beaa-53cc10082e8a",
+        "lead": {
+          "id": "34a8cd16-05c4-4eda-beaa-53cc10082e8a",
+          "url": "https://blogs.nvidia.com/blog/applications-open-graduate-fellowship-awards-2026/",
+          "title": "NVIDIA Opens Applications for 2027\u20132028 Graduate Fellowships With Awards Up to $60,000",
+          "publisher": "NVIDIA Newsroom",
+          "publisher_domain": "blogs.nvidia.com",
+          "author": "Sharon Gibbons",
+          "snippet": "Bringing together the world\u2019s brightest minds and the latest accelerated computing technology leads to powerful breakthroughs that help tackle some of the biggest research problems. To foster such innovation, the NVIDIA Graduate Fellowship Program provides grants, mentors and technical support to\u2026",
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "nvidia_newsroom",
+          "source_tier": 1,
+          "published_at": "2026-09-30T17:00:21Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "NVDA",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "NVDA"
+        ],
+        "first_published_at": "2026-09-30T17:00:21Z",
+        "last_published_at": "2026-09-30T17:00:21Z"
+      }
+    ],
+    "sources": [
+      {
+        "id": "gdelt",
+        "name": "GDELT DOC 2.0 API",
+        "tier": 2,
+        "enabled": true
+      },
+      {
+        "id": "sec_press",
+        "name": "SEC press releases (RSS)",
+        "tier": 1,
+        "enabled": true
+      },
+      {
+        "id": "fed_press",
+        "name": "Federal Reserve press releases (RSS)",
+        "tier": 1,
+        "enabled": true
+      },
+      {
+        "id": "bls_releases",
+        "name": "BLS latest releases (RSS)",
+        "tier": 1,
+        "enabled": false
+      },
+      {
+        "id": "bea_releases",
+        "name": "BEA releases (RSS)",
+        "tier": 1,
+        "enabled": true
+      },
+      {
+        "id": "whitehouse_actions",
+        "name": "White House presidential actions (RSS)",
+        "tier": 1,
+        "enabled": true
+      },
+      {
+        "id": "apple_newsroom",
+        "name": "Apple Newsroom (RSS)",
+        "tier": 1,
+        "enabled": true
+      },
+      {
+        "id": "nvidia_newsroom",
+        "name": "NVIDIA Newsroom releases (RSS)",
+        "tier": 1,
+        "enabled": true
+      },
+      {
+        "id": "microsoft_news",
+        "name": "Microsoft News Center (RSS)",
+        "tier": 1,
+        "enabled": true
+      },
+      {
+        "id": "meta_newsroom",
+        "name": "Meta Newsroom (RSS)",
+        "tier": 1,
+        "enabled": true
+      },
+      {
+        "id": "google_blog",
+        "name": "Google, The Keyword blog (RSS)",
+        "tier": 1,
+        "enabled": true
+      }
+    ],
+    "attribution": "News discovery via the GDELT Project",
+    "attribution_url": "https://www.gdeltproject.org/"
+  }
+}

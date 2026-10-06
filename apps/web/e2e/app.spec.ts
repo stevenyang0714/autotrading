@@ -36,6 +36,7 @@ test("every page loads without console errors", async ({ page }) => {
     "/instruments/AAPL",
     "/macro",
     "/macro/PAYEMS",
+    "/news",
     "/system/progress",
     ...DASHBOARD_SLUGS.map((s) => `/dashboards/${s}`),
   ];
@@ -63,11 +64,12 @@ test("Data Health shows the registered sources from the live API", async ({ page
     await expect(page.getByRole("table")).toBeVisible();
     const freshness = (name: RegExp) =>
       page.getByRole("row", { name }).locator('[data-term-id="data_freshness"]');
-    // SEC EDGAR (M0.5) and FRED (M0.6) are enabled: judged, whatever their state.
-    // GDELT is not enabled until M0.8.
+    // SEC EDGAR (M0.5), FRED (M0.6) and GDELT (M0.8) are enabled: judged, whatever their
+    // state. Massive stays off until its license check (ADR-004).
     await expect(freshness(/SEC EDGAR/)).toHaveText(/^(Fresh|Stale|Failing)$/);
     await expect(freshness(/FRED/)).toHaveText(/^(Fresh|Stale|Failing)$/);
-    await expect(freshness(/GDELT/)).toHaveText("Not enabled");
+    await expect(freshness(/GDELT/)).toHaveText(/^(Fresh|Stale|Failing)$/);
+    await expect(freshness(/Massive/)).toHaveText("Not enabled");
   }
 });
 
@@ -80,7 +82,8 @@ async function unexplainedNumbers(page: Page): Promise<string[]> {
       const text = node.textContent ?? "";
       const parent = node.parentElement;
       if (/\d/.test(text) && parent && parent.offsetParent !== null) {
-        if (!parent.closest("[data-metric],[data-identifier],code")) found.push(text.trim());
+        // [data-quoted]: a publisher's own words shown verbatim (news headlines, summaries).
+        if (!parent.closest("[data-metric],[data-identifier],[data-quoted],code")) found.push(text.trim());
       }
     }
     return found;
@@ -98,6 +101,8 @@ for (const path of [
   "/macro/PAYEMS?known_on=2026-09-30",
   "/",
   "/?known_on=2026-09-30",
+  "/news",
+  "/news?ticker=NVDA",
   "/system/progress",
 ]) {
   test(`numbers on ${path} are all explained`, async ({ page }) => {
@@ -228,6 +233,37 @@ test("a past date shows that day's last public close", async ({ page }) => {
   await expect(price).toContainText("close of 2026-09-29");
   await expect(price.locator("[data-feed-status]").first()).toBeVisible();
   await expect(price).not.toContainText("US market");
+});
+
+// ---------- news (M0.8, ADR-018) ----------
+
+test("news stories link to the original articles", async ({ page }) => {
+  await page.goto("/news");
+  const stories = page.getByRole("list", { name: "News stories" }).locator(":scope > li");
+  await expect(stories.first()).toBeVisible();
+  const href = await stories.first().getByRole("link").first().getAttribute("href");
+  expect(href).toMatch(/^https?:\/\//);
+  expect(href).not.toContain("127.0.0.1");
+  await expect(page.getByRole("link", { name: "News discovery via the GDELT Project" })).toHaveAttribute(
+    "href",
+    "https://www.gdeltproject.org/",
+  );
+});
+
+test("news filters by company and the instrument page shows its news", async ({ page }) => {
+  // AAPL: its newsroom feed is replayed in CI (SEC fixtures cover AAPL and XOM only).
+  await page.goto("/news?ticker=AAPL");
+  const stories = page.getByRole("list", { name: "News stories" }).locator(":scope > li");
+  await expect(stories.first()).toContainText("AAPL");
+  await page.goto("/instruments/AAPL");
+  await expect(page.getByRole("region", { name: "Recent news" })).toBeVisible();
+});
+
+test("DEMO DATA banner on news replayed from fixtures", async ({ page }) => {
+  await page.goto("/news");
+  const banner = page.locator("[data-demo-banner]");
+  // CI replays recorded news labelled fixture (make replay-fixtures); live data has no banner.
+  await expect(banner).toHaveCount(process.env.CI ? 1 : 0);
 });
 
 // ---------- macro page (M0.6) ----------

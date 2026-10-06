@@ -1,0 +1,1289 @@
+{
+  "recorded_at": "2026-10-06T07:37:45.076487+00:00",
+  "recorded_from": "recorded GDELT and feed fixtures replayed into the integration test database (tests/integration/test_news.py)",
+  "endpoint": "/news",
+  "params": {
+    "ticker": "NVDA",
+    "limit": 8
+  },
+  "response": {
+    "known_at": "2026-10-06T07:37:45.064122Z",
+    "ticker": "NVDA",
+    "source_id": null,
+    "max_tier": null,
+    "kinds": [],
+    "story_count": 36,
+    "article_count": 77,
+    "newest_published_at": "2026-10-06T01:13:53Z",
+    "groups": [
+      {
+        "group_id": "902276f2-f177-4ec6-b10c-9726995ed705",
+        "lead": {
+          "id": "902276f2-f177-4ec6-b10c-9726995ed705",
+          "url": "https://blogs.nvidia.com/blog/ai-breast-cancer-startups/",
+          "title": "From Scan to Treatment Plan, AI Helps Close Breast Cancer\u2019s Deadliest Gaps",
+          "publisher": "NVIDIA Newsroom",
+          "publisher_domain": "blogs.nvidia.com",
+          "author": "Chelsea Sumner",
+          "snippet": "Breast cancer is the most commonly diagnosed cancer among American women \u2014 yet the gaps in care are wide. A majority of women over age 40 skip the recommended annual screening. Radiologists are reading more mammograms with fewer colleagues. And when a diagnosis arrives, the tests that inform\u2026",
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "nvidia_newsroom",
+          "source_tier": 1,
+          "published_at": "2026-10-05T13:00:57Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "NVDA",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "NVDA"
+        ],
+        "first_published_at": "2026-10-05T13:00:57Z",
+        "last_published_at": "2026-10-05T13:00:57Z"
+      },
+      {
+        "group_id": "772bead0-145f-4720-99af-bf131fe1911d",
+        "lead": {
+          "id": "772bead0-145f-4720-99af-bf131fe1911d",
+          "url": "https://blogs.nvidia.com/blog/local-ai-dgx-spark-64gb-sync/",
+          "title": "NVIDIA DGX Spark 64GB Gives Developers More Ways to Build and Scale Local AI",
+          "publisher": "NVIDIA Newsroom",
+          "publisher_domain": "blogs.nvidia.com",
+          "author": "Allen Bourgoyne",
+          "snippet": "Local AI is becoming more useful by the token. As AI agents move from experiments into everyday development, increasingly capable open models are shrinking to fit on more devices, giving builders more to run locally. Coming this month, NVIDIA DGX Spark will be available with 64GB of unified memory\u2026",
+          "language": "en",
+          "source_country": null,
+          "kind": "press_release",
+          "source_id": "nvidia_newsroom",
+          "source_tier": 1,
+          "published_at": "2026-10-02T13:00:39Z",
+          "time_basis": "publisher",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "NVDA",
+              "rule": "feed_issuer",
+              "confidence": "1.000"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 1,
+        "tickers": [
+          "NVDA"
+        ],
+        "first_published_at": "2026-10-02T13:00:39Z",
+        "last_published_at": "2026-10-02T13:00:39Z"
+      },
+      {
+        "group_id": "04e8d0ee-22b8-4dc9-98fe-69dd948938c2",
+        "lead": {
+          "id": "04e8d0ee-22b8-4dc9-98fe-69dd948938c2",
+          "url": "http://www.oklahomastar.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+          "title": "Nvidia unveils record $150 billion buyback increase",
+          "publisher": "oklahomastar.com",
+          "publisher_domain": "oklahomastar.com",
+          "author": null,
+          "snippet": null,
+          "language": "en",
+          "source_country": "United States",
+          "kind": "article",
+          "source_id": "gdelt",
+          "source_tier": 4,
+          "published_at": "2026-10-02T04:30:00Z",
+          "time_basis": "first_seen",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "NVDA",
+              "rule": "company_name",
+              "confidence": "0.800"
+            }
+          ]
+        },
+        "others": [
+          {
+            "id": "3fcda770-e6b7-4ac5-ad51-f996730df0be",
+            "url": "http://www.theusnews.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "theusnews.com",
+            "publisher_domain": "theusnews.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "United States",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T04:30:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "fc6447ff-0524-4607-bc1d-c3ebaf0ead96",
+            "url": "http://www.pakistantelegraph.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "pakistantelegraph.com",
+            "publisher_domain": "pakistantelegraph.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "Pakistan",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T05:30:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "aaa25445-bf7a-45a5-aa10-5fd7dbd4f4e2",
+            "url": "http://www.torontotelegraph.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "torontotelegraph.com",
+            "publisher_domain": "torontotelegraph.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "Canada",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T05:30:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "660c5659-0821-4498-8e9f-43b1f4c40976",
+            "url": "http://www.utahindependent.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "utahindependent.com",
+            "publisher_domain": "utahindependent.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "United States",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T05:45:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "82deb0ff-c353-4acf-82b1-7a2750866adc",
+            "url": "http://www.sanantoniopost.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "sanantoniopost.com",
+            "publisher_domain": "sanantoniopost.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "United States",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T05:45:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "fc099b5a-2fcd-43b7-81a4-96f4f261da04",
+            "url": "http://www.philippinetimes.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "philippinetimes.com",
+            "publisher_domain": "philippinetimes.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "Philippines",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T05:45:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "9497b23f-c97f-423b-8575-7a6303a6bf22",
+            "url": "http://www.birminghamstar.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "birminghamstar.com",
+            "publisher_domain": "birminghamstar.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "United States",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T05:45:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "d9c4ac9b-e3f8-417d-a52c-c025fddef0f7",
+            "url": "http://www.parisguardian.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "parisguardian.com",
+            "publisher_domain": "parisguardian.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "France",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T05:45:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "9cc25d34-17a5-49eb-997f-56f240ea6b03",
+            "url": "http://www.srilankasource.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "srilankasource.com",
+            "publisher_domain": "srilankasource.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "Sri Lanka",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T06:00:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "6a7fdfe1-a3ff-4edb-8bde-3dc0d6c1eb7d",
+            "url": "http://www.tennesseedaily.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "tennesseedaily.com",
+            "publisher_domain": "tennesseedaily.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "United States",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T06:00:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "ee2c68c2-e63a-434c-9ed9-b45fe44c5910",
+            "url": "http://www.ohiostandard.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "ohiostandard.com",
+            "publisher_domain": "ohiostandard.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "United States",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T06:00:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "89cb9f70-2cf0-4552-8a2e-5f5d0835417a",
+            "url": "http://www.saltlakecitysun.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "saltlakecitysun.com",
+            "publisher_domain": "saltlakecitysun.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "United States",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T06:00:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "96cf86ef-90fb-405d-b1bc-c2657c75b210",
+            "url": "http://www.coloradostar.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "coloradostar.com",
+            "publisher_domain": "coloradostar.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "United States",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T06:00:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "eeb5dbe5-0840-447f-b95e-f272fa50f50c",
+            "url": "http://www.phoenixherald.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "phoenixherald.com",
+            "publisher_domain": "phoenixherald.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "United States",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T06:15:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "7687a3d5-50dc-4346-8817-e2ca4e9e6dd7",
+            "url": "http://www.floridastatesman.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "floridastatesman.com",
+            "publisher_domain": "floridastatesman.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "United States",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T06:15:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "9e94ca26-55e0-46ba-89e0-cf71a1cb1de3",
+            "url": "http://www.newzealandstar.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "newzealandstar.com",
+            "publisher_domain": "newzealandstar.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "New Zealand",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T06:45:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "de033219-f8b8-4b05-8a8c-f6aa4e14cd3e",
+            "url": "http://www.asiabulletin.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "asiabulletin.com",
+            "publisher_domain": "asiabulletin.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "China",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T06:45:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "55979e1d-78c6-46aa-a8c4-cce18642525b",
+            "url": "http://www.newyorktelegraph.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "newyorktelegraph.com",
+            "publisher_domain": "newyorktelegraph.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "United States",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T07:00:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "03b1d950-4933-469b-b8fc-f6b79787ff33",
+            "url": "http://www.taiwansun.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "taiwansun.com",
+            "publisher_domain": "taiwansun.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "China",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T07:00:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "4edd92f3-bc77-4bc4-af05-d1ee2a9f7f8d",
+            "url": "http://www.californiatelegraph.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "californiatelegraph.com",
+            "publisher_domain": "californiatelegraph.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "United States",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T07:15:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "32bb095f-b535-40a5-90be-750da685fc54",
+            "url": "http://www.indiagazette.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "indiagazette.com",
+            "publisher_domain": "indiagazette.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "India",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T07:30:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "f96516eb-4882-4f39-89da-f4d950cebbb1",
+            "url": "http://www.memphissun.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "memphissun.com",
+            "publisher_domain": "memphissun.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "United States",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T07:45:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "001d5cd0-4bc6-4330-949b-73fe7bc35c2e",
+            "url": "http://www.jamaicantimes.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "jamaicantimes.com",
+            "publisher_domain": "jamaicantimes.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "Jamaica",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T07:45:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "9a5f5796-ffa3-4a5d-9483-2671f458abc1",
+            "url": "http://www.oklahomacitysun.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "oklahomacitysun.com",
+            "publisher_domain": "oklahomacitysun.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "United States",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T08:00:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "23d1ee30-37f3-44c8-adcf-a680c42263d0",
+            "url": "http://www.africaleader.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "africaleader.com",
+            "publisher_domain": "africaleader.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "South Africa",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T08:00:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "30cf6072-d6ac-4aae-a5bb-8c87c952f4b4",
+            "url": "http://www.massachusettssun.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "massachusettssun.com",
+            "publisher_domain": "massachusettssun.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "United States",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T08:00:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "f5d5c4e1-6692-4bb9-adbf-137f9f2aec85",
+            "url": "http://www.russiaherald.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "russiaherald.com",
+            "publisher_domain": "russiaherald.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "Russia",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T08:00:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "fdb02c72-196c-479d-a5a0-689957312d10",
+            "url": "http://www.israelherald.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "israelherald.com",
+            "publisher_domain": "israelherald.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "Israel",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T08:15:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "666977a5-6b6f-4e3c-843b-519db3ea0f05",
+            "url": "http://www.argentinastar.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "argentinastar.com",
+            "publisher_domain": "argentinastar.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "Argentina",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T08:15:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "4173f80d-d96f-408a-b6df-7e372eae5db3",
+            "url": "http://www.pittsburghstar.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "pittsburghstar.com",
+            "publisher_domain": "pittsburghstar.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "United States",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T08:30:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "d0c48608-b925-4bbc-997e-8453cc16a1c0",
+            "url": "http://www.vietnamtribune.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "vietnamtribune.com",
+            "publisher_domain": "vietnamtribune.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "Vietnam",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T08:30:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "e8f6c198-ce57-422a-bed6-9c3fbbdcdafa",
+            "url": "http://www.texasguardian.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+            "title": "Nvidia unveils record $150 billion buyback increase",
+            "publisher": "texasguardian.com",
+            "publisher_domain": "texasguardian.com",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "United States",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T08:45:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          }
+        ],
+        "article_count": 33,
+        "publisher_count": 33,
+        "best_tier": 4,
+        "tickers": [
+          "NVDA"
+        ],
+        "first_published_at": "2026-10-02T04:30:00Z",
+        "last_published_at": "2026-10-02T08:45:00Z"
+      },
+      {
+        "group_id": "58ddb1b3-17a4-4eff-aad6-322e8ad05f16",
+        "lead": {
+          "id": "58ddb1b3-17a4-4eff-aad6-322e8ad05f16",
+          "url": "http://www.econotimes.com/Amazon-Eyes-8-Billion-Nvidia-Chip-Spinoff-to-Fund-AI-Expansion-1753760",
+          "title": "Amazon Eyes $8 Billion Nvidia Chip Spinoff to Fund AI Expansion",
+          "publisher": "econotimes.com",
+          "publisher_domain": "econotimes.com",
+          "author": null,
+          "snippet": null,
+          "language": "en",
+          "source_country": "United States",
+          "kind": "article",
+          "source_id": "gdelt",
+          "source_tier": 4,
+          "published_at": "2026-10-02T08:45:00Z",
+          "time_basis": "first_seen",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "NVDA",
+              "rule": "company_name",
+              "confidence": "0.800"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 4,
+        "tickers": [
+          "NVDA"
+        ],
+        "first_published_at": "2026-10-02T08:45:00Z",
+        "last_published_at": "2026-10-02T08:45:00Z"
+      },
+      {
+        "group_id": "e0c5ad70-2eb9-4484-a6a8-760bf3d38001",
+        "lead": {
+          "id": "e0c5ad70-2eb9-4484-a6a8-760bf3d38001",
+          "url": "http://www.shanghainews.net/news/279338424/nvidia-expands-buyback-as-ai-demand-drives-cash-generation",
+          "title": "Nvidia expands buyback as AI demand drives cash generation",
+          "publisher": "shanghainews.net",
+          "publisher_domain": "shanghainews.net",
+          "author": null,
+          "snippet": null,
+          "language": "en",
+          "source_country": "China",
+          "kind": "article",
+          "source_id": "gdelt",
+          "source_tier": 4,
+          "published_at": "2026-10-02T04:30:00Z",
+          "time_basis": "first_seen",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "NVDA",
+              "rule": "company_name",
+              "confidence": "0.800"
+            }
+          ]
+        },
+        "others": [
+          {
+            "id": "44ab643b-c8fe-43dd-9a06-96d84f26f005",
+            "url": "http://www.afghanistannews.net/news/279338424/nvidia-expands-buyback-as-ai-demand-drives-cash-generation",
+            "title": "Nvidia expands buyback as AI demand drives cash generation",
+            "publisher": "afghanistannews.net",
+            "publisher_domain": "afghanistannews.net",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "Afghanistan",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T05:30:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "40ce368b-476d-49eb-94da-703d8fd6f8c5",
+            "url": "http://www.laosnews.net/news/279338424/nvidia-expands-buyback-as-ai-demand-drives-cash-generation",
+            "title": "Nvidia expands buyback as AI demand drives cash generation",
+            "publisher": "laosnews.net",
+            "publisher_domain": "laosnews.net",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "United States",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T05:30:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "32196abb-0ed6-4457-81b5-83ec8ee87ef4",
+            "url": "http://www.bruneinews.net/news/279338424/nvidia-expands-buyback-as-ai-demand-drives-cash-generation",
+            "title": "Nvidia expands buyback as AI demand drives cash generation",
+            "publisher": "bruneinews.net",
+            "publisher_domain": "bruneinews.net",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "Malaysia",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T07:30:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          },
+          {
+            "id": "1751f9b1-b824-46a9-9be0-28b73ab2615d",
+            "url": "http://www.azerbaijannews.net/news/279338424/nvidia-expands-buyback-as-ai-demand-drives-cash-generation",
+            "title": "Nvidia expands buyback as AI demand drives cash generation",
+            "publisher": "azerbaijannews.net",
+            "publisher_domain": "azerbaijannews.net",
+            "author": null,
+            "snippet": null,
+            "language": "en",
+            "source_country": "Azerbaijan",
+            "kind": "article",
+            "source_id": "gdelt",
+            "source_tier": 4,
+            "published_at": "2026-10-02T08:15:00Z",
+            "time_basis": "first_seen",
+            "publisher_updated_at": null,
+            "data_mode": "live",
+            "mentions": [
+              {
+                "ticker": "NVDA",
+                "rule": "company_name",
+                "confidence": "0.800"
+              }
+            ]
+          }
+        ],
+        "article_count": 5,
+        "publisher_count": 5,
+        "best_tier": 4,
+        "tickers": [
+          "NVDA"
+        ],
+        "first_published_at": "2026-10-02T04:30:00Z",
+        "last_published_at": "2026-10-02T08:15:00Z"
+      },
+      {
+        "group_id": "b2f367bf-606e-44ec-ad5f-0288181b7743",
+        "lead": {
+          "id": "b2f367bf-606e-44ec-ad5f-0288181b7743",
+          "url": "https://itwire.com/business-it-news/data/lenovo-ai-express-with-nvidia-accelerates-path-to-hybrid-ai-factory-in-weeks",
+          "title": "Lenovo AI Express with NVIDIA Accelerates Path to Hybrid AI Factory in Weeks",
+          "publisher": "itwire.com",
+          "publisher_domain": "itwire.com",
+          "author": null,
+          "snippet": null,
+          "language": "en",
+          "source_country": "Australia",
+          "kind": "article",
+          "source_id": "gdelt",
+          "source_tier": 4,
+          "published_at": "2026-10-02T08:00:00Z",
+          "time_basis": "first_seen",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "NVDA",
+              "rule": "company_name",
+              "confidence": "0.800"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 4,
+        "tickers": [
+          "NVDA"
+        ],
+        "first_published_at": "2026-10-02T08:00:00Z",
+        "last_published_at": "2026-10-02T08:00:00Z"
+      },
+      {
+        "group_id": "52515a17-ef25-416c-8f00-1d1a6aa27f3e",
+        "lead": {
+          "id": "52515a17-ef25-416c-8f00-1d1a6aa27f3e",
+          "url": "https://slguardian.org/amazon-seeks-to-shift-8-billion-of-nvidia-ai-chips-to-investors/",
+          "title": "Amazon Seeks to Shift $8 Billion of Nvidia AI Chips to Investors",
+          "publisher": "slguardian.org",
+          "publisher_domain": "slguardian.org",
+          "author": null,
+          "snippet": null,
+          "language": "en",
+          "source_country": "Sri Lanka",
+          "kind": "article",
+          "source_id": "gdelt",
+          "source_tier": 4,
+          "published_at": "2026-10-02T08:00:00Z",
+          "time_basis": "first_seen",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "NVDA",
+              "rule": "company_name",
+              "confidence": "0.800"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 4,
+        "tickers": [
+          "NVDA"
+        ],
+        "first_published_at": "2026-10-02T08:00:00Z",
+        "last_published_at": "2026-10-02T08:00:00Z"
+      },
+      {
+        "group_id": "44ca4faf-6af9-492e-9dd0-019d103ee450",
+        "lead": {
+          "id": "44ca4faf-6af9-492e-9dd0-019d103ee450",
+          "url": "https://www.insidermonkey.com/news/heres-why-investors-keep-buying-nvidia-nvda-1847552/",
+          "title": "Here Why Investors Keep Buying Nvidia ( NVDA )",
+          "publisher": "insidermonkey.com",
+          "publisher_domain": "insidermonkey.com",
+          "author": null,
+          "snippet": null,
+          "language": "en",
+          "source_country": "United States",
+          "kind": "article",
+          "source_id": "gdelt",
+          "source_tier": 4,
+          "published_at": "2026-10-02T07:45:00Z",
+          "time_basis": "first_seen",
+          "publisher_updated_at": null,
+          "data_mode": "live",
+          "mentions": [
+            {
+              "ticker": "NVDA",
+              "rule": "company_name",
+              "confidence": "0.800"
+            }
+          ]
+        },
+        "others": [],
+        "article_count": 1,
+        "publisher_count": 1,
+        "best_tier": 4,
+        "tickers": [
+          "NVDA"
+        ],
+        "first_published_at": "2026-10-02T07:45:00Z",
+        "last_published_at": "2026-10-02T07:45:00Z"
+      }
+    ],
+    "sources": [
+      {
+        "id": "gdelt",
+        "name": "GDELT DOC 2.0 API",
+        "tier": 2,
+        "enabled": true
+      },
+      {
+        "id": "sec_press",
+        "name": "SEC press releases (RSS)",
+        "tier": 1,
+        "enabled": true
+      },
+      {
+        "id": "fed_press",
+        "name": "Federal Reserve press releases (RSS)",
+        "tier": 1,
+        "enabled": true
+      },
+      {
+        "id": "bls_releases",
+        "name": "BLS latest releases (RSS)",
+        "tier": 1,
+        "enabled": false
+      },
+      {
+        "id": "bea_releases",
+        "name": "BEA releases (RSS)",
+        "tier": 1,
+        "enabled": true
+      },
+      {
+        "id": "whitehouse_actions",
+        "name": "White House presidential actions (RSS)",
+        "tier": 1,
+        "enabled": true
+      },
+      {
+        "id": "apple_newsroom",
+        "name": "Apple Newsroom (RSS)",
+        "tier": 1,
+        "enabled": true
+      },
+      {
+        "id": "nvidia_newsroom",
+        "name": "NVIDIA Newsroom releases (RSS)",
+        "tier": 1,
+        "enabled": true
+      },
+      {
+        "id": "microsoft_news",
+        "name": "Microsoft News Center (RSS)",
+        "tier": 1,
+        "enabled": true
+      },
+      {
+        "id": "meta_newsroom",
+        "name": "Meta Newsroom (RSS)",
+        "tier": 1,
+        "enabled": true
+      },
+      {
+        "id": "google_blog",
+        "name": "Google, The Keyword blog (RSS)",
+        "tier": 1,
+        "enabled": true
+      }
+    ],
+    "attribution": "News discovery via the GDELT Project",
+    "attribution_url": "https://www.gdeltproject.org/"
+  }
+}
