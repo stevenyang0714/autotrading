@@ -45,6 +45,9 @@ class StoredPayload:
 class FetchContext:
     run_id: UUID
     acquire: Callable[[], None]  # rate limiter: call before every provider request
+    # Read-only lookups before fetching (e.g. which filings are already stored). Open a short
+    # session and close it before network calls; writes belong in store().
+    sessions: Callable[[], Session] | None = None
 
 
 @dataclass(frozen=True)
@@ -60,6 +63,8 @@ class StoreResult:
     unchanged: int
     # Values left out because they contradict a stored value of the same publication.
     conflicted: int = 0
+    # Data-quality notes worth keeping with the run (e.g. a correction applied to the source).
+    notes: tuple[str, ...] = ()
 
 
 class IngestionJob(ABC):

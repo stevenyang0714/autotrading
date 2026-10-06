@@ -2444,6 +2444,13 @@
             "title": "Job",
             "type": "string"
           },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
           "params": {
             "additionalProperties": true,
             "title": "Params",
@@ -2527,6 +2534,7 @@
           "rows_inserted",
           "rows_unchanged",
           "rows_conflicted",
+          "notes",
           "raw_payload_keys",
           "error_class",
           "error_message",

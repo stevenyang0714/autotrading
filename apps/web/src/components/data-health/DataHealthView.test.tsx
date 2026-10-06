@@ -34,6 +34,29 @@ describe("DataHealthView with a recorded API response", () => {
     expect(letters.queryByText(/SECRET123/)).toBeNull(); // redacted by the API
   });
 
+  it("shows a run's correction note and marks the source's last run as corrected", () => {
+    const note =
+      "SEC acceptance times were late by the Eastern offset (4 h EDT / 5 h EST); moved back after " +
+      "checking the EDGAR headers of 0000320193-26-000018 (2026-07-30 16:30:28 New York)";
+    const source = recordedDataHealth.report.sources.find((s) => s.last_run)!;
+    const corrected = { ...source.last_run!, notes: [note] };
+    const data = {
+      ...recordedDataHealth,
+      report: {
+        ...recordedDataHealth.report,
+        sources: recordedDataHealth.report.sources.map((s) =>
+          s.id === source.id ? { ...s, last_run: corrected } : s,
+        ),
+      },
+      runs: [corrected, ...recordedDataHealth.runs.slice(1)],
+    };
+    const { container } = render(<DataHealthView data={data} />);
+    const runs = within(screen.getByRole("list", { name: "Recent ingestion runs" }));
+    expect(runs.getByText(/^Note: SEC acceptance times/)).toBeTruthy();
+    expect(screen.getAllByText("Corrected").length).toBe(2); // table and mobile card
+    expect(unexplainedNumbers(container)).toEqual([]);
+  });
+
   it("renders no number outside a glossary-backed metric", () => {
     const { container } = render(<DataHealthView data={recordedDataHealth} />);
     expect(unexplainedNumbers(container)).toEqual([]);

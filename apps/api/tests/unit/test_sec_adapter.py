@@ -106,7 +106,10 @@ def test_acceptance_time_is_utc() -> None:
     assert accepted == datetime(2026, 7, 30, 20, 30, 28, tzinfo=UTC)
 
 
-@pytest.mark.parametrize("value", [None, "", "2017-06-07T00:00:00.000Z"])
+@pytest.mark.parametrize(
+    "value",
+    [None, "", "2017-06-07T00:00:00.000Z", "2017-06-07T04:00:00.000Z"],  # 00:00 UTC, 00:00 NY
+)
 def test_missing_or_date_only_acceptance_falls_back_to_end_of_filing_day(
     value: str | None,
 ) -> None:

@@ -49,6 +49,16 @@ class RecordedTickers(SecTickersJob):
 
 
 class RecordedCompany(SecCompanyJob):
+    # Recorded 2026-10-05, before SEC's acceptance-time bug (adapters/sec/acceptance.py).
+    trust_json_acceptance = True
+
+    def client(self) -> SecClient:
+        return recorded_client()
+
+
+class VerifyingCompany(SecCompanyJob):
+    """Replays like production: new filings are timed from their EDGAR headers."""
+
     def client(self) -> SecClient:
         return recorded_client()
 

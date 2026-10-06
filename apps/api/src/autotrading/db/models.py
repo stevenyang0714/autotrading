@@ -292,6 +292,8 @@ class IngestionRun(MutableRowMixin, Base):
     rows_unchanged: Mapped[int] = mapped_column(Integer, server_default=text("0"))
     # Values not stored because they contradict a stored value of the same publication (M0.5).
     rows_conflicted: Mapped[int] = mapped_column(Integer, server_default=text("0"))
+    # Data-quality notes from the job, e.g. a correction it applied to the source (migration 0011).
+    notes: Mapped[list[str]] = mapped_column(ARRAY(Text), server_default=text("'{}'"))
     raw_payload_keys: Mapped[list[str]] = mapped_column(ARRAY(Text), server_default=text("'{}'"))
     error_class: Mapped[str | None] = mapped_column(Text)
     error_message: Mapped[str | None] = mapped_column(Text)
