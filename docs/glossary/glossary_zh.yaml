@@ -21,6 +21,10 @@ terms:
   rate_limit: {name: 請求速率上限, hint: 平台每秒最多向該來源發出的請求數。}
   update_cadence: {name: 更新頻率, hint: 來源多久發布一次新資料。}
   ingestion_status: {name: 擷取狀態, hint: 某次資料擷取的結果：成功、略過、失敗等。}
+  page_reconciliation: {name: 財報對帳, hint: 每家公司最新 10-K、10-Q 與申報檔本身的 XBRL 逐項比對的結果。}
+  filing_reconciliation: {name: 申報對帳, hint: 用申報檔自己的 XBRL 數字，比對我們在受理當時存的值。}
+  reconciliation_status: {name: 對帳結果, hint: pass 全部一致；warn 只有提醒；fail 有數字不一致、缺漏或多存。}
+  balance_identity: {name: 資產負債恆等式, hint: 資產總額 = 負債加股東權益；不成立代表讀取或申報有問題。}
   ingestion_note: {name: 擷取備註, hint: 這次擷取對來源資料做過的檢查或校正，例如改用申報表頭的受理時間。}
   dead_letter: {name: 失敗佇列, hint: 重試多次仍失敗的擷取工作，需要人工處理。}
   as_of: {name: 資料時間, hint: 資料所反映的時間點。}

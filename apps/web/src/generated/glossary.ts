@@ -11,6 +11,7 @@ export type CompleteTermId =
   | "ask"
   | "audit_action"
   | "audit_actor"
+  | "balance_identity"
   | "bid"
   | "capex"
   | "cash"
@@ -43,6 +44,7 @@ export type CompleteTermId =
   | "eps_diluted"
   | "feed_status"
   | "filing_date"
+  | "filing_reconciliation"
   | "first_release_overlay"
   | "free_cash_flow"
   | "freshness_sla"
@@ -84,6 +86,7 @@ export type CompleteTermId =
   | "page_news"
   | "page_overview"
   | "page_progress"
+  | "page_reconciliation"
   | "payrolls_monthly_change"
   | "payrolls_prior_month_revision"
   | "pct_below_52w_high"
@@ -97,6 +100,7 @@ export type CompleteTermId =
   | "rate_limit"
   | "real_fed_funds_rate"
   | "real_gdp_growth_annualized"
+  | "reconciliation_status"
   | "reporting_period"
   | "repurchase_authorized"
   | "repurchase_remaining"
@@ -297,6 +301,30 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "操作者",
     "hint_zh": "做出變更的程序：資料擷取工作、設定同步或資料庫使用者。"
+  },
+  "balance_identity": {
+    "term_id": "balance_identity",
+    "display_name": "Balance Identity",
+    "category": "data_quality",
+    "short_definition": "Total assets equal total liabilities plus equity on every balance-sheet date.",
+    "full_definition": "Checked from the filing's own XBRL on every date it reports both us-gaap Assets and LiabilitiesAndStockholdersEquity. A failure means the filing's XBRL itself is inconsistent or was read wrongly.",
+    "formula": "Assets = LiabilitiesAndStockholdersEquity",
+    "unit": "label",
+    "example": "Apple at 2025-09-27: assets and liabilities plus equity both 359,241,000,000 USD: ok.",
+    "direction": "N/A",
+    "interpretation": "Should always hold; a failure points at the reader or the filing.",
+    "why_it_matters": "A basic sanity check that the balance sheet was read completely.",
+    "source": "SEC EDGAR filing XBRL instances",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/reconciliation.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "per reconciliation",
+    "caveats": "Not every filing tags both totals on every date; dates without both are skipped.",
+    "related_terms": [
+      "filing_reconciliation"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "資產負債恆等式",
+    "hint_zh": "資產總額 = 負債加股東權益；不成立代表讀取或申報有問題。"
   },
   "bid": {
     "term_id": "bid",
@@ -1087,6 +1115,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "申報時間",
     "hint_zh": "SEC 受理申報、資訊公開的時間。"
+  },
+  "filing_reconciliation": {
+    "term_id": "filing_reconciliation",
+    "display_name": "Filing Reconciliation",
+    "category": "data_quality",
+    "short_definition": "A filing's own XBRL values compared with the values we store for the same metric and period.",
+    "full_definition": "For every mapped metric and period the filing reports (without dimensions, with the same concept priority as company facts, plus class sums), our value as known at the filing's acceptance time is compared with the filing's. Values that changed in a later filing are counted as restated later, not as errors. Also checks the balance identity, quarters differenced from year-to-date values against the reported quarter, and split-like restatements.",
+    "formula": "per metric and period: filing value vs stored value as known at acceptance",
+    "unit": "label",
+    "example": "Apple FY2025 revenue: filing 416,161,000,000 USD, stored 416,161,000,000 USD (10-K 0000320193-25-000079): match.",
+    "direction": "N/A",
+    "interpretation": "A mismatch, missing or extra value is a data problem to investigate; restated later is expected history.",
+    "why_it_matters": "Proves the store reflects the filings, independently of SEC's company facts API.",
+    "source": "SEC EDGAR filing XBRL instances (www.sec.gov/Archives)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/reconciliation.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "after each SEC refresh, once per filing and methodology version",
+    "caveats": "Company-specific concepts and dimensional facts beyond share classes are not compared.",
+    "related_terms": [
+      "reconciliation_status",
+      "balance_identity",
+      "accession_number"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "申報對帳",
+    "hint_zh": "用申報檔自己的 XBRL 數字，比對我們在受理當時存的值。"
   },
   "first_release_overlay": {
     "term_id": "first_release_overlay",
@@ -2119,6 +2173,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "開發進度",
     "hint_zh": "即時讀取專案文件的里程碑、驗收項目與待決事項。"
   },
+  "page_reconciliation": {
+    "term_id": "page_reconciliation",
+    "display_name": "Reconciliation",
+    "category": "navigation",
+    "short_definition": "Each company's latest 10-K and 10-Q checked against the filing's own XBRL.",
+    "full_definition": "System page listing, for every universe company, its latest 10-K and 10-Q reconciled with the XBRL instance SEC extracts from that filing: how many reported values were checked, matched, mismatched, missing or extra, and whether the balance identity, quarterly and split checks passed. Each filing opens its item list with the filing value and ours. Read-only.",
+    "formula": "not a calculation; reads GET /reconciliation and /reconciliation/{accession}",
+    "unit": "page",
+    "example": "Apple's FY2025 10-K: 58 values checked, 58 matched, balance identity ok: pass.",
+    "direction": "N/A",
+    "interpretation": "Start with fail and warn rows; open the filing to see which value and period differ.",
+    "why_it_matters": "Evidence that stored financials equal what each company filed (Phase 1 exit criterion).",
+    "source": "Milestone M1.1 (filing reconciliation, ADR-021)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M1_fundamentals.md",
+    "as_of": "2026-10-06",
+    "update_cadence": "live (each page load); filings reconciled after each SEC refresh",
+    "caveats": "Only filings read from their own XBRL (each company's latest 10-K and 10-Q, and class-sum filings) are reconciled.",
+    "related_terms": [
+      "filing_reconciliation",
+      "reconciliation_status",
+      "balance_identity"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "財報對帳",
+    "hint_zh": "每家公司最新 10-K、10-Q 與申報檔本身的 XBRL 逐項比對的結果。"
+  },
   "payrolls_monthly_change": {
     "term_id": "payrolls_monthly_change",
     "display_name": "Payroll Change",
@@ -2442,6 +2522,30 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "實質 GDP 年化季增率",
     "hint_zh": "實質 GDP 季增率換算為年率。"
+  },
+  "reconciliation_status": {
+    "term_id": "reconciliation_status",
+    "display_name": "Reconciliation Status",
+    "category": "data_quality",
+    "short_definition": "The outcome of a filing reconciliation: pass, warn or fail.",
+    "full_definition": "fail: a value mismatched, was missing or extra, or the balance identity failed. warn: only warnings, e.g. a quarter differenced from the values known at the filing differs from the reported quarter beyond rounding (an earlier quarter revised inside a later 10-Q), or a split-like restatement no recorded split explains. pass: everything agreed. Item statuses: match, mismatch, missing, extra, restated later, ok, fail, flag.",
+    "formula": "fail if any mismatch, missing, extra or failed identity; else warn if any flag; else pass",
+    "unit": "label",
+    "example": "JPMorgan's Q2 2020 10-Q: warn, because Q1 2020 was revised inside it.",
+    "direction": "N/A",
+    "interpretation": "fail needs action; warn needs a look; restated later alone still passes.",
+    "why_it_matters": "Separates data errors from known timing effects.",
+    "source": "Milestone M1.1 (ADR-021)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/reconciliation.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "per reconciliation",
+    "caveats": "A quarter is allowed one rounding unit of difference (Meta rounds each figure to millions).",
+    "related_terms": [
+      "filing_reconciliation"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "對帳結果",
+    "hint_zh": "pass 全部一致；warn 只有提醒；fail 有數字不一致、缺漏或多存。"
   },
   "reporting_period": {
     "term_id": "reporting_period",

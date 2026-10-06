@@ -3,57 +3,31 @@ import type { ReactNode } from "react";
 
 import { Metric } from "@/components/Metric";
 import { SourceFreshness } from "@/components/SourceFreshness";
-import type { CompleteTermId } from "@/generated/glossary";
+import { Sparkline } from "@/components/Sparkline";
+import { type CompleteTermId, GLOSSARY } from "@/generated/glossary";
 import type {
+  DerivedCell,
   EntityOut,
   FactCell,
   FactTable,
   FilingRef,
   Fundamentals,
+  QuarterTable,
   SourceHealth,
+  SplitAdjusted,
+  SplitOut,
 } from "@/lib/api";
 import { exactReported, formatReported } from "@/lib/format";
 import { formatSgtEt } from "@/lib/time";
 
 import { AsKnownOnForm } from "@/components/AsKnownOnForm";
 
-type TableMetric = Extract<
-  CompleteTermId,
-  | "revenue"
-  | "gross_profit"
-  | "operating_income"
-  | "net_income"
-  | "eps_diluted"
-  | "diluted_shares"
-  | "operating_cash_flow"
-  | "capex"
-  | "share_repurchases"
-  | "stock_based_compensation"
-  | "cash"
-  | "long_term_debt_current"
-  | "long_term_debt_noncurrent"
-  | "commercial_paper"
->;
+type TableMetric = CompleteTermId;
 
-const TABLE_METRICS = new Set<string>([
-  "revenue",
-  "gross_profit",
-  "operating_income",
-  "net_income",
-  "eps_diluted",
-  "diluted_shares",
-  "operating_cash_flow",
-  "capex",
-  "share_repurchases",
-  "stock_based_compensation",
-  "cash",
-  "long_term_debt_current",
-  "long_term_debt_noncurrent",
-  "commercial_paper",
-]);
-
+/** Rows are shown when their metric has a complete glossary term (M0.4 rule): the API may
+ * add a metric before its tooltip exists, and such a row stays hidden rather than unexplained. */
 function asTableMetric(metricId: string): TableMetric | null {
-  return TABLE_METRICS.has(metricId) ? (metricId as TableMetric) : null;
+  return metricId in GLOSSARY ? (metricId as TableMetric) : null;
 }
 
 interface Props {
@@ -70,9 +44,11 @@ interface Props {
 }
 
 /**
- * Instrument page body (M0.5b). Values are SEC XBRL facts as known at `data.known_at`
- * (ADR-012); each links to its filing. Every number renders through <Metric>; tickers,
- * accession numbers, forms and CIKs are identifiers ([data-identifier]).
+ * Instrument page body (M0.5b, M1.1). Values are SEC XBRL facts as known at `data.known_at`
+ * (ADR-012); each links to its filing. Derived values (free cash flow, debt, quarters, TTM)
+ * show their inputs; per-share values show their split-adjusted value beside the reported one
+ * (ADR-021). Every number renders through <Metric>; tickers, accession numbers, forms and CIKs
+ * are identifiers ([data-identifier]).
  */
 export function FundamentalsView({ data, knownOn, invalidKnownOn, sources, prices, news }: Props) {
   const newest = [...data.annual.rows, ...data.balance_sheet.rows]
@@ -166,7 +142,252 @@ export function FundamentalsView({ data, knownOn, invalidKnownOn, sources, price
           </Metric>
         )}
       />
+      <Latest rows={data.latest} splits={data.splits} />
+      <Quarterly table={data.quarterly} />
+      <PerShareHistory table={data.per_share_history} names={names} issuerId={current.id} />
     </section>
+  );
+}
+
+function Latest({ rows, splits }: { rows: Fundamentals["latest"]; splits: SplitOut[] }) {
+  if (rows.length === 0 && splits.length === 0) return null;
+  return (
+    <section aria-labelledby="latest-heading" className="space-y-2">
+      <h2 id="latest-heading" className="text-lg font-medium">
+        Latest reported
+      </h2>
+      <ul className="space-y-2 text-sm" aria-label="Latest reported values">
+        {rows.map((row) => {
+          const metric = asTableMetric(row.metric_id);
+          const cell = row.cells[0];
+          if (!metric || !cell || cell.kind === "derived") return null;
+          return (
+            <li key={row.metric_id} className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <Metric termId={metric} />
+              <Metric termId={metric} icon={false}>
+                <span className="tabular-nums" title={exactReported(cell.value, cell.unit)}>
+                  {formatReported(cell.value, cell.unit)}
+                </span>{" "}
+                <span className="text-neutral-400">as of {cell.period_end}</span>
+              </Metric>
+              <FilingLink filing={cell.filing} inline />
+              {cell.split_adjusted ? <SplitLine adjusted={cell.split_adjusted} unit={cell.unit} /> : null}
+            </li>
+          );
+        })}
+        {splits.length > 0 ? (
+          <li className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+            <Metric termId="split_event">Stock splits</Metric>
+            {splits.map((split) => (
+              <span key={split.ex_date}>
+                <Metric termId="split_event" icon={false}>
+                  {Number(split.new_rate)}-for-{Number(split.old_rate)} on {split.ex_date}
+                </Metric>{" "}
+                (
+                <a
+                  href={split.source_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  data-identifier=""
+                  className="underline-offset-2 hover:underline"
+                >
+                  {split.source_id === "sec_edgar" ? "8-K" : "Alpaca"}
+                </a>
+                )
+              </span>
+            ))}
+          </li>
+        ) : null}
+      </ul>
+    </section>
+  );
+}
+
+function Quarterly({ table }: { table: QuarterTable }) {
+  return (
+    <section aria-labelledby="quarterly-heading" className="space-y-3">
+      <h2 id="quarterly-heading" className="text-lg font-medium">
+        <Metric termId="quarterly_derived_value">Quarterly</Metric>
+      </h2>
+      {table.periods.length === 0 ? (
+        <p className="text-sm text-neutral-500">No quarters as of this date.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[48rem] text-left text-sm" aria-label="Quarterly">
+            <thead className="text-xs text-neutral-400">
+              <tr>
+                <th className="py-2 pr-4 font-medium">Metric</th>
+                {table.periods.map((period) => (
+                  <th key={period.period_end} className="py-2 pr-4 font-medium">
+                    <Metric termId="reporting_period" icon={false}>
+                      <span title={`${period.period_start ?? ""} to ${period.period_end}`}>
+                        Quarter to {period.period_end}
+                      </span>
+                    </Metric>
+                  </th>
+                ))}
+                <th className="py-2 pr-4 font-medium">
+                  <Metric termId="trailing_twelve_months">TTM</Metric>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {table.rows.map((row) => {
+                const metric = asTableMetric(row.metric_id);
+                if (!metric) return null;
+                return (
+                  <tr key={row.metric_id} className="border-t border-neutral-800 align-top">
+                    <th scope="row" className="py-2 pr-4 font-normal">
+                      <Metric termId={metric} />
+                    </th>
+                    {row.cells.map((cell, i) => (
+                      <td key={table.periods[i].period_end} className="py-2 pr-4">
+                        {cell ? (
+                          <Derived metric={metric} cell={cell} />
+                        ) : (
+                          <span className="text-neutral-500">Not available</span>
+                        )}
+                      </td>
+                    ))}
+                    <td className="py-2 pr-4" data-ttm="">
+                      {row.ttm ? <Derived metric={metric} cell={row.ttm} /> : null}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function PerShareHistory({
+  table,
+  names,
+  issuerId,
+}: {
+  table: FactTable;
+  names: Map<string, EntityOut>;
+  issuerId: string;
+}) {
+  const eps = table.rows.find((row) => row.metric_id === "eps_diluted");
+  const points = (eps?.cells ?? [])
+    .map((cell, i) => {
+      if (!cell || cell.kind === "derived") return null;
+      return {
+        day: table.periods[i].period_end,
+        value: cell.split_adjusted ? cell.split_adjusted.value : cell.value,
+      };
+    })
+    .filter((p): p is { day: string; value: string } => p !== null)
+    .reverse();
+  return (
+    <section aria-labelledby="per-share-heading" className="space-y-3">
+      <Table
+        id="per-share"
+        title="Per-share history"
+        table={table}
+        names={names}
+        issuerId={issuerId}
+        header={(start, end) => (
+          <Metric termId="reporting_period" icon={false}>
+            <span title={`${start} to ${end}`}>FY ending {end}</span>
+          </Metric>
+        )}
+      />
+      {points.length > 1 ? (
+        <div className="max-w-md">
+          <Sparkline
+            points={points}
+            termId="split_adjusted"
+            label="Diluted EPS, split-adjusted"
+            format={(v) => `$${v.toFixed(2)}`}
+            zeroLine
+          />
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+/** How a derived value was computed; the summary opens its inputs. */
+const METHODS: Record<string, string> = {
+  reported: "as reported",
+  ytd_difference: "year-to-date difference",
+  year_minus_9_months: "year minus nine months",
+  quarter_sum: "sum of four quarters",
+  "operating_cash_flow - capex": "operating cash flow − capex",
+  "long-term debt (non-current + current) + commercial paper": "sum of debt components",
+  "total debt - cash": "total debt − cash",
+};
+
+function Derived({ metric, cell }: { metric: TableMetric; cell: DerivedCell }) {
+  const zero = cell.inputs.filter((input) => input.assumed_zero);
+  return (
+    <div className="space-y-1" data-cell={metric} data-derived="">
+      <div className="flex flex-wrap items-center gap-2">
+        <Metric termId={metric} icon={false}>
+          <span title={exactReported(cell.value, cell.unit)} className="tabular-nums">
+            {formatReported(cell.value, cell.unit)}
+          </span>
+        </Metric>
+      </div>
+      {cell.split_adjusted ? <SplitLine adjusted={cell.split_adjusted} unit={cell.unit} /> : null}
+      {zero.length > 0 ? (
+        <p className="text-xs text-amber-300">
+          <Metric termId="total_debt" icon={false}>
+            Not reported, counted as zero:{" "}
+            {zero.map((input) => GLOSSARY[input.metric_id as TableMetric]?.display_name ?? input.metric_id).join(", ")}
+          </Metric>
+        </p>
+      ) : null}
+      <details className="text-xs text-neutral-400">
+        <summary className="cursor-pointer select-none">
+          {METHODS[cell.method] ?? cell.method}
+        </summary>
+        <ul className="mt-1 space-y-1">
+          {cell.inputs
+            .filter((input) => !input.assumed_zero && input.value !== null)
+            .map((input, i) => {
+              const term = asTableMetric(input.metric_id) ?? metric;
+              return (
+                <li key={`${input.metric_id}-${input.period_end}-${i}`}>
+                  <Metric termId={term} icon={false}>
+                    {GLOSSARY[term].display_name}{" "}
+                    <span className="tabular-nums">
+                      {formatReported(input.value ?? "0", cell.unit)}
+                    </span>{" "}
+                    ({input.period_start ? `${input.period_start} to ` : ""}
+                    {input.period_end})
+                  </Metric>
+                  {input.filing ? (
+                    <>
+                      {" "}
+                      · <FilingLink filing={input.filing} inline />
+                    </>
+                  ) : null}
+                </li>
+              );
+            })}
+        </ul>
+      </details>
+    </div>
+  );
+}
+
+function SplitLine({ adjusted, unit }: { adjusted: SplitAdjusted; unit: string }) {
+  const perShare = unit === "USD/shares";
+  return (
+    <p className="text-xs text-sky-300">
+      <Metric termId="split_adjusted" icon={false}>
+        <span title={`Splits after the filing: ${adjusted.splits.join(", ")}`}>
+          {formatReported(adjusted.value, unit)} split-adjusted ({perShare ? "÷" : "×"}
+          {adjusted.factor})
+        </span>
+      </Metric>
+    </p>
   );
 }
 
@@ -256,7 +477,9 @@ function Table({ id, title, table, names, issuerId, header }: TableProps) {
                     </th>
                     {row.cells.map((cell, i) => (
                       <td key={table.periods[i].period_end} className="py-2 pr-4">
-                        {cell && cell.kind !== "derived" ? (
+                        {cell && cell.kind === "derived" ? (
+                          <Derived metric={metric} cell={cell} />
+                        ) : cell ? (
                           <Cell
                             metric={metric}
                             cell={cell}
@@ -303,6 +526,14 @@ function Cell({
           </Metric>
         ) : null}
       </div>
+      {cell.split_adjusted ? <SplitLine adjusted={cell.split_adjusted} unit={cell.unit} /> : null}
+      {cell.source_concept?.endsWith("(sum of classes)") ? (
+        <p className="text-xs text-neutral-400">
+          <Metric termId={metric} icon={false}>
+            sum of share classes
+          </Metric>
+        </p>
+      ) : null}
       <FilingLink filing={cell.filing} />
       {cell.previous ? (
         <p className="text-xs text-neutral-400">

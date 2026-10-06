@@ -129,7 +129,7 @@ class FactCell(BaseModel):
     split_adjusted: SplitAdjusted | None = None  # None: no split after the filing
 
 
-class InputRef(BaseModel):
+class DerivedInput(BaseModel):
     """One input of a derived value: a reported fact, a derived quarter, or 0 assumed."""
 
     metric_id: str
@@ -150,7 +150,7 @@ class DerivedCell(BaseModel):
     period_start: date | None
     period_end: date
     method: str  # e.g. "operating_cash_flow - capex", "ytd_difference", "quarter_sum"
-    inputs: list[InputRef]
+    inputs: list[DerivedInput]
     split_adjusted: SplitAdjusted | None = None
 
 
@@ -209,7 +209,7 @@ class Fundamentals(BaseModel):
     quarterly: QuarterTable
     # Diluted EPS and shares for up to 15 fiscal years, reported and split-adjusted (M1.1).
     per_share_history: FactTable
-    latest: list[FactCell]  # values with their own date: cover-page shares, authorization
+    latest: list[MetricRow]  # one cell each, with its own date: cover-page shares, authorization
     splits: list[SplitOut]  # effective by known_at, oldest first
     last_refresh_at: datetime | None
 
@@ -466,12 +466,12 @@ class _CellBuilder:
             rows=[MetricRow(metric_id=m, cells=[cell(m, p) for p in periods]) for m in metrics],
         )
 
-    def latest(self, metrics: tuple[str, ...]) -> list[FactCell]:
+    def latest(self, metrics: tuple[str, ...]) -> list[MetricRow]:
         out = []
         for metric in metrics:
             facts = [f for f in self._facts if f.metric_id == metric]
             if facts and (cell := self._cell(max(facts, key=lambda f: f.period_end))):
-                out.append(cell)
+                out.append(MetricRow(metric_id=metric, cells=[cell]))
         return out
 
     def quarter_table(self, metrics: tuple[str, ...]) -> QuarterTable:
@@ -504,9 +504,9 @@ class _CellBuilder:
             return sample.unit, sample.currency
         return ("USD/shares", "USD") if metric == "eps_diluted" else ("USD", "USD")
 
-    def _input(self, metric: str, view: _Fact) -> InputRef:
+    def _input(self, metric: str, view: _Fact) -> DerivedInput:
         fact = view.row
-        return InputRef(
+        return DerivedInput(
             metric_id=metric,
             value=fact.value,
             period_start=fact.period_start,
@@ -519,7 +519,7 @@ class _CellBuilder:
         inputs = [
             self._input(metric, fact)
             if fact is not None
-            else InputRef(
+            else DerivedInput(
                 metric_id=metric,
                 value=None,
                 period_start=None,
@@ -566,7 +566,7 @@ class _CellBuilder:
             period_end=last[-1].period_end,
             method="quarter_sum",
             inputs=[
-                InputRef(
+                DerivedInput(
                     metric_id=metric,
                     value=q.value,
                     period_start=q.period_start,

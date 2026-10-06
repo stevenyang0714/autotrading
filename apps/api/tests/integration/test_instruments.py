@@ -328,8 +328,9 @@ def test_apple_quarters_add_up_to_the_year_and_match_reported_quarters(
 
 
 def test_latest_values_carry_their_own_dates(client: TestClient) -> None:
-    latest = {c["source_concept"].split(" ")[0]: c for c in fundamentals(client, "META")["latest"]}
-    cover = latest["dei:EntityCommonStockSharesOutstanding"]
+    latest = {r["metric_id"]: r["cells"][0] for r in fundamentals(client, "META")["latest"]}
+    cover = latest["shares_outstanding_cover"]
+    assert cover["source_concept"].startswith("dei:EntityCommonStockSharesOutstanding")
     assert cover["period_end"] >= "2026-01-23" and cover["unit"] == "shares"
 
 
@@ -556,6 +557,9 @@ def test_record_web_fixtures(client: TestClient) -> None:
             {"known_at": AFTER_10KA},
         ),
         ("fundamentals-xom", "/instruments/XOM/fundamentals", {}),
+        ("fundamentals-meta", "/instruments/META/fundamentals", {}),
+        ("reconciliation", "/reconciliation", {}),
+        ("reconciliation-aapl-10k", f"/reconciliation/{AAPL_10K}", {}),
     ):
         response = client.get(path, params=params)
         assert response.status_code == 200

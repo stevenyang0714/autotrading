@@ -12,7 +12,7 @@ describe("InstrumentList", () => {
     const links = within(screen.getByRole("list", { name: "Instruments" }))
       .getAllByRole("link")
       .filter((link) => link.getAttribute("href")?.startsWith("/instruments/"));
-    expect(links.map((link) => link.textContent)).toEqual(["AAPL", "XOM"]);
+    expect(links.map((link) => link.textContent)).toEqual(["AAPL", "META", "XOM"]);
     expect(container.textContent).toContain("Exxon Mobil Corp");
     expect(unexplainedNumbers(container)).toEqual([]);
   });
