@@ -1514,6 +1514,146 @@ terms:
     methodology_version: 0.1.0
     status: complete
 
+  - term_id: free_cash_flow
+    display_name: "Free Cash Flow"
+    category: fundamentals
+    short_definition: "Operating cash flow minus capital expenditure for the period."
+    full_definition: "Derived at read time from the operating cash flow and capex the same filing period reports, as known at the As known on time. Computed only when both are reported; a company without reported capex (a bank) has none, never an estimate (ADR-021)."
+    formula: "operating_cash_flow - capex (same period)"
+    unit: USD
+    example: "Apple FY2025: $111.482 billion operating cash flow - $12.715 billion capex = $98.767 billion."
+    direction: "Higher = more cash available after investment"
+    interpretation: "Compare with buybacks and dividends: returning more than free cash flow is funded by cash or debt."
+    why_it_matters: "The cash a company can return or use without borrowing; the funding test of the buyback engine (M1.4)."
+    source: "Derived from SEC EDGAR XBRL operating_cash_flow and capex"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/derived.py
+    as_of: "2026-10-06"
+    update_cadence: "per filing (10-Q, 10-K); quarters from year-to-date values"
+    caveats: "Capex fallbacks include intangible assets (NVIDIA); leases and acquisitions are not deducted."
+    related_terms: [operating_cash_flow, capex]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: total_debt
+    display_name: "Total Debt"
+    category: fundamentals
+    short_definition: "Long-term debt (non-current and current portion) plus commercial paper on the balance sheet date."
+    full_definition: "Derived at read time from the stored debt components. Non-current long-term debt is required. The current portion and commercial paper count as 0 when the balance sheet does not report them, and the value says which ones were counted as 0 (Steven's decision D4, ADR-021). Leases are not added beyond what the long-term debt fallback concept includes."
+    formula: "long_term_debt_noncurrent + long_term_debt_current + commercial_paper (unreported short items as 0)"
+    unit: USD
+    example: "Apple at 2025-09-27: $78.328 billion + $12.350 billion + $7.979 billion = $98.657 billion."
+    direction: "Higher = more leverage"
+    interpretation: "Read with cash (net debt) and with free cash flow; check which components were counted as 0."
+    why_it_matters: "The debt in enterprise value and in the balance-sheet check of the buyback engine."
+    source: "Derived from SEC EDGAR XBRL debt components"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/derived.py
+    as_of: "2026-10-06"
+    update_cadence: "per filing (10-Q, 10-K)"
+    caveats: "Short-term borrowings other than commercial paper are not included; banks have no comparable figure and show none."
+    related_terms: [long_term_debt_noncurrent, long_term_debt_current, commercial_paper, net_debt]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: net_debt
+    display_name: "Net Debt"
+    category: fundamentals
+    short_definition: "Total debt minus cash and cash equivalents on the balance sheet date."
+    full_definition: "Derived at read time: total debt (above) minus cash and cash equivalents. Requires both. Marketable securities are not subtracted, so companies holding large securities portfolios show more net debt than a broader definition would."
+    formula: "total_debt - cash"
+    unit: USD
+    example: "Apple at 2025-09-27: $98.657 billion - $35.934 billion = $62.723 billion."
+    direction: "Higher = more leverage; negative = more cash than debt"
+    interpretation: "Negative net debt means cash exceeds debt; compare with free cash flow to judge how fast debt could be repaid."
+    why_it_matters: "The bridge from market capitalization to enterprise value (M1.2)."
+    source: "Derived from SEC EDGAR XBRL debt components and cash"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/derived.py
+    as_of: "2026-10-06"
+    update_cadence: "per filing (10-Q, 10-K)"
+    caveats: "Cash only: Apple's and Alphabet's marketable securities are not subtracted."
+    related_terms: [total_debt, cash]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: quarterly_derived_value
+    display_name: "Quarterly Value (from year to date)"
+    category: fundamentals
+    short_definition: "A single quarter's value worked out from year-to-date figures in 10-Qs and the 10-K."
+    full_definition: "10-Qs report flows year to date. Q1 is the three-month value; Q2 = six months - three months; Q3 = nine months - six months; Q4 = full year - nine months. Each quarter shows the two filings behind it. EPS and diluted shares are not differenced: only the three-month values the company reports are shown, and Q4 stays empty (ADR-021)."
+    formula: "Q1 = YTD3; Q2 = YTD6 - YTD3; Q3 = YTD9 - YTD6; Q4 = FY - YTD9"
+    unit: USD
+    example: "Apple FY2025 revenue: Q2 = $219.659 billion (six months) - $124.300 billion (Q1) = $95.359 billion."
+    direction: "N/A"
+    interpretation: "The four quarters of a fiscal year add up to the annual figure by construction; a differenced quarter can absorb a restatement of an earlier quarter."
+    why_it_matters: "Cash flows are only reported year to date, so quarterly cash flow and free cash flow need this."
+    source: "Derived from SEC EDGAR XBRL year-to-date values"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/quarters.py
+    as_of: "2026-10-06"
+    update_cadence: "per filing (10-Q, 10-K)"
+    caveats: "Fiscal years of 52 or 53 weeks give one 14-week quarter; a missing year-to-date value leaves its quarters empty."
+    related_terms: [trailing_twelve_months, operating_cash_flow]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: trailing_twelve_months
+    display_name: "Trailing Twelve Months (TTM)"
+    category: fundamentals
+    short_definition: "The sum of the four latest consecutive quarters of a flow."
+    full_definition: "Adds the four latest quarters (quarterly_derived_value) when they follow one another without a gap. Only flows (revenue, profit, cash flows) are summed; EPS and share counts are not."
+    formula: "sum of the last 4 consecutive quarterly values"
+    unit: USD
+    example: "Apple revenue TTM to 2025-12-27: $95.359 + $94.036 + $102.466 + $143.756 billion = $435.617 billion."
+    direction: "N/A"
+    interpretation: "Smooths seasonality and is more current than the last fiscal year."
+    why_it_matters: "The base of trailing multiples in valuation (M1.2)."
+    source: "Derived from SEC EDGAR XBRL quarterly values"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/quarters.py
+    as_of: "2026-10-06"
+    update_cadence: "per filing (10-Q, 10-K)"
+    caveats: "Empty when one of the four quarters cannot be derived."
+    related_terms: [quarterly_derived_value]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: split_adjusted
+    display_name: "Split-Adjusted Value"
+    category: fundamentals
+    short_definition: "A per-share amount or share count restated to today's share basis after later stock splits."
+    full_definition: "A reported value is on the share basis of its filing date. For every split effective after that filing and by the As known on time, share counts are multiplied and per-share amounts divided by the split ratio. The reported value stays visible; the adjusted one is shown beside it with the splits applied (ADR-021)."
+    formula: "share counts x product(split ratios after the filing); per-share amounts / product(split ratios)"
+    unit: label
+    example: "Apple FY2017 diluted EPS: reported $9.21 in 2017; after the 2020 4-for-1 split, $9.21 / 4 = $2.3025."
+    direction: "N/A"
+    interpretation: "Use the adjusted value to compare per-share history across a split; the reported value shows what investors saw at the time."
+    why_it_matters: "Without it, a split looks like a 75% fall in EPS and a fourfold rise in shares."
+    source: "Splits from Alpaca corporate actions (2016 on) and config/splits.yaml (earlier, citing the 8-K)"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/splits.py
+    as_of: "2026-10-06"
+    update_cadence: "on read"
+    caveats: "A split is effective from the start of its ex-date in New York; an As known on date before it shows no adjustment."
+    related_terms: [split_event, eps_diluted, diluted_shares]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: split_event
+    display_name: "Stock Split"
+    category: corporate_actions
+    short_definition: "A change in the number of shares, e.g. 4 new shares for each old one, from an ex-date on."
+    full_definition: "Stored per instrument and ex-date with the ratio (new shares for old shares). Splits since 2016 come from Alpaca corporate actions; earlier ones from a reviewed list that cites the company's 8-K (Apple 7-for-1 in 2014). A stock dividend of one share per share counts as 2-for-1. Effective from the start of the ex-date in New York."
+    formula: "new_rate / old_rate shares per share"
+    unit: label
+    example: "Apple 4-for-1, ex-date 2020-08-31 (Alpaca); Apple 7-for-1, ex-date 2014-06-09 (8-K 0001193125-14-228798)."
+    direction: "N/A"
+    interpretation: "A split changes the share count and per-share amounts, not the company's value."
+    why_it_matters: "Needed to compare per-share history and prices across the split."
+    source: "Alpaca Market Data corporate actions; SEC EDGAR 8-K (reviewed list)"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/config/splits.yaml
+    as_of: "2026-10-06"
+    update_cadence: "daily, with the daily bars"
+    caveats: "Alpaca's history starts in 2016; a split restatement no recorded split explains is flagged on the Reconciliation page."
+    related_terms: [split_adjusted]
+    methodology_version: 0.1.0
+    status: complete
+
   # ---------- Phase 0: macro series (M0.6) ----------
   # FRED / ALFRED series in config/macro_series.yaml; values as published, with vintages (ADR-015).
   - term_id: page_macro

@@ -497,6 +497,86 @@
         "title": "DecisionOut",
         "type": "object"
       },
+      "DerivedCell": {
+        "description": "A value computed at read time from inputs known at known_at (ADR-021).",
+        "properties": {
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "inputs": {
+            "items": {
+              "$ref": "#/components/schemas/autotrading__api__instruments__InputRef"
+            },
+            "title": "Inputs",
+            "type": "array"
+          },
+          "kind": {
+            "const": "derived",
+            "default": "derived",
+            "title": "Kind",
+            "type": "string"
+          },
+          "method": {
+            "title": "Method",
+            "type": "string"
+          },
+          "period_end": {
+            "format": "date",
+            "title": "Period End",
+            "type": "string"
+          },
+          "period_start": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Start"
+          },
+          "split_adjusted": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SplitAdjusted"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          },
+          "value": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "unit",
+          "currency",
+          "period_start",
+          "period_end",
+          "method",
+          "inputs"
+        ],
+        "title": "DerivedCell",
+        "type": "object"
+      },
       "EntityOut": {
         "properties": {
           "cik": {
@@ -615,6 +695,12 @@
               }
             ],
             "title": "Fiscal Period"
+          },
+          "kind": {
+            "const": "reported",
+            "default": "reported",
+            "title": "Kind",
+            "type": "string"
           },
           "period_end": {
             "format": "date",
@@ -851,8 +937,18 @@
             ],
             "title": "Last Refresh At"
           },
+          "latest": {
+            "items": {
+              "$ref": "#/components/schemas/FactCell"
+            },
+            "title": "Latest",
+            "type": "array"
+          },
           "per_share_history": {
             "$ref": "#/components/schemas/FactTable"
+          },
+          "quarterly": {
+            "$ref": "#/components/schemas/QuarterTable"
           },
           "splits": {
             "items": {
@@ -874,7 +970,9 @@
           "entities",
           "annual",
           "balance_sheet",
+          "quarterly",
           "per_share_history",
+          "latest",
           "splits",
           "last_refresh_at"
         ],
@@ -1134,36 +1232,11 @@
         "title": "Indicator",
         "type": "object"
       },
-      "InputRef": {
-        "properties": {
-          "observation_date": {
-            "format": "date",
-            "title": "Observation Date",
-            "type": "string"
-          },
-          "series_id": {
-            "title": "Series Id",
-            "type": "string"
-          },
-          "vintage": {
-            "format": "date",
-            "title": "Vintage",
-            "type": "string"
-          }
-        },
-        "required": [
-          "series_id",
-          "observation_date",
-          "vintage"
-        ],
-        "title": "InputRef",
-        "type": "object"
-      },
       "Insight": {
         "properties": {
           "inputs": {
             "items": {
-              "$ref": "#/components/schemas/InputRef"
+              "$ref": "#/components/schemas/autotrading__api__overview__InputRef"
             },
             "title": "Inputs",
             "type": "array"
@@ -1597,7 +1670,21 @@
             "items": {
               "anyOf": [
                 {
-                  "$ref": "#/components/schemas/FactCell"
+                  "discriminator": {
+                    "mapping": {
+                      "derived": "#/components/schemas/DerivedCell",
+                      "reported": "#/components/schemas/FactCell"
+                    },
+                    "propertyName": "kind"
+                  },
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/FactCell"
+                    },
+                    {
+                      "$ref": "#/components/schemas/DerivedCell"
+                    }
+                  ]
                 },
                 {
                   "type": "null"
@@ -2276,6 +2363,69 @@
           "log"
         ],
         "title": "Progress",
+        "type": "object"
+      },
+      "QuarterRow": {
+        "properties": {
+          "cells": {
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/DerivedCell"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "title": "Cells",
+            "type": "array"
+          },
+          "metric_id": {
+            "title": "Metric Id",
+            "type": "string"
+          },
+          "ttm": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DerivedCell"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "metric_id",
+          "cells",
+          "ttm"
+        ],
+        "title": "QuarterRow",
+        "type": "object"
+      },
+      "QuarterTable": {
+        "properties": {
+          "periods": {
+            "items": {
+              "$ref": "#/components/schemas/PeriodColumn"
+            },
+            "title": "Periods",
+            "type": "array"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/QuarterRow"
+            },
+            "title": "Rows",
+            "type": "array"
+          }
+        },
+        "required": [
+          "periods",
+          "rows"
+        ],
+        "title": "QuarterTable",
         "type": "object"
       },
       "QuoteOut": {
@@ -2957,6 +3107,93 @@
           "type"
         ],
         "title": "ValidationError",
+        "type": "object"
+      },
+      "autotrading__api__instruments__InputRef": {
+        "description": "One input of a derived value: a reported fact, a derived quarter, or 0 assumed.",
+        "properties": {
+          "assumed_zero": {
+            "default": false,
+            "title": "Assumed Zero",
+            "type": "boolean"
+          },
+          "filing": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FilingRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "metric_id": {
+            "title": "Metric Id",
+            "type": "string"
+          },
+          "period_end": {
+            "format": "date",
+            "title": "Period End",
+            "type": "string"
+          },
+          "period_start": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Start"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "metric_id",
+          "value",
+          "period_start",
+          "period_end",
+          "filing"
+        ],
+        "title": "InputRef",
+        "type": "object"
+      },
+      "autotrading__api__overview__InputRef": {
+        "properties": {
+          "observation_date": {
+            "format": "date",
+            "title": "Observation Date",
+            "type": "string"
+          },
+          "series_id": {
+            "title": "Series Id",
+            "type": "string"
+          },
+          "vintage": {
+            "format": "date",
+            "title": "Vintage",
+            "type": "string"
+          }
+        },
+        "required": [
+          "series_id",
+          "observation_date",
+          "vintage"
+        ],
+        "title": "InputRef",
         "type": "object"
       }
     }

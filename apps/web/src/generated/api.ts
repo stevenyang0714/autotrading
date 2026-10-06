@@ -471,6 +471,35 @@ export interface components {
             /** Needed By */
             needed_by: string;
         };
+        /**
+         * DerivedCell
+         * @description A value computed at read time from inputs known at known_at (ADR-021).
+         */
+        DerivedCell: {
+            /** Currency */
+            currency: string | null;
+            /** Inputs */
+            inputs: components["schemas"]["autotrading__api__instruments__InputRef"][];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "derived";
+            /** Method */
+            method: string;
+            /**
+             * Period End
+             * Format: date
+             */
+            period_end: string;
+            /** Period Start */
+            period_start: string | null;
+            split_adjusted?: components["schemas"]["SplitAdjusted"] | null;
+            /** Unit */
+            unit: string;
+            /** Value */
+            value: string;
+        };
         /** EntityOut */
         EntityOut: {
             /** Cik */
@@ -508,6 +537,11 @@ export interface components {
             filing: components["schemas"]["FilingRef"];
             /** Fiscal Period */
             fiscal_period: string | null;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "reported";
             /**
              * Period End
              * Format: date
@@ -589,7 +623,10 @@ export interface components {
             known_at: string;
             /** Last Refresh At */
             last_refresh_at: string | null;
+            /** Latest */
+            latest: components["schemas"]["FactCell"][];
             per_share_history: components["schemas"]["FactTable"];
+            quarterly: components["schemas"]["QuarterTable"];
             /** Splits */
             splits: components["schemas"]["SplitOut"][];
             /** Ticker */
@@ -698,25 +735,10 @@ export interface components {
             /** Value */
             value: string;
         };
-        /** InputRef */
-        InputRef: {
-            /**
-             * Observation Date
-             * Format: date
-             */
-            observation_date: string;
-            /** Series Id */
-            series_id: string;
-            /**
-             * Vintage
-             * Format: date
-             */
-            vintage: string;
-        };
         /** Insight */
         Insight: {
             /** Inputs */
-            inputs: components["schemas"]["InputRef"][];
+            inputs: components["schemas"]["autotrading__api__overview__InputRef"][];
             /** Text */
             text: string;
         };
@@ -854,7 +876,7 @@ export interface components {
         /** MetricRow */
         MetricRow: {
             /** Cells */
-            cells: (components["schemas"]["FactCell"] | null)[];
+            cells: ((components["schemas"]["FactCell"] | components["schemas"]["DerivedCell"]) | null)[];
             /** Metric Id */
             metric_id: string;
         };
@@ -1090,6 +1112,21 @@ export interface components {
              */
             read_at: string;
         };
+        /** QuarterRow */
+        QuarterRow: {
+            /** Cells */
+            cells: (components["schemas"]["DerivedCell"] | null)[];
+            /** Metric Id */
+            metric_id: string;
+            ttm: components["schemas"]["DerivedCell"] | null;
+        };
+        /** QuarterTable */
+        QuarterTable: {
+            /** Periods */
+            periods: components["schemas"]["PeriodColumn"][];
+            /** Rows */
+            rows: components["schemas"]["QuarterRow"][];
+        };
         /** QuoteOut */
         QuoteOut: {
             /** Ask */
@@ -1281,6 +1318,44 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
+        };
+        /**
+         * InputRef
+         * @description One input of a derived value: a reported fact, a derived quarter, or 0 assumed.
+         */
+        autotrading__api__instruments__InputRef: {
+            /**
+             * Assumed Zero
+             * @default false
+             */
+            assumed_zero: boolean;
+            filing: components["schemas"]["FilingRef"] | null;
+            /** Metric Id */
+            metric_id: string;
+            /**
+             * Period End
+             * Format: date
+             */
+            period_end: string;
+            /** Period Start */
+            period_start: string | null;
+            /** Value */
+            value: string | null;
+        };
+        /** InputRef */
+        autotrading__api__overview__InputRef: {
+            /**
+             * Observation Date
+             * Format: date
+             */
+            observation_date: string;
+            /** Series Id */
+            series_id: string;
+            /**
+             * Vintage
+             * Format: date
+             */
+            vintage: string;
         };
     };
     responses: never;

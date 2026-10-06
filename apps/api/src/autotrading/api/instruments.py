@@ -13,7 +13,7 @@ from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import AwareDatetime, BaseModel
+from pydantic import AwareDatetime, BaseModel, Field
 from sqlalchemy import ColumnElement, and_, func, select
 from sqlalchemy.dialects.postgresql import distinct_on
 from sqlalchemy.orm import Session
@@ -29,9 +29,11 @@ from autotrading.db.models import (
     Instrument,
     SplitEvent,
 )
+from autotrading.domain.derived import DERIVED_ANNUAL, DERIVED_BALANCE, Derived, derive_all
 from autotrading.domain.fundamentals import (
     ANNUAL_METRICS,
     BALANCE_SHEET_METRICS,
+    LATEST_METRICS,
     Period,
     Succession,
     annual_periods,
@@ -40,6 +42,7 @@ from autotrading.domain.fundamentals import (
     issuer_at,
     merge_by_precedence,
 )
+from autotrading.domain.quarters import Quarter, quarters, trailing_twelve_months
 from autotrading.domain.splits import ADJUSTED_METRICS, Split, adjust
 from autotrading.repositories.facts import as_of_query
 
@@ -50,6 +53,22 @@ SEC_NAMESPACE = "sec"
 PERIODIC_FORMS = ("10-K", "10-K/A", "10-Q", "10-Q/A", "20-F", "20-F/A")
 PER_SHARE_HISTORY_METRICS = ("eps_diluted", "diluted_shares")
 PER_SHARE_HISTORY_YEARS = 15
+QUARTERLY_METRICS = (
+    "revenue",
+    "gross_profit",
+    "operating_income",
+    "net_income",
+    "eps_diluted",
+    "operating_cash_flow",
+    "capex",
+    "free_cash_flow",
+    "depreciation_amortization",
+    "share_repurchases",
+    "shares_repurchased",
+    "dividends_paid",
+    "stock_based_compensation",
+)
+QUARTER_COLUMNS = 8
 
 
 class EntityOut(BaseModel):
@@ -95,6 +114,7 @@ class SplitAdjusted(BaseModel):
 
 
 class FactCell(BaseModel):
+    kind: Literal["reported"] = "reported"
     value: Decimal
     unit: str
     currency: str | None
@@ -109,6 +129,34 @@ class FactCell(BaseModel):
     split_adjusted: SplitAdjusted | None = None  # None: no split after the filing
 
 
+class InputRef(BaseModel):
+    """One input of a derived value: a reported fact, a derived quarter, or 0 assumed."""
+
+    metric_id: str
+    value: Decimal | None  # None: not reported, counted as 0 (assumed_zero)
+    period_start: date | None
+    period_end: date
+    filing: FilingRef | None  # the filing of a reported input
+    assumed_zero: bool = False
+
+
+class DerivedCell(BaseModel):
+    """A value computed at read time from inputs known at known_at (ADR-021)."""
+
+    kind: Literal["derived"] = "derived"
+    value: Decimal
+    unit: str
+    currency: str | None
+    period_start: date | None
+    period_end: date
+    method: str  # e.g. "operating_cash_flow - capex", "ytd_difference", "quarter_sum"
+    inputs: list[InputRef]
+    split_adjusted: SplitAdjusted | None = None
+
+
+Cell = Annotated[FactCell | DerivedCell, Field(discriminator="kind")]
+
+
 class PeriodColumn(BaseModel):
     period_start: date | None
     period_end: date
@@ -116,12 +164,23 @@ class PeriodColumn(BaseModel):
 
 class MetricRow(BaseModel):
     metric_id: str
-    cells: list[FactCell | None]  # one per period column; None = not reported
+    cells: list[Cell | None]  # one per period column; None = not reported or not derivable
 
 
 class FactTable(BaseModel):
     periods: list[PeriodColumn]
     rows: list[MetricRow]
+
+
+class QuarterRow(BaseModel):
+    metric_id: str
+    cells: list[DerivedCell | None]  # one per quarter column
+    ttm: DerivedCell | None  # trailing twelve months at the latest column; flows only
+
+
+class QuarterTable(BaseModel):
+    periods: list[PeriodColumn]  # oldest first
+    rows: list[QuarterRow]
 
 
 class InstrumentSummary(BaseModel):
@@ -146,8 +205,11 @@ class Fundamentals(BaseModel):
     entities: list[EntityOut]  # current issuer first, then predecessors
     annual: FactTable
     balance_sheet: FactTable
+    # Last 8 quarters from year-to-date values, with trailing twelve months (M1.1).
+    quarterly: QuarterTable
     # Diluted EPS and shares for up to 15 fiscal years, reported and split-adjusted (M1.1).
     per_share_history: FactTable
+    latest: list[FactCell]  # values with their own date: cover-page shares, authorization
     splits: list[SplitOut]  # effective by known_at, oldest first
     last_refresh_at: datetime | None
 
@@ -203,7 +265,7 @@ def fundamentals(
     facts = session.scalars(
         as_of_query(FinancialFact, known_at=at).where(
             FinancialFact.entity_id.in_(chain.order),
-            FinancialFact.metric_id.in_(ANNUAL_METRICS + BALANCE_SHEET_METRICS),
+            FinancialFact.metric_id.in_(ANNUAL_METRICS + BALANCE_SHEET_METRICS + LATEST_METRICS),
         )
     ).all()
     merged = merge_by_precedence(facts, chain.order)
@@ -225,8 +287,10 @@ def fundamentals(
         known_at=at,
         issuer=next(e for e in entities if e.id == issuer_id),
         entities=entities,
-        annual=cells.table(ANNUAL_METRICS, years),
-        balance_sheet=cells.table(BALANCE_SHEET_METRICS, balance_dates),
+        annual=cells.table(ANNUAL_METRICS + DERIVED_ANNUAL, years),
+        balance_sheet=cells.table(BALANCE_SHEET_METRICS + DERIVED_BALANCE, balance_dates),
+        quarterly=cells.quarter_table(QUARTERLY_METRICS),
+        latest=cells.latest(LATEST_METRICS),
         per_share_history=cells.table(
             PER_SHARE_HISTORY_METRICS, annual_periods(merged, count=PER_SHARE_HISTORY_YEARS)
         ),
@@ -333,6 +397,29 @@ def _latest_report(session: Session, entity_ids: list[UUID]) -> FilingRef | None
     return None
 
 
+@dataclass(frozen=True)
+class _Fact:
+    """A stored fact as the pure domain functions see it (domain/derived.ValueFact)."""
+
+    row: FinancialFact
+
+    @property
+    def metric_id(self) -> str:
+        return self.row.metric_id
+
+    @property
+    def value(self) -> Decimal:
+        return self.row.value
+
+    @property
+    def period_start(self) -> date | None:
+        return self.row.period_start
+
+    @property
+    def period_end(self) -> date:
+        return self.row.period_end
+
+
 class _CellBuilder:
     """Builds table cells; filing forms and earlier versions are loaded once per request."""
 
@@ -342,6 +429,10 @@ class _CellBuilder:
         self._facts = facts
         self._splits = splits
         self._at = at
+        self._views = [_Fact(f) for f in facts]
+        self._derived = {
+            (d.metric_id, d.period_start, d.period_end): d for d in derive_all(self._views)
+        }
         superseded_ids = [f.supersedes_fact_id for f in facts if f.supersedes_fact_id]
         self._previous = {
             row.id: row
@@ -363,14 +454,126 @@ class _CellBuilder:
 
     def table(self, metrics: tuple[str, ...], periods: list[Period]) -> FactTable:
         by_key = {(f.metric_id, f.period_start, f.period_end): f for f in self._facts}
+
+        def cell(metric: str, p: Period) -> FactCell | DerivedCell | None:
+            derived = self._derived.get((metric, p.start, p.end))
+            if derived is not None:
+                return self._derived_cell(derived)
+            return self._cell(by_key.get((metric, p.start, p.end)))
+
         return FactTable(
             periods=[PeriodColumn(period_start=p.start, period_end=p.end) for p in periods],
-            rows=[
-                MetricRow(
+            rows=[MetricRow(metric_id=m, cells=[cell(m, p) for p in periods]) for m in metrics],
+        )
+
+    def latest(self, metrics: tuple[str, ...]) -> list[FactCell]:
+        out = []
+        for metric in metrics:
+            facts = [f for f in self._facts if f.metric_id == metric]
+            if facts and (cell := self._cell(max(facts, key=lambda f: f.period_end))):
+                out.append(cell)
+        return out
+
+    def quarter_table(self, metrics: tuple[str, ...]) -> QuarterTable:
+        series = {m: quarters(self._views, m) for m in metrics if m != "free_cash_flow"}
+        series["free_cash_flow"] = _fcf_quarters(series["operating_cash_flow"], series["capex"])
+        ends = sorted({(q.period_start, q.period_end) for qs in series.values() for q in qs})
+        columns = ends[-QUARTER_COLUMNS:]
+        rows = []
+        for metric in metrics:
+            by_period = {(q.period_start, q.period_end): q for q in series[metric]}
+            ttm = trailing_twelve_months(series[metric])
+            rows.append(
+                QuarterRow(
                     metric_id=metric,
-                    cells=[self._cell(by_key.get((metric, p.start, p.end))) for p in periods],
+                    cells=[
+                        self._quarter_cell(q) if (q := by_period.get(c)) else None for c in columns
+                    ],
+                    ttm=self._ttm_cell(metric, *ttm)
+                    if ttm and ttm[1][-1].period_end == columns[-1][1]
+                    else None,
                 )
-                for metric in metrics
+            )
+        return QuarterTable(
+            periods=[PeriodColumn(period_start=s, period_end=e) for s, e in columns], rows=rows
+        )
+
+    def _unit(self, metric: str) -> tuple[str, str | None]:
+        sample = next((f for f in self._facts if f.metric_id == metric), None)
+        if sample is not None:
+            return sample.unit, sample.currency
+        return ("USD/shares", "USD") if metric == "eps_diluted" else ("USD", "USD")
+
+    def _input(self, metric: str, view: _Fact) -> InputRef:
+        fact = view.row
+        return InputRef(
+            metric_id=metric,
+            value=fact.value,
+            period_start=fact.period_start,
+            period_end=fact.period_end,
+            filing=self._filing(fact),
+        )
+
+    def _derived_cell(self, derived: Derived[_Fact]) -> DerivedCell:
+        unit, currency = self._unit("cash")
+        inputs = [
+            self._input(metric, fact)
+            if fact is not None
+            else InputRef(
+                metric_id=metric,
+                value=None,
+                period_start=None,
+                period_end=derived.period_end,
+                filing=None,
+                assumed_zero=True,
+            )
+            for metric, fact in derived.inputs
+        ]
+        return DerivedCell(
+            value=derived.value,
+            unit=unit,
+            currency=currency,
+            period_start=derived.period_start,
+            period_end=derived.period_end,
+            method=derived.method,
+            inputs=inputs,
+        )
+
+    def _quarter_cell(self, quarter: Quarter[_Fact]) -> DerivedCell:
+        unit, currency = self._unit(quarter.metric_id)
+        adjusted = None
+        if quarter.method == "reported" and quarter.metric_id in ADJUSTED_METRICS:
+            (view,) = quarter.inputs
+            adjusted = self._adjusted(view.row)
+        return DerivedCell(
+            value=quarter.value,
+            unit=unit,
+            currency=currency,
+            period_start=quarter.period_start,
+            period_end=quarter.period_end,
+            method=quarter.method,
+            inputs=[self._input(quarter.metric_id, f) for f in quarter.inputs],
+            split_adjusted=adjusted,
+        )
+
+    def _ttm_cell(self, metric: str, total: Decimal, last: list[Quarter[_Fact]]) -> DerivedCell:
+        unit, currency = self._unit(metric)
+        return DerivedCell(
+            value=total,
+            unit=unit,
+            currency=currency,
+            period_start=last[0].period_start,
+            period_end=last[-1].period_end,
+            method="quarter_sum",
+            inputs=[
+                InputRef(
+                    metric_id=metric,
+                    value=q.value,
+                    period_start=q.period_start,
+                    period_end=q.period_end,
+                    filing=None,
+                )
+                for q in last
             ],
         )
 
@@ -418,3 +621,25 @@ class _CellBuilder:
             factor=str(adjusted.factor),
             splits=[s.ex_date for s in adjusted.splits],
         )
+
+
+def _fcf_quarters(ocf: list[Quarter[_Fact]], capex: list[Quarter[_Fact]]) -> list[Quarter[_Fact]]:
+    """Free cash flow per quarter: both quarters known, their inputs kept (ADR-021)."""
+    by_period = {(q.period_start, q.period_end): q for q in capex}
+    out = []
+    for q in ocf:
+        c = by_period.get((q.period_start, q.period_end))
+        if c is not None:
+            out.append(
+                Quarter(
+                    "free_cash_flow",
+                    q.number,
+                    q.fiscal_year_end,
+                    q.period_start,
+                    q.period_end,
+                    q.value - c.value,
+                    "operating_cash_flow - capex",
+                    (*q.inputs, *c.inputs),
+                )
+            )
+    return out

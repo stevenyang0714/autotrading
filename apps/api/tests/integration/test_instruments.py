@@ -247,6 +247,87 @@ def test_before_the_split_was_effective_nothing_is_adjusted(client: TestClient) 
     assert (fy2019["value"], fy2019["split_adjusted"]) == ("11.89", None)
 
 
+# ---------- derived values and quarters (ADR-021) ----------
+
+
+def test_fcf_and_debt_exist_exactly_where_their_inputs_do(client: TestClient) -> None:
+    for ticker in ("AAPL", "XOM", "META"):
+        body = fundamentals(client, ticker)
+        annual, balance = body["annual"], body["balance_sheet"]
+        ocf, capex, fcf = (
+            row(annual, m) for m in ("operating_cash_flow", "capex", "free_cash_flow")
+        )
+        for o, c, f in zip(ocf, capex, fcf, strict=True):
+            assert (f is not None) == (o is not None and c is not None)
+            if f is not None and o is not None and c is not None:
+                assert Decimal(f["value"]) == Decimal(o["value"]) - Decimal(c["value"])
+                assert [i["metric_id"] for i in f["inputs"]] == ["operating_cash_flow", "capex"]
+        noncurrent, debt, net, cash = (
+            row(balance, m) for m in ("long_term_debt_noncurrent", "total_debt", "net_debt", "cash")
+        )
+        for n, d, nd, c in zip(noncurrent, debt, net, cash, strict=True):
+            assert (d is not None) == (n is not None)
+            assert (nd is not None) == (n is not None and c is not None)
+
+
+def test_meta_total_debt_says_which_short_items_were_not_reported(client: TestClient) -> None:
+    balance = fundamentals(client, "META")["balance_sheet"]
+    latest = row(balance, "total_debt")[0]
+    assert latest is not None and latest["kind"] == "derived"
+    zero = [i["metric_id"] for i in latest["inputs"] if i["assumed_zero"]]
+    assert "commercial_paper" in zero  # Meta has no commercial paper
+    assert Decimal(latest["value"]) == sum(
+        Decimal(i["value"]) for i in latest["inputs"] if not i["assumed_zero"]
+    )
+
+
+def test_apple_quarters_add_up_to_the_year_and_match_reported_quarters(
+    client: TestClient, sessions: sessionmaker[Session]
+) -> None:
+    body = fundamentals(client, "AAPL", "2026-08-01T00:00:00Z")
+    quarterly = body["quarterly"]
+    revenue = next(r for r in quarterly["rows"] if r["metric_id"] == "revenue")
+    fy2025 = [
+        c for c in revenue["cells"] if c and "2024-09-29" <= c["period_start"] <= "2025-09-27"
+    ]
+    year = next(c for c in row(body["annual"], "revenue") if c and c["period_end"] == "2025-09-27")
+    assert len(fy2025) == 4
+    assert sum(Decimal(c["value"]) for c in fy2025) == Decimal(year["value"])
+    assert [c["method"] for c in fy2025] == [
+        "reported",
+        "ytd_difference",
+        "ytd_difference",
+        "year_minus_9_months",
+    ]
+    # Differenced quarters equal the three-month revenue Apple reports in its 10-Qs.
+    with sessions() as session:
+        reported = {
+            (f.period_start.isoformat(), f.period_end.isoformat()): f.value
+            for f in session.scalars(
+                select(FinancialFact).where(
+                    FinancialFact.metric_id == "revenue",
+                    FinancialFact.superseded_at.is_(None),
+                )
+            )
+            if f.period_start and 80 <= (f.period_end - f.period_start).days <= 100
+        }
+    for cell in fy2025[1:3]:
+        assert Decimal(cell["value"]) == reported[(cell["period_start"], cell["period_end"])]
+    # Trailing twelve months at the latest column: the sum of the last four quarters.
+    ttm = revenue["ttm"]
+    last_four = [c for c in revenue["cells"] if c][-4:]
+    assert ttm is not None and ttm["method"] == "quarter_sum"
+    assert Decimal(ttm["value"]) == sum(Decimal(c["value"]) for c in last_four)
+    eps = next(r for r in quarterly["rows"] if r["metric_id"] == "eps_diluted")
+    assert eps["ttm"] is None  # EPS does not add up across quarters
+
+
+def test_latest_values_carry_their_own_dates(client: TestClient) -> None:
+    latest = {c["source_concept"].split(" ")[0]: c for c in fundamentals(client, "META")["latest"]}
+    cover = latest["dei:EntityCommonStockSharesOutstanding"]
+    assert cover["period_end"] >= "2026-01-23" and cover["unit"] == "shares"
+
+
 # ---------- API ----------
 
 

@@ -104,6 +104,13 @@ terms:
   interest_expense: {name: 利息費用, hint: 借款在期間內認列的利息成本。}
   income_tax_expense: {name: 所得稅費用, hint: 期間內認列的所得稅（含遞延），不等於實際繳納的稅。}
   pretax_income: {name: 稅前淨利, hint: 繼續營業單位扣除所得稅前的利潤。}
+  free_cash_flow: {name: 自由現金流, hint: 營業現金流減資本支出；兩者都有申報才計算。}
+  total_debt: {name: 總負債（借款）, hint: 長期負債（含一年內到期）加商業本票；未申報的短期項目以 0 計並標示。}
+  net_debt: {name: 淨負債, hint: 總負債減現金；負值代表現金多於負債。}
+  quarterly_derived_value: {name: 單季值（推算）, hint: 由累計數相減得到單季，例如第二季 = 半年累計 − 第一季。}
+  trailing_twelve_months: {name: 近四季合計（TTM）, hint: 最近連續四個季度的合計，只用於流量類數字。}
+  split_adjusted: {name: 分割調整值, hint: 依之後的股票分割換算到目前股數基準的值，原始申報值仍並列。}
+  split_event: {name: 股票分割, hint: 股數按比例改變（例如一股變四股），從除權日起生效。}
 
   # macro series
   observation_date: {name: 觀測日期, hint: FRED 標示數值的日期，為期間的第一天；不是公布日。}

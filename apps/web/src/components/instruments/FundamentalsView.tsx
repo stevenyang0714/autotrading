@@ -77,7 +77,7 @@ interface Props {
 export function FundamentalsView({ data, knownOn, invalidKnownOn, sources, prices, news }: Props) {
   const newest = [...data.annual.rows, ...data.balance_sheet.rows]
     .flatMap((row) => row.cells)
-    .map((cell) => cell?.filing.published_at)
+    .map((cell) => (cell && cell.kind !== "derived" ? cell.filing.published_at : undefined))
     .filter((v): v is string => Boolean(v))
     .sort()
     .at(-1);
@@ -256,7 +256,7 @@ function Table({ id, title, table, names, issuerId, header }: TableProps) {
                     </th>
                     {row.cells.map((cell, i) => (
                       <td key={table.periods[i].period_end} className="py-2 pr-4">
-                        {cell ? (
+                        {cell && cell.kind !== "derived" ? (
                           <Cell
                             metric={metric}
                             cell={cell}
