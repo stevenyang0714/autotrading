@@ -60,6 +60,7 @@ class RunOut(BaseModel):
     rows_inserted: int
     rows_unchanged: int
     rows_conflicted: int
+    notes: list[str]
     raw_payload_keys: list[str]
     error_class: str | None
     error_message: str | None

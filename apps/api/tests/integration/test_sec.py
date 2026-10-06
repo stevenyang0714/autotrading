@@ -15,6 +15,7 @@ from sqlalchemy import Engine, func, select, text
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session, sessionmaker
 
+from autotrading.adapters.sec.acceptance import EASTERN, header_url
 from autotrading.adapters.sec.company import companyfacts_url, submissions_url
 from autotrading.adapters.sec.refresh import company_ciks, create_company_runs
 from autotrading.config_sync import load_sources, sync_sources
@@ -35,7 +36,7 @@ from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.repositories.facts import FinancialFactRepository
 from autotrading.settings import get_settings
-from tests.sec_replay import FIXTURES, OVERRIDES, recorded_registry
+from tests.sec_replay import FIXTURES, OVERRIDES, VerifyingCompany, recorded_registry
 
 pytestmark = pytest.mark.integration
 
@@ -286,3 +287,110 @@ def test_company_without_entity_fails_with_a_clear_error(runner: IngestionRunner
             runner.execute(run_id)
     finally:
         OVERRIDES.clear()
+
+
+@pytest.fixture(scope="module")
+def verifying_runner(sessions: sessionmaker[Session]) -> Iterator[IngestionRunner]:
+    """Like `runner`, but sec.company checks new filings against their headers (production)."""
+    settings = get_settings()
+    s3 = make_s3_client(settings)
+    bucket = f"raw-payloads-test-{uuid4().hex[:10]}"
+    s3.create_bucket(Bucket=bucket)
+    registry = recorded_registry()
+    registry["sec.company"] = VerifyingCompany
+    yield IngestionRunner(
+        sessions,
+        RawPayloadStore(s3, bucket),
+        TokenBucketLimiter(make_redis(settings), prefix=f"test-ratelimit-{uuid4().hex[:8]}"),
+        registry,
+    )
+    for obj in s3.list_objects_v2(Bucket=bucket).get("Contents", []):
+        s3.delete_object(Bucket=bucket, Key=obj["Key"])
+    s3.delete_bucket(Bucket=bucket)
+
+
+# True acceptance 2026-10-06 16:05:00 New York (EDT) = 20:05:00 UTC.
+NEW_TRUE = datetime(2026, 10, 6, 20, 5, tzinfo=UTC)
+
+
+def with_new_filings(rows: list[tuple[str, str, datetime]], headers: dict[str, datetime]) -> None:
+    """Serve Apple's recorded submissions plus synthetic new filings (accession, form, JSON
+    acceptance), and EDGAR headers for the accessions in `headers`."""
+    data = json.loads((FIXTURES / f"submissions_CIK{CIK}.json").read_bytes())
+    recent = data["filings"]["recent"]
+    template = {column: values[0] for column, values in recent.items()}
+    for accession, form, accepted in rows:
+        row = {
+            **template,
+            "accessionNumber": accession,
+            "form": form,
+            "filingDate": "2026-10-06",
+            "acceptanceDateTime": accepted.strftime("%Y-%m-%dT%H:%M:%S.000Z"),
+            "items": "",
+        }
+        for column, values in recent.items():
+            values.insert(0, row[column])
+    OVERRIDES[submissions_url(CIK)] = json.dumps(data).encode()
+    for accession, accepted in headers.items():
+        wall = accepted.astimezone(EASTERN).strftime("%Y%m%d%H%M%S")
+        OVERRIDES[header_url(CIK, accession)] = f"<ACCEPTANCE-DATETIME>{wall}\n".encode()
+
+
+def test_new_filings_take_their_time_from_the_edgar_header(
+    verifying_runner: IngestionRunner, sessions: sessionmaker[Session], apple: UUID
+) -> None:
+    """SEC's 2026-10-06 bug replayed on a new 10-Q (JSON 4 h late); a new 424B2 whose JSON is
+    right; a new Form 4 whose header is missing is stored date-only."""
+    late_10q, right_424, no_header_4 = (
+        "0000320193-26-900001",
+        "0000320193-26-900002",
+        "0000320193-26-900003",
+    )
+    with_new_filings(
+        [
+            (late_10q, "10-Q", NEW_TRUE + timedelta(hours=4)),
+            (right_424, "424B2", NEW_TRUE),
+            (no_header_4, "4", NEW_TRUE),
+        ],
+        headers={late_10q: NEW_TRUE, right_424: NEW_TRUE},
+    )
+    try:
+        result = run(verifying_runner, "sec.company", {"cik": CIK}, day_window(20))
+    finally:
+        OVERRIDES.clear()
+    assert (result.status, result.rows_inserted, result.rows_conflicted) == ("succeeded", 3, 0)
+    assert result.notes == [
+        "2 new filings timed from their EDGAR headers; 1 JSON times were late by the New York "
+        "offset; 1 other new filings beyond 200 per run stored date-only"
+    ]
+    with sessions() as session:
+        stored = {
+            f.accession_number: (f.accepted_at, f.published_at, f.published_at_precision)
+            for f in session.scalars(
+                select(Filing).where(
+                    Filing.accession_number.in_([late_10q, right_424, no_header_4])
+                )
+            )
+        }
+    assert stored[late_10q] == (NEW_TRUE, NEW_TRUE, "exact")
+    assert stored[right_424] == (NEW_TRUE, NEW_TRUE, "exact")
+    assert stored[no_header_4][0] is None
+    assert stored[no_header_4][2] == "day"
+
+
+def test_a_new_8k_without_header_fails_the_run_and_stores_nothing(
+    verifying_runner: IngestionRunner, sessions: sessionmaker[Session], apple: UUID
+) -> None:
+    with sessions() as session:
+        filings_before = session.scalar(select(func.count()).select_from(Filing))
+    with_new_filings([("0000320193-26-900004", "8-K", NEW_TRUE)], headers={})
+    try:
+        run_id = verifying_runner.create_run("sec.company", {"cik": CIK}, day_window(21))
+        with pytest.raises(RuntimeError, match="no EDGAR header acceptance time for 8-K"):
+            verifying_runner.execute(run_id)
+    finally:
+        OVERRIDES.clear()
+    with sessions() as session:
+        failed = session.get_one(IngestionRun, run_id)
+        assert (failed.status, failed.error_class) == ("failed", "AcceptanceCheckError")
+        assert session.scalar(select(func.count()).select_from(Filing)) == filings_before

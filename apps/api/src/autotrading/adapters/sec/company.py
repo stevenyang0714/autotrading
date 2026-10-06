@@ -1,6 +1,7 @@
 """Job `sec.company`: one company's filing index and XBRL facts (M0.5).
 
-fetch: submissions (plus older filing pages) and XBRL company facts, rate limited.
+fetch: submissions (plus older filing pages), XBRL company facts, and the EDGAR headers of new
+filings, whose acceptance times come from them (adapters/sec/acceptance.py), rate limited.
 store: new filings into `filings`; mapped XBRL values into `financial_facts` in publication
 order, each linked to its accession number, filing index page and acceptance time. A value
 that differs from the one known at its publication time becomes a new, restated version.
@@ -17,6 +18,12 @@ from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
+from autotrading.adapters.sec.acceptance import (
+    HeaderCheck,
+    header_acceptance,
+    header_url,
+    to_check,
+)
 from autotrading.adapters.sec.client import SecClient
 from autotrading.adapters.sec.parsing import (
     FilingRecord,
@@ -51,6 +58,7 @@ logger = logging.getLogger(__name__)
 DATA_SEC = "https://data.sec.gov"
 SOURCE_TIMEZONE = "America/New_York"
 FILINGS_BATCH = 5_000
+HEADER_SUFFIX = ".hdr.sgml"
 ACTOR = f"ingest:{SOURCE_ID}"
 
 
@@ -82,6 +90,10 @@ class SecCompanyJob(IngestionJob):
     def cik(self) -> str:
         return normalize_cik(self.params["cik"])
 
+    # Recorded fixtures (2026-10-05, before SEC's offset bug) set this: their JSON times were
+    # checked against EDGAR index pages (ADR-013), so replays need no headers.
+    trust_json_acceptance: ClassVar[bool] = False
+
     def fetch(self, ctx: FetchContext) -> list[FetchedPayload]:
         with self.client() as client:
             main = client.get(submissions_url(self.cik), ctx.acquire)
@@ -90,7 +102,24 @@ class SecCompanyJob(IngestionJob):
                 for name in parse_company(json.loads(main.content)).extra_pages
             ]
             facts = client.get(companyfacts_url(self.cik), ctx.acquire, allow_missing=True)
-        return [main, *pages, *([facts] if facts is not None else [])]
+            headers = []
+            if not self.trust_json_acceptance:
+                records = [r for p in [main, *pages] for r in _filings_in(p, self.cik)]
+                headers = [
+                    client.get(
+                        header_url(self.cik, r.accession_number), ctx.acquire, allow_missing=True
+                    )
+                    for r in to_check(records, self._stored_accessions(ctx))
+                ]
+        return [main, *pages, *([facts] if facts is not None else []), *filter(None, headers)]
+
+    def _stored_accessions(self, ctx: FetchContext) -> set[str]:
+        if ctx.sessions is None:
+            raise RuntimeError("sec.company needs database access to tell new filings apart")
+        with ctx.sessions() as session:
+            return set(
+                session.scalars(select(Filing.accession_number).where(Filing.cik == self.cik))
+            )
 
     def store(self, ctx: StoreContext) -> StoreResult:
         session = ctx.session
@@ -103,21 +132,39 @@ class SecCompanyJob(IngestionJob):
 
         filings: dict[str, tuple[FilingRecord, StoredPayload]] = {}
         facts_payload: StoredPayload | None = None
+        header_times: dict[str, datetime] = {}
         for payload in ctx.payloads:
             if payload.source_url == companyfacts_url(self.cik):
                 facts_payload = payload
+            elif payload.source_url.endswith(HEADER_SUFFIX):
+                accession = payload.source_url.rsplit("/", 1)[-1].removesuffix(HEADER_SUFFIX)
+                if (accepted := header_acceptance(payload.content)) is not None:
+                    header_times[accession] = accepted
             else:
                 for record in _filings_in(payload, self.cik):
                     filings.setdefault(record.accession_number, (record, payload))
 
-        new_filings = _store_filings(session, entity_id, filings.values(), stamp)
+        known = set(
+            session.scalars(select(Filing.accession_number).where(Filing.entity_id == entity_id))
+        )
+        notes: tuple[str, ...] = ()
+        if not self.trust_json_acceptance:
+            check = HeaderCheck(header_times)
+            for accession, (record, payload) in filings.items():
+                if accession not in known:
+                    filings[accession] = (check.apply(record), payload)
+            if (note := check.note()) is not None:
+                logger.warning("SEC CIK %s: %s", self.cik, note)
+                notes = (note,)
+        new_filings = _store_filings(session, entity_id, filings.values(), known, stamp)
         old_filings = len(filings) - new_filings
 
         if facts_payload is None:
-            return StoreResult(inserted=new_filings, unchanged=old_filings)
+            return StoreResult(inserted=new_filings, unchanged=old_filings, notes=notes)
         values = select_values(load_companyfacts(facts_payload.content))
+        published = _publication_times(session, entity_id, values, filings, known)
         facts = [
-            _fact(value, entity_id, self.cik, filings, facts_payload, stamp) for value in values
+            _fact(value, entity_id, self.cik, published, facts_payload, stamp) for value in values
         ]
         result = FinancialFactRepository(session).insert_many(facts, actor=ACTOR)
         for conflict in result.conflicts:
@@ -126,7 +173,33 @@ class SecCompanyJob(IngestionJob):
             inserted=new_filings + result.inserted,
             unchanged=old_filings + result.unchanged,
             conflicted=len(result.conflicts),
+            notes=notes,
         )
+
+
+def _publication_times(
+    session: Session,
+    entity_id: UUID,
+    values: list[XbrlValue],
+    filings: dict[str, tuple[FilingRecord, StoredPayload]],
+    known: set[str],
+) -> dict[str, tuple[datetime, TimePrecision]]:
+    """When each cited filing became public: the stored time for filings stored before this
+    run (never re-read from SEC's JSON), this run's checked time for new ones."""
+    cited = {value.accession for value in values}
+    stored = session.execute(
+        select(Filing.accession_number, Filing.published_at, Filing.published_at_precision).where(
+            Filing.entity_id == entity_id, Filing.accession_number.in_(cited & known)
+        )
+    )
+    times: dict[str, tuple[datetime, TimePrecision]] = {
+        accession: (published_at, cast(TimePrecision, precision))
+        for accession, published_at, precision in stored
+    }
+    for accession in cited - times.keys():
+        if accession in filings:
+            times[accession] = filings[accession][0].published()
+    return times
 
 
 class _Stamp:
@@ -167,7 +240,7 @@ class _Stamp:
         )
 
 
-def _filings_in(payload: StoredPayload, cik: str) -> Iterator[FilingRecord]:
+def _filings_in(payload: StoredPayload | FetchedPayload, cik: str) -> Iterator[FilingRecord]:
     data = json.loads(payload.content)
     block = data["filings"]["recent"] if "filings" in data else data
     yield from parse_filings(block, cik)
@@ -177,11 +250,9 @@ def _store_filings(
     session: Session,
     entity_id: UUID,
     filings: Iterable[tuple[FilingRecord, StoredPayload]],
+    known: set[str],
     stamp: _Stamp,
 ) -> int:
-    known = set(
-        session.scalars(select(Filing.accession_number).where(Filing.entity_id == entity_id))
-    )
     rows = []
     for record, payload in filings:
         if record.accession_number in known:
@@ -224,13 +295,12 @@ def _fact(
     value: XbrlValue,
     entity_id: UUID,
     cik: str,
-    filings: dict[str, tuple[FilingRecord, StoredPayload]],
+    published_times: dict[str, tuple[datetime, TimePrecision]],
     payload: StoredPayload,
     stamp: _Stamp,
 ) -> FinancialFactIn:
-    known = filings.get(value.accession)
     # Not in the submissions index: fall back to the filing date from the XBRL data.
-    published = known[0].published() if known else publication_time(None, value.filed)
+    published = published_times.get(value.accession) or publication_time(None, value.filed)
     period_end = midnight_utc(value.period_end)
     return FinancialFactIn(
         entity_id=entity_id,

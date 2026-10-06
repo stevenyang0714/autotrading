@@ -98,6 +98,7 @@ class IngestionRunner:
                 FetchContext(
                     run_id=run_id,
                     acquire=lambda: self._limiter.acquire(source_id, rate=rate, burst=burst),
+                    sessions=self._sessions,
                 )
             )
             stored = [self._raw_store.put(source_id, payload) for payload in fetched]
@@ -114,6 +115,7 @@ class IngestionRunner:
                         rows_inserted=result.inserted,
                         rows_unchanged=result.unchanged,
                         rows_conflicted=result.conflicted,
+                        notes=list(result.notes),
                         raw_payload_keys=[payload.object_key for payload in stored],
                         error_class=None,
                         error_message=None,

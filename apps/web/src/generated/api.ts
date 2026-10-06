@@ -1136,6 +1136,8 @@ export interface components {
             id: string;
             /** Job */
             job: string;
+            /** Notes */
+            notes: string[];
             /** Params */
             params: {
                 [key: string]: unknown;

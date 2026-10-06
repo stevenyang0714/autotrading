@@ -6,8 +6,12 @@ Time rules (ADR-013):
   "2026-07-30 16:30:28" on its index page.
 - A filing is public from its acceptance time. Acceptances after 17:30 ET carry the next
   business day as filing date, so the date alone would be late, not early.
-- An acceptance of exactly 00:00:00Z is a date-only placeholder (a handful of old FWPs);
-  those and missing values fall back to the end of the filing date in New York (ADR-012).
+- An acceptance of exactly 00:00:00Z (a handful of old FWPs) or exactly midnight New York
+  (pre-2009 filings) is a date-only placeholder; those and missing values fall back to the end
+  of the filing date in New York (ADR-012). EDGAR accepts nothing at midnight.
+- On 2026-10-06 SEC began returning every acceptance time 4-5 hours late (the Eastern offset
+  applied twice). Each run therefore checks two filings against their EDGAR headers and undoes
+  the shift when it is exactly that offset (adapters/sec/acceptance.py, ADR-013 amendment).
 """
 
 import json
@@ -17,11 +21,13 @@ from dataclasses import dataclass
 from datetime import UTC, date, datetime, time
 from decimal import Decimal
 from typing import Any
+from zoneinfo import ZoneInfo
 
 from autotrading.adapters.sec.concepts import METRIC_MAPPINGS, TAXONOMY, MetricMapping, qualified
 from autotrading.domain.provenance import TimePrecision, end_of_day
 
 SEC_ARCHIVES = "https://www.sec.gov/Archives/edgar/data"
+NEW_YORK = ZoneInfo("America/New_York")
 ACCESSION = re.compile(r"^\d{10}-\d{2}-\d{6}$")
 CIK = re.compile(r"^\d{10}$")
 
@@ -38,13 +44,21 @@ def filing_index_url(cik: str, accession: str) -> str:
     return f"{SEC_ARCHIVES}/{int(cik)}/{accession.replace('-', '')}/{accession}-index.htm"
 
 
-def parse_acceptance(value: str | None) -> datetime | None:
+def parse_instant(value: str | None) -> datetime | None:
+    """SEC's `acceptanceDateTime` as given, placeholders included."""
     if not value:
         return None
-    accepted = datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(UTC)
-    if accepted.time() == time(0, 0):
+    return datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(UTC)
+
+
+def acceptance_or_none(accepted: datetime | None) -> datetime | None:
+    if accepted is None or time(0, 0) in (accepted.time(), accepted.astimezone(NEW_YORK).time()):
         return None  # date-only placeholder, see module docstring
     return accepted
+
+
+def parse_acceptance(value: str | None) -> datetime | None:
+    return acceptance_or_none(parse_instant(value))
 
 
 def publication_time(
@@ -68,13 +82,14 @@ class FilingRecord:
     accession_number: str
     form: str
     filing_date: date
-    accepted_at: datetime | None
+    accepted_at: datetime | None  # after the placeholder rule (and any correction)
     report_date: date | None
     primary_document: str | None
     primary_doc_description: str | None
     items: str | None
     is_xbrl: bool
     is_inline_xbrl: bool
+    accepted_raw: datetime | None = None  # SEC's value as given, for the acceptance check
 
     @property
     def index_url(self) -> str:
@@ -128,6 +143,7 @@ def parse_filings(block: dict[str, list[Any]], cik: str) -> list[FilingRecord]:
                 form=block["form"][i],
                 filing_date=filing_date,
                 accepted_at=parse_acceptance(block["acceptanceDateTime"][i]),
+                accepted_raw=parse_instant(block["acceptanceDateTime"][i]),
                 report_date=_date(block["reportDate"][i]),
                 primary_document=_text(block["primaryDocument"][i]),
                 primary_doc_description=_text(block["primaryDocDescription"][i]),

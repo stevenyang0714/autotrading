@@ -241,7 +241,16 @@ function LastRunValue({ source }: { source: SourceHealth }) {
       </Metric>
     );
   }
-  return <RunStatus run={source.last_run} />;
+  return (
+    <span className="inline-flex flex-wrap items-center gap-1">
+      <RunStatus run={source.last_run} />
+      {source.last_run.notes.length > 0 ? (
+        <Metric termId="ingestion_note" icon={false}>
+          <Badge tone="warn">Corrected</Badge>
+        </Metric>
+      ) : null}
+    </span>
+  );
 }
 
 function DeadLetterCount({ source }: { source: SourceHealth }) {
@@ -280,6 +289,16 @@ function Runs({ runs }: { runs: IngestionRun[] }) {
                   {run.error_class}
                 </Metric>
               ) : null}
+              {run.notes.map((note) => (
+                <Metric
+                  key={note}
+                  termId="ingestion_note"
+                  icon={false}
+                  className="basis-full text-xs text-amber-300"
+                >
+                  Note: {note}
+                </Metric>
+              ))}
             </li>
           ))}
         </ul>

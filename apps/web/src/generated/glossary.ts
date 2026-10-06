@@ -45,6 +45,7 @@ export type CompleteTermId =
   | "freshness_sla"
   | "gross_profit"
   | "hy_oas_percentile"
+  | "ingestion_note"
   | "ingestion_status"
   | "last_price"
   | "license_status"
@@ -1119,6 +1120,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "高收益債利差百分位",
     "hint_zh": "目前利差在可取得歷史中的排名（0–100）。"
+  },
+  "ingestion_note": {
+    "term_id": "ingestion_note",
+    "display_name": "Run Note",
+    "category": "data_quality",
+    "short_definition": "Something a run noticed or corrected about its source, kept with the run.",
+    "full_definition": "A job records a note when it had to correct its source or wants a data-quality observation kept with the run. Since 2026-10-06 SEC's filing index returns many acceptance times late by the New York offset (4 h EDT, 5 h EST), so each new filing is timed from its own EDGAR header; the note counts how many JSON times differed and how many filings were stored date-only (ADR-013 amendment).",
+    "formula": "free text written by the job (ingestion_runs.notes)",
+    "unit": "label",
+    "example": "2 new filings timed from their EDGAR headers; 1 JSON times were late by the New York offset.",
+    "direction": "N/A",
+    "interpretation": "A note means the source disagreed with itself or with a stronger record; the stored data follows the stronger record.",
+    "why_it_matters": "Publication times decide what was known when; a silent source error would leak into every point-in-time query.",
+    "source": "apps/api/src/autotrading/adapters/sec/acceptance.py",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/acceptance.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "per run",
+    "caveats": "Only jobs that check their source write notes; no note does not prove the source is error-free.",
+    "related_terms": [
+      "ingestion_status",
+      "filing_date"
+    ],
+    "methodology_version": "0.1.1",
+    "name_zh": "擷取備註",
+    "hint_zh": "這次擷取對來源資料做過的檢查或校正，例如改用申報表頭的受理時間。"
   },
   "ingestion_status": {
     "term_id": "ingestion_status",

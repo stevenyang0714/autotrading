@@ -21,6 +21,7 @@ terms:
   rate_limit: {name: 請求速率上限, hint: 平台每秒最多向該來源發出的請求數。}
   update_cadence: {name: 更新頻率, hint: 來源多久發布一次新資料。}
   ingestion_status: {name: 擷取狀態, hint: 某次資料擷取的結果：成功、略過、失敗等。}
+  ingestion_note: {name: 擷取備註, hint: 這次擷取對來源資料做過的檢查或校正，例如改用申報表頭的受理時間。}
   dead_letter: {name: 失敗佇列, hint: 重試多次仍失敗的擷取工作，需要人工處理。}
   as_of: {name: 資料時間, hint: 資料所反映的時間點。}
   planned_phase: {name: 預計階段, hint: 這個儀表板預計在哪個開發階段開始有內容。}
