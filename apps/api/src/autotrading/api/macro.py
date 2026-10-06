@@ -97,7 +97,10 @@ def series_observations(
     known_at: Annotated[
         AwareDatetime | None, Query(description="Point in time (ADR-012); default now")
     ] = None,
-    limit: Annotated[int, Query(ge=1, le=240)] = 24,
+    limit: Annotated[int, Query(ge=1, le=1000)] = 24,
+    since: Annotated[
+        date | None, Query(description="Only observation dates on or after this day")
+    ] = None,
 ) -> SeriesObservations:
     row = session.get(MacroSeries, series_id.upper())
     if row is None:
@@ -106,18 +109,21 @@ def series_observations(
     return SeriesObservations(
         series=SeriesOut.model_validate(row),
         known_at=at,
-        observations=_observations(session, row.id, at, limit=limit),
+        observations=_observations(session, row.id, at, limit=limit, since=since),
         last_refresh_at=_last_refresh(session),
     )
 
 
 def _observations(
-    session: Session, series_id: str, known_at: datetime, *, limit: int
+    session: Session, series_id: str, known_at: datetime, *, limit: int, since: date | None = None
 ) -> list[ObservationOut]:
-    """The latest `limit` observation dates, each as known at `known_at`."""
+    """The latest `limit` observation dates (on or after `since`), each as known at
+    `known_at`."""
     known = as_of_query(MacroObservation, known_at=known_at).where(
         MacroObservation.series_id == series_id
     )
+    if since is not None:
+        known = known.where(MacroObservation.observation_date >= since)
     shown = aliased(MacroObservation, known.subquery())
     rows = session.scalars(select(shown).order_by(shown.observation_date.desc()).limit(limit)).all()
     if not rows:

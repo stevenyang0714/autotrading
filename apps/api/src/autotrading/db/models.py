@@ -791,7 +791,10 @@ class NewsMention(Base):
 
 class AuditLog(Base):
     __tablename__ = "audit_log"
-    __table_args__ = (CheckConstraint(sql_in("action", AUDIT_ACTIONS), name="action"),)
+    __table_args__ = (
+        CheckConstraint(sql_in("action", AUDIT_ACTIONS), name="action"),
+        Index("ix_audit_log_object_type_object_id_id", "object_type", "object_id", "id"),
+    )
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
     occurred_at: Mapped[datetime] = mapped_column(

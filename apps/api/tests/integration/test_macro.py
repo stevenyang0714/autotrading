@@ -229,6 +229,20 @@ def test_unknown_series_is_404(client: TestClient) -> None:
     assert client.get("/macro/series/NOPE/observations").status_code == 404
 
 
+def test_observations_since_a_date_for_charts(client: TestClient) -> None:
+    # M0.9 chart: a long range in one request (up to 1,000 points), from a start date.
+    body = client.get(
+        "/macro/series/PAYEMS/observations", params={"since": "2025-01-01", "limit": 1000}
+    ).json()
+    dates = [o["observation_date"] for o in body["observations"]]
+    assert dates and min(dates) >= "2025-01-01"
+    assert len(dates) == len(set(dates))
+    revised = [o for o in body["observations"] if o["revised"]]
+    assert revised and all(o["first_release"] for o in revised)
+    params = {"limit": 1001}
+    assert client.get("/macro/series/PAYEMS/observations", params=params).status_code == 422
+
+
 # ---------- overview (ADR-016) ----------
 
 

@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from sqlalchemy.orm import Session, sessionmaker
 
+from autotrading.api.audit import router as audit_router
 from autotrading.api.data_health import router as data_health_router
 from autotrading.api.glossary import router as glossary_router
 from autotrading.api.health import HealthChecker
@@ -56,6 +57,7 @@ def create_app(
     app = FastAPI(title="Global Market Intelligence API", version="0.1.0", lifespan=lifespan)
     app.include_router(health_router)
     app.include_router(data_health_router)
+    app.include_router(audit_router)
     app.include_router(glossary_router)
     app.include_router(instruments_router)
     app.include_router(macro_router)
