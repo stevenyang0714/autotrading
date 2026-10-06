@@ -1,7 +1,8 @@
 """Build progress from the project documents (M0.6 progress page, ADR-016).
 
 Pure parsing of the Markdown the team already maintains: milestone acceptance checkboxes
-(docs/milestones/M0_foundation.md), the phase table (ROADMAP.md), the Current section and log
+(docs/milestones/M*_*.md; a file marked `**Status:** Proposed` lists milestones awaiting
+Steven's approval), the phase table (ROADMAP.md), the Current section and log
 of docs/STATUS.md and the open decisions table (docs/decisions/DECISIONS.md). Nothing is
 stored; the page re-reads the files on each request, so edits show at once.
 """
@@ -10,11 +11,12 @@ import re
 from dataclasses import dataclass, field
 from typing import Literal
 
-MilestoneStatus = Literal["done", "in_progress", "not_started"]
+MilestoneStatus = Literal["done", "in_progress", "not_started", "proposed"]
 
 _HEADING = re.compile(r"^## (M\d+\.\d+[a-z]?) (.+)$")
 _BOX = re.compile(r"^\s*- \[( |x|X)\] ")
 _TABLE_ROW = re.compile(r"^\|(.+)\|\s*$")
+_PROPOSED = re.compile(r"^\*\*Status:\*\*\s*Proposed", re.MULTILINE)
 
 
 @dataclass(frozen=True)
@@ -86,7 +88,9 @@ def parse_current(status_md: str) -> Current:
 
 
 def parse_milestones(milestones_md: str, current: Current) -> list[Milestone]:
-    """One entry per `## M0.x` heading; counts the acceptance checkboxes under it."""
+    """One entry per `## Mn.x` heading; counts the acceptance checkboxes under it. Every
+    milestone of a file marked `**Status:** Proposed` is `proposed` (not approved yet)."""
+    proposed = _PROPOSED.search(milestones_md) is not None
     sections: list[tuple[str, str, list[str]]] = []
     for line in milestones_md.splitlines():
         heading = _HEADING.match(line.strip())
@@ -101,7 +105,9 @@ def parse_milestones(milestones_md: str, current: Current) -> list[Milestone]:
         done = sum(1 for box in boxes if box.lower() == "x")
         is_active = re.match(rf"{re.escape(milestone_id)}\b", active) is not None
         status: MilestoneStatus
-        if boxes and done == len(boxes) and not (is_active and "pending" in active.lower()):
+        if proposed:
+            status = "proposed"
+        elif boxes and done == len(boxes) and not (is_active and "pending" in active.lower()):
             status = "done"
         elif done or is_active:
             status = "in_progress"
