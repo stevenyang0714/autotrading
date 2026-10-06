@@ -1294,6 +1294,78 @@
         "title": "Indicator",
         "type": "object"
       },
+      "InputOut": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "period_end": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period End"
+          },
+          "period_start": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Start"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/SourceOut"
+            },
+            "title": "Sources",
+            "type": "array"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "name",
+          "value",
+          "period_start",
+          "period_end",
+          "note",
+          "sources"
+        ],
+        "title": "InputOut",
+        "type": "object"
+      },
       "InputRef": {
         "properties": {
           "observation_date": {
@@ -1886,6 +1958,79 @@
         "title": "MentionOut",
         "type": "object"
       },
+      "MetricOut": {
+        "properties": {
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "inputs": {
+            "items": {
+              "$ref": "#/components/schemas/InputOut"
+            },
+            "title": "Inputs",
+            "type": "array"
+          },
+          "metric_id": {
+            "title": "Metric Id",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "enum": [
+                  "unavailable",
+                  "not_meaningful"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "unit": {
+            "enum": [
+              "USD",
+              "USD/shares",
+              "x",
+              "percent"
+            ],
+            "title": "Unit",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "metric_id",
+          "unit",
+          "value",
+          "reason",
+          "detail",
+          "inputs"
+        ],
+        "title": "MetricOut",
+        "type": "object"
+      },
       "MetricRow": {
         "properties": {
           "cells": {
@@ -2466,6 +2611,94 @@
           "filing"
         ],
         "title": "PreviousVersion",
+        "type": "object"
+      },
+      "PriceOut": {
+        "properties": {
+          "close": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Close"
+          },
+          "day": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Day"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "feed_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feed Status"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "status": {
+            "enum": [
+              "ok",
+              "fixture",
+              "demo",
+              "stale",
+              "none"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "detail",
+          "day",
+          "close",
+          "feed_status",
+          "published_at",
+          "source_url"
+        ],
+        "title": "PriceOut",
         "type": "object"
       },
       "PriceTile": {
@@ -3381,6 +3614,60 @@
         "title": "SourceHealth",
         "type": "object"
       },
+      "SourceOut": {
+        "properties": {
+          "filing": {
+            "$ref": "#/components/schemas/FilingRef"
+          },
+          "metric_id": {
+            "title": "Metric Id",
+            "type": "string"
+          },
+          "period_end": {
+            "format": "date",
+            "title": "Period End",
+            "type": "string"
+          },
+          "period_start": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Start"
+          },
+          "source_concept": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Concept"
+          },
+          "value": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "metric_id",
+          "source_concept",
+          "value",
+          "period_start",
+          "period_end",
+          "filing"
+        ],
+        "title": "SourceOut",
+        "type": "object"
+      },
       "SplitAdjusted": {
         "description": "The value on the basis of known_at: share counts times `factor`, per-share amounts\ndivided by it, for the splits after the value's filing (ADR-021).",
         "properties": {
@@ -3489,6 +3776,37 @@
           "type"
         ],
         "title": "ValidationError",
+        "type": "object"
+      },
+      "Valuation": {
+        "properties": {
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "metrics": {
+            "items": {
+              "$ref": "#/components/schemas/MetricOut"
+            },
+            "title": "Metrics",
+            "type": "array"
+          },
+          "price": {
+            "$ref": "#/components/schemas/PriceOut"
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticker",
+          "known_at",
+          "price",
+          "metrics"
+        ],
+        "title": "Valuation",
         "type": "object"
       }
     }
@@ -4161,6 +4479,67 @@
         "summary": "Instrument Prices",
         "tags": [
           "prices"
+        ]
+      }
+    },
+    "/instruments/{ticker}/valuation": {
+      "get": {
+        "operationId": "instrument_valuation_instruments__ticker__valuation_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ticker",
+            "required": true,
+            "schema": {
+              "title": "Ticker",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Valuation"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Instrument Valuation",
+        "tags": [
+          "valuation"
         ]
       }
     },

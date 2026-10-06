@@ -1,0 +1,87 @@
+{
+  "recorded_at": "2026-10-06T16:40:02.049913+00:00",
+  "recorded_from": "recorded SEC fixtures replayed into the integration test database (tests/integration/test_instruments.py)",
+  "endpoint": "/instruments/AAPL/valuation",
+  "params": {
+    "known_at": "2026-10-20T00:00:00Z"
+  },
+  "response": {
+    "ticker": "AAPL",
+    "known_at": "2026-10-20T00:00:00Z",
+    "price": {
+      "status": "stale",
+      "detail": "the last close (2026-10-05) is older than five days",
+      "day": "2026-10-05",
+      "close": "332.89",
+      "feed_status": "end_of_day",
+      "published_at": "2026-10-06T03:59:59.999999Z",
+      "source_url": "https://data.alpaca.markets/v2/stocks/bars?symbols=AAPL%2CMSFT%2CGOOGL%2CMETA%2CNVDA%2CJPM%2CXOM%2CAZO%2CORLY%2CLOW%2CSPY%2CQQQ%2CIWM%2CTLT%2CIEF%2CGLD%2CXLE%2CXLK&timeframe=1Day&adjustment=raw&feed=sip&start=2025-10-05&limit=10000&end=2026-10-05"
+    },
+    "metrics": [
+      {
+        "metric_id": "market_cap",
+        "unit": "USD",
+        "value": null,
+        "reason": "unavailable",
+        "detail": "no valuation price: the last close (2026-10-05) is older than five days",
+        "inputs": []
+      },
+      {
+        "metric_id": "enterprise_value",
+        "unit": "USD",
+        "value": null,
+        "reason": "unavailable",
+        "detail": "no valuation price: the last close (2026-10-05) is older than five days",
+        "inputs": []
+      },
+      {
+        "metric_id": "pe_ratio_ttm",
+        "unit": "x",
+        "value": null,
+        "reason": "unavailable",
+        "detail": "no valuation price: the last close (2026-10-05) is older than five days",
+        "inputs": []
+      },
+      {
+        "metric_id": "ev_to_ebitda",
+        "unit": "x",
+        "value": null,
+        "reason": "unavailable",
+        "detail": "no valuation price: the last close (2026-10-05) is older than five days",
+        "inputs": []
+      },
+      {
+        "metric_id": "ev_to_sales",
+        "unit": "x",
+        "value": null,
+        "reason": "unavailable",
+        "detail": "no valuation price: the last close (2026-10-05) is older than five days",
+        "inputs": []
+      },
+      {
+        "metric_id": "price_to_book",
+        "unit": "x",
+        "value": null,
+        "reason": "unavailable",
+        "detail": "no valuation price: the last close (2026-10-05) is older than five days",
+        "inputs": []
+      },
+      {
+        "metric_id": "fcf_yield",
+        "unit": "percent",
+        "value": null,
+        "reason": "unavailable",
+        "detail": "no valuation price: the last close (2026-10-05) is older than five days",
+        "inputs": []
+      },
+      {
+        "metric_id": "earnings_yield",
+        "unit": "percent",
+        "value": null,
+        "reason": "unavailable",
+        "detail": "no valuation price: the last close (2026-10-05) is older than five days",
+        "inputs": []
+      }
+    ]
+  }
+}

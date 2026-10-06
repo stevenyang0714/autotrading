@@ -115,6 +115,17 @@ terms:
   trailing_twelve_months: {name: 近四季合計（TTM）, hint: 最近連續四個季度的合計，只用於流量類數字。}
   split_adjusted: {name: 分割調整值, hint: 依之後的股票分割換算到目前股數基準的值，原始申報值仍並列。}
   split_event: {name: 股票分割, hint: 股數按比例改變（例如一股變四股），從除權日起生效。}
+  valuation_price: {name: 估值股價, hint: 當時已公開的最後一個每日收盤價；fixture、過期或盤中報價都不用。}
+  market_cap: {name: 市值, hint: 股價 × 最新流通股數（依分割換算到股價日）。}
+  enterprise_value: {name: 企業價值（EV）, hint: 市值加淨負債，包含債權人的部分。}
+  eps_diluted_ttm: {name: 近四季稀釋 EPS, hint: 全年 EPS + 今年累計 − 去年同期累計，皆為申報值。}
+  ebitda_ttm: {name: 近四季 EBITDA, hint: 近四季營業利益加折舊攤銷。}
+  pe_ratio_ttm: {name: 本益比（TTM）, hint: 股價 ÷ 近四季稀釋 EPS；EPS 為負時無意義。}
+  ev_to_ebitda: {name: EV/EBITDA, hint: 企業價值 ÷ 近四季 EBITDA，不受資本結構影響。}
+  ev_to_sales: {name: EV/營收, hint: 企業價值 ÷ 近四季營收。}
+  price_to_book: {name: 股價淨值比, hint: 市值 ÷ 股東權益；權益為負時無意義。}
+  fcf_yield: {name: 自由現金流殖利率, hint: 近四季自由現金流 ÷ 市值。}
+  earnings_yield: {name: 盈餘殖利率, hint: 近四季 EPS ÷ 股價，本益比的倒數。}
 
   # macro series
   observation_date: {name: 觀測日期, hint: FRED 標示數值的日期，為期間的第一天；不是公布日。}

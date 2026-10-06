@@ -5,7 +5,14 @@ import { FundamentalsView } from "@/components/instruments/FundamentalsView";
 import { InstrumentNews } from "@/components/news/InstrumentNews";
 import { DemoBanner } from "@/components/prices/DemoBanner";
 import { InstrumentPricePanel } from "@/components/prices/InstrumentPricePanel";
-import { loadFundamentals, loadInstrumentPrices, loadNews, loadSourceHealth } from "@/lib/api";
+import { ValuationView } from "@/components/instruments/ValuationView";
+import {
+  loadFundamentals,
+  loadInstrumentPrices,
+  loadNews,
+  loadSourceHealth,
+  loadValuation,
+} from "@/lib/api";
 import { endOfDaySgt } from "@/lib/time";
 
 // Point-in-time data: always read live, never serve a cached page.
@@ -28,9 +35,10 @@ export default async function InstrumentPage({
   const knownAt = knownOn ? endOfDaySgt(knownOn) : null;
 
   const newsQuery = { ticker: ticker.toUpperCase(), knownAt: knownAt ?? undefined, limit: 6 };
-  const [result, prices, announcements, coverage, sources] = await Promise.all([
+  const [result, prices, valuation, announcements, coverage, sources] = await Promise.all([
     loadFundamentals(ticker, knownAt ?? undefined),
     loadInstrumentPrices(ticker, knownAt ?? undefined),
+    loadValuation(ticker, knownAt ?? undefined),
     loadNews({ ...newsQuery, kinds: ["press_release"] }),
     loadNews({ ...newsQuery, kinds: ["article", "official"] }),
     loadSourceHealth(),
@@ -67,6 +75,7 @@ export default async function InstrumentPage({
         invalidKnownOn={Boolean(knownOn) && knownAt === null}
         sources={sources}
         prices={prices.status === "not_found" ? undefined : <InstrumentPricePanel result={prices} />}
+        valuation={valuation.status === "not_found" ? undefined : <ValuationView result={valuation} />}
         news={
           <InstrumentNews ticker={ticker.toUpperCase()} announcements={announcements} coverage={coverage} />
         }

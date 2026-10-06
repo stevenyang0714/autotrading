@@ -74,18 +74,23 @@ Plan approved 2026-10-06 with decisions D1–D4 (ADR-021).
 - [x] Quarterly values derived from year-to-date filings add up to the annual totals. (Apple FY2025 quarters sum to $416.161B; Q2/Q3 equal the reported three-month values.)
 
 ## M1.2 Market inputs for valuation
+Plan approved 2026-10-07 with decisions V1–V3 (ADR-022).
+
 **Build**
 - **Market cap and EV, point in time:**
-  - market cap = close × period-end shares outstanding;
+  - market cap = close × the latest dated share count known at T, cover page or balance sheet, split-adjusted to the close (V2);
   - EV = market cap + total debt − cash.
-  - Inputs are the close known at T and the latest filing known at T.
-- **Multiples:** P/E (TTM diluted EPS), EV/EBITDA, EV/Sales, P/B, FCF yield and earnings yield. Each lists its inputs with their as-of times and sources.
-- **Price input for valuation:** the end-of-day consolidated (SIP) close only. An intraday IEX quote, a fixture, a demo or a stale price never feeds a valuation (errata E4); the multiple shows `Data unavailable` instead.
+  - Inputs are the close known at T and the latest filings known at T.
+- **Multiples:**
+  - P/E on TTM diluted EPS (fiscal year + this year to date − last year to date, V1);
+  - EV/EBITDA (EBITDA = operating income + D&A; unavailable without D&A, V3), EV/Sales, P/B, FCF yield and earnings yield.
+  - Each lists its inputs with their as-of times and sources.
+- **Price input for valuation:** the end-of-day consolidated (SIP) close only. An intraday IEX quote, a fixture, a demo or a stale price (more than 5 days old) never feeds a valuation (errata E4); the multiple shows `Data unavailable` instead.
 
 **Acceptance**
-- [ ] Every multiple shows its inputs, their as-of times and sources.
-- [ ] As known on a past date, multiples use only the filings and closes public by then (test).
-- [ ] No multiple is computed from an intraday, fixture, demo or stale price (test).
+- [x] Every multiple shows its inputs, their as-of times and sources. (API and the instrument page's Valuation block; integration test over Apple.)
+- [x] As known on a past date, multiples use only the filings and closes public by then (test). (Apple as known 2026-04-15: every source accepted by then, close from 2026-04-14 or earlier.)
+- [x] No multiple is computed from an intraday, fixture, demo or stale price (test). (Unit and integration tests; e2e in CI, where closes are fixtures.)
 
 ## M1.3 Valuation models and the Research Record
 **Build**

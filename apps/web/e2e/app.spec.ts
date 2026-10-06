@@ -185,6 +185,27 @@ test("AAPL: quarters and trailing twelve months, with inputs (M1.1)", async ({ p
   await expect(fcf).toContainText("Operating Cash Flow");
 });
 
+test("AAPL valuation uses only an end-of-day close (M1.2)", async ({ page }) => {
+  await page.goto("/instruments/AAPL");
+  const status = await page.locator("[data-price-status]").getAttribute("data-price-status");
+  const cards = page.locator("[data-valuation]");
+  await expect(cards).toHaveCount(8);
+  if (status === "ok") {
+    // Local stack: real end-of-day closes.
+    await expect(page.locator('[data-valuation="market_cap"]')).toContainText(/\$\d\.\d{3}T/);
+    await expect(page.locator('[data-valuation="pe_ratio_ttm"]')).toContainText(/\d+\.\d{2}x/);
+  } else {
+    // CI replays fixture closes (recorded up to 2026-10-05; later, none within reach): no
+    // multiple may be computed from them (errata E4).
+    expect(["fixture", "none", "stale"]).toContain(status);
+    await expect(page.locator("[data-price-status]")).toContainText("Data unavailable");
+    for (const card of await cards.all()) {
+      await expect(card).toContainText("Data unavailable");
+      await expect(card).not.toContainText(/\d+\.\d{2}x|\d+\.\d{2}%/);
+    }
+  }
+});
+
 test("Reconciliation lists Apple's 10-K as pass and opens its items (M1.1)", async ({ page }) => {
   await page.goto("/system/reconciliation");
   const apple = page.locator("[data-filing]:visible", { hasText: "0000320193-25-000079" });

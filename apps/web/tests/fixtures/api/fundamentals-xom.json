@@ -1,14 +1,14 @@
 {
-  "recorded_at": "2026-10-06T15:43:31.207606+00:00",
+  "recorded_at": "2026-10-06T16:40:01.837728+00:00",
   "recorded_from": "recorded SEC fixtures replayed into the integration test database (tests/integration/test_instruments.py)",
   "endpoint": "/instruments/XOM/fundamentals",
   "params": {},
   "response": {
     "ticker": "XOM",
     "exchange": "XNYS",
-    "known_at": "2026-10-06T15:43:31.149224Z",
+    "known_at": "2026-10-06T16:40:01.771573Z",
     "issuer": {
-      "id": "2b3d0bff-61d0-4f04-be10-5ea8d7e3432c",
+      "id": "98f8c658-5def-4ea5-af68-7f43c7a22048",
       "name": "ExxonMobil Holdings Corp",
       "cik": "0002115436",
       "role": "issuer",
@@ -18,7 +18,7 @@
     },
     "entities": [
       {
-        "id": "2b3d0bff-61d0-4f04-be10-5ea8d7e3432c",
+        "id": "98f8c658-5def-4ea5-af68-7f43c7a22048",
         "name": "ExxonMobil Holdings Corp",
         "cik": "0002115436",
         "role": "issuer",
@@ -27,7 +27,7 @@
         "evidence_accession": null
       },
       {
-        "id": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+        "id": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
         "name": "Exxon Mobil Corp",
         "cik": "0000034088",
         "role": "predecessor",
@@ -73,7 +73,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -94,7 +94,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -115,7 +115,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             }
           ]
@@ -157,7 +157,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -178,7 +178,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -199,7 +199,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             }
           ]
@@ -225,7 +225,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -246,7 +246,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -267,7 +267,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             }
           ]
@@ -293,7 +293,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -314,7 +314,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -335,7 +335,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             }
           ]
@@ -361,7 +361,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -382,7 +382,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -403,7 +403,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             }
           ]
@@ -437,7 +437,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -458,7 +458,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -479,7 +479,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             }
           ]
@@ -505,7 +505,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -526,7 +526,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -547,7 +547,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             }
           ]
@@ -573,7 +573,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -594,7 +594,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -615,7 +615,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             }
           ]
@@ -641,7 +641,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -662,7 +662,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -683,7 +683,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             }
           ]
@@ -709,7 +709,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -730,7 +730,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -751,7 +751,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             }
           ]
@@ -777,7 +777,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -798,7 +798,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -819,7 +819,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             }
           ]
@@ -845,7 +845,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -866,7 +866,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -887,7 +887,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             }
           ]
@@ -1064,7 +1064,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "2b3d0bff-61d0-4f04-be10-5ea8d7e3432c",
+              "reported_by": "98f8c658-5def-4ea5-af68-7f43c7a22048",
               "split_adjusted": null
             },
             {
@@ -1085,7 +1085,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "2b3d0bff-61d0-4f04-be10-5ea8d7e3432c",
+              "reported_by": "98f8c658-5def-4ea5-af68-7f43c7a22048",
               "split_adjusted": null
             },
             {
@@ -1106,7 +1106,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             }
           ]
@@ -1133,7 +1133,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -1154,7 +1154,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             }
           ]
@@ -1180,7 +1180,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "2b3d0bff-61d0-4f04-be10-5ea8d7e3432c",
+              "reported_by": "98f8c658-5def-4ea5-af68-7f43c7a22048",
               "split_adjusted": null
             },
             {
@@ -1201,7 +1201,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "2b3d0bff-61d0-4f04-be10-5ea8d7e3432c",
+              "reported_by": "98f8c658-5def-4ea5-af68-7f43c7a22048",
               "split_adjusted": null
             },
             {
@@ -1222,7 +1222,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             }
           ]
@@ -1249,7 +1249,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -1270,7 +1270,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             }
           ]
@@ -1296,7 +1296,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "2b3d0bff-61d0-4f04-be10-5ea8d7e3432c",
+              "reported_by": "98f8c658-5def-4ea5-af68-7f43c7a22048",
               "split_adjusted": null
             },
             {
@@ -1317,7 +1317,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "2b3d0bff-61d0-4f04-be10-5ea8d7e3432c",
+              "reported_by": "98f8c658-5def-4ea5-af68-7f43c7a22048",
               "split_adjusted": null
             },
             {
@@ -1338,7 +1338,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             }
           ]
@@ -1364,7 +1364,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "2b3d0bff-61d0-4f04-be10-5ea8d7e3432c",
+              "reported_by": "98f8c658-5def-4ea5-af68-7f43c7a22048",
               "split_adjusted": null
             },
             {
@@ -1385,7 +1385,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "2b3d0bff-61d0-4f04-be10-5ea8d7e3432c",
+              "reported_by": "98f8c658-5def-4ea5-af68-7f43c7a22048",
               "split_adjusted": null
             },
             {
@@ -1406,7 +1406,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "2b3d0bff-61d0-4f04-be10-5ea8d7e3432c",
+              "reported_by": "98f8c658-5def-4ea5-af68-7f43c7a22048",
               "split_adjusted": null
             }
           ]
@@ -5367,7 +5367,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -5388,7 +5388,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -5409,7 +5409,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -5430,7 +5430,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -5451,7 +5451,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -5472,7 +5472,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -5493,7 +5493,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -5514,7 +5514,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -5535,7 +5535,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -5556,7 +5556,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -5577,7 +5577,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -5598,7 +5598,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -5619,7 +5619,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -5640,7 +5640,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -5661,7 +5661,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             }
           ]
@@ -5699,7 +5699,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -5720,7 +5720,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             },
             {
@@ -5741,7 +5741,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "fd9647a4-d818-4ef6-9e53-800a5d3aba5f",
+              "reported_by": "108a2c63-f20f-45a1-a3a9-dc2ef909ffa1",
               "split_adjusted": null
             }
           ]
@@ -5770,13 +5770,13 @@
             },
             "restated": false,
             "previous": null,
-            "reported_by": "2b3d0bff-61d0-4f04-be10-5ea8d7e3432c",
+            "reported_by": "98f8c658-5def-4ea5-af68-7f43c7a22048",
             "split_adjusted": null
           }
         ]
       }
     ],
     "splits": [],
-    "last_refresh_at": "2026-10-06T15:43:29.338588Z"
+    "last_refresh_at": "2026-10-06T16:39:37.630023Z"
   }
 }

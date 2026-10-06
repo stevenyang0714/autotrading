@@ -12,6 +12,8 @@ import fundamentalsMeta from "../../tests/fixtures/api/fundamentals-meta.json";
 import fundamentalsXom from "../../tests/fixtures/api/fundamentals-xom.json";
 import reconciliationAaplTenK from "../../tests/fixtures/api/reconciliation-aapl-10k.json";
 import reconciliationList from "../../tests/fixtures/api/reconciliation.json";
+import valuationAapl from "../../tests/fixtures/api/valuation-aapl.json";
+import valuationAaplStale from "../../tests/fixtures/api/valuation-aapl-stale.json";
 import ingestionRuns from "../../tests/fixtures/api/ingestion-runs.json";
 import instrumentPricesAaplNoKey from "../../tests/fixtures/api/instrument-prices-aapl-no-key.json";
 import instrumentPricesAapl from "../../tests/fixtures/api/instrument-prices-aapl.json";
@@ -49,6 +51,7 @@ import type {
   ReconciliationList,
   SeriesObservations,
   SourceHealth,
+  Valuation,
 } from "@/lib/api";
 
 export const recordedDataHealth: DataHealthData = {
@@ -66,6 +69,12 @@ export const recordedFundamentals = {
   aaplAfter10KA: fundamentalsAaplAfter.response as Fundamentals,
   xom: fundamentalsXom.response as Fundamentals,
   meta: fundamentalsMeta.response as Fundamentals,
+};
+
+/** Apple's valuation from end-of-day closes, and with only a stale close (M1.2). */
+export const recordedValuation = {
+  aapl: valuationAapl.response as Valuation,
+  stale: valuationAaplStale.response as Valuation,
 };
 
 /** Each issuer's latest 10-K and 10-Q reconciled (M1.1), and Apple's 10-K items. */
