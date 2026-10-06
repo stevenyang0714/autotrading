@@ -30,7 +30,7 @@ Never silently resolve a conflict. If two sources disagree and the errata does n
 **Stop and ask the user before:** spending money or provisioning a paid plan; adding/changing an external provider; changing any canonical decision, ID, schema contract or score direction; touching broker or order code before Phase 5; anything that needs a credential that is not already in `.env`.
 
 ## Non-negotiables
-- **No fabricated data.** Never invent prices, filings, news, posts, positions or backtest numbers. If real data is missing, the UI shows `Data unavailable` or a visible `DEMO DATA` banner. Test fixtures must be recorded real responses stored under `tests/fixtures/` and are never rendered as live.
+- **No fabricated data.** Never invent prices, filings, news, posts, positions or backtest numbers. If real data is missing, the UI shows `Data unavailable` or a visible `DEMO DATA` banner. Test fixtures must be recorded real responses stored under `apps/api/tests/fixtures/` (and recorded API answers under `apps/web/tests/fixtures/`) and are never rendered as live.
 - **Every observation carries provenance** (02 §4): source_id, source_tier, published_at, ingested_at, effective_at, as_of, license/access status, confidence. No provenance, no insert.
 - **Append-only facts, point-in-time queries.** Never UPDATE or DELETE a stored fact; corrections and restatements create a new version. Every fact table must support "as known at time T".
 - **Strategy IDs S1–S12 and Signal Families 1–10 are immutable** (02 §2, §18). X Researcher is a source stream, not a strategy.
@@ -88,7 +88,7 @@ config/             universe.yaml, source registry seeds
 docs/               spec, decisions, milestones, glossary, reports, STATUS.md
 infra/              docker-compose
 .github/workflows/  CI (GitHub requires this location)
-tests/fixtures/     recorded real API responses (never shown as live)
+apps/*/tests/fixtures/  recorded real API responses (never shown as live)
 ```
 
 Keep this file short. Put detail in `docs/`, not here.

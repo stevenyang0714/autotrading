@@ -6,6 +6,7 @@ const STATUS: Record<string, [string, string]> = {
   done: ["Done", "bg-emerald-500"],
   in_progress: ["In progress", "bg-sky-500"],
   not_started: ["Not started", "bg-neutral-600"],
+  proposed: ["Proposed", "bg-violet-500"],
 };
 
 const CURRENT_KEYS = ["Phase", "Sub-milestone", "Next", "Blockers", "Open decisions due soon"];
@@ -45,8 +46,64 @@ export function ProgressView({ data }: { data: Progress | null }) {
   );
 }
 
+type MilestoneRow = Progress["milestones"][number];
+
+/** Milestones grouped by phase (M0.x is Phase 0, M1.x Phase 1), in document order. */
+function phases(milestones: MilestoneRow[]): [string, MilestoneRow[]][] {
+  const groups = new Map<string, MilestoneRow[]>();
+  for (const m of milestones) {
+    const phase = /^M(\d+)\./.exec(m.id)?.[1] ?? "?";
+    groups.set(phase, [...(groups.get(phase) ?? []), m]);
+  }
+  return [...groups.entries()];
+}
+
+function MilestoneList({ phase, milestones }: { phase: string; milestones: MilestoneRow[] }) {
+  const done = milestones.filter((m) => m.status === "done").length;
+  const proposed = milestones.every((m) => m.status === "proposed");
+  return (
+    <section aria-labelledby={`milestones-${phase}`} className="space-y-3">
+      <h2 id={`milestones-${phase}`} className="text-lg font-medium">
+        Phase <span data-identifier="">{phase}</span> milestones{" "}
+        <span className="text-sm font-normal text-neutral-400">
+          <Metric termId="milestone_status" zh>
+            {proposed ? "proposed, awaiting approval" : `${done} of ${milestones.length} done`}
+          </Metric>
+        </span>
+      </h2>
+      <ul className="space-y-2" aria-label={`Phase ${phase} milestones`}>
+        {milestones.map((m) => {
+          const [label, tone] = STATUS[m.status] ?? STATUS.not_started;
+          const share = m.total ? (m.done / m.total) * 100 : m.status === "done" ? 100 : 0;
+          return (
+            <li key={m.id} className="space-y-1" data-milestone={m.id} data-status={m.status}>
+              <div className="flex flex-wrap items-baseline gap-x-3 text-sm">
+                <span data-identifier="" className="w-12 font-medium">
+                  {m.id}
+                </span>
+                <span data-identifier="" className="min-w-0 flex-1">
+                  {m.title}
+                </span>
+                <Metric termId="milestone_status" icon={false}>
+                  <span className="inline-flex items-center gap-1 text-xs text-neutral-400">
+                    <span aria-hidden="true" className={`h-2 w-2 rounded-full ${tone}`} />
+                    {label}
+                    {m.total ? ` · ${m.done}/${m.total} checks` : ""}
+                  </span>
+                </Metric>
+              </div>
+              <div className="h-1.5 rounded bg-neutral-800" aria-hidden="true">
+                <div className={`h-1.5 rounded ${tone}`} style={{ width: `${share}%` }} />
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
 function Body({ data }: { data: Progress }) {
-  const done = data.milestones.filter((m) => m.status === "done").length;
   return (
     <>
       <section aria-labelledby="current-heading" className="space-y-2">
@@ -67,44 +124,9 @@ function Body({ data }: { data: Progress }) {
         </dl>
       </section>
 
-      <section aria-labelledby="milestones-heading" className="space-y-3">
-        <h2 id="milestones-heading" className="text-lg font-medium">
-          Phase <span data-identifier="">0</span> milestones{" "}
-          <span className="text-sm font-normal text-neutral-400">
-            <Metric termId="milestone_status" zh>
-              {done} of {data.milestones.length} done
-            </Metric>
-          </span>
-        </h2>
-        <ul className="space-y-2" aria-label="Milestones">
-          {data.milestones.map((m) => {
-            const [label, tone] = STATUS[m.status] ?? STATUS.not_started;
-            const share = m.total ? (m.done / m.total) * 100 : m.status === "done" ? 100 : 0;
-            return (
-              <li key={m.id} className="space-y-1" data-milestone={m.id} data-status={m.status}>
-                <div className="flex flex-wrap items-baseline gap-x-3 text-sm">
-                  <span data-identifier="" className="w-12 font-medium">
-                    {m.id}
-                  </span>
-                  <span data-identifier="" className="min-w-0 flex-1">
-                    {m.title}
-                  </span>
-                  <Metric termId="milestone_status" icon={false}>
-                    <span className="inline-flex items-center gap-1 text-xs text-neutral-400">
-                      <span aria-hidden="true" className={`h-2 w-2 rounded-full ${tone}`} />
-                      {label}
-                      {m.total ? ` · ${m.done}/${m.total} checks` : ""}
-                    </span>
-                  </Metric>
-                </div>
-                <div className="h-1.5 rounded bg-neutral-800" aria-hidden="true">
-                  <div className={`h-1.5 rounded ${tone}`} style={{ width: `${share}%` }} />
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
+      {phases(data.milestones).map(([phase, milestones]) => (
+        <MilestoneList key={phase} phase={phase} milestones={milestones} />
+      ))}
 
       <section aria-labelledby="decisions-heading" className="space-y-2">
         <h2 id="decisions-heading" className="text-lg font-medium">

@@ -33,7 +33,7 @@ terms:
   page_macro: {name: 總經, hint: 美國主要總經序列及其每次修正，可切換「當時已知」的版本。}
   page_overview: {name: 總覽, hint: 首頁總經儀表板：六大區塊、圖表與規則式重點。}
   page_progress: {name: 開發進度, hint: 即時讀取專案文件的里程碑、驗收項目與待決事項。}
-  milestone_status: {name: 里程碑狀態, hint: 驗收項目完成數，以及完成、進行中或未開始。}
+  milestone_status: {name: 里程碑狀態, hint: 驗收項目完成數，以及完成、進行中、未開始，或已提出待批准。}
   open_decision: {name: 待決事項, hint: 需要你決定的事項、需要的時間點與決定前的預設做法。}
   dev_log: {name: 開發紀錄, hint: 每個步驟完成內容的紀錄，最新在前。}
 

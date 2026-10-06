@@ -1549,8 +1549,8 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "term_id": "milestone_status",
     "display_name": "Milestone Status",
     "category": "navigation",
-    "short_definition": "Acceptance checks ticked for a milestone, and whether it is done, in progress or not started.",
-    "full_definition": "Done when every acceptance check is ticked and its PR is merged; in progress when some are ticked or it is the current sub-milestone; otherwise not started.",
+    "short_definition": "Acceptance checks ticked for a milestone, and whether it is done, in progress, not started or proposed.",
+    "full_definition": "Done when every acceptance check is ticked and its PR is merged; in progress when some are ticked or it is the current sub-milestone; otherwise not started. Milestones of a phase file still awaiting Steven's approval are proposed.",
     "formula": "ticked checkboxes / all checkboxes under the milestone",
     "unit": "count",
     "example": "M0.5: 3 of 3, done.",
@@ -1565,9 +1565,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "related_terms": [
       "page_progress"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "里程碑狀態",
-    "hint_zh": "驗收項目完成數，以及完成、進行中或未開始。"
+    "hint_zh": "驗收項目完成數，以及完成、進行中、未開始，或已提出待批准。"
   },
   "net_income": {
     "term_id": "net_income",

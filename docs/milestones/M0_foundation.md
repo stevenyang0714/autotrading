@@ -172,3 +172,8 @@ Delivered with M0.4: glossary registry (`glossary_terms`, migration 0003, synced
 
 ## M0.10 Phase 0 exit report
 Write `docs/reports/phase0_exit.md` using the Build Output Contract (02 §31): implementation status, file tree, migrations, API routes, provider adapters, UI routes, test results, acceptance checklist with evidence, known gaps, data freshness snapshot, and which open decisions block Phase 1. Then propose `docs/milestones/M1_*.md` in the same format for user approval.
+
+**Acceptance**
+- [x] `docs/reports/phase0_exit.md` covers every Build Output Contract field, with reproducible evidence for each Phase 0 exit criterion. (2026-10-06; evidence queries run twice with identical results)
+- [x] `docs/milestones/M1_fundamentals.md` proposed (`**Status:** Proposed`), defining the buyback states as versioned rules (errata E7). (2026-10-06; nine decisions listed for Steven)
+- [x] Steven accepted the Phase 0 exit report (the Phase 1 entry gate). (2026-10-06, with the M1 decisions recorded in ADR-020)

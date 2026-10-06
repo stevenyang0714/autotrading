@@ -1,5 +1,6 @@
 """domain/progress: parsing the project documents, and the real documents parse."""
 
+import re
 from pathlib import Path
 
 from autotrading.domain.progress import (
@@ -42,6 +43,15 @@ MILESTONES = """## M0.5 SEC EDGAR adapter
 Write the report.
 """
 
+PROPOSED = """# Phase 1 — Fundamentals
+
+**Status:** Proposed — awaiting Steven's approval
+
+## M1.1 Financial data
+**Acceptance**
+- [ ] Facts reconcile to filings.
+"""
+
 
 def test_current_section_and_log() -> None:
     current = parse_current(STATUS)
@@ -63,6 +73,11 @@ def test_milestone_status_from_checkboxes_and_the_current_sub_milestone() -> Non
     ]
 
 
+def test_milestones_of_a_proposed_phase_file_are_proposed() -> None:
+    (milestone,) = parse_milestones(PROPOSED, parse_current(STATUS))
+    assert (milestone.id, milestone.total, milestone.status) == ("M1.1", 1, "proposed")
+
+
 def test_real_documents_parse() -> None:
     docs = Settings(_env_file=None).resolved_docs_dir()  # type: ignore[call-arg]
     current = parse_current((docs / "STATUS.md").read_text(encoding="utf-8"))
@@ -77,7 +92,7 @@ def test_real_documents_parse() -> None:
         (docs / "decisions" / "DECISIONS.md").read_text(encoding="utf-8")
     )
     assert [d.id for d in decisions][:2] == ["OD-2", "OD-3"]  # OD-1 decided 2026-10-06
-    assert (current.get("Phase") or "").startswith("0")
+    assert re.match(r"\d", current.get("Phase") or "")  # the current phase number
 
 
 def test_paths_exist() -> None:

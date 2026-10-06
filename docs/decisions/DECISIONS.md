@@ -370,14 +370,30 @@ Completes the M0.9 screens. Code: `apps/web/src/components/macro/SeriesChart.tsx
   - Data Health links each source to its history.
 - **Deferred to Phase 1 (stated, not forgotten):** saved views and export (02 §21), per-row sparklines on the Macro list, ETF instrument pages, news paging.
 
+
+## ADR-020 Phase 1 scope decisions — Accepted (2026-10-06, Steven, with the Phase 0 exit report)
+Steven accepted `docs/reports/phase0_exit.md` (the Phase 1 entry gate) and approved `docs/milestones/M1_fundamentals.md` with these decisions:
+- **Alerts (OD-2):** in-app Alerts Center only in Phase 1. External delivery is decided later.
+- **Consensus (OD-3):** no provider for now. Consensus fields show `Data unavailable`. Earnings work is actual vs prior / YoY, guidance and the price reaction (errata E6). The consensus part of S2 waits.
+- **Guidance:** rule-based extraction of explicit numeric guidance sentences from 8-K exhibits (at most 300 characters each, with the link). When the rules prove too narrow, Claude proposes language-model extraction (ADR-009) for Steven's approval.
+- **TRADE-READY:** the rule is defined in Phase 1 but unreachable until the Phase 2 risk check exists.
+- **Buyback Quality Score:**
+  - Shown with its components, labelled "default weights, unvalidated" until OD-7 allows validation.
+  - The management/insider component (5%) waits for Form 4 data (Phase 4); the other weights are rescaled.
+  - Positive-direction only (errata E3).
+- **TradeDecision:** risk check, portfolio snapshot and broker fields are nullable. `mode = paper` only; a database check forbids broker values in Phase 1.
+- **Opportunity Radar:** stays Phase 2.
+- **Universe:** unchanged.
+- **Buyback state thresholds:** v0.1 as proposed (M1.4). They are defaults, versioned and unvalidated; M1.4 shows each company's state for review.
+
 ---
 
 ## Open decisions (owner: Steven)
 
 | ID | Decision | Needed by | Default until decided |
 |---|---|---|---|
-| OD-2 | Alert delivery channel outside the app (email / Telegram / Slack / push) | Phase 1 | In-app Alerts Center only |
-| OD-3 | Point-in-time consensus estimates provider | Phase 1 (S2) | Consensus shown as `Data unavailable` |
+| OD-2 | Alert delivery channel outside the app (email / Telegram / Slack / push) | Later (Phase 1 runs in-app only, ADR-020) | In-app Alerts Center only |
+| OD-3 | Point-in-time consensus estimates provider | Before consensus-based earnings and S2 (Phase 1 runs without, ADR-020) | Consensus shown as `Data unavailable` |
 | OD-4 | Options data provider and budget. Candidate (checked 2026-10-05; re-verify before paying): Unusual Whales API. Basic USD 150/month gives REST access to real-time flow; Advanced USD 375/month adds WebSocket streaming; a 15-minute-delayed tier is cheaper. Personal use only, no redistribution (fits ADR-001). Its free website flow is delayed, and scraping it is not allowed. | Phase 5, or earlier if Steven pulls options flow forward | No options data |
 | OD-5 | Short interest / borrow data provider | Before SHORT eligibility | SHORT ideas alert-only |
 | OD-6 | Physical data sources (candidates to evaluate: NASA FIRMS fire data, NOAA climate data, port/shipping data vendors) | Phase 3 | Not ingested |
@@ -387,3 +403,4 @@ Completes the M0.9 screens. Code: `apps/web/src/components/macro/SeriesChart.tsx
 
 ## Decided
 - OD-1 (2026-10-06): Steven confirmed ADR-001: a personal tool, with no redistribution of data. ADR-001 is Accepted.
+- Phase 1 scope (2026-10-06): Steven accepted the Phase 0 exit report and decided OD-2 and OD-3 for Phase 1 (in-app alerts only; no consensus provider yet). Both stay open for later phases. See ADR-020.

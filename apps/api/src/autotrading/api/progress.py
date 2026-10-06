@@ -2,6 +2,7 @@
 from the project documents on every request (domain/progress.py). Read-only; containers mount
 docs/ read-only, so edits to the documents show without a rebuild."""
 
+import re
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -23,8 +24,9 @@ from autotrading.settings import get_settings
 
 router = APIRouter(tags=["progress"])
 
+# Milestone files are docs/milestones/M<phase>_*.md (M0_foundation.md, M1_*.md, ...).
+MILESTONE_FILES = re.compile(r"M(\d+)_[a-z0-9_]+\.md")
 FILES = {
-    "milestones": "milestones/M0_foundation.md",
     "roadmap": "milestones/ROADMAP.md",
     "status": "STATUS.md",
     "decisions": "decisions/DECISIONS.md",
@@ -75,12 +77,28 @@ def _read(docs: Path, name: str) -> str:
         raise HTTPException(status_code=503, detail=f"cannot read {FILES[name]}") from exc
 
 
+def _milestone_files(docs: Path) -> list[Path]:
+    """Milestone files in phase order: M0 before M1 before M2."""
+    found = [
+        (int(match.group(1)), path)
+        for path in (docs / "milestones").glob("M*_*.md")
+        if (match := MILESTONE_FILES.fullmatch(path.name))
+    ]
+    if not found:
+        raise HTTPException(status_code=503, detail="no milestone files in docs/milestones")
+    return [path for _, path in sorted(found)]
+
+
 @router.get("/progress")
 def progress() -> Progress:
     docs = get_settings().resolved_docs_dir()
     status_md = _read(docs, "status")
     current = parse_current(status_md)
-    milestones: list[Milestone] = parse_milestones(_read(docs, "milestones"), current)
+    milestones: list[Milestone] = [
+        milestone
+        for path in _milestone_files(docs)
+        for milestone in parse_milestones(path.read_text(encoding="utf-8"), current)
+    ]
     phases: list[Phase] = parse_phases(_read(docs, "roadmap"))
     decisions: list[Decision] = parse_open_decisions(_read(docs, "decisions"))
     log: list[LogEntry] = parse_log(status_md)
