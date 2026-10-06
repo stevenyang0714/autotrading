@@ -65,6 +65,8 @@ interface Props {
   sources?: SourceHealth[] | null;
   /** The price block (M0.7), shown under the header; absent for instruments without prices. */
   prices?: ReactNode;
+  /** Recent news stories (M0.8), shown after the price block. */
+  news?: ReactNode;
 }
 
 /**
@@ -72,7 +74,7 @@ interface Props {
  * (ADR-012); each links to its filing. Every number renders through <Metric>; tickers,
  * accession numbers, forms and CIKs are identifiers ([data-identifier]).
  */
-export function FundamentalsView({ data, knownOn, invalidKnownOn, sources, prices }: Props) {
+export function FundamentalsView({ data, knownOn, invalidKnownOn, sources, prices, news }: Props) {
   const newest = [...data.annual.rows, ...data.balance_sheet.rows]
     .flatMap((row) => row.cells)
     .map((cell) => cell?.filing.published_at)
@@ -129,7 +131,7 @@ export function FundamentalsView({ data, knownOn, invalidKnownOn, sources, price
         {sources !== undefined ? (
           <SourceFreshness
             sources={sources}
-            ids={prices ? ["sec_edgar", "alpaca_iex"] : ["sec_edgar"]}
+            ids={[...(prices ? ["sec_edgar", "alpaca_iex"] : ["sec_edgar"]), ...(news ? ["gdelt"] : [])]}
             newestPublishedAt={knownOn ? null : newest}
           />
         ) : null}
@@ -137,6 +139,8 @@ export function FundamentalsView({ data, knownOn, invalidKnownOn, sources, price
       </header>
 
       {prices}
+
+      {news}
 
       <Table
         id="annual"

@@ -275,7 +275,7 @@ def test_data_health_shows_the_next_scheduled_refresh(client: TestClient) -> Non
     sources = {s["id"]: s for s in client.get("/data-health").json()["sources"]}
     assert sources["fred"]["next_refresh_at"] is not None
     assert sources["sec_edgar"]["next_refresh_at"] is not None
-    assert sources["gdelt"]["next_refresh_at"] is None  # not enabled
+    assert sources["massive"]["next_refresh_at"] is None  # not enabled
 
 
 def test_progress_reads_the_project_documents(client: TestClient) -> None:

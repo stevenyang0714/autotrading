@@ -1,0 +1,37 @@
+# Publisher tiers for news discovered through GDELT (M0.8, ADR-018). A news item keeps the tier
+# of its own publisher, not GDELT's. Matching is on the domain and its parent domains
+# (uk.reuters.com -> reuters.com). Official government domains (.gov) are Tier 1. Every other
+# publisher is Tier 4 (unverified: a lead only) until it is reviewed and added here.
+# - Tier 2, professional media: the seven named in the specs (source_tiers: Reuters, FT, WSJ,
+#   Bloomberg, AP, CNBC, Economist), plus established outlets Steven approved on 2026-10-06.
+# - Tier 3, specialist sites (approved 2026-10-06).
+# - blocked: never stored (spam seen in real GDELT results). Add domains as they turn up.
+version: 0.1.0
+
+default_tier: 4
+official_suffixes: [".gov"]
+
+publishers:
+  # Tier 2: named in the specs
+  reuters.com: {tier: 2, name: Reuters}
+  apnews.com: {tier: 2, name: AP}
+  bloomberg.com: {tier: 2, name: Bloomberg}
+  wsj.com: {tier: 2, name: The Wall Street Journal}
+  ft.com: {tier: 2, name: Financial Times}
+  cnbc.com: {tier: 2, name: CNBC}
+  economist.com: {tier: 2, name: The Economist}
+  # Tier 2: established outlets (2026-10-06)
+  nytimes.com: {tier: 2, name: The New York Times}
+  theguardian.com: {tier: 2, name: The Guardian}
+  bbc.com: {tier: 2, name: BBC}
+  bbc.co.uk: {tier: 2, name: BBC}
+  fortune.com: {tier: 2, name: Fortune}
+  economictimes.indiatimes.com: {tier: 2, name: The Economic Times}
+  marketwatch.com: {tier: 2, name: MarketWatch}
+  barrons.com: {tier: 2, name: Barron's}
+  # Tier 3: specialist sites (2026-10-06)
+  seekingalpha.com: {tier: 3, name: Seeking Alpha}
+  tomsguide.com: {tier: 3, name: Tom's Guide}
+
+blocked:
+  - dhal3.com  # classified ads reposting phone listings (GDELT, 2026-10-02)

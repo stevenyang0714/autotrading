@@ -15,10 +15,12 @@ from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import distinct_on
 from sqlalchemy.orm import Session, aliased, sessionmaker
 
+from autotrading.adapters.news.config import feeds
 from autotrading.db.models import DeadLetter, IngestionRun, Source
 from autotrading.domain.freshness import FreshnessStatus, freshness_status
 from autotrading.ingestion.schedule import (
     INTRADAY_SOURCES,
+    NEWS_FEEDS,
     SCHEDULES,
     SNAPSHOT_SECONDS,
     market_calendar,
@@ -125,7 +127,7 @@ def next_refresh(source_id: str, enabled: bool, now: datetime) -> datetime | Non
             minute = now.replace(second=0, microsecond=0)
             return minute + timedelta(seconds=SNAPSHOT_SECONDS)
         return calendar.next_open(now)
-    schedule = SCHEDULES.get(source_id)
+    schedule = SCHEDULES.get(source_id) or (NEWS_FEEDS if source_id in feeds() else None)
     return schedule.next_after(now) if schedule else None
 
 

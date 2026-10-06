@@ -62,6 +62,10 @@ FEED_STATUSES = (
 )
 BAR_FEED_STATUSES = ("end_of_day", "fixture")  # daily bars are closes, never live
 ADJUSTMENTS = ("raw", "split")
+NEWS_KINDS = ("article", "press_release", "official")
+NEWS_TIME_BASES = ("publisher", "first_seen")
+DATA_MODES = ("live", "fixture")
+MENTION_RULES = ("exchange_ticker", "feed_issuer", "company_name", "bare_ticker")
 REVISION_REASONS = ("restatement", "revision", "correction")
 AUDIT_ACTIONS = ("insert", "update", "delete", "supersede")
 RUN_STATUSES = ("queued", "running", "succeeded", "failed", "dead_lettered", "skipped")
@@ -692,6 +696,94 @@ class PriceBar(FactMixin, Base):
     def value(self) -> Decimal:
         """The compared value for versioning (apply_versions): the close."""
         return self.close
+
+
+# ---------- news (M0.8) ----------
+
+
+class NewsItem(ProvenanceMixin, Base):
+    """One news article or official release (ADR-018): metadata and a short summary only, never
+    the article text. Append-only: a trigger rejects UPDATE and DELETE.
+
+    Provenance: source_id is the feed or GDELT; source_tier is the publisher's own tier
+    (config/news_publishers.yaml for GDELT); source_url is the request that returned it.
+    published_at is the publisher's time (time_basis publisher) or, for GDELT, when GDELT first
+    saw the article (first_seen), which is never earlier than its publication.
+    duplicate_group_id ties copies of one story together (domain/news.py); it is set at insert
+    and never changes. data_mode fixture marks recorded test data (ADR-006).
+    """
+
+    __tablename__ = "news_items"
+    __table_args__ = (
+        *provenance_constraints(),
+        CheckConstraint(sql_in("kind", NEWS_KINDS), name="kind"),
+        CheckConstraint(sql_in("time_basis", NEWS_TIME_BASES), name="time_basis"),
+        CheckConstraint(sql_in("data_mode", DATA_MODES), name="data_mode"),
+        CheckConstraint("url ~ '^https?://'", name="url_scheme"),
+        CheckConstraint("canonical_url ~ '^https://'", name="canonical_url_scheme"),
+        CheckConstraint("length(title) BETWEEN 1 AND 500", name="title_length"),
+        CheckConstraint("snippet IS NULL OR length(snippet) <= 300", name="snippet_length"),
+        UniqueConstraint("canonical_url", name="uq_news_items_canonical_url"),
+        Index("ix_news_items_published_at", "published_at"),
+        Index("ix_news_items_duplicate_group_id", "duplicate_group_id"),
+        Index("ix_news_items_source_id_published_at", "source_id", "published_at"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    url: Mapped[str] = mapped_column(Text)
+    canonical_url: Mapped[str] = mapped_column(Text)
+    title: Mapped[str] = mapped_column(Text)
+    title_key: Mapped[str] = mapped_column(Text)
+    publisher: Mapped[str] = mapped_column(Text)
+    publisher_domain: Mapped[str] = mapped_column(Text)
+    author: Mapped[str | None] = mapped_column(Text)
+    snippet: Mapped[str | None] = mapped_column(Text)
+    language: Mapped[str] = mapped_column(Text)
+    source_country: Mapped[str | None] = mapped_column(Text)
+    kind: Mapped[str] = mapped_column(Text)
+    time_basis: Mapped[str] = mapped_column(Text)
+    publisher_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    duplicate_group_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    data_mode: Mapped[str] = mapped_column(Text)
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class NewsMention(Base):
+    """A universe company named in a news item (rule-based, domain/news.py). Append-only;
+    a new extractor version adds rows instead of changing old ones."""
+
+    __tablename__ = "news_mentions"
+    __table_args__ = (
+        CheckConstraint(sql_in("rule", MENTION_RULES), name="rule"),
+        CheckConstraint("confidence >= 0 AND confidence <= 1", name="confidence_range"),
+        UniqueConstraint(
+            "news_item_id",
+            "instrument_id",
+            "extractor_version",
+            name="uq_news_mentions_news_item_id_instrument_id_extractor_version",
+        ),
+        Index("ix_news_mentions_ticker", "ticker"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    news_item_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("news_items.id"))
+    instrument_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("instruments.id"))
+    ticker: Mapped[str] = mapped_column(Text)
+    rule: Mapped[str] = mapped_column(Text)
+    matched_text: Mapped[str] = mapped_column(Text)
+    confidence: Mapped[Decimal] = mapped_column(Numeric(4, 3))
+    extractor_version: Mapped[str] = mapped_column(Text)
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
 
 
 # ---------- audit (append-only, written by triggers) ----------

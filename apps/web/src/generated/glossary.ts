@@ -35,6 +35,7 @@ export type CompleteTermId =
   | "dead_letter"
   | "dev_log"
   | "diluted_shares"
+  | "duplicate_group"
   | "eps_diluted"
   | "feed_status"
   | "filing_date"
@@ -60,6 +61,7 @@ export type CompleteTermId =
   | "market_session"
   | "milestone_status"
   | "net_income"
+  | "news_time_basis"
   | "next_refresh"
   | "observation_date"
   | "open_decision"
@@ -68,6 +70,7 @@ export type CompleteTermId =
   | "page_data_health"
   | "page_instruments"
   | "page_macro"
+  | "page_news"
   | "page_overview"
   | "page_progress"
   | "payrolls_monthly_change"
@@ -89,6 +92,7 @@ export type CompleteTermId =
   | "share_repurchases"
   | "source_tier"
   | "stock_based_compensation"
+  | "story_count"
   | "update_cadence"
   | "vintage"
   | "vix_percentile_1y"
@@ -859,6 +863,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "稀釋加權股數",
     "hint_zh": "期間內的加權平均股數，含潛在稀釋股份。"
   },
+  "duplicate_group": {
+    "term_id": "duplicate_group",
+    "display_name": "Duplicate Group",
+    "category": "data_quality",
+    "short_definition": "Copies of one news story (syndication, reposts), counted as one story.",
+    "full_definition": "Articles with the same canonical URL are one article. Articles on different sites whose normalised titles match, or whose title words overlap by at least 85% (at least four words), within 72 hours of each other form one group; one site's own articles group only by URL. A new article joins the most similar group; groups never change afterwards.",
+    "formula": "canonical URL equal, or Jaccard(title words) >= 0.85 within 72 hours -> duplicate_group_id",
+    "unit": "identifier",
+    "example": "On 2026-10-02 several sites carried 'Nvidia unveils record $150 billion buyback increase': one group, one story.",
+    "direction": "N/A",
+    "interpretation": "Ten copies of one story count as one piece of evidence.",
+    "why_it_matters": "Enforces evidence independence: article counts overstate how many sources confirm a story.",
+    "source": "Milestone M0.8; domain/news.py (ADR-018)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/news.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "per ingest",
+    "caveats": "Rewritten versions of a story (different headline) are not detected; two groups are never merged later.",
+    "related_terms": [
+      "story_count",
+      "source_tier"
+    ],
+    "methodology_version": "0.1.1",
+    "name_zh": "轉載群組",
+    "hint_zh": "同一則新聞的各個轉載版本歸成一組，只算一則報導。"
+  },
   "eps_diluted": {
     "term_id": "eps_diluted",
     "display_name": "Diluted EPS",
@@ -1485,6 +1514,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "淨利",
     "hint_zh": "歸屬於母公司股東的稅後淨利。"
   },
+  "news_time_basis": {
+    "term_id": "news_time_basis",
+    "display_name": "News Time",
+    "category": "data_quality",
+    "short_definition": "Which clock a news time comes from: the publisher's, or when GDELT first saw the article.",
+    "full_definition": "Feeds give the publisher's own publication time (publisher). GDELT gives only the time it first saw an article (first seen), which is never earlier than publication. Either way the time counts as when the item became known, so a past date never shows later news.",
+    "formula": "enum: publisher | first_seen",
+    "unit": "label",
+    "example": "SEC press release published 2026-10-05 08:47 ET (publisher); an Nvidia article first seen by GDELT at 2026-10-02 08:45 UTC (first seen).",
+    "direction": "N/A",
+    "interpretation": "A first-seen time can be minutes to days after the article appeared.",
+    "why_it_matters": "Point-in-time views must not show news before it was available.",
+    "source": "ADR-018; GDELT DOC 2.0 seendate",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/decisions/DECISIONS.md",
+    "as_of": "2026-10-06",
+    "update_cadence": "per ingest",
+    "caveats": "GDELT's index can lag; its first-seen time then trails publication.",
+    "related_terms": [
+      "point_in_time",
+      "page_news"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "新聞時間",
+    "hint_zh": "發布者自己的發布時間，或 GDELT 第一次看到的時間（不會早於發布）。"
+  },
   "next_refresh": {
     "term_id": "next_refresh",
     "display_name": "Next Refresh",
@@ -1639,9 +1693,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "term_id": "page_instruments",
     "display_name": "Instruments",
     "category": "navigation",
-    "short_definition": "Universe stocks with their SEC-reported fundamentals as known at a chosen date.",
-    "full_definition": "System page listing the equities in config/universe.yaml. Each stock page shows the last three fiscal years and recent balance sheets from SEC XBRL filings, every value linked to its filing, with an As known on date to see what was public at that time. Pulled forward from M0.9 to M0.5b.",
-    "formula": "not a calculation; reads GET /instruments and /instruments/{ticker}/fundamentals",
+    "short_definition": "Universe stocks with their prices, SEC-reported fundamentals and news as known at a chosen date.",
+    "full_definition": "System page listing the equities in config/universe.yaml. Each stock page shows its latest price with feed status and one year of daily closes (M0.7), the last three fiscal years and recent balance sheets from SEC XBRL filings, every value linked to its filing, and recent news stories (M0.8), with an As known on date to see what was public at that time. Pulled forward from M0.9 to M0.5b.",
+    "formula": "not a calculation; reads GET /instruments, /instruments/{ticker}/fundamentals, /instruments/{ticker}/prices and /news",
     "unit": "page",
     "example": "Choosing As known on 2010-01-25 on AAPL shows FY2008 net income before Apple's 2010 restatement.",
     "direction": "N/A",
@@ -1649,15 +1703,15 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "why_it_matters": "Every later signal builds on these values; this page shows them with their sources.",
     "source": "Milestone M0.5b (minimal instrument page)",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M0_foundation.md",
-    "as_of": "2026-10-05",
+    "as_of": "2026-10-06",
     "update_cadence": "live (each page load); SEC data refreshed daily at 10:00 SGT",
-    "caveats": "No prices, news or valuation yet (M0.7, M0.8, Phase 1); quarterly tables come later.",
+    "caveats": "No valuation yet (Phase 1); quarterly tables come later. Prices are IEX single-venue quotes on the free plan.",
     "related_terms": [
       "point_in_time",
       "restated_flag",
       "accession_number"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "個股",
     "hint_zh": "投資範圍內股票的 SEC 財報數字，可切換「當時已知」的版本。"
   },
@@ -1686,6 +1740,33 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "總經",
     "hint_zh": "美國主要總經序列及其每次修正，可切換「當時已知」的版本。"
+  },
+  "page_news": {
+    "term_id": "page_news",
+    "display_name": "News",
+    "category": "navigation",
+    "short_definition": "English news and official releases about the universe, copies of one story collapsed.",
+    "full_definition": "System page listing news from GDELT (discovery across many publishers) and official RSS feeds (SEC, Federal Reserve, BEA, the White House, and the newsrooms of Apple, NVIDIA, Microsoft, Meta and Google). Each row is one story with its copies; titles link to the original article. Filters: company, type (official, company announcement, media), source and tier; As known on shows what was public then. Only titles, links, times and short summaries are stored, never article text.",
+    "formula": "not a calculation; reads GET /news",
+    "unit": "page",
+    "example": "Filtering NVDA shows the 2026-10-02 buyback story once, with the sites that carried it.",
+    "direction": "N/A",
+    "interpretation": "Read the lead headline, then check its tier and how many independent stories exist.",
+    "why_it_matters": "News explains moves and flags events; collapsing copies keeps one story from looking like many.",
+    "source": "Milestone M0.8 (news adapter), minimal page pulled forward from M0.9",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M0_foundation.md",
+    "as_of": "2026-10-06",
+    "update_cadence": "live (each page load); GDELT hourly, feeds every 30 minutes",
+    "caveats": "GDELT can lag; company matching uses names in titles and can miss or mismatch. Tier 4 publishers are unverified leads.",
+    "related_terms": [
+      "duplicate_group",
+      "story_count",
+      "source_tier",
+      "news_time_basis"
+    ],
+    "methodology_version": "0.1.1",
+    "name_zh": "新聞",
+    "hint_zh": "universe 公司的英文新聞與官方發布，同一則新聞的轉載收合成一列。"
   },
   "page_overview": {
     "term_id": "page_overview",
@@ -2212,6 +2293,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "股票酬勞",
     "hint_zh": "發給員工的股票與選擇權費用，屬非現金費用。"
+  },
+  "story_count": {
+    "term_id": "story_count",
+    "display_name": "Stories",
+    "category": "data_quality",
+    "short_definition": "Number of distinct stories: duplicate groups, not articles.",
+    "full_definition": "Counts each duplicate group once. Shown next to the number of articles, so syndication is visible: many articles in few stories means the same news repeated.",
+    "formula": "count(distinct duplicate_group_id)",
+    "unit": "count",
+    "example": "NVDA news on 2026-10-02: one buyback story carried by several sites counts as 1 story.",
+    "direction": "Higher = more distinct news",
+    "interpretation": "Use stories, not articles, when judging how widely something is reported.",
+    "why_it_matters": "Independence counting (M0.8): a repost chain is one source, not many.",
+    "source": "Milestone M0.8; GET /news",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/api/news.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "live (each page load)",
+    "caveats": "Depends on the duplicate grouping, which can over- or under-group.",
+    "related_terms": [
+      "duplicate_group",
+      "page_news"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "報導數",
+    "hint_zh": "不重複的新聞則數（以轉載群組計），不是文章數。"
   },
   "update_cadence": {
     "term_id": "update_cadence",

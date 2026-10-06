@@ -275,6 +275,79 @@ Applies ADR-004, ADR-006, ADR-007 and ADR-012 to prices (M0.7). Code: `apps/api/
   - SEC and FRED data replayed in CI carry no feed status, so only prices trigger the DEMO DATA banner.
   - Extended-hours trading is not covered.
 
+
+## ADR-018 News: GDELT discovery and official feeds — Accepted (2026-10-06, approved by Steven with the M0.8 plan)
+Applies ADR-006, ADR-007 and ADR-012 to news (M0.8, errata E8). Code: `apps/api/src/autotrading/adapters/news/`, `domain/news.py`, `repositories/news.py`.
+- **Sources:**
+  - GDELT DOC 2.0 is the discovery layer: one query per universe equity (`config/news_entities.yaml`), English sources, newest first, up to 250 articles.
+  - Nine official RSS / Atom feeds are each a source in `config/sources.yaml`, with their URLs in `config/news_feeds.yaml` (Steven chose them on 2026-10-06):
+    - SEC, Federal Reserve and BEA releases; White House presidential actions.
+    - The newsrooms of Apple, NVIDIA, Microsoft, Meta and Google. Each issuer feed is bound to its ticker.
+  - BLS was added, then removed the same day (Steven, 2026-10-06): its feed is one rolling "latest numbers" item at a fixed URL, so later releases would never be stored. FRED / ALFRED has the BLS numbers with release dates. The source stays in the registry, disabled.
+  - JPM, XOM, LOW, AZO and ORLY had no working feed; they rely on GDELT.
+- **GDELT terms:** checked at gdeltproject.org/about.html on 2026-10-06. Any use is allowed without fee, but every use must cite the GDELT Project and link to https://www.gdeltproject.org/. The News page does this.
+- **Tiers:**
+  - A news item keeps its publisher's tier, not GDELT's. `config/news_publishers.yaml` sets:
+    - Tier 2 for the professional media named in the specs (Reuters, AP, Bloomberg, WSJ, FT, CNBC, Economist), plus established outlets Steven approved on 2026-10-06: New York Times, Guardian, BBC, Fortune, Economic Times, MarketWatch, Barron's.
+    - Tier 3 for specialist sites: Seeking Alpha, Tom's Guide.
+  - In the first recorded GDELT sample, all 80 kept articles came from unlisted sites (Tier 4); the approved list was the response.
+  - Government domains (.gov) are Tier 1. Every other publisher is Tier 4 (unverified, a lead only) until it is reviewed and added.
+  - Official and issuer feeds are Tier 1.
+  - Blocked sites are never stored (`blocked` in the same file). The first is dhal3.com, a classifieds site whose phone listings were 15 of 65 kept Apple articles.
+- **No article text (M0.8 acceptance):**
+  - Feeds are stripped before anything is stored: `content:encoded` is removed, and every summary (description, summary, Atom content) is cut to a 300-character plain-text snippet. The stored "raw" payload is this metadata-only feed.
+  - GDELT returns no text.
+  - The database refuses titles over 500 and snippets over 300 characters.
+  - Recorded fixtures are the stripped feeds.
+- **What GDELT gives:** url, title, the time GDELT first saw the article (`seendate`), domain, language and country. No author, publication time or summary.
+- **Storage (migration 0009):**
+  - `news_items`: append-only, one row per canonical URL, with full provenance. The first copy seen is kept; later edits by the publisher are not stored.
+  - `news_mentions`: append-only links to universe instruments, versioned by `extractor_version`.
+  - `data_mode = fixture` marks recorded test data and shows the DEMO DATA banner (ADR-006).
+- **Time:**
+  - Feeds give the publisher's time (`time_basis = publisher`).
+  - GDELT gives its first-seen time (`first_seen`), which is never earlier than publication.
+  - Both count as when the item became known (ADR-012). A feed time later than our fetch is capped at the fetch time.
+- **Duplicate groups:**
+  - The same canonical URL is the same article. Canonical means https, no www/m/amp prefix, no tracking parameters, fragment or trailing slash.
+  - Copies of one story join one group when they have the same normalised title, or (from different sites) titles of at least four words whose word sets overlap by at least 0.85 (Jaccard), within 72 hours. The title is normalised by dropping a trailing " | Publisher" or " - Reuters".
+  - From one site, only the same URL or an identical title groups. A site's own series of near-identical titles are separate releases: White House orders on Canadian dairy and on motor vehicles (2026-09) overlap by 0.88.
+  - Checked on recorded GDELT data: no pair of titles from different sites fell between 0.5 and 0.85, so the threshold decides little. Exact copies dominate: one Nvidia buyback headline was carried by 33 sites.
+  - A new article joins the most similar group, or the earliest on a tie. The group is set at insert and never changes.
+  - Inserts are serialised with an advisory lock, so concurrent runs cannot split a story.
+  - Counts are stories (groups), not articles.
+- **Company mentions (no language model, ADR-009):**
+  - Titles only.
+  - Rules and confidence:
+    - exchange-qualified ticker (`$NVDA`, `NASDAQ: AAPL`): 1.0
+    - issuer feed: 1.0
+    - company name or alias (case-sensitive, whole word): 0.8
+    - bare upper-case ticker: 0.7. Not used for LOW, an ordinary word.
+  - 0.8 and 0.7 are rule weights, not yet measured.
+  - Names are the configured aliases plus the SEC name without legal suffixes, when it is in mixed case.
+  - GDELT articles are stored only when the title names a universe company. Others are logged as skipped. ETFs are not queried.
+- **Schedules:** `ingestion/schedule.py`.
+  - GDELT runs hourly at :20 (UTC), searching the last 24 hours.
+  - Feeds run every 30 minutes at :05 and :35, with If-Modified-Since.
+  - `make news-refresh`; `make news-backfill` (GDELT, one run per day over 14 days).
+  - GDELT is limited to one request every 10 seconds, and 429 answers are retried with backoff.
+  - When GDELT keeps refusing, a run stops and keeps the equities it already has. It fails only when it got nothing. The next hourly run searches the same 24 hours again, starting from another equity (it rotates by hour).
+- **Display:**
+  - Headlines and summaries are the publishers' own words, shown verbatim and marked `[data-quoted]`, so the "every number is explained" check skips them. Every number of ours is still a `<Metric>`.
+  - The News page and the instrument page's Recent news were pulled forward from M0.9 (minimal).
+  - Issuer newsrooms are mostly product and marketing posts (Google's blog: teacher stories; NVIDIA's: game lists next to a USD 150 billion buyback). They are all kept, but shown apart (Steven, 2026-10-06): the instrument page has two columns, "Media coverage" (article, official) and "Company announcements" (press_release), and the News page filters by type (`kind`).
+  - WordPress feed footers ("The post ... appeared first on ...") are dropped from summaries.
+- **Tests and CI:**
+  - Fixtures (`tests/fixtures/news`, about 0.8 MB): GDELT for 2026-09-29 to 2026-10-02 (where its index ended) and the nine stripped feeds. GDELT refused JPM, LOW, MSFT and ORLY throughout the recording (429), so six equities are recorded; `manifest.json` lists the missing ones. Re-record with `uv run python -m tests.fixtures.news.record` (resumable; `--feeds-only` keeps the GDELT files).
+  - CI starts the stack with `SCHEDULED_INGESTION=false`: the scheduler then runs only its heartbeat. The news sources need no credentials, so a scheduled run would otherwise fetch live data in the middle of the tests.
+- **Known gaps:**
+  - GDELT lagged about four days on 2026-10-06: its newest article was from 2026-10-02 10:45 UTC. Freshness then shows the age of the newest item.
+  - GDELT throttles hard and seems to count per network address: on 2026-10-06 it answered 429 to the first request of the day and kept refusing for more than 30 minutes, well below one request per 5 seconds. From this network GDELT can be unavailable for long stretches; Data Health then shows it Failing or Stale, and the official feeds carry on.
+  - Name matching can mismatch or miss companies named only in the text. In a random sample of 25 kept GDELT titles (2026-10-06), 22 were about the company and 3 only mentioned it ("Google" in a crime report, "a Google moment", "Facebook posts" in a court case). Language-model linking is Phase 3 (ADR-009).
+  - Most GDELT publishers are unclassified: of 139 kept articles, 133 were Tier 4.
+  - Rewritten stories with different headlines are not grouped, and groups are never merged later. One event can therefore be several stories: NVIDIA's buyback on 2026-09-28 is its press release, 33 copies of one syndicated headline and 5 copies of another. Linking them is event clustering (Phase 3).
+  - The first copy of a feed item is kept; publisher edits are not stored.
+
 ---
 
 ## Open decisions (owner: Steven)

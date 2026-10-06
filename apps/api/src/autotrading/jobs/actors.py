@@ -17,6 +17,7 @@ from sqlalchemy.orm import sessionmaker
 from autotrading import adapters  # noqa: F401  (adapters register their ingestion jobs)
 from autotrading.adapters.alpaca import refresh as alpaca_refresh
 from autotrading.adapters.fred import refresh as fred_refresh
+from autotrading.adapters.news import refresh as news_refresh
 from autotrading.adapters.sec import refresh as sec_refresh
 from autotrading.infra.db import make_engine
 from autotrading.infra.heartbeat import write_heartbeat
@@ -134,3 +135,31 @@ def start_alpaca_daily_bars(*, manual: bool, backfill: bool = False) -> UUID | N
     else:
         run_ingestion.send(str(run_id))
     return run_id
+
+
+# ---------- news (M0.8) ----------
+
+
+def start_news_gdelt(*, manual: bool) -> UUID | None:
+    """Queue this hour's GDELT run (or one now, when manual)."""
+    run_id = news_refresh.start_gdelt(ingestion_runner(), now=datetime.now(UTC), manual=manual)
+    if run_id is None:
+        logger.info("GDELT skipped: the gdelt source is not enabled")
+    else:
+        run_ingestion.send(str(run_id))
+    return run_id
+
+
+def start_news_gdelt_backfill() -> list[UUID]:
+    run_ids = news_refresh.start_gdelt_backfill(ingestion_runner(), now=datetime.now(UTC))
+    for run_id in run_ids:
+        run_ingestion.send(str(run_id))
+    return run_ids
+
+
+def start_news_feeds(*, manual: bool) -> list[UUID]:
+    """Queue one run per enabled RSS / Atom feed."""
+    run_ids = news_refresh.start_feeds(ingestion_runner(), now=datetime.now(UTC), manual=manual)
+    for run_id in run_ids:
+        run_ingestion.send(str(run_id))
+    return run_ids

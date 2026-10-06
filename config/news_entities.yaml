@@ -1,0 +1,21 @@
+# Company names for news (M0.8, ADR-018), per universe equity.
+# - aliases: extra names matched in titles (case-sensitive, whole words, "'s" allowed), on top of
+#   the SEC conformed name without legal suffixes ("Apple Inc." -> "Apple").
+# - gdelt_query: the GDELT DOC 2.0 search terms (case-insensitive, full text; one query per
+#   equity per run; parentheses only around OR-ed terms, GDELT refuses them otherwise). GDELT
+#   results are kept only when the title names a universe company.
+# - bare_ticker: whether the plain symbol (AAPL) in a title counts. Off for symbols that are
+#   ordinary words (LOW).
+version: 0.1.0
+
+companies:
+  AAPL: {aliases: [Apple], gdelt_query: "(Apple OR AAPL)"}
+  MSFT: {aliases: [Microsoft], gdelt_query: "(Microsoft OR MSFT)"}
+  GOOGL: {aliases: [Alphabet, Google], gdelt_query: "(Alphabet OR Google OR GOOGL)"}
+  META: {aliases: [Meta, Meta Platforms, Facebook], gdelt_query: "(\"Meta Platforms\" OR Meta OR Facebook)"}
+  NVDA: {aliases: [Nvidia, NVIDIA], gdelt_query: "(Nvidia OR NVDA)"}
+  JPM: {aliases: [JPMorgan, JPMorgan Chase, JP Morgan, J.P. Morgan], gdelt_query: "(JPMorgan OR \"JP Morgan\")"}
+  XOM: {aliases: [Exxon, ExxonMobil, Exxon Mobil], gdelt_query: "(ExxonMobil OR Exxon)"}
+  AZO: {aliases: [AutoZone], gdelt_query: "AutoZone"}
+  ORLY: {aliases: [O'Reilly Automotive, O'Reilly Auto Parts], gdelt_query: "(\"Reilly Automotive\" OR \"Reilly Auto Parts\")"}
+  LOW: {aliases: [Lowe's, Lowes], gdelt_query: "(Lowes OR \"Lowe's\")", bare_ticker: false}

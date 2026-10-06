@@ -62,6 +62,10 @@ class Settings(BaseSettings):
     apca_api_secret_key: SecretStr | None = None
     alpaca_data_feed: Literal["iex"] = "iex"
 
+    # The scheduler's refresh jobs (SEC, FRED, Alpaca, news). Off in CI, where the stack holds
+    # recorded fixtures only and nothing may fetch live data (news needs no credentials).
+    scheduled_ingestion: bool = True
+
     # Ingestion retries (Dramatiq, exponential backoff); after the last one -> dead letter.
     ingestion_max_retries: int = 5
     ingestion_min_backoff_ms: int = 15_000

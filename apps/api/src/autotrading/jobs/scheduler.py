@@ -14,8 +14,11 @@ from autotrading.infra.heartbeat import HEARTBEAT_INTERVAL_SECONDS, write_heartb
 from autotrading.infra.redis_client import make_redis
 from autotrading.ingestion.schedule import (
     DAILY_BARS,
+    FRED,
+    GDELT,
+    NEWS_FEEDS,
     REFRESH_TIMEZONE,
-    SCHEDULES,
+    SEC_EDGAR,
     SNAPSHOT_SECONDS,
 )
 from autotrading.jobs import actors
@@ -42,13 +45,18 @@ def main() -> None:
         max_instances=1,
         coalesce=True,
     )
+    if not get_settings().scheduled_ingestion:
+        logger.info("Scheduled ingestion is off (SCHEDULED_INGESTION=false): heartbeat only")
+        signal.signal(signal.SIGTERM, lambda *_: scheduler.shutdown(wait=False))
+        scheduler.start()
+        return
     # SEC EDGAR (M0.5): daily at 10:00 SGT, about 22:00 ET the previous evening, when most
     # filings of that US day are in. A late start (scheduler down) still runs the same day.
     scheduler.add_job(
         lambda: actors.start_sec_refresh(manual=False),
         CronTrigger(
-            hour=SCHEDULES["sec_edgar"].hour,
-            minute=SCHEDULES["sec_edgar"].minute,
+            hour=SEC_EDGAR.hour,
+            minute=SEC_EDGAR.minute,
             timezone=REFRESH_TIMEZONE,
         ),
         id="sec_refresh",
@@ -60,8 +68,8 @@ def main() -> None:
     scheduler.add_job(
         lambda: actors.start_fred_refresh(manual=False),
         CronTrigger(
-            hour=SCHEDULES["fred"].hour,
-            minute=SCHEDULES["fred"].minute,
+            hour=FRED.hour,
+            minute=FRED.minute,
             timezone=REFRESH_TIMEZONE,
         ),
         id="fred_refresh",
@@ -86,6 +94,27 @@ def main() -> None:
         max_instances=1,
         coalesce=True,
         misfire_grace_time=12 * 3600,
+    )
+    # News (M0.8): GDELT hourly, official feeds every 30 minutes (ingestion/schedule.py).
+    assert GDELT.minutes == 60  # one cron minute per hour
+    scheduler.add_job(
+        lambda: actors.start_news_gdelt(manual=False),
+        CronTrigger(minute=GDELT.offset, timezone=UTC),
+        id="news_gdelt",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=1800,
+    )
+    scheduler.add_job(
+        lambda: actors.start_news_feeds(manual=False),
+        CronTrigger(
+            minute=f"{NEWS_FEEDS.offset},{NEWS_FEEDS.offset + NEWS_FEEDS.minutes}",
+            timezone=UTC,
+        ),
+        id="news_feeds",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=900,
     )
     signal.signal(signal.SIGTERM, lambda *_: scheduler.shutdown(wait=False))
     logger.info("Scheduler started")

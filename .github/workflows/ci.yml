@@ -85,7 +85,11 @@ jobs:
           enable-cache: true
           cache-dependency-glob: uv.lock  # relative to working-directory
       - run: cd apps/api && uv sync --locked
+      # No scheduled refreshes in CI: the stack holds recorded fixtures only, and the news
+      # sources need no credentials, so a scheduled run would fetch live data mid-test.
       - run: make up
+        env:
+          SCHEDULED_INGESTION: "false"
       - run: make migrate
       # Recorded real SEC, FRED and Alpaca data (no network, no credentials) for the e2e tests;
       # prices are labelled fixture, so pages show the DEMO DATA banner.

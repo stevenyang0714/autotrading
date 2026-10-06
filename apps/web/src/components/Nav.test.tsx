@@ -31,6 +31,7 @@ describe("Nav", () => {
       ["Data Health", "/system/data-health"],
       ["Instruments", "/instruments"],
       ["Macro", "/macro"],
+      ["News", "/news"],
       ["Build Progress", "/system/progress"],
     ]);
   });

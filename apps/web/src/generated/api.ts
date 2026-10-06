@@ -208,6 +208,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/news": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** News */
+        get: operations["news_news_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/overview": {
         parameters: {
             query?: never;
@@ -739,6 +756,15 @@ export interface components {
             /** Open */
             open: boolean;
         };
+        /** MentionOut */
+        MentionOut: {
+            /** Confidence */
+            confidence: string;
+            /** Rule */
+            rule: string;
+            /** Ticker */
+            ticker: string;
+        };
         /** MetricRow */
         MetricRow: {
             /** Cells */
@@ -758,6 +784,119 @@ export interface components {
             title: string;
             /** Total */
             total: number;
+        };
+        /** NewsFeed */
+        NewsFeed: {
+            /** Article Count */
+            article_count: number;
+            /** Attribution */
+            attribution: string;
+            /** Attribution Url */
+            attribution_url: string;
+            /** Groups */
+            groups: components["schemas"]["NewsGroupOut"][];
+            /** Kinds */
+            kinds: string[];
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Max Tier */
+            max_tier: number | null;
+            /** Newest Published At */
+            newest_published_at: string | null;
+            /** Source Id */
+            source_id: string | null;
+            /** Sources */
+            sources: components["schemas"]["NewsSourceOut"][];
+            /** Story Count */
+            story_count: number;
+            /** Ticker */
+            ticker: string | null;
+        };
+        /** NewsGroupOut */
+        NewsGroupOut: {
+            /** Article Count */
+            article_count: number;
+            /** Best Tier */
+            best_tier: number;
+            /**
+             * First Published At
+             * Format: date-time
+             */
+            first_published_at: string;
+            /**
+             * Group Id
+             * Format: uuid
+             */
+            group_id: string;
+            /**
+             * Last Published At
+             * Format: date-time
+             */
+            last_published_at: string;
+            lead: components["schemas"]["NewsItemOut"];
+            /** Others */
+            others: components["schemas"]["NewsItemOut"][];
+            /** Publisher Count */
+            publisher_count: number;
+            /** Tickers */
+            tickers: string[];
+        };
+        /** NewsItemOut */
+        NewsItemOut: {
+            /** Author */
+            author: string | null;
+            /** Data Mode */
+            data_mode: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Language */
+            language: string;
+            /** Mentions */
+            mentions: components["schemas"]["MentionOut"][];
+            /**
+             * Published At
+             * Format: date-time
+             */
+            published_at: string;
+            /** Publisher */
+            publisher: string;
+            /** Publisher Domain */
+            publisher_domain: string;
+            /** Publisher Updated At */
+            publisher_updated_at: string | null;
+            /** Snippet */
+            snippet: string | null;
+            /** Source Country */
+            source_country: string | null;
+            /** Source Id */
+            source_id: string;
+            /** Source Tier */
+            source_tier: number;
+            /** Time Basis */
+            time_basis: string;
+            /** Title */
+            title: string;
+            /** Url */
+            url: string;
+        };
+        /** NewsSourceOut */
+        NewsSourceOut: {
+            /** Enabled */
+            enabled: boolean;
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Tier */
+            tier: number;
         };
         /** ObservationOut */
         ObservationOut: {
@@ -1364,6 +1503,47 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SeriesObservations"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    news_news_get: {
+        parameters: {
+            query?: {
+                /** @description Universe ticker, e.g. AAPL */
+                ticker?: string | null;
+                /** @description Source id, e.g. gdelt or sec_press */
+                source?: string | null;
+                /** @description Tiers 1..max_tier */
+                max_tier?: number | null;
+                /** @description Comma-separated: article (media), press_release (issuer), official */
+                kind?: string | null;
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NewsFeed"];
                 };
             };
             /** @description Validation Error */

@@ -15,7 +15,7 @@ export NEXT_TELEMETRY_DISABLED := 1
 export COREPACK_ENABLE_DOWNLOAD_PROMPT := 0
 
 .DEFAULT_GOAL := help
-.PHONY: help setup up down ps logs migrate sec-refresh fred-refresh prices-refresh prices-backfill replay-fixtures gen test test-unit test-integration e2e lint lint-api lint-web fmt dev-web
+.PHONY: help setup up down ps logs migrate sec-refresh fred-refresh prices-refresh prices-backfill news-refresh news-backfill replay-fixtures gen test test-unit test-integration e2e lint lint-api lint-web fmt dev-web
 
 help: ## Show available targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  %-18s %s\n", $$1, $$2}'
@@ -52,7 +52,13 @@ prices-refresh: ## Queue an Alpaca snapshot now and recent daily bars (needs APC
 prices-backfill: ## Queue Alpaca daily bars since 2016, raw and split-adjusted (run once)
 	$(COMPOSE) exec -T api python -m autotrading.jobs.prices_refresh --backfill
 
-replay-fixtures: ## CI only: load the recorded SEC, FRED and Alpaca fixtures into the stack database
+news-refresh: ## Queue GDELT (last 24 hours) and every enabled official feed now
+	$(COMPOSE) exec -T api python -m autotrading.jobs.news_refresh
+
+news-backfill: ## Queue GDELT news runs for each of the last 14 days (run once)
+	$(COMPOSE) exec -T api python -m autotrading.jobs.news_refresh --backfill
+
+replay-fixtures: ## CI only: load the recorded SEC, FRED, Alpaca and news fixtures into the stack database
 	cd $(API) && uv run python -m tests.replay
 
 gen: ## Regenerate apps/web/src/generated (glossary + API types) and apps/web/openapi.json

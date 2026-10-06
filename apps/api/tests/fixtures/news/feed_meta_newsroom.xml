@@ -1,0 +1,241 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:media="http://search.yahoo.com/mrss/" xmlns:ns2="com-wordpress:feed-additions:1" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" version="2.0">
+
+<channel>
+	<title>Newsroom | Meta Newsroom</title>
+	<atom:link href="https://about.fb.com/news/feed/" rel="self" type="application/rss+xml" />
+	<link>https://about.fb.com/news/</link>
+	<description />
+	<lastBuildDate>Thu, 01 Oct 2026 14:16:04 +0000</lastBuildDate>
+	<language>en-US</language>
+	<sy:updatePeriod>
+	hourly	</sy:updatePeriod>
+	<sy:updateFrequency>
+	1	</sy:updateFrequency>
+	<generator>https://wordpress.org/?v=6.9.9</generator>
+
+<image>
+	<url>https://about.fb.com/wp-content/uploads/2021/10/meta-favicon.png?fit=16%2C16</url>
+	<title>Newsroom | Meta Newsroom</title>
+	<link>https://about.fb.com/news/</link>
+	<width>32</width>
+	<height>32</height>
+</image> 
+<ns2:site>165068026</ns2:site>	<item>
+		<title>Announcing Ranveer Singh as Brand Ambassador for Ray-Ban and Ray-Ban Meta in India along with Exciting New Updates to our AI Glasses</title>
+		<link>https://about.fb.com/news/2026/10/announcing-ranveer-singh-as-brand-ambassador-for-ray-ban-and-ray-ban-meta-in-india-along-with-exciting-new-updates-to-our-ai-glasses/</link>
+		
+		<dc:creator>Facebook</dc:creator>
+		<pubDate>Thu, 01 Oct 2026 14:16:04 +0000</pubDate>
+				<category>Homepage - Hidden</category>
+		<category>India Newsroom</category>
+		<guid isPermaLink="false">https://about.fb.com/?p=50542</guid>
+
+					<description>Ranveer Singh becomes the first Brand Ambassador for Ray-Ban and Ray-Ban Meta in India.</description>
+										<ns2:post-id>50542</ns2:post-id><thumbnail>https://about.fb.com/wp-content/uploads/2026/10/RS_Announce_Comms_RBM_Wayfarer_1920x1080px.png?fit=890%2C501</thumbnail>
+		<media:thumbnail url="https://about.fb.com/wp-content/uploads/2026/10/RS_Announce_Comms_RBM_Wayfarer_1920x1080px.png?fit=3840%2C2160" />
+		<media:content url="https://about.fb.com/wp-content/uploads/2026/10/RS_Announce_Comms_RBM_Wayfarer_1920x1080px.png?fit=3840%2C2160" medium="image">
+			<media:title type="html">RS_Announce_Comms_RBM_Wayfarer_1920x1080px</media:title>
+		</media:content>
+	</item>
+		<item>
+		<title>Meta Names Dhruv Vohra to Lead Southeast Asia Business</title>
+		<link>https://about.fb.com/news/2026/09/meta-names-dhruv-vohra-to-lead-southeast-asia-business/</link>
+		
+		<dc:creator>Facebook</dc:creator>
+		<pubDate>Wed, 30 Sep 2026 23:15:43 +0000</pubDate>
+				<category>APAC Newsroom</category>
+		<guid isPermaLink="false">https://about.fb.com/?p=50525</guid>
+
+					<description>Meta has announced that Dhruv Vohra will take on a new role as Managing Director, Global Business Group, Southeast Asia.</description>
+										<ns2:post-id>50525</ns2:post-id><thumbnail>https://about.fb.com/wp-content/uploads/2026/10/Dhruv-Vohra_2026-1.jpeg?fit=890%2C501</thumbnail>
+		<media:thumbnail url="https://about.fb.com/wp-content/uploads/2026/10/Dhruv-Vohra_2026.jpeg?fit=1600%2C899" />
+		<media:content url="https://about.fb.com/wp-content/uploads/2026/10/Dhruv-Vohra_2026.jpeg?fit=1600%2C899" medium="image">
+			<media:title type="html">Dhruv Vohra_2026</media:title>
+		</media:content>
+	</item>
+		<item>
+		<title>Find Your Community With Forum, a Dedicated App for Facebook Groups</title>
+		<link>https://about.fb.com/news/2026/09/find-community-forum-dedicated-app-facebook-groups/</link>
+		
+		<dc:creator>Facebook</dc:creator>
+		<pubDate>Tue, 29 Sep 2026 16:00:05 +0000</pubDate>
+				<category>Facebook</category>
+		<category>Product News</category>
+		<category>Recent News</category>
+		<category>Sidebar - Featured</category>
+		<category>Groups</category>
+		<guid isPermaLink="false">https://about.fb.com/?p=50472</guid>
+
+					<description>Find your community with Forum, an app built for people who want to go deeper in their Facebook groups.</description>
+										<ns2:post-id>50472</ns2:post-id><thumbnail>https://about.fb.com/wp-content/uploads/2026/09/Forum_-A-Dedicated-App-for-Facebook-Groups_Thumb.jpg?fit=890%2C501</thumbnail>
+		<media:thumbnail url="https://about.fb.com/wp-content/uploads/2026/09/Forum_-A-Dedicated-App-for-Facebook-Groups_Header.jpg?fit=1920%2C1080" />
+		<media:content url="https://about.fb.com/wp-content/uploads/2026/09/Forum_-A-Dedicated-App-for-Facebook-Groups_Header.jpg?fit=1920%2C1080" medium="image">
+			<media:title type="html">Forum_ A Dedicated App for Facebook Groups_Header</media:title>
+		</media:content>
+
+		<media:content url="https://about.fb.com/wp-content/uploads/2026/09/02_forum_inline_01.jpg" medium="image">
+			<media:title type="html">Top voice recognition UI</media:title>
+		</media:content>
+	</item>
+		<item>
+		<title>Expanding Instagram’s School Partnership Program to Help Teens Stay Informed</title>
+		<link>https://about.fb.com/news/2026/09/expanding-instagram-school-partnership-program-help-teens-stay-informed/</link>
+		
+		<dc:creator>Facebook</dc:creator>
+		<pubDate>Tue, 29 Sep 2026 13:00:38 +0000</pubDate>
+				<category>Instagram</category>
+		<category>Recent News</category>
+		<category>Safety and Expression</category>
+		<category>Sidebar - Featured</category>
+		<category>Youth Well-Being Resources</category>
+		<guid isPermaLink="false">https://about.fb.com/?p=50405</guid>
+
+					<description>We're expanding our School Partnership Program to give verified school partners, verified students, and parents new features to stay connected and informed.</description>
+										<ns2:post-id>50405</ns2:post-id><thumbnail>https://about.fb.com/wp-content/uploads/2026/09/Expanding-Instagrams-School-Partnership-Program-to-Help-Teens-Stay-Informed_Thumbnail.jpg?fit=890%2C501</thumbnail>
+		<media:thumbnail url="https://about.fb.com/wp-content/uploads/2026/09/Expanding-Instagrams-School-Partnership-Program-to-Help-Teens-Stay-Informed_Header.jpg?fit=1920%2C1080" />
+		<media:content url="https://about.fb.com/wp-content/uploads/2026/09/Expanding-Instagrams-School-Partnership-Program-to-Help-Teens-Stay-Informed_Header.jpg?fit=1920%2C1080" medium="image">
+			<media:title type="html">Expanding Instagram's School Partnership Program to Help Teens Stay Informed_Header</media:title>
+		</media:content>
+	</item>
+		<item>
+		<title>The Future Is for Everyone: Muse for Small Business</title>
+		<link>https://about.fb.com/news/2026/09/introducing-muse-small-business/</link>
+		
+		<dc:creator>Facebook</dc:creator>
+		<pubDate>Tue, 29 Sep 2026 09:30:04 +0000</pubDate>
+				<category>Meta</category>
+		<category>Product News</category>
+		<category>Recent News</category>
+		<category>Sidebar - Featured</category>
+		<category>Technology and Innovation</category>
+		<category>AI</category>
+		<guid isPermaLink="false">https://about.fb.com/?p=50431</guid>
+
+					<description>We’re launching Muse for Small Business, a personal AI agent that works in the background to help your small business reach its goals.</description>
+										<ns2:post-id>50431</ns2:post-id><thumbnail>https://about.fb.com/wp-content/uploads/2026/09/The-Future-Is-for-Everyone_Muse-for-Small-Business_Thumbnail.gif?fit=890%2C501</thumbnail>	</item>
+		<item>
+		<title>Meta Partners With Government Agencies, Law Enforcement, and Safety Organizations to Launch Regional Anti-Scam Education Campaign</title>
+		<link>https://about.fb.com/news/2026/09/meta-one-step-ahead-campaign/</link>
+		
+		<dc:creator>Facebook</dc:creator>
+		<pubDate>Tue, 29 Sep 2026 09:18:58 +0000</pubDate>
+				<category>APAC Newsroom</category>
+		<guid isPermaLink="false">https://about.fb.com/?p=50353</guid>
+
+					<description>As scams grow more sophisticated and difficult to detect, keeping people safe takes more than technology alone – it also requires education. Today, we’re sharing progress on our “One Step Ahead” anti-scam education campaign designed to help people across Asia-Pacific take simple, practical steps…</description>
+										<ns2:post-id>50353</ns2:post-id><thumbnail>https://about.fb.com/wp-content/uploads/2026/09/Meta_One-Step-Ahead-NEWSROOM-POST_Thumbnail_720x720_v2a.png?fit=890%2C501</thumbnail>
+		<media:thumbnail url="https://about.fb.com/wp-content/uploads/2026/09/Meta_One-Step-Ahead-NEWSROOM-POST_Hero_1920x1080_v2a.png?fit=1920%2C1080" />
+		<media:content url="https://about.fb.com/wp-content/uploads/2026/09/Meta_One-Step-Ahead-NEWSROOM-POST_Hero_1920x1080_v2a.png?fit=1920%2C1080" medium="image">
+			<media:title type="html">Meta_One Step Ahead NEWSROOM POST_Hero_1920x1080_v2a</media:title>
+		</media:content>
+
+		<media:content url="https://about.fb.com/wp-content/uploads/2026/09/Meta_One-Step-Ahead-NEWSROOM-POST_Phones-02_1920x1080_v2a.png?w=960" medium="image">
+			<media:title type="html">Overview of the campaign ad on Meta platforms</media:title>
+		</media:content>
+
+		<media:content url="https://about.fb.com/wp-content/uploads/2026/09/Meta_One-Step-Ahead-NEWSROOM-POST_Phones_03_1920x1080_v2a.png?w=960" medium="image">
+			<media:title type="html">Overview of the campaign ad on Meta platforms</media:title>
+		</media:content>
+	</item>
+		<item>
+		<title>Launching Meta Enterprise Platform</title>
+		<link>https://about.fb.com/news/2026/09/launching-meta-enterprise-platform/</link>
+		
+		<dc:creator>Facebook</dc:creator>
+		<pubDate>Mon, 28 Sep 2026 12:36:14 +0000</pubDate>
+				<category>Company News</category>
+		<category>Meta</category>
+		<category>Recent News</category>
+		<category>Sidebar - Featured</category>
+		<category>AI</category>
+		<guid isPermaLink="false">https://about.fb.com/?p=50411</guid>
+
+					<description>Today we are starting Meta Enterprise Platform to help businesses use AI to grow, and Chirantan "CJ" Desai will join Meta as Chief Enterprise Platform Officer</description>
+										<ns2:post-id>50411</ns2:post-id><thumbnail>https://about.fb.com/wp-content/uploads/2026/09/Meta_Thumbnail.jpg?fit=890%2C501</thumbnail>	</item>
+		<item>
+		<title>The Biggest News From Connect 2026</title>
+		<link>https://about.fb.com/news/2026/09/the-biggest-news-from-connect-2026/</link>
+		
+		<dc:creator>Facebook</dc:creator>
+		<pubDate>Thu, 24 Sep 2026 21:15:55 +0000</pubDate>
+				<category>Meta</category>
+		<category>Product News</category>
+		<category>Recent News</category>
+		<category>Sidebar - Featured</category>
+		<category>AI</category>
+		<category>AI Glasses</category>
+		<category>Meta VR Glasses</category>
+		<category>Virtual Reality</category>
+		<guid isPermaLink="false">https://about.fb.com/?p=50374</guid>
+
+					<description>Yesterday at Connect, we announced that we're bringing Muse to our AI glasses, launched Meta VR Glasses, and more.</description>
+										<ns2:post-id>50374</ns2:post-id><thumbnail>https://about.fb.com/wp-content/uploads/2026/09/The-Biggest-News-From-Connect-2026_Thumbnail.jpg?fit=890%2C501</thumbnail>
+		<media:thumbnail url="https://about.fb.com/wp-content/uploads/2026/09/The-Biggest-News-From-Connect-2026_Header-1.jpg?fit=1920%2C1080" />
+		<media:content url="https://about.fb.com/wp-content/uploads/2026/09/The-Biggest-News-From-Connect-2026_Header-1.jpg?fit=1920%2C1080" medium="image">
+			<media:title type="html">The Biggest News From Connect 2026_Header (1)</media:title>
+		</media:content>
+
+		<media:content url="https://about.fb.com/wp-content/uploads/2026/09/06_VR-Glasses-also-give-you-a-screen-wherever-you-are.jpg" medium="image">
+			<media:title type="html">Woman using Meta VR Glasses </media:title>
+		</media:content>
+	</item>
+		<item>
+		<title>New Features for Meta Ray-Ban Display</title>
+		<link>https://about.fb.com/news/2026/09/new-features-for-meta-ray-ban-display-navigation-hologram/</link>
+		
+		<dc:creator>Facebook</dc:creator>
+		<pubDate>Wed, 23 Sep 2026 11:53:47 +0000</pubDate>
+				<category>Meta</category>
+		<category>Product News</category>
+		<category>Recent News</category>
+		<category>Sidebar - Featured</category>
+		<category>Technology and Innovation</category>
+		<category>AI</category>
+		<category>AI Glasses</category>
+		<guid isPermaLink="false">https://about.fb.com/?p=50320</guid>
+
+					<description>Today, we announced updates to Meta Ray-Ban Display that make the glasses even more useful in your everyday life.</description>
+										<ns2:post-id>50320</ns2:post-id><thumbnail>https://about.fb.com/wp-content/uploads/2026/09/New-Features-for-Meta-Ray-Ban-Display_Thumbnail.jpg?fit=890%2C501</thumbnail>
+		<media:thumbnail url="https://about.fb.com/wp-content/uploads/2026/09/New-Features-for-Meta-Ray-Ban-Display_Header.jpg?fit=1920%2C1080" />
+		<media:content url="https://about.fb.com/wp-content/uploads/2026/09/New-Features-for-Meta-Ray-Ban-Display_Header.jpg?fit=1920%2C1080" medium="image">
+			<media:title type="html">New Features for Meta Ray-Ban Display_Header</media:title>
+		</media:content>
+	</item>
+		<item>
+		<title>Introducing Meta VR Glasses: A Cinema, Courtside Seat, and Workspace in Just 100 Grams</title>
+		<link>https://about.fb.com/news/2026/09/introducing-meta-vr-glasses-3d-movies-immersive-live-sports-100-grams/</link>
+		
+		<dc:creator>Facebook</dc:creator>
+		<pubDate>Wed, 23 Sep 2026 11:42:46 +0000</pubDate>
+				<category>Meta</category>
+		<category>Product News</category>
+		<category>Recent News</category>
+		<category>Sidebar - Featured</category>
+		<category>Technology and Innovation</category>
+		<category>AI</category>
+		<category>AI Glasses</category>
+		<category>Meta VR Glasses</category>
+		<category>Virtual Reality</category>
+		<guid isPermaLink="false">https://about.fb.com/?p=50306</guid>
+
+					<description>We’re introducing Meta VR Glasses: a new era for virtual reality in a pair of glasses you can comfortably wear for hours.</description>
+										<ns2:post-id>50306</ns2:post-id><thumbnail>https://about.fb.com/wp-content/uploads/2026/09/Introducing-Meta-VR-Glasses_-A-Cinema-Courtside-Seat-and-Workspace-in-Just-100-GramsIntroducing-Meta-VR-Glasses_-A-Cinema-Courtside-Seat-and-Workspace-in-Just-100-Grams_thumb.gif?fit=890%2C501</thumbnail>
+		<media:content url="https://about.fb.com/wp-content/uploads/2026/09/01_VRGlasses_Inline_CloseUp.jpg" medium="image">
+			<media:title type="html">Meta VR Glasses</media:title>
+		</media:content>
+
+		<media:content url="https://about.fb.com/wp-content/uploads/2026/09/02_VRGlasses_Inline_Lenses.jpg" medium="image">
+			<media:title type="html">Person holding Meta VR glasses</media:title>
+		</media:content>
+
+		<media:content url="https://about.fb.com/wp-content/uploads/2026/09/03_VRGlasses_Inline_Airplane_d9b0fd.jpg" medium="image">
+			<media:title type="html">Image of person watching 3D movie</media:title>
+		</media:content>
+
+		<media:content url="https://about.fb.com/wp-content/uploads/2026/09/04_VRGlasses_Inline_NBA.jpg" medium="image">
+			<media:title type="html">Courtside VR view of NBA game</media:title>
+		</media:content>
+	</item>
+	</channel>
+</rss>

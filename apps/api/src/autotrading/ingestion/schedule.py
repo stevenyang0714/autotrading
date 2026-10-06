@@ -1,4 +1,4 @@
-"""Refresh windows shared by scheduled source refreshes (SEC M0.5, FRED M0.6).
+"""Refresh windows shared by scheduled source refreshes (SEC M0.5, FRED M0.6, news M0.8).
 
 The window is part of each run's idempotency key:
 - scheduled: the Singapore calendar day, so a repeated trigger the same day is skipped;
@@ -41,11 +41,38 @@ class DailySchedule:
         return upcoming.astimezone(UTC)
 
 
-# The only place refresh times are defined: the scheduler and the Data Health API read it.
-SCHEDULES: dict[str, DailySchedule] = {
-    "sec_edgar": DailySchedule(10, 0),  # M0.5, about 22:00 ET the previous evening
-    "fred": DailySchedule(10, 15),  # M0.6, after SEC
+@dataclass(frozen=True)
+class IntervalSchedule:
+    """A refresh every `minutes` minutes, at `offset` minutes past each full interval (UTC)."""
+
+    minutes: int
+    offset: int = 0
+
+    def next_after(self, now: datetime) -> datetime:
+        """The next scheduled run strictly after `now`, in UTC."""
+        step = timedelta(minutes=self.minutes)
+        utc = now.astimezone(UTC)
+        hour = utc.replace(minute=0, second=0, microsecond=0)
+        base = hour + timedelta(minutes=self.offset) - step
+        return base + (int((utc - base) // step) + 1) * step
+
+    def slot(self, now: datetime) -> Window:
+        """The interval `now` falls in: the idempotency window of a scheduled run."""
+        end = self.next_after(now)
+        return Window(start=end - timedelta(minutes=self.minutes), end=end)
+
+
+# The only place refresh times are defined: the scheduler and the Data Health API read them.
+SEC_EDGAR = DailySchedule(10, 0)  # M0.5, about 22:00 ET the previous evening
+FRED = DailySchedule(10, 15)  # M0.6, after SEC
+GDELT = IntervalSchedule(60, 20)  # M0.8, hourly at :20
+SCHEDULES: dict[str, DailySchedule | IntervalSchedule] = {
+    "sec_edgar": SEC_EDGAR,
+    "fred": FRED,
+    "gdelt": GDELT,
 }
+# Official RSS feeds (M0.8): every 30 minutes at :05 and :35, one run per feed.
+NEWS_FEEDS = IntervalSchedule(30, 5)
 
 # Alpaca (M0.7): daily SIP bars after the US close and the free plan's 15-minute SIP delay;
 # snapshots run every SNAPSHOT_SECONDS during the session (see adapters/alpaca/refresh.py).

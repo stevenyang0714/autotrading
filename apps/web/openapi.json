@@ -1341,6 +1341,30 @@
         "title": "MarketState",
         "type": "object"
       },
+      "MentionOut": {
+        "properties": {
+          "confidence": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Confidence",
+            "type": "string"
+          },
+          "rule": {
+            "title": "Rule",
+            "type": "string"
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticker",
+          "rule",
+          "confidence"
+        ],
+        "title": "MentionOut",
+        "type": "object"
+      },
       "MetricRow": {
         "properties": {
           "cells": {
@@ -1400,6 +1424,329 @@
           "status"
         ],
         "title": "MilestoneOut",
+        "type": "object"
+      },
+      "NewsFeed": {
+        "properties": {
+          "article_count": {
+            "title": "Article Count",
+            "type": "integer"
+          },
+          "attribution": {
+            "title": "Attribution",
+            "type": "string"
+          },
+          "attribution_url": {
+            "title": "Attribution Url",
+            "type": "string"
+          },
+          "groups": {
+            "items": {
+              "$ref": "#/components/schemas/NewsGroupOut"
+            },
+            "title": "Groups",
+            "type": "array"
+          },
+          "kinds": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Kinds",
+            "type": "array"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "max_tier": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Tier"
+          },
+          "newest_published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Newest Published At"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/NewsSourceOut"
+            },
+            "title": "Sources",
+            "type": "array"
+          },
+          "story_count": {
+            "title": "Story Count",
+            "type": "integer"
+          },
+          "ticker": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ticker"
+          }
+        },
+        "required": [
+          "known_at",
+          "ticker",
+          "source_id",
+          "max_tier",
+          "kinds",
+          "story_count",
+          "article_count",
+          "newest_published_at",
+          "groups",
+          "sources",
+          "attribution",
+          "attribution_url"
+        ],
+        "title": "NewsFeed",
+        "type": "object"
+      },
+      "NewsGroupOut": {
+        "properties": {
+          "article_count": {
+            "title": "Article Count",
+            "type": "integer"
+          },
+          "best_tier": {
+            "title": "Best Tier",
+            "type": "integer"
+          },
+          "first_published_at": {
+            "format": "date-time",
+            "title": "First Published At",
+            "type": "string"
+          },
+          "group_id": {
+            "format": "uuid",
+            "title": "Group Id",
+            "type": "string"
+          },
+          "last_published_at": {
+            "format": "date-time",
+            "title": "Last Published At",
+            "type": "string"
+          },
+          "lead": {
+            "$ref": "#/components/schemas/NewsItemOut"
+          },
+          "others": {
+            "items": {
+              "$ref": "#/components/schemas/NewsItemOut"
+            },
+            "title": "Others",
+            "type": "array"
+          },
+          "publisher_count": {
+            "title": "Publisher Count",
+            "type": "integer"
+          },
+          "tickers": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tickers",
+            "type": "array"
+          }
+        },
+        "required": [
+          "group_id",
+          "lead",
+          "others",
+          "article_count",
+          "publisher_count",
+          "best_tier",
+          "tickers",
+          "first_published_at",
+          "last_published_at"
+        ],
+        "title": "NewsGroupOut",
+        "type": "object"
+      },
+      "NewsItemOut": {
+        "properties": {
+          "author": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Author"
+          },
+          "data_mode": {
+            "title": "Data Mode",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "language": {
+            "title": "Language",
+            "type": "string"
+          },
+          "mentions": {
+            "items": {
+              "$ref": "#/components/schemas/MentionOut"
+            },
+            "title": "Mentions",
+            "type": "array"
+          },
+          "published_at": {
+            "format": "date-time",
+            "title": "Published At",
+            "type": "string"
+          },
+          "publisher": {
+            "title": "Publisher",
+            "type": "string"
+          },
+          "publisher_domain": {
+            "title": "Publisher Domain",
+            "type": "string"
+          },
+          "publisher_updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publisher Updated At"
+          },
+          "snippet": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snippet"
+          },
+          "source_country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Country"
+          },
+          "source_id": {
+            "title": "Source Id",
+            "type": "string"
+          },
+          "source_tier": {
+            "title": "Source Tier",
+            "type": "integer"
+          },
+          "time_basis": {
+            "title": "Time Basis",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "url",
+          "title",
+          "publisher",
+          "publisher_domain",
+          "author",
+          "snippet",
+          "language",
+          "source_country",
+          "kind",
+          "source_id",
+          "source_tier",
+          "published_at",
+          "time_basis",
+          "publisher_updated_at",
+          "data_mode",
+          "mentions"
+        ],
+        "title": "NewsItemOut",
+        "type": "object"
+      },
+      "NewsSourceOut": {
+        "properties": {
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "tier": {
+            "title": "Tier",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "tier",
+          "enabled"
+        ],
+        "title": "NewsSourceOut",
         "type": "object"
       },
       "ObservationOut": {
@@ -2898,6 +3245,145 @@
         "summary": "Series Observations",
         "tags": [
           "macro"
+        ]
+      }
+    },
+    "/news": {
+      "get": {
+        "operationId": "news_news_get",
+        "parameters": [
+          {
+            "description": "Universe ticker, e.g. AAPL",
+            "in": "query",
+            "name": "ticker",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Universe ticker, e.g. AAPL",
+              "title": "Ticker"
+            }
+          },
+          {
+            "description": "Source id, e.g. gdelt or sec_press",
+            "in": "query",
+            "name": "source",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Source id, e.g. gdelt or sec_press",
+              "title": "Source"
+            }
+          },
+          {
+            "description": "Tiers 1..max_tier",
+            "in": "query",
+            "name": "max_tier",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 4,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Tiers 1..max_tier",
+              "title": "Max Tier"
+            }
+          },
+          {
+            "description": "Comma-separated: article (media), press_release (issuer), official",
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^(article|press_release|official)(,(article|press_release|official))*$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated: article (media), press_release (issuer), official",
+              "title": "Kind"
+            }
+          },
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 30,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewsFeed"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "News",
+        "tags": [
+          "news"
         ]
       }
     },

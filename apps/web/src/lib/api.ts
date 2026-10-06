@@ -213,3 +213,45 @@ export async function loadInstrumentPrices(
     return { status: "unavailable" };
   }
 }
+
+// ---------- news (M0.8, ADR-018) ----------
+
+export type NewsFeed = components["schemas"]["NewsFeed"];
+export type NewsGroup = components["schemas"]["NewsGroupOut"];
+export type NewsItem = components["schemas"]["NewsItemOut"];
+export type NewsSource = components["schemas"]["NewsSourceOut"];
+
+/** article: media coverage; press_release: the issuer's own announcements; official: government. */
+export type NewsKind = "article" | "press_release" | "official";
+
+export interface NewsQuery {
+  ticker?: string;
+  source?: string;
+  maxTier?: number;
+  kinds?: NewsKind[];
+  knownAt?: string;
+  limit?: number;
+}
+
+/** News stories (copies of one story collapsed), newest first, or null when the API is down. */
+export async function loadNews(query: NewsQuery = {}): Promise<NewsFeed | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/news", {
+      params: {
+        query: {
+          ...(query.ticker ? { ticker: query.ticker } : {}),
+          ...(query.source ? { source: query.source } : {}),
+          ...(query.maxTier ? { max_tier: query.maxTier } : {}),
+          ...(query.kinds?.length ? { kind: query.kinds.join(",") } : {}),
+          ...(query.knownAt ? { known_at: query.knownAt } : {}),
+          ...(query.limit ? { limit: query.limit } : {}),
+        },
+      },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}

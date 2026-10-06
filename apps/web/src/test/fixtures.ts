@@ -14,6 +14,10 @@ import instruments from "../../tests/fixtures/api/instruments.json";
 import macroPayems from "../../tests/fixtures/api/macro-payems.json";
 import macroPayemsBefore from "../../tests/fixtures/api/macro-payems-before-revision.json";
 import macroSeries from "../../tests/fixtures/api/macro-series.json";
+import newsNvdaAnnouncements from "../../tests/fixtures/api/news-nvda-announcements.json";
+import newsNvdaCoverage from "../../tests/fixtures/api/news-nvda-coverage.json";
+import newsNvda from "../../tests/fixtures/api/news-nvda.json";
+import news from "../../tests/fixtures/api/news.json";
 import overviewBefore from "../../tests/fixtures/api/overview-before-revision.json";
 import overviewMarkets from "../../tests/fixtures/api/overview-markets.json";
 import overview from "../../tests/fixtures/api/overview.json";
@@ -31,6 +35,7 @@ import type {
   InstrumentPrices,
   LatestPrices,
   MacroSeriesList,
+  NewsFeed,
   Overview,
   Progress,
   SeriesObservations,
@@ -86,3 +91,11 @@ export const recordedPrices = {
 
 /** The overview from the same database: the markets block (no macro data there). */
 export const recordedMarketsOverview = overviewMarkets.response as Overview;
+
+/** News from the recorded GDELT and feed responses (copies collapsed), and NVDA's stories. */
+export const recordedNews = {
+  all: news.response as NewsFeed,
+  nvda: newsNvda.response as NewsFeed,
+  nvdaAnnouncements: newsNvdaAnnouncements.response as NewsFeed,
+  nvdaCoverage: newsNvdaCoverage.response as NewsFeed,
+};
