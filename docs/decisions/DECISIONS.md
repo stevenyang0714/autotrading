@@ -444,6 +444,39 @@ M1.1. Code: `adapters/sec/` (concepts, instance, filing_xbrl, reconcile), `adapt
   - The split check covers the newest 10-K of each run.
   - Reconciliation is a snapshot at the time the filing was read.
 
+
+## ADR-022 Valuation inputs and multiples — Accepted (2026-10-07, approved by Steven with the M1.2 plan)
+M1.2. Code: `domain/valuation.py`, `api/valuation.py` (`GET /instruments/{ticker}/valuation?known_at=`). Everything is computed at read time from the facts, closes and splits known at the As known on time T.
+- **Price (errata E4):**
+  - The valuation price is the last raw daily consolidated (SIP) close public at T.
+  - Only a close stored as `end_of_day` feeds a valuation. A fixture or demo close, a close more than 5 calendar days before T (stale), or no close: every value is Data unavailable, and the reason is given once.
+  - Intraday IEX quotes are never read. There are no closes before 2016-01-04.
+- **Shares (V2):**
+  - The most recently dated count known at T, cover page or balance sheet.
+  - Moved to the close's split basis (NVDA's May 2024 count × 10 after the 2024-06-10 split).
+  - Companies with several share classes use every common class (Alphabet: A + B + C at the Class A price; Meta: A + B).
+- **Market cap** = close × shares.
+- **EV** = market cap + total debt − cash, at the latest balance-sheet date where net debt is known (ADR-021 D4: unreported short items count as 0 and are named). None for banks.
+- **TTM flows** are the last four quarters (ADR-021): revenue, EBITDA (operating income + D&A) and FCF (OCF − capex). EBITDA is unavailable without operating income (JPMorgan, ExxonMobil) or D&A (Microsoft, Alphabet; V3).
+- **TTM diluted EPS (V1):**
+  - Last fiscal year + this year to date − last year to date, all reported EPS, each on the close's split basis.
+  - Right after a 10-K, the fiscal-year EPS alone.
+  - Not strictly additive; labelled.
+- **Multiples:**
+  - P/E = price / TTM EPS; EV/EBITDA; EV/Sales; P/B = market cap / stockholders' equity (latest balance date).
+  - FCF yield = TTM FCF / market cap; earnings yield = TTM EPS / price.
+  - Not meaningful (n/m) for non-positive EPS, EBITDA or equity (AutoZone, O'Reilly and Lowe's have negative equity).
+- **Inputs:** every value lists its inputs with their value, period or date, how they were built, and the filings behind them.
+- **Quarters (refines ADR-021):** year-to-date lengths now also cover AutoZone's 12/12/12/16-week year (single quarter 80–100 days, two 160–196, three 245–287).
+- **Live check 2026-10-07:**
+  - Apple $4.858T, P/E 38.18, EV/EBITDA 29.19.
+  - All ten have a market cap.
+  - NVDA's market cap is $2.97T both before (2024-06-07) and after (2024-06-12) its 10-for-1 split.
+- **Known gaps:**
+  - Alphabet's market cap uses the Class A price for all classes.
+  - TTM EPS non-additivity.
+  - Multiples history (e.g. P/E percentile) is M1.3.
+
 ---
 
 ## Open decisions (owner: Steven)
