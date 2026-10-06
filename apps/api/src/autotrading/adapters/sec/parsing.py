@@ -23,7 +23,7 @@ from decimal import Decimal
 from typing import Any
 from zoneinfo import ZoneInfo
 
-from autotrading.adapters.sec.concepts import METRIC_MAPPINGS, TAXONOMY, MetricMapping, qualified
+from autotrading.adapters.sec.concepts import METRIC_MAPPINGS, MetricMapping, split_concept
 from autotrading.domain.provenance import TimePrecision, end_of_day
 
 SEC_ARCHIVES = "https://www.sec.gov/Archives/edgar/data"
@@ -190,23 +190,25 @@ def select_values(companyfacts: dict[str, Any]) -> list[XbrlValue]:
     ignored. Identical repeats are dropped; two different values for one filing and period
     are both returned and surface later as a conflict.
     """
-    gaap: dict[str, Any] = companyfacts.get("facts", {}).get(TAXONOMY, {})
+    taxonomies: dict[str, Any] = companyfacts.get("facts", {})
     selected: list[XbrlValue] = []
     for mapping in METRIC_MAPPINGS:
         # (accession, start, end) -> (priority, values from that concept)
         best: dict[tuple[str, str | None, str], tuple[int, list[XbrlValue]]] = {}
         for priority, concept in enumerate(mapping.concepts):
-            if concept not in gaap:
+            taxonomy, name = split_concept(concept)
+            reported = taxonomies.get(taxonomy, {}).get(name)
+            if reported is None:
                 continue
             per_slot: dict[tuple[str, str | None, str], list[XbrlValue]] = defaultdict(list)
-            for obs in _observations(gaap[concept], mapping):
+            for obs in _observations(reported, mapping):
                 start = obs.get("start")
                 if (mapping.period == "duration") != (start is not None):
                     continue
                 slot = (obs["accn"], start, obs["end"])
                 value = XbrlValue(
                     metric_id=mapping.metric_id,
-                    concept=qualified(concept),
+                    concept=concept,
                     unit=mapping.unit,
                     currency=mapping.currency,
                     value=Decimal(obs["val"]),

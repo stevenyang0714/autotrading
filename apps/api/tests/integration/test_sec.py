@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from autotrading.adapters.sec.acceptance import EASTERN, header_url
 from autotrading.adapters.sec.company import companyfacts_url, submissions_url
+from autotrading.adapters.sec.concepts import TAXONOMIES
 from autotrading.adapters.sec.refresh import company_ciks, create_company_runs
 from autotrading.config_sync import load_sources, sync_sources
 from autotrading.db.models import (
@@ -196,7 +197,7 @@ def test_every_fact_links_to_its_accession_and_filing_url(
             "https://www.sec.gov/Archives/edgar/data/320193/"
             f"{fact.accession_id.replace('-', '')}/{fact.accession_id}-index.htm"
         )
-        assert fact.source_concept and fact.source_concept.startswith("us-gaap:")
+        assert fact.source_concept and fact.source_concept.split(":")[0] in TAXONOMIES
         assert fact.published_at_precision == "exact"
         assert fact.raw_payload_sha256 is not None and fact.source_tier == 1
 

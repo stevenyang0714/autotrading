@@ -93,6 +93,17 @@ terms:
   capex: {name: 資本支出, hint: 購置廠房、設備等固定資產支付的現金。}
   share_repurchases: {name: 庫藏股買回, hint: 公司實際支付買回自家股票的現金。}
   stock_based_compensation: {name: 股票酬勞, hint: 發給員工的股票與選擇權費用，屬非現金費用。}
+  shares_outstanding: {name: 流通在外股數, hint: 資產負債表日的普通股流通股數；多股別公司為各股別加總。}
+  shares_outstanding_cover: {name: 封面流通股數, hint: 申報封面上、接近申報日的流通股數，日期在期末之後。}
+  shares_repurchased: {name: 買回股數, hint: 期間內實際買回的自家股票股數，不是授權額度。}
+  repurchase_authorized: {name: 買回授權額度, hint: 董事會批准可用於買回的金額；授權不等於實際買回。}
+  repurchase_remaining: {name: 剩餘買回額度, hint: 已授權但尚未用掉的買回金額，不代表一定會買。}
+  depreciation_amortization: {name: 折舊與攤銷, hint: 固定資產與無形資產的非現金費用，EBITDA 的組成之一。}
+  stockholders_equity: {name: 股東權益, hint: 歸屬母公司股東的帳面價值；大量買回會使它變小甚至為負。}
+  dividends_paid: {name: 已付股利, hint: 期間內實際以現金發放的股利。}
+  interest_expense: {name: 利息費用, hint: 借款在期間內認列的利息成本。}
+  income_tax_expense: {name: 所得稅費用, hint: 期間內認列的所得稅（含遞延），不等於實際繳納的稅。}
+  pretax_income: {name: 稅前淨利, hint: 繼續營業單位扣除所得稅前的利潤。}
 
   # macro series
   observation_date: {name: 觀測日期, hint: FRED 標示數值的日期，為期間的第一天；不是公布日。}

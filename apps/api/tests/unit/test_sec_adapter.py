@@ -13,7 +13,7 @@ import httpx2 as httpx
 import pytest
 
 from autotrading.adapters.sec.client import MAX_ATTEMPTS, SecClient, SecConfigError, SecRequestError
-from autotrading.adapters.sec.concepts import METRIC_MAPPINGS
+from autotrading.adapters.sec.concepts import METRIC_MAPPINGS, split_concept
 from autotrading.adapters.sec.parsing import (
     filing_index_url,
     load_companyfacts,
@@ -203,6 +203,31 @@ def test_wrong_unit_wrong_period_type_and_repeats_are_dropped() -> None:
         ("cash", "USD", Decimal(5), None),
         ("eps_diluted", "USD/shares", Decimal("7.46"), date(2024, 1, 1)),
     ]
+
+
+def test_concepts_are_read_across_taxonomies_in_priority_order() -> None:
+    authorization = {"units": {"USD": [obs("A", 50, "2024-01-31", start=None)]}}
+    older_tag = {"units": {"USD": [obs("A", 40, "2024-01-31", start=None)]}}
+    cover = {"units": {"shares": [obs("A", 2190, "2025-10-17", start=None)]}}
+    values = select_values(
+        {
+            "facts": {
+                "srt": {"StockRepurchaseProgramAuthorizedAmount1": authorization},
+                "us-gaap": {"StockRepurchaseProgramAuthorizedAmount1": older_tag},
+                "dei": {"EntityCommonStockSharesOutstanding": cover},
+            }
+        }
+    )
+    assert sorted((v.metric_id, v.concept, v.value) for v in values) == [
+        ("repurchase_authorized", "srt:StockRepurchaseProgramAuthorizedAmount1", Decimal(50)),
+        ("shares_outstanding_cover", "dei:EntityCommonStockSharesOutstanding", Decimal(2190)),
+    ]
+
+
+@pytest.mark.parametrize("concept", ["Revenues", "ifrs-full:Revenue", "us-gaap:"])
+def test_concepts_must_be_qualified_by_a_known_taxonomy(concept: str) -> None:
+    with pytest.raises(ValueError, match="qualified"):
+        split_concept(concept)
 
 
 def test_two_values_for_one_filing_and_period_are_both_kept_for_the_conflict_check() -> None:

@@ -21,8 +21,9 @@ from autotrading.ingestion.runner import IngestionRunner
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "sec"
 MANIFEST: dict[str, Any] = json.loads((FIXTURES / "manifest.json").read_text(encoding="utf-8"))
 USER_AGENT = "Test Runner test@example.com"
-# Universe tickers whose filings and facts are recorded (XOM includes its predecessor).
-RECORDED_TICKERS = ("AAPL", "XOM")
+# Universe tickers whose filings and facts are recorded (XOM includes its predecessor; META is
+# the issuer whose share counts are tagged per class only, ADR-021).
+RECORDED_TICKERS = ("AAPL", "XOM", "META")
 
 # Mutations of the recorded data for single tests, keyed by URL.
 OVERRIDES: dict[str, bytes] = {}

@@ -35,8 +35,10 @@ export type CompleteTermId =
   | "data_age"
   | "data_freshness"
   | "dead_letter"
+  | "depreciation_amortization"
   | "dev_log"
   | "diluted_shares"
+  | "dividends_paid"
   | "duplicate_group"
   | "eps_diluted"
   | "feed_status"
@@ -45,8 +47,10 @@ export type CompleteTermId =
   | "freshness_sla"
   | "gross_profit"
   | "hy_oas_percentile"
+  | "income_tax_expense"
   | "ingestion_note"
   | "ingestion_status"
+  | "interest_expense"
   | "last_price"
   | "license_status"
   | "long_term_debt_current"
@@ -84,19 +88,26 @@ export type CompleteTermId =
   | "planned_phase"
   | "point_in_time"
   | "predecessor_issuer"
+  | "pretax_income"
   | "price_change_1d"
   | "price_history"
   | "rate_limit"
   | "real_fed_funds_rate"
   | "real_gdp_growth_annualized"
   | "reporting_period"
+  | "repurchase_authorized"
+  | "repurchase_remaining"
   | "restated_flag"
   | "revenue"
   | "rule_insight"
   | "sahm_rule_indicator"
   | "share_repurchases"
+  | "shares_outstanding"
+  | "shares_outstanding_cover"
+  | "shares_repurchased"
   | "source_tier"
   | "stock_based_compensation"
+  | "stockholders_equity"
   | "story_count"
   | "update_cadence"
   | "vintage"
@@ -868,6 +879,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "失敗佇列",
     "hint_zh": "重試多次仍失敗的擷取工作，需要人工處理。"
   },
+  "depreciation_amortization": {
+    "term_id": "depreciation_amortization",
+    "display_name": "Depreciation and Amortization",
+    "category": "fundamentals",
+    "short_definition": "Non-cash charge for the use of fixed and intangible assets in the period.",
+    "full_definition": "Read from us-gaap DepreciationDepletionAndAmortization, DepreciationAndAmortization or DepreciationAmortizationAndAccretionNet, in that order, as added back on the cash flow statement. A depreciation-only figure is not substituted.",
+    "formula": "reported us-gaap:DepreciationDepletionAndAmortization, else DepreciationAndAmortization, else DepreciationAmortizationAndAccretionNet",
+    "unit": "USD",
+    "example": "Apple's FY2025 10-K reports $11.698 billion of depreciation and amortization.",
+    "direction": "N/A",
+    "interpretation": "Compare with capex: capex well above D&A means the asset base is growing.",
+    "why_it_matters": "An input of EBITDA and of maintenance-capex estimates in valuation (M1.2, M1.3).",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), us-gaap depreciation and amortization concepts",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "Microsoft tags it with its own concept and Alphabet reports depreciation only; both stay unavailable rather than approximated.",
+    "related_terms": [
+      "capex",
+      "operating_cash_flow"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "折舊與攤銷",
+    "hint_zh": "固定資產與無形資產的非現金費用，EBITDA 的組成之一。"
+  },
   "dev_log": {
     "term_id": "dev_log",
     "display_name": "Development Log",
@@ -917,6 +953,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "稀釋加權股數",
     "hint_zh": "期間內的加權平均股數，含潛在稀釋股份。"
+  },
+  "dividends_paid": {
+    "term_id": "dividends_paid",
+    "display_name": "Dividends Paid",
+    "category": "fundamentals",
+    "short_definition": "Cash paid to shareholders as dividends in the period.",
+    "full_definition": "Read from us-gaap PaymentsOfDividendsCommonStock, else PaymentsOfDividends, on the cash flow statement.",
+    "formula": "reported us-gaap:PaymentsOfDividendsCommonStock, else us-gaap:PaymentsOfDividends",
+    "unit": "USD",
+    "example": "Apple's FY2025 10-K reports $15.421 billion of dividends paid.",
+    "direction": "Higher = more cash returned, not automatically better",
+    "interpretation": "Together with share repurchases it is the cash returned to shareholders.",
+    "why_it_matters": "Separates dividends from buybacks when judging capital return and its funding.",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), us-gaap dividend payment concepts",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "The fallback concept can include preferred dividends (JPMorgan). AutoZone and O'Reilly pay no dividend, so it is not reported.",
+    "related_terms": [
+      "share_repurchases",
+      "operating_cash_flow"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "已付股利",
+    "hint_zh": "期間內實際以現金發放的股利。"
   },
   "duplicate_group": {
     "term_id": "duplicate_group",
@@ -1121,6 +1182,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "高收益債利差百分位",
     "hint_zh": "目前利差在可取得歷史中的排名（0–100）。"
   },
+  "income_tax_expense": {
+    "term_id": "income_tax_expense",
+    "display_name": "Income Tax Expense",
+    "category": "fundamentals",
+    "short_definition": "Income tax charged against profit in the period.",
+    "full_definition": "Read from us-gaap IncomeTaxExpenseBenefit (current plus deferred). A negative value is a tax benefit.",
+    "formula": "reported us-gaap:IncomeTaxExpenseBenefit",
+    "unit": "USD",
+    "example": "Apple's FY2025 10-K reports $20.719 billion of income tax expense.",
+    "direction": "N/A",
+    "interpretation": "Divided by pre-tax income it gives the effective tax rate; one-off items can move it sharply.",
+    "why_it_matters": "An input of the tax rate assumed in DCF valuation (M1.3).",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), us-gaap:IncomeTaxExpenseBenefit",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "Includes deferred tax, so it is not the cash tax paid.",
+    "related_terms": [
+      "pretax_income",
+      "net_income"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "所得稅費用",
+    "hint_zh": "期間內認列的所得稅（含遞延），不等於實際繳納的稅。"
+  },
   "ingestion_note": {
     "term_id": "ingestion_note",
     "display_name": "Run Note",
@@ -1170,6 +1256,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "擷取狀態",
     "hint_zh": "某次資料擷取的結果：成功、略過、失敗等。"
+  },
+  "interest_expense": {
+    "term_id": "interest_expense",
+    "display_name": "Interest Expense",
+    "category": "fundamentals",
+    "short_definition": "Interest cost on borrowings recognized in the period.",
+    "full_definition": "Read from us-gaap InterestExpenseNonoperating, InterestExpense or InterestExpenseDebt, in that order.",
+    "formula": "reported us-gaap:InterestExpenseNonoperating, else InterestExpense, else InterestExpenseDebt",
+    "unit": "USD",
+    "example": "Microsoft's FY2026 10-K reports $3.051 billion of interest expense.",
+    "direction": "Higher = more financing cost",
+    "interpretation": "Compare with operating income (coverage) and with total debt (implied cost of debt).",
+    "why_it_matters": "An input of the cost of debt and interest coverage in valuation (M1.3).",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), us-gaap interest expense concepts",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "Apple and Lowe's do not tag a separate current figure; for a bank interest expense is an operating cost, not financing.",
+    "related_terms": [
+      "operating_income",
+      "long_term_debt_noncurrent"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "利息費用",
+    "hint_zh": "借款在期間內認列的利息成本。"
   },
   "last_price": {
     "term_id": "last_price",
@@ -2101,6 +2212,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "前身發行人",
     "hint_zh": "公司改組前的原發行公司，其財報屬於這檔股票的歷史。"
   },
+  "pretax_income": {
+    "term_id": "pretax_income",
+    "display_name": "Pre-Tax Income",
+    "category": "fundamentals",
+    "short_definition": "Profit from continuing operations before income tax.",
+    "full_definition": "Read from us-gaap IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest, else the older concept that also excludes equity-method income.",
+    "formula": "reported us-gaap pre-tax income from continuing operations",
+    "unit": "USD",
+    "example": "Apple's FY2025 10-K reports $132.729 billion of income before provision for income taxes.",
+    "direction": "Higher = more profit",
+    "interpretation": "Use with income tax expense for the effective tax rate.",
+    "why_it_matters": "An input of the effective tax rate in valuation (M1.3).",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), us-gaap pre-tax income concepts",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "Excludes discontinued operations.",
+    "related_terms": [
+      "income_tax_expense",
+      "net_income"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "稅前淨利",
+    "hint_zh": "繼續營業單位扣除所得稅前的利潤。"
+  },
   "price_change_1d": {
     "term_id": "price_change_1d",
     "display_name": "Day Change",
@@ -2250,6 +2386,56 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "報告期間",
     "hint_zh": "數值所描述的期間，以期末日標示；不是公布日。"
   },
+  "repurchase_authorized": {
+    "term_id": "repurchase_authorized",
+    "display_name": "Buyback Authorization",
+    "category": "fundamentals",
+    "short_definition": "Amount the board authorized for share repurchases, as of the authorization date.",
+    "full_definition": "Read from srt StockRepurchaseProgramAuthorizedAmount1 (used since 2021), else us-gaap StockRepurchaseProgramAuthorizedAmount1 or StockRepurchaseProgramAuthorizedAmount. The date is the date the filing tags, usually the board approval. Programs tagged per program or class are not added together.",
+    "formula": "reported srt:StockRepurchaseProgramAuthorizedAmount1, else us-gaap authorization concepts",
+    "unit": "USD",
+    "example": "NVIDIA's FY2025 10-K reports a $38.7 billion authorization dated 2025-01-26 (srt tag).",
+    "direction": "N/A",
+    "interpretation": "An authorization is permission, not spending; compare it with repurchases actually made.",
+    "why_it_matters": "An announcement alone can reach WATCH at most in the buyback engine (errata E7).",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), srt / us-gaap repurchase program concepts",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "Apple, Microsoft and Alphabet do not tag a current total authorization; it stays unavailable for them. 8-K announcements are read in M1.4.",
+    "related_terms": [
+      "repurchase_remaining",
+      "share_repurchases"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "買回授權額度",
+    "hint_zh": "董事會批准可用於買回的金額；授權不等於實際買回。"
+  },
+  "repurchase_remaining": {
+    "term_id": "repurchase_remaining",
+    "display_name": "Remaining Buyback Authorization",
+    "category": "fundamentals",
+    "short_definition": "Authorized buyback amount not yet used, at the date the filing states.",
+    "full_definition": "Read from us-gaap StockRepurchaseProgramRemainingAuthorizedRepurchaseAmount1, else StockRepurchaseProgramRemainingAuthorizedRepurchaseAmount.",
+    "formula": "reported us-gaap:StockRepurchaseProgramRemainingAuthorizedRepurchaseAmount1, else …Amount",
+    "unit": "USD",
+    "example": "Meta's 2025 10-K reports $25.03 billion remaining at 2025-12-31.",
+    "direction": "N/A",
+    "interpretation": "Large remaining capacity relative to market value allows sustained buybacks; it is not a commitment.",
+    "why_it_matters": "One input of the buyback WATCH state (remaining authorization versus market capitalization).",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), us-gaap remaining authorization concepts",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "Several companies (Apple, Microsoft, Alphabet, JPMorgan) do not tag it; missing means not reported.",
+    "related_terms": [
+      "repurchase_authorized",
+      "share_repurchases"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "剩餘買回額度",
+    "hint_zh": "已授權但尚未用掉的買回金額，不代表一定會買。"
+  },
   "restated_flag": {
     "term_id": "restated_flag",
     "display_name": "Restated",
@@ -2376,6 +2562,81 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "庫藏股買回",
     "hint_zh": "公司實際支付買回自家股票的現金。"
   },
+  "shares_outstanding": {
+    "term_id": "shares_outstanding",
+    "display_name": "Shares Outstanding (balance sheet)",
+    "category": "fundamentals",
+    "short_definition": "Common shares outstanding at the balance sheet date.",
+    "full_definition": "Read from us-gaap CommonStockSharesOutstanding at the period end. Where a filing reports only one figure per share class (Meta's Class A and B), the classes are added from the filing's own XBRL, and the cell says so (sum of classes, ADR-021). Treasury shares are not included.",
+    "formula": "reported us-gaap:CommonStockSharesOutstanding, else the sum of its common share classes in the filing",
+    "unit": "shares",
+    "example": "Apple's balance sheet at 2025-09-27 reports 14,773,260,000 shares outstanding.",
+    "direction": "Lower over time = net share reduction, not automatically better",
+    "interpretation": "Compare across years to see whether buybacks actually shrink the share count after employee grants.",
+    "why_it_matters": "The share count behind market capitalization and the net share reduction of the buyback engine.",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), us-gaap:CommonStockSharesOutstanding; class sums from the filing's XBRL (www.sec.gov/Archives)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "Splits change the count; the split-adjusted value is shown beside the reported one. Class sums are only made for inline XBRL filings since mid-2019.",
+    "related_terms": [
+      "shares_outstanding_cover",
+      "diluted_shares"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "流通在外股數",
+    "hint_zh": "資產負債表日的普通股流通股數；多股別公司為各股別加總。"
+  },
+  "shares_outstanding_cover": {
+    "term_id": "shares_outstanding_cover",
+    "display_name": "Shares Outstanding (cover page)",
+    "category": "fundamentals",
+    "short_definition": "Common shares outstanding on the latest practicable date before the filing, from its cover page.",
+    "full_definition": "Read from dei EntityCommonStockSharesOutstanding: the count the company states on the cover of its 10-K or 10-Q, as of a date a few weeks after the period end. Where only per-class figures are tagged (Alphabet, Meta), the common classes are added from the filing's XBRL (ADR-021).",
+    "formula": "reported dei:EntityCommonStockSharesOutstanding, else the sum of its common share classes in the filing",
+    "unit": "shares",
+    "example": "Apple's FY2025 10-K cover reports 14,776,353,000 shares outstanding as of 2025-10-17.",
+    "direction": "N/A",
+    "interpretation": "More recent than the balance-sheet count; the date shown is the cover date, not the period end.",
+    "why_it_matters": "The most recent official share count available when the filing becomes public.",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), dei:EntityCommonStockSharesOutstanding; class sums from the filing's XBRL (www.sec.gov/Archives)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "Its date differs per filing, so it is shown as the latest value with its date rather than in the balance-sheet columns.",
+    "related_terms": [
+      "shares_outstanding",
+      "diluted_shares"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "封面流通股數",
+    "hint_zh": "申報封面上、接近申報日的流通股數，日期在期末之後。"
+  },
+  "shares_repurchased": {
+    "term_id": "shares_repurchased",
+    "display_name": "Shares Repurchased",
+    "category": "fundamentals",
+    "short_definition": "Number of its own common shares the company bought back in the period.",
+    "full_definition": "Read from us-gaap StockRepurchasedAndRetiredDuringPeriodShares, StockRepurchasedDuringPeriodShares or TreasuryStockSharesAcquired, in that order, from the statement of stockholders' equity. It counts shares actually bought, not authorized.",
+    "formula": "reported us-gaap:StockRepurchasedAndRetiredDuringPeriodShares, else StockRepurchasedDuringPeriodShares, else TreasuryStockSharesAcquired",
+    "unit": "shares",
+    "example": "Apple's FY2025 10-K reports 402,000,000 shares repurchased and retired.",
+    "direction": "Higher = more shares bought, not automatically better",
+    "interpretation": "Compare with shares issued to employees; only the excess reduces the share count.",
+    "why_it_matters": "Separates actual repurchases from authorizations and announcements (errata E7).",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), us-gaap share repurchase concepts",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "Companies with several share classes tag repurchases per class (Alphabet, Meta and JPMorgan in recent filings); those stay unavailable. Split-adjusted beside the reported value.",
+    "related_terms": [
+      "share_repurchases",
+      "shares_outstanding"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "買回股數",
+    "hint_zh": "期間內實際買回的自家股票股數，不是授權額度。"
+  },
   "source_tier": {
     "term_id": "source_tier",
     "display_name": "Source Tier",
@@ -2425,6 +2686,30 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "股票酬勞",
     "hint_zh": "發給員工的股票與選擇權費用，屬非現金費用。"
+  },
+  "stockholders_equity": {
+    "term_id": "stockholders_equity",
+    "display_name": "Stockholders' Equity",
+    "category": "fundamentals",
+    "short_definition": "Book value of the shareholders' claim on the company at the balance sheet date.",
+    "full_definition": "Read from us-gaap StockholdersEquity: equity attributable to the parent's shareholders, excluding non-controlling interests.",
+    "formula": "reported us-gaap:StockholdersEquity at period end",
+    "unit": "USD",
+    "example": "Apple's balance sheet at 2025-09-27 reports stockholders' equity of $73.733 billion.",
+    "direction": "N/A",
+    "interpretation": "Buybacks reduce equity; a low or negative book value can reflect years of repurchases rather than losses.",
+    "why_it_matters": "The base of price-to-book in M1.2.",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), us-gaap:StockholdersEquity",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "AutoZone and O'Reilly have negative equity because of long buyback programs.",
+    "related_terms": [
+      "shares_outstanding"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "股東權益",
+    "hint_zh": "歸屬母公司股東的帳面價值；大量買回會使它變小甚至為負。"
   },
   "story_count": {
     "term_id": "story_count",

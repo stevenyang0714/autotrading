@@ -31,6 +31,18 @@ SEC_XBRL_METRICS = (
     "capex",
     "share_repurchases",
     "stock_based_compensation",
+    # M1.1 (ADR-021)
+    "shares_outstanding",
+    "shares_outstanding_cover",
+    "shares_repurchased",
+    "repurchase_authorized",
+    "repurchase_remaining",
+    "depreciation_amortization",
+    "stockholders_equity",
+    "dividends_paid",
+    "interest_expense",
+    "income_tax_expense",
+    "pretax_income",
 )
 
 # FRED series shown on the Macro page (M0.6): reported values with vintages, one term per

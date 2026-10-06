@@ -125,7 +125,7 @@ def ends(table: dict[str, Any]) -> list[str]:
 def test_replay_ingests_both_xom_issuers(
     replayed: list[IngestionRun], sessions: sessionmaker[Session]
 ) -> None:
-    assert [r.status for r in replayed] == ["succeeded"] * 4  # tickers + 3 companies
+    assert [r.status for r in replayed] == ["succeeded"] * 5  # tickers + 4 companies (META)
     with sessions() as session:
         assert company_ciks(session, ["XOM"]) == ["0000034088", "0002115436"]
         link = session.scalars(select(EntityRelationship)).one()
@@ -154,7 +154,7 @@ def test_a_company_cannot_succeed_itself(engine: Engine, replayed: list[Ingestio
 def test_list_shows_universe_stocks_with_their_latest_report(client: TestClient) -> None:
     body = client.get("/instruments").json()
     by_ticker = {i["ticker"]: i for i in body["instruments"]}
-    assert set(by_ticker) == {"AAPL", "XOM"}
+    assert set(by_ticker) == {"AAPL", "XOM", "META"}
     assert (by_ticker["AAPL"]["cik"], by_ticker["AAPL"]["exchange"]) == ("0000320193", "XNAS")
     assert by_ticker["AAPL"]["latest_report"]["form"] == "10-Q"
     assert by_ticker["XOM"]["predecessors"] == ["Exxon Mobil Corp"]

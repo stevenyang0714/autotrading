@@ -5,11 +5,18 @@
 Writes real responses, trimmed only where noted in manifest.json:
 - tickers: company_tickers_exchange.json, rows of the universe equities only;
 - companies: Apple (CIK 0000320193), ExxonMobil Holdings Corp (0002115436) and its
-  predecessor Exxon Mobil Corp (0000034088, ADR-014);
-- company facts: only the us-gaap concepts in adapters/sec/concepts.py;
-- Exxon Mobil Corp submissions: only periodic and current reports plus every filing its XBRL
-  facts cite (its full index is mostly Form 4 and proxy material).
+  predecessor Exxon Mobil Corp (0000034088, ADR-014), and Meta Platforms (0001326801), whose
+  share counts are tagged per class only (ADR-021);
+- company facts: only the concepts in adapters/sec/concepts.py (us-gaap, dei, srt);
+- Exxon Mobil Corp and Meta submissions: only periodic and current reports plus every filing
+  their XBRL facts cite (their full indexes are mostly Form 4 and proxy material).
 Fails if the cases the integration tests rely on are no longer in the data.
+
+Submissions already recorded are kept: they were recorded on 2026-10-05, before SEC's
+acceptance-time bug, and checked against EDGAR index pages (ADR-013). A company recorded for
+the first time gets every row's acceptance time from its EDGAR header, because SEC's JSON is
+unreliable since 2026-10-06 (adapters/sec/acceptance.py). Delete a company's submissions files
+to record them again.
 """
 
 import json
@@ -19,28 +26,35 @@ from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
+from autotrading.adapters.sec.acceptance import header_acceptance, header_url
 from autotrading.adapters.sec.client import SecClient
 from autotrading.adapters.sec.company import (
     companyfacts_url,
     submissions_page_url,
     submissions_url,
 )
-from autotrading.adapters.sec.concepts import MAPPED_CONCEPTS, TAXONOMY
+from autotrading.adapters.sec.concepts import MAPPED_CONCEPTS, split_concept
 from autotrading.adapters.sec.parsing import load_companyfacts, parse_company, select_values
 from autotrading.adapters.sec.refresh import universe_equities
 from autotrading.adapters.sec.tickers import TICKERS_URL
 from autotrading.settings import get_settings
 
 HERE = Path(__file__).resolve().parent
-APPLE, XOM_HOLDINGS, EXXON_MOBIL = "0000320193", "0002115436", "0000034088"
+APPLE, XOM_HOLDINGS, EXXON_MOBIL, META = "0000320193", "0002115436", "0000034088", "0001326801"
+PERIODIC_AND_CURRENT = frozenset(
+    {"10-K", "10-K/A", "10-Q", "10-Q/A", "8-K", "8-K/A", "8-K12B", "8-K12B/A"}
+)
 # CIK -> trim the submissions index to these forms (None: keep every filing).
 COMPANIES: dict[str, frozenset[str] | None] = {
     APPLE: None,
     XOM_HOLDINGS: None,
-    EXXON_MOBIL: frozenset(
-        {"10-K", "10-K/A", "10-Q", "10-Q/A", "8-K", "8-K/A", "8-K12B", "8-K12B/A"}
-    ),
+    EXXON_MOBIL: PERIODIC_AND_CURRENT,
+    META: PERIODIC_AND_CURRENT,
 }
+KEPT: dict[str, frozenset[str]] = {}  # taxonomy -> concept names kept in company facts
+for _concept in MAPPED_CONCEPTS:
+    _taxonomy, _name = split_concept(_concept)
+    KEPT[_taxonomy] = KEPT.get(_taxonomy, frozenset()) | {_name}
 # Apple FY2008 net income: 10-K (Oct 2009) vs 10-K/A (Jan 2010) after the revenue
 # recognition change for iPhone and Apple TV.
 RESTATEMENT = {
@@ -62,6 +76,7 @@ def write(name: str, content: bytes) -> str:
 
 def main() -> None:
     settings = get_settings()
+    previous: dict[str, Any] = json.loads((HERE / "manifest.json").read_text(encoding="utf-8"))
     files: dict[str, str] = {}
     trimmed: dict[str, str] = {
         "company_tickers_exchange.json": "data rows limited to config/universe.yaml equities",
@@ -74,25 +89,45 @@ def main() -> None:
 
         for cik, forms in COMPANIES.items():
             facts = load_companyfacts(client.get(companyfacts_url(cik), throttle).content)
-            gaap = facts["facts"][TAXONOMY]
-            facts["facts"] = {TAXONOMY: {k: v for k, v in gaap.items() if k in MAPPED_CONCEPTS}}
+            facts["facts"] = {
+                taxonomy: {k: v for k, v in concepts.items() if k in KEPT[taxonomy]}
+                for taxonomy, concepts in facts["facts"].items()
+                if taxonomy in KEPT
+            }
             name = f"companyfacts_CIK{cik}.json"
             files[companyfacts_url(cik)] = write(name, _dump(facts))
-            trimmed[name] = "us-gaap concepts limited to adapters/sec/concepts.py"
+            trimmed[name] = "concepts limited to adapters/sec/concepts.py"
             cited = {v.accession for v in select_values(facts)}
 
+            if (HERE / f"submissions_CIK{cik}.json").exists():
+                kept = {
+                    url: name
+                    for url, name in previous["files"].items()
+                    if f"CIK{cik}" in url and "/submissions/" in url
+                }
+                files.update(kept)
+                trimmed.update(
+                    {n: previous["trimmed"][n] for n in kept.values() if n in previous["trimmed"]}
+                )
+                continue
             main_page = client.get(submissions_url(cik), throttle)
             data = json.loads(main_page.content)
             pages = {
                 page: json.loads(client.get(submissions_page_url(page), throttle).content)
                 for page in parse_company(data).extra_pages
             }
+            note = "acceptanceDateTime of every row from its EDGAR header (ADR-013 amendment)"
             if forms is not None:
                 data["filings"]["recent"] = _keep(data["filings"]["recent"], forms, cited)
                 pages = {page: _keep(block, forms, cited) for page, block in pages.items()}
-                note = f"filings limited to forms {sorted(forms)} and accessions its facts cite"
-                for page in [f"submissions_CIK{cik}.json", *pages]:
-                    trimmed[page] = note
+                note = (
+                    f"filings limited to forms {sorted(forms)} and accessions its facts cite; "
+                    + note
+                )
+            for block in [data["filings"]["recent"], *pages.values()]:
+                _header_times(client, cik, block)
+            for page in [f"submissions_CIK{cik}.json", *pages]:
+                trimmed[page] = note
             files[submissions_url(cik)] = write(f"submissions_CIK{cik}.json", _dump(data))
             for page, block in pages.items():
                 files[submissions_page_url(page)] = write(page, _dump(block))
@@ -106,6 +141,15 @@ def main() -> None:
     }
     (HERE / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     print(f"recorded {len(files)} files into {HERE}")
+
+
+def _header_times(client: SecClient, cik: str, block: dict[str, list[Any]]) -> None:
+    """Replace each row's acceptanceDateTime with the time in the filing's EDGAR header."""
+    for i, accession in enumerate(block["accessionNumber"]):
+        accepted = header_acceptance(client.get(header_url(cik, accession), throttle).content)
+        if accepted is None:
+            raise SystemExit(f"no acceptance time in the EDGAR header of {accession}")
+        block["acceptanceDateTime"][i] = accepted.strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
 
 def _keep(block: dict[str, list[Any]], forms: frozenset[str], cited: set[str]) -> dict[str, Any]:
