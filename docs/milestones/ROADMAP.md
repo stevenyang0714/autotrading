@@ -2,6 +2,8 @@
 
 Detailed milestone files are written **one phase at a time**, at the end of the previous phase, in the same format as `M0_foundation.md`, and approved by the user before work starts. Do not build ahead of the current phase.
 
+Phase 1: `M1_fundamentals.md` was proposed with the Phase 0 exit report (`docs/reports/phase0_exit.md`, 2026-10-06) and awaits Steven's approval.
+
 | Phase | Scope (02 §29) | Entry gate | Exit criteria | Blocking open decisions |
 |---|---|---|---|---|
 | 1 | Fundamental Research Record, valuation (DCF / reverse DCF / multiples with visible assumptions), Buyback engine (authorization vs actual vs net share reduction), Earnings (actual vs prior + guidance + reaction), paper journal | Phase 0 exit report accepted | Financial facts reconcile to filings; buyback states are versioned deterministic rules (errata E7); every fair value shows assumptions and as-of; paper journal records hypothetical decisions with full trace | OD-2, OD-3 |
