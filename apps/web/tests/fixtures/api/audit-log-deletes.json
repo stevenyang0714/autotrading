@@ -1,0 +1,76 @@
+{
+  "recorded_at": "2026-10-06T09:59:40.599338+00:00",
+  "recorded_from": "config sync, a config change and a deleted probe source in the integration test database (tests/integration/test_audit.py)",
+  "endpoint": "/audit-log",
+  "params": {
+    "action": "delete"
+  },
+  "response": {
+    "entries": [
+      {
+        "id": 18,
+        "occurred_at": "2026-10-06T09:59:40.472974Z",
+        "actor": "test:delete",
+        "action": "delete",
+        "table": "sources",
+        "object_id": "audit_probe",
+        "object_label": null,
+        "before_hash": "ddf28d352e6a692e78ad386370d0f7caadc8ca64cd39f6e4e36335b8bcb7072e",
+        "after_hash": null,
+        "changes": [],
+        "removed": {
+          "id": "audit_probe",
+          "url": "https://example.com",
+          "name": "Probe",
+          "tier": 4,
+          "topics": [],
+          "enabled": false,
+          "version": 1,
+          "priority": 0,
+          "created_at": "2026-10-06T09:59:40.472974+00:00",
+          "updated_at": "2026-10-06T09:59:40.472974+00:00",
+          "access_status": "disabled",
+          "license_status": "unknown",
+          "update_cadence": "daily",
+          "rate_limit_burst": 1,
+          "freshness_sla_seconds": 60,
+          "rate_limit_per_second": 1.0
+        }
+      }
+    ],
+    "matching": 1,
+    "next_before_id": null,
+    "facets": {
+      "tables": [
+        {
+          "value": "sources",
+          "count": 18
+        }
+      ],
+      "actions": [
+        {
+          "value": "insert",
+          "count": 16
+        },
+        {
+          "value": "delete",
+          "count": 1
+        },
+        {
+          "value": "update",
+          "count": 1
+        }
+      ],
+      "actors": [
+        {
+          "value": "config:sources.yaml",
+          "count": 16
+        },
+        {
+          "value": "test:delete",
+          "count": 2
+        }
+      ]
+    }
+  }
+}

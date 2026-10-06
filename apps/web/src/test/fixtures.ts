@@ -1,4 +1,7 @@
 /** Recorded real API responses (tests/fixtures/api, see recorded_from in each file). */
+import auditDeletes from "../../tests/fixtures/api/audit-log-deletes.json";
+import auditSourceUpdates from "../../tests/fixtures/api/audit-log-sources-updates.json";
+import auditLog from "../../tests/fixtures/api/audit-log.json";
 import dataHealthSources from "../../tests/fixtures/api/data-health-sources.json";
 import dataHealth from "../../tests/fixtures/api/data-health.json";
 import deadLetters from "../../tests/fixtures/api/dead-letters.json";
@@ -26,6 +29,7 @@ import pricesLatest from "../../tests/fixtures/api/prices-latest.json";
 import progress from "../../tests/fixtures/api/progress.json";
 
 import type {
+  AuditLogPage,
   DataHealthData,
   DataHealthReport,
   DeadLetter,
@@ -98,4 +102,11 @@ export const recordedNews = {
   nvda: newsNvda.response as NewsFeed,
   nvdaAnnouncements: newsNvdaAnnouncements.response as NewsFeed,
   nvdaCoverage: newsNvdaCoverage.response as NewsFeed,
+};
+
+/** The audit log of a test database: config sync inserts, one config change, one deleted row. */
+export const recordedAudit = {
+  all: auditLog.response as AuditLogPage,
+  sourceUpdates: auditSourceUpdates.response as AuditLogPage,
+  deletes: auditDeletes.response as AuditLogPage,
 };

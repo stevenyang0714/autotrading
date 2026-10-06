@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/audit-log": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Audit Log */
+        get: operations["audit_log_audit_log_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/data-health": {
         parameters: {
             query?: never;
@@ -280,6 +297,55 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AuditEntry */
+        AuditEntry: {
+            /** Action */
+            action: string;
+            /** Actor */
+            actor: string;
+            /** After Hash */
+            after_hash: string | null;
+            /** Before Hash */
+            before_hash: string | null;
+            /** Changes */
+            changes: components["schemas"]["FieldChange"][];
+            /** Id */
+            id: number;
+            /** Object Id */
+            object_id: string;
+            /** Object Label */
+            object_label: string | null;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            /** Removed */
+            removed: {
+                [key: string]: unknown;
+            } | null;
+            /** Table */
+            table: string;
+        };
+        /** AuditFacets */
+        AuditFacets: {
+            /** Actions */
+            actions: components["schemas"]["FacetCount"][];
+            /** Actors */
+            actors: components["schemas"]["FacetCount"][];
+            /** Tables */
+            tables: components["schemas"]["FacetCount"][];
+        };
+        /** AuditLogPage */
+        AuditLogPage: {
+            /** Entries */
+            entries: components["schemas"]["AuditEntry"][];
+            facets: components["schemas"]["AuditFacets"];
+            /** Matching */
+            matching: number;
+            /** Next Before Id */
+            next_before_id: number | null;
+        };
         /** Block */
         Block: {
             /** Charts */
@@ -428,6 +494,13 @@ export interface components {
             /** Succeeded At */
             succeeded_at?: string | null;
         };
+        /** FacetCount */
+        FacetCount: {
+            /** Count */
+            count: number;
+            /** Value */
+            value: string;
+        };
         /** FactCell */
         FactCell: {
             /** Currency */
@@ -463,6 +536,15 @@ export interface components {
             periods: components["schemas"]["PeriodColumn"][];
             /** Rows */
             rows: components["schemas"]["MetricRow"][];
+        };
+        /** FieldChange */
+        FieldChange: {
+            /** Field */
+            field: string;
+            /** New */
+            new: unknown;
+            /** Old */
+            old: unknown;
         };
         /** FilingRef */
         FilingRef: {
@@ -1172,6 +1254,48 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    audit_log_audit_log_get: {
+        parameters: {
+            query?: {
+                /** @description Audited table, e.g. sources */
+                table?: string | null;
+                action?: ("insert" | "update" | "delete" | "supersede") | null;
+                /** @description e.g. ingest:sec_edgar */
+                actor?: string | null;
+                /** @description One object's history */
+                object_id?: string | null;
+                since?: string | null;
+                until?: string | null;
+                /** @description Older than this entry */
+                before_id?: number | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditLogPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     data_health_data_health_get: {
         parameters: {
             query?: never;
@@ -1487,6 +1611,8 @@ export interface operations {
                 /** @description Point in time (ADR-012); default now */
                 known_at?: string | null;
                 limit?: number;
+                /** @description Only observation dates on or after this day */
+                since?: string | null;
             };
             header?: never;
             path: {

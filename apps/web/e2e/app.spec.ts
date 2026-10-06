@@ -37,6 +37,9 @@ test("every page loads without console errors", async ({ page }) => {
     "/macro",
     "/macro/PAYEMS",
     "/news",
+    "/news?kind=press_release",
+    "/system/audit-log",
+    "/system/audit-log?table=sources&action=insert",
     "/system/progress",
     ...DASHBOARD_SLUGS.map((s) => `/dashboards/${s}`),
   ];
@@ -103,6 +106,9 @@ for (const path of [
   "/?known_on=2026-09-30",
   "/news",
   "/news?ticker=NVDA",
+  "/news?kind=article&tier=2",
+  "/system/audit-log",
+  "/system/audit-log?table=sources",
   "/system/progress",
 ]) {
   test(`numbers on ${path} are all explained`, async ({ page }) => {
@@ -264,6 +270,47 @@ test("DEMO DATA banner on news replayed from fixtures", async ({ page }) => {
   const banner = page.locator("[data-demo-banner]");
   // CI replays recorded news labelled fixture (make replay-fixtures); live data has no banner.
   await expect(banner).toHaveCount(process.env.CI ? 1 : 0);
+});
+
+// ---------- M0.9: macro chart and audit log (ADR-019) ----------
+
+test("the macro chart draws the series with its first release", async ({ page, isMobile }) => {
+  await page.goto("/macro/PAYEMS");
+  const chart = page.locator("[data-chart]");
+  await expect(chart.locator("canvas").first()).toBeVisible();
+  if (!isMobile) {
+    const box = await chart.boundingBox();
+    await page.mouse.move(box!.x + box!.width * 0.9, box!.y + box!.height * 0.4);
+    await expect(page.locator(".series-chart-tooltip")).toContainText("Value");
+  }
+  const figure = page.locator("figure[data-last-revised]");
+  // August 2026 payrolls were revised on 2026-10-02; as known on 2026-09-30, July was the
+  // newest revised month.
+  await expect(figure).toHaveAttribute("data-last-revised", "2026-08-01");
+  await page.goto("/macro/PAYEMS?known_on=2026-09-30");
+  await expect(page.locator("[data-chart] canvas").first()).toBeVisible();
+  await expect(figure).toHaveAttribute("data-last-revised", "2026-07-01");
+});
+
+test("the audit log filters and pages", async ({ page }) => {
+  await page.goto("/system/audit-log?table=sources");
+  const entries = page.locator("[data-entry]:visible");
+  await expect(entries.first()).toBeVisible();
+  for (const text of await entries.allTextContents()) expect(text).toContain("sources");
+  await page.goto("/system/audit-log");
+  const older = page.getByRole("link", { name: "Older" });
+  if (await older.count()) {
+    await older.click();
+    await expect(page).toHaveURL(/before_id=\d+/);
+    await expect(page.getByRole("link", { name: "Newest" })).toBeVisible();
+  }
+});
+
+test("Data Health links each source to its audit history", async ({ page }) => {
+  await page.goto("/system/data-health");
+  await page.getByRole("link", { name: /^History of SEC EDGAR/ }).first().click();
+  await expect(page).toHaveURL(/table=sources&object_id=sec_edgar/);
+  await expect(page.locator("[data-entry]:visible").first()).toContainText("SEC EDGAR");
 });
 
 // ---------- macro page (M0.6) ----------

@@ -32,6 +32,7 @@ describe("Nav", () => {
       ["Instruments", "/instruments"],
       ["Macro", "/macro"],
       ["News", "/news"],
+      ["Audit Log", "/system/audit-log"],
       ["Build Progress", "/system/progress"],
     ]);
   });

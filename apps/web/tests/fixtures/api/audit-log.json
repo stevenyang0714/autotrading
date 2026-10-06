@@ -1,0 +1,313 @@
+{
+  "recorded_at": "2026-10-06T09:59:40.586522+00:00",
+  "recorded_from": "config sync, a config change and a deleted probe source in the integration test database (tests/integration/test_audit.py)",
+  "endpoint": "/audit-log",
+  "params": {
+    "limit": 50
+  },
+  "response": {
+    "entries": [
+      {
+        "id": 18,
+        "occurred_at": "2026-10-06T09:59:40.472974Z",
+        "actor": "test:delete",
+        "action": "delete",
+        "table": "sources",
+        "object_id": "audit_probe",
+        "object_label": null,
+        "before_hash": "ddf28d352e6a692e78ad386370d0f7caadc8ca64cd39f6e4e36335b8bcb7072e",
+        "after_hash": null,
+        "changes": [],
+        "removed": {
+          "id": "audit_probe",
+          "url": "https://example.com",
+          "name": "Probe",
+          "tier": 4,
+          "topics": [],
+          "enabled": false,
+          "version": 1,
+          "priority": 0,
+          "created_at": "2026-10-06T09:59:40.472974+00:00",
+          "updated_at": "2026-10-06T09:59:40.472974+00:00",
+          "access_status": "disabled",
+          "license_status": "unknown",
+          "update_cadence": "daily",
+          "rate_limit_burst": 1,
+          "freshness_sla_seconds": 60,
+          "rate_limit_per_second": 1.0
+        }
+      },
+      {
+        "id": 17,
+        "occurred_at": "2026-10-06T09:59:40.472974Z",
+        "actor": "test:delete",
+        "action": "insert",
+        "table": "sources",
+        "object_id": "audit_probe",
+        "object_label": null,
+        "before_hash": null,
+        "after_hash": "ddf28d352e6a692e78ad386370d0f7caadc8ca64cd39f6e4e36335b8bcb7072e",
+        "changes": [],
+        "removed": null
+      },
+      {
+        "id": 16,
+        "occurred_at": "2026-10-06T09:59:40.454256Z",
+        "actor": "config:sources.yaml",
+        "action": "update",
+        "table": "sources",
+        "object_id": "gdelt",
+        "object_label": "GDELT DOC 2.0 API",
+        "before_hash": "5e3bde768493da5589138f8b248516eb2bf8ac5232d8cf9c78b121869befb85f",
+        "after_hash": "e7eb560413524e725eb102b6981b3785e63e113a8bcc956654b00909301969b5",
+        "changes": [
+          {
+            "field": "priority",
+            "old": 40,
+            "new": 99
+          },
+          {
+            "field": "updated_at",
+            "old": "2026-10-06T09:59:40.390447+00:00",
+            "new": "2026-10-06T09:59:40.454256+00:00"
+          },
+          {
+            "field": "version",
+            "old": 1,
+            "new": 2
+          }
+        ],
+        "removed": null
+      },
+      {
+        "id": 15,
+        "occurred_at": "2026-10-06T09:59:40.390447Z",
+        "actor": "config:sources.yaml",
+        "action": "insert",
+        "table": "sources",
+        "object_id": "google_blog",
+        "object_label": "Google, The Keyword blog (RSS)",
+        "before_hash": null,
+        "after_hash": "1115d1b61d8ead055967fc895bb09bd0dcf6fd85829c68cb5ac334687151c216",
+        "changes": [],
+        "removed": null
+      },
+      {
+        "id": 14,
+        "occurred_at": "2026-10-06T09:59:40.390447Z",
+        "actor": "config:sources.yaml",
+        "action": "insert",
+        "table": "sources",
+        "object_id": "meta_newsroom",
+        "object_label": "Meta Newsroom (RSS)",
+        "before_hash": null,
+        "after_hash": "da53033cbedf9d0e02a5b50364cc3dbcd4eb3620890b41ead696918eea5ada5e",
+        "changes": [],
+        "removed": null
+      },
+      {
+        "id": 13,
+        "occurred_at": "2026-10-06T09:59:40.390447Z",
+        "actor": "config:sources.yaml",
+        "action": "insert",
+        "table": "sources",
+        "object_id": "microsoft_news",
+        "object_label": "Microsoft News Center (RSS)",
+        "before_hash": null,
+        "after_hash": "ca37033f79ed94d4f33a713c2db2f3d17629e4fbb827d4209e9f7ad70edd9c91",
+        "changes": [],
+        "removed": null
+      },
+      {
+        "id": 12,
+        "occurred_at": "2026-10-06T09:59:40.390447Z",
+        "actor": "config:sources.yaml",
+        "action": "insert",
+        "table": "sources",
+        "object_id": "nvidia_newsroom",
+        "object_label": "NVIDIA Newsroom releases (RSS)",
+        "before_hash": null,
+        "after_hash": "92577e22a352674e16a3e688f56fd33275ae56312b89c0006aa94aaf8550e545",
+        "changes": [],
+        "removed": null
+      },
+      {
+        "id": 11,
+        "occurred_at": "2026-10-06T09:59:40.390447Z",
+        "actor": "config:sources.yaml",
+        "action": "insert",
+        "table": "sources",
+        "object_id": "apple_newsroom",
+        "object_label": "Apple Newsroom (RSS)",
+        "before_hash": null,
+        "after_hash": "62afa24da60fe0d6cfbe1c1d5d39ad2f2b76d3e5d1c6c954810ef55480d13163",
+        "changes": [],
+        "removed": null
+      },
+      {
+        "id": 10,
+        "occurred_at": "2026-10-06T09:59:40.390447Z",
+        "actor": "config:sources.yaml",
+        "action": "insert",
+        "table": "sources",
+        "object_id": "whitehouse_actions",
+        "object_label": "White House presidential actions (RSS)",
+        "before_hash": null,
+        "after_hash": "375b26867b7ad9ad90f049ef28bd63dc4046b740b466625ede13b6ab952414a5",
+        "changes": [],
+        "removed": null
+      },
+      {
+        "id": 9,
+        "occurred_at": "2026-10-06T09:59:40.390447Z",
+        "actor": "config:sources.yaml",
+        "action": "insert",
+        "table": "sources",
+        "object_id": "bea_releases",
+        "object_label": "BEA releases (RSS)",
+        "before_hash": null,
+        "after_hash": "71c3c5783f7294aceb134899a516579855f7041b3fde5c59cfdd93163b4c0c94",
+        "changes": [],
+        "removed": null
+      },
+      {
+        "id": 8,
+        "occurred_at": "2026-10-06T09:59:40.390447Z",
+        "actor": "config:sources.yaml",
+        "action": "insert",
+        "table": "sources",
+        "object_id": "bls_releases",
+        "object_label": "BLS latest releases (RSS)",
+        "before_hash": null,
+        "after_hash": "a198ff3ad7ccc6c1cf9194548e2537381b5c8a6ceca3796a9a3aa605b32bb66a",
+        "changes": [],
+        "removed": null
+      },
+      {
+        "id": 7,
+        "occurred_at": "2026-10-06T09:59:40.390447Z",
+        "actor": "config:sources.yaml",
+        "action": "insert",
+        "table": "sources",
+        "object_id": "fed_press",
+        "object_label": "Federal Reserve press releases (RSS)",
+        "before_hash": null,
+        "after_hash": "e7b9c3fcce08d54a2975ddff1f60c81b042861fc117c3008ad04d6802ac5f371",
+        "changes": [],
+        "removed": null
+      },
+      {
+        "id": 6,
+        "occurred_at": "2026-10-06T09:59:40.390447Z",
+        "actor": "config:sources.yaml",
+        "action": "insert",
+        "table": "sources",
+        "object_id": "sec_press",
+        "object_label": "SEC press releases (RSS)",
+        "before_hash": null,
+        "after_hash": "2a3a857a6cdbe6be36588362b5804bd63deefd4df665a08cd5021adf33da577b",
+        "changes": [],
+        "removed": null
+      },
+      {
+        "id": 5,
+        "occurred_at": "2026-10-06T09:59:40.390447Z",
+        "actor": "config:sources.yaml",
+        "action": "insert",
+        "table": "sources",
+        "object_id": "gdelt",
+        "object_label": "GDELT DOC 2.0 API",
+        "before_hash": null,
+        "after_hash": "5e3bde768493da5589138f8b248516eb2bf8ac5232d8cf9c78b121869befb85f",
+        "changes": [],
+        "removed": null
+      },
+      {
+        "id": 4,
+        "occurred_at": "2026-10-06T09:59:40.390447Z",
+        "actor": "config:sources.yaml",
+        "action": "insert",
+        "table": "sources",
+        "object_id": "massive",
+        "object_label": "Massive (formerly Polygon.io) Stocks",
+        "before_hash": null,
+        "after_hash": "64a6df4fc83f0a5c328937920dce917add2e728730b32d4dc7886a8b24557a3a",
+        "changes": [],
+        "removed": null
+      },
+      {
+        "id": 3,
+        "occurred_at": "2026-10-06T09:59:40.390447Z",
+        "actor": "config:sources.yaml",
+        "action": "insert",
+        "table": "sources",
+        "object_id": "alpaca_iex",
+        "object_label": "Alpaca Market Data, Basic plan (IEX real-time)",
+        "before_hash": null,
+        "after_hash": "d1afd6da67bf9ec6fba0c60d3fca9bd47a2bd6162358405f843034358b6526d0",
+        "changes": [],
+        "removed": null
+      },
+      {
+        "id": 2,
+        "occurred_at": "2026-10-06T09:59:40.390447Z",
+        "actor": "config:sources.yaml",
+        "action": "insert",
+        "table": "sources",
+        "object_id": "fred",
+        "object_label": "FRED / ALFRED (Federal Reserve Bank of St. Louis)",
+        "before_hash": null,
+        "after_hash": "f9784ed984e69e787efd2cabe7f878ebc954fc1eaa3a81a6daef2f64d9bccd2c",
+        "changes": [],
+        "removed": null
+      },
+      {
+        "id": 1,
+        "occurred_at": "2026-10-06T09:59:40.390447Z",
+        "actor": "config:sources.yaml",
+        "action": "insert",
+        "table": "sources",
+        "object_id": "sec_edgar",
+        "object_label": "SEC EDGAR (submissions and XBRL company facts)",
+        "before_hash": null,
+        "after_hash": "8dd159fd5b15eb46f8b7d9300253187fe56ab676d17b796dcf1370444e00f8af",
+        "changes": [],
+        "removed": null
+      }
+    ],
+    "matching": 18,
+    "next_before_id": null,
+    "facets": {
+      "tables": [
+        {
+          "value": "sources",
+          "count": 18
+        }
+      ],
+      "actions": [
+        {
+          "value": "insert",
+          "count": 16
+        },
+        {
+          "value": "delete",
+          "count": 1
+        },
+        {
+          "value": "update",
+          "count": 1
+        }
+      ],
+      "actors": [
+        {
+          "value": "config:sources.yaml",
+          "count": 16
+        },
+        {
+          "value": "test:delete",
+          "count": 2
+        }
+      ]
+    }
+  }
+}

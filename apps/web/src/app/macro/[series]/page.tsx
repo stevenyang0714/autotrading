@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { SeriesView } from "@/components/macro/SeriesView";
 import { loadSeriesObservations, loadSourceHealth } from "@/lib/api";
+import { CHART_LIMIT, chartSince } from "@/lib/macroChart";
 import { endOfDaySgt } from "@/lib/time";
 
 // Point-in-time data: always read live, never serve a cached page.
@@ -21,10 +22,18 @@ export default async function SeriesPage({ params, searchParams }: PageProps<"/m
   const knownOn = typeof query.known_on === "string" && query.known_on ? query.known_on : undefined;
   const knownAt = knownOn ? endOfDaySgt(knownOn) : null;
 
-  const [result, sources] = await Promise.all([
+  // The chart's range depends on the series' frequency, which the first answer tells.
+  const [first, sources] = await Promise.all([
     loadSeriesObservations(series, knownAt ?? undefined),
     loadSourceHealth(),
   ]);
+  const result =
+    first.status === "ok"
+      ? await loadSeriesObservations(series, knownAt ?? undefined, {
+          since: chartSince(first.data.known_at, first.data.series.frequency),
+          limit: CHART_LIMIT,
+        })
+      : first;
   if (result.status === "not_found") notFound();
   if (result.status === "unavailable") {
     return (

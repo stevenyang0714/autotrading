@@ -162,7 +162,7 @@ export const DASHBOARDS: readonly DashboardDef[] = [
   },
 ];
 
-/** Live system pages (nav group "System"). Data Health was pulled forward from M0.9 to M0.4, Instruments to M0.5b, Macro to M0.6, News to M0.8. */
+/** Live system pages (nav group "System"). Data Health was pulled forward from M0.9 to M0.4, Instruments to M0.5b, Macro to M0.6, News to M0.8; Audit Log is M0.9. */
 export interface SystemPageDef {
   id: string;
   href: string;
@@ -200,6 +200,12 @@ export const SYSTEM_PAGES: readonly SystemPageDef[] = [
     href: "/news",
     label: "News",
     termId: "page_news",
+  },
+  {
+    id: "audit_log",
+    href: "/system/audit-log",
+    label: "Audit Log",
+    termId: "page_audit_log",
   },
   {
     id: "progress",
