@@ -119,6 +119,18 @@ METRICS: tuple[MetricDefinition, ...] = (
             "quarterly_derived_value": "quarters.quarters",
             "trailing_twelve_months": "quarters.trailing_twelve_months",
             "split_adjusted": "splits.adjust",
+            # M1.2 (ADR-022)
+            "valuation_price": "valuation.select_price",
+            "market_cap": "valuation.valuation",
+            "enterprise_value": "valuation.valuation",
+            "eps_diluted_ttm": "valuation.ttm_eps",
+            "ebitda_ttm": "valuation.valuation",
+            "pe_ratio_ttm": "valuation.valuation",
+            "ev_to_ebitda": "valuation.valuation",
+            "ev_to_sales": "valuation.valuation",
+            "price_to_book": "valuation.valuation",
+            "fcf_yield": "valuation.valuation",
+            "earnings_yield": "valuation.valuation",
         }.items()
     ),
     MetricDefinition(

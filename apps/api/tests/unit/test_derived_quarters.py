@@ -118,6 +118,23 @@ def test_a_53_week_year_has_a_14_week_quarter() -> None:
     assert [q.number for q in quarters(facts, "revenue")] == [1, 2, 3, 4]
 
 
+def test_autozone_12_12_12_16_week_year() -> None:
+    start = d("2024-09-01")  # fiscal 2025: three 12-week quarters, then 16 weeks
+    facts = [
+        ytd("revenue", 4279, "2024-11-23", start),  # 83 days
+        ytd("revenue", 8229, "2025-02-15", start),  # 167 days
+        ytd("revenue", 12690, "2025-05-10", start),  # 251 days
+        ytd("revenue", 18939, "2025-08-30", start),  # 363 days
+    ]
+    series = quarters(facts, "revenue")
+    assert [(q.number, q.value) for q in series] == [
+        (1, Decimal(4279)),
+        (2, Decimal(3950)),
+        (3, Decimal(4461)),
+        (4, Decimal(6249)),
+    ]
+
+
 def test_eps_quarters_are_only_the_reported_three_months_and_no_fourth() -> None:
     facts = [
         ytd("eps_diluted", 243, "2024-12-28"),

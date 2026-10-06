@@ -191,6 +191,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/instruments/{ticker}/valuation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Instrument Valuation */
+        get: operations["instrument_valuation_instruments__ticker__valuation_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/macro/series": {
         parameters: {
             query?: never;
@@ -792,6 +809,21 @@ export interface components {
             /** Value */
             value: string;
         };
+        /** InputOut */
+        InputOut: {
+            /** Name */
+            name: string;
+            /** Note */
+            note: string | null;
+            /** Period End */
+            period_end: string | null;
+            /** Period Start */
+            period_start: string | null;
+            /** Sources */
+            sources: components["schemas"]["SourceOut"][];
+            /** Value */
+            value: string | null;
+        };
         /** InputRef */
         InputRef: {
             /**
@@ -973,6 +1005,24 @@ export interface components {
             rule: string;
             /** Ticker */
             ticker: string;
+        };
+        /** MetricOut */
+        MetricOut: {
+            /** Detail */
+            detail: string | null;
+            /** Inputs */
+            inputs: components["schemas"]["InputOut"][];
+            /** Metric Id */
+            metric_id: string;
+            /** Reason */
+            reason: ("unavailable" | "not_meaningful") | null;
+            /**
+             * Unit
+             * @enum {string}
+             */
+            unit: "USD" | "USD/shares" | "x" | "percent";
+            /** Value */
+            value: string | null;
         };
         /** MetricRow */
         MetricRow: {
@@ -1173,6 +1223,26 @@ export interface components {
             filing: components["schemas"]["FilingRef"];
             /** Value */
             value: string;
+        };
+        /** PriceOut */
+        PriceOut: {
+            /** Close */
+            close: string | null;
+            /** Day */
+            day: string | null;
+            /** Detail */
+            detail: string;
+            /** Feed Status */
+            feed_status: string | null;
+            /** Published At */
+            published_at: string | null;
+            /** Source Url */
+            source_url: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ok" | "fixture" | "demo" | "stale" | "none";
         };
         /**
          * PriceTile
@@ -1437,6 +1507,23 @@ export interface components {
             /** Url */
             url: string;
         };
+        /** SourceOut */
+        SourceOut: {
+            filing: components["schemas"]["FilingRef"];
+            /** Metric Id */
+            metric_id: string;
+            /**
+             * Period End
+             * Format: date
+             */
+            period_end: string;
+            /** Period Start */
+            period_start: string | null;
+            /** Source Concept */
+            source_concept: string | null;
+            /** Value */
+            value: string;
+        };
         /**
          * SplitAdjusted
          * @description The value on the basis of known_at: share counts times `factor`, per-share amounts
@@ -1480,6 +1567,19 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
+        };
+        /** Valuation */
+        Valuation: {
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Metrics */
+            metrics: components["schemas"]["MetricOut"][];
+            price: components["schemas"]["PriceOut"];
+            /** Ticker */
+            ticker: string;
         };
     };
     responses: never;
@@ -1808,6 +1908,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InstrumentPrices"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    instrument_valuation_instruments__ticker__valuation_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+            };
+            header?: never;
+            path: {
+                ticker: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Valuation"];
                 };
             };
             /** @description Validation Error */

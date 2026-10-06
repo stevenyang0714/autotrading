@@ -111,6 +111,11 @@ def replayed(sessions: sessionmaker[Session]) -> Iterator[list[IngestionRun]]:
         universe_predecessors(settings.resolved_config_dir()),
         before_instances=lambda: alpaca_replay.replay_splits(runner, WINDOW),
     )
+    # One year of end-of-day closes for valuation (M1.2), labelled as the real job stores them.
+    bars = runner.create_run(
+        "alpaca.daily_bars", alpaca_replay.recorded_params("alpaca.daily_bars"), WINDOW
+    )
+    runner.execute(bars)
     with sessions() as session:
         yield [session.get_one(IngestionRun, run_id) for run_id in run_ids]
     for obj in s3.list_objects_v2(Bucket=bucket).get("Contents", []):
@@ -438,6 +443,81 @@ def test_reconciliation_api_lists_latest_filings_and_their_items(client: TestCli
     )
     assert (revenue["status"], revenue["filing_value"]) == ("match", "416161000000")
     assert client.get("/reconciliation/0000000000-00-000000").status_code == 404
+
+
+# ---------- valuation (M1.2, ADR-022) ----------
+
+VALUED_AT = "2026-10-06T12:00:00Z"  # the recorded closes end on 2026-10-05
+
+
+def valuation(client: TestClient, ticker: str, known_at: str) -> dict[str, Any]:
+    response = client.get(f"/instruments/{ticker}/valuation", params={"known_at": known_at})
+    assert response.status_code == 200, response.text
+    body: dict[str, Any] = response.json()
+    return body
+
+
+def test_every_multiple_shows_its_inputs_dates_and_sources(client: TestClient) -> None:
+    body = valuation(client, "AAPL", VALUED_AT)
+    assert body["price"]["status"] == "ok" and body["price"]["day"] == "2026-10-05"
+    assert body["price"]["source_url"].startswith("https://data.alpaca.markets/v2/stocks/bars")
+    metrics = {m["metric_id"]: m for m in body["metrics"]}
+    assert list(metrics) == [
+        "market_cap",
+        "enterprise_value",
+        "pe_ratio_ttm",
+        "ev_to_ebitda",
+        "ev_to_sales",
+        "price_to_book",
+        "fcf_yield",
+        "earnings_yield",
+    ]
+    for metric in metrics.values():
+        assert metric["value"] is not None, metric
+        assert metric["inputs"], metric["metric_id"]
+        for given in metric["inputs"]:
+            assert given["period_end"] is not None
+            if given["name"] not in ("price", "market_cap", "enterprise_value"):
+                assert given["sources"], (metric["metric_id"], given["name"])
+                assert all(
+                    s["filing"]["url"].startswith("https://www.sec.gov/") for s in given["sources"]
+                )
+    cap = Decimal(metrics["market_cap"]["value"])
+    assert Decimal("2e12") < cap < Decimal("6e12")  # Apple: trillions, not a split-basis error
+    assert Decimal(15) < Decimal(metrics["pe_ratio_ttm"]["value"]) < Decimal(80)
+    eps = next(i for i in metrics["pe_ratio_ttm"]["inputs"] if i["name"] == "eps_diluted_ttm")
+    assert len(eps["sources"]) in (1, 3)  # the fiscal year, or year + year-to-date pair
+
+
+def test_a_past_date_uses_only_filings_and_closes_public_then(client: TestClient) -> None:
+    at = "2026-04-15T00:00:00Z"
+    body = valuation(client, "AAPL", at)
+    assert body["price"]["day"] <= "2026-04-14"
+    published = [
+        s["filing"]["published_at"]
+        for m in body["metrics"]
+        for i in m["inputs"]
+        for s in i["sources"]
+    ]
+    assert published and max(published) <= "2026-04-15T00:00:00Z"
+    today = valuation(client, "AAPL", VALUED_AT)
+    assert body["metrics"][0]["value"] != today["metrics"][0]["value"]
+
+
+def test_meta_market_cap_counts_both_share_classes(client: TestClient) -> None:
+    body = valuation(client, "META", VALUED_AT)
+    cap = next(m for m in body["metrics"] if m["metric_id"] == "market_cap")
+    shares = next(i for i in cap["inputs"] if i["name"].startswith("shares_outstanding"))
+    assert Decimal(shares["value"]) > Decimal(2_400_000_000)  # Class A + Class B
+    assert shares["sources"][0]["source_concept"].endswith("(sum of classes)")
+
+
+def test_no_multiple_from_a_stale_close(client: TestClient) -> None:
+    body = valuation(client, "AAPL", "2026-10-20T00:00:00Z")  # last recorded close 2026-10-05
+    assert body["price"]["status"] == "stale"
+    assert {m["value"] for m in body["metrics"]} == {None}
+    assert {m["reason"] for m in body["metrics"]} == {"unavailable"}
+    assert all("older than five days" in m["detail"] for m in body["metrics"])
 
 
 # ---------- API ----------

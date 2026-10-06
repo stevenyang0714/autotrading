@@ -223,12 +223,12 @@ def list_instruments(session: SessionDep) -> InstrumentList:
         select(Identifier.id_value, Instrument, Entity)
         .join(Instrument, Instrument.id == Identifier.instrument_id)
         .join(Entity, Entity.id == Instrument.entity_id)
-        .where(_open_sec("ticker"))
+        .where(open_sec("ticker"))
         .order_by(Identifier.id_value)
     ).all()
     summaries = []
     for ticker, instrument, entity in rows:
-        chain = _chain(session, entity.id)
+        chain = issuer_chain(session, entity.id)
         summaries.append(
             InstrumentSummary(
                 ticker=ticker,
@@ -254,13 +254,13 @@ def fundamentals(
         select(Instrument, Entity)
         .join(Identifier, Identifier.instrument_id == Instrument.id)
         .join(Entity, Entity.id == Instrument.entity_id)
-        .where(_open_sec("ticker"), Identifier.id_value == ticker.upper())
+        .where(open_sec("ticker"), Identifier.id_value == ticker.upper())
     ).first()
     if found is None:
         raise HTTPException(status_code=404, detail=f"unknown instrument {ticker!r}")
     instrument, current = found
     at: datetime = known_at or session.execute(select(func.now())).scalar_one()
-    chain = _chain(session, current.id)
+    chain = issuer_chain(session, current.id)
 
     facts = session.scalars(
         as_of_query(FinancialFact, known_at=at).where(
@@ -313,7 +313,7 @@ def fundamentals(
 
 
 @dataclass(frozen=True)
-class _Chain:
+class IssuerChain:
     """The current issuer and its predecessors (ADR-014), nearest first."""
 
     order: list[UUID]
@@ -321,7 +321,7 @@ class _Chain:
     links: dict[UUID, EntityRelationship]  # by predecessor entity
 
 
-def _chain(session: Session, current: UUID) -> _Chain:
+def issuer_chain(session: Session, current: UUID) -> IssuerChain:
     links = session.scalars(
         select(EntityRelationship).where(EntityRelationship.relationship_type == "successor_issuer")
     ).all()
@@ -330,14 +330,14 @@ def _chain(session: Session, current: UUID) -> _Chain:
         for link in links
     ]
     order = entity_precedence(current, successions)
-    return _Chain(
+    return IssuerChain(
         order=order,
         successions=[s for s in successions if s.successor_entity_id in order],
         links={link.predecessor_entity_id: link for link in links},
     )
 
 
-def _open_sec(id_type: str) -> ColumnElement[bool]:
+def open_sec(id_type: str) -> ColumnElement[bool]:
     """Open-ended SEC identifiers of one type (ticker or CIK)."""
     return and_(
         Identifier.id_type == id_type,
@@ -348,11 +348,11 @@ def _open_sec(id_type: str) -> ColumnElement[bool]:
 
 def _cik(session: Session, entity_id: UUID) -> str | None:
     return session.scalar(
-        select(Identifier.id_value).where(_open_sec("cik"), Identifier.entity_id == entity_id)
+        select(Identifier.id_value).where(open_sec("cik"), Identifier.entity_id == entity_id)
     )
 
 
-def _entity_out(session: Session, entity_id: UUID, chain: _Chain) -> EntityOut:
+def _entity_out(session: Session, entity_id: UUID, chain: IssuerChain) -> EntityOut:
     entity = session.get_one(Entity, entity_id)
     if entity_id == chain.order[0]:
         return EntityOut(
@@ -398,7 +398,7 @@ def _latest_report(session: Session, entity_ids: list[UUID]) -> FilingRef | None
 
 
 @dataclass(frozen=True)
-class _Fact:
+class FactView:
     """A stored fact as the pure domain functions see it (domain/derived.ValueFact)."""
 
     row: FinancialFact
@@ -419,6 +419,10 @@ class _Fact:
     def period_end(self) -> date:
         return self.row.period_end
 
+    @property
+    def reported_at(self) -> datetime:
+        return self.row.published_at
+
 
 class _CellBuilder:
     """Builds table cells; filing forms and earlier versions are loaded once per request."""
@@ -429,7 +433,7 @@ class _CellBuilder:
         self._facts = facts
         self._splits = splits
         self._at = at
-        self._views = [_Fact(f) for f in facts]
+        self._views = [FactView(f) for f in facts]
         self._derived = {
             (d.metric_id, d.period_start, d.period_end): d for d in derive_all(self._views)
         }
@@ -504,7 +508,7 @@ class _CellBuilder:
             return sample.unit, sample.currency
         return ("USD/shares", "USD") if metric == "eps_diluted" else ("USD", "USD")
 
-    def _input(self, metric: str, view: _Fact) -> DerivedInput:
+    def _input(self, metric: str, view: FactView) -> DerivedInput:
         fact = view.row
         return DerivedInput(
             metric_id=metric,
@@ -514,7 +518,7 @@ class _CellBuilder:
             filing=self._filing(fact),
         )
 
-    def _derived_cell(self, derived: Derived[_Fact]) -> DerivedCell:
+    def _derived_cell(self, derived: Derived[FactView]) -> DerivedCell:
         unit, currency = self._unit("cash")
         inputs = [
             self._input(metric, fact)
@@ -539,7 +543,7 @@ class _CellBuilder:
             inputs=inputs,
         )
 
-    def _quarter_cell(self, quarter: Quarter[_Fact]) -> DerivedCell:
+    def _quarter_cell(self, quarter: Quarter[FactView]) -> DerivedCell:
         unit, currency = self._unit(quarter.metric_id)
         adjusted = None
         if quarter.method == "reported" and quarter.metric_id in ADJUSTED_METRICS:
@@ -556,7 +560,7 @@ class _CellBuilder:
             split_adjusted=adjusted,
         )
 
-    def _ttm_cell(self, metric: str, total: Decimal, last: list[Quarter[_Fact]]) -> DerivedCell:
+    def _ttm_cell(self, metric: str, total: Decimal, last: list[Quarter[FactView]]) -> DerivedCell:
         unit, currency = self._unit(metric)
         return DerivedCell(
             value=total,
@@ -623,7 +627,9 @@ class _CellBuilder:
         )
 
 
-def _fcf_quarters(ocf: list[Quarter[_Fact]], capex: list[Quarter[_Fact]]) -> list[Quarter[_Fact]]:
+def _fcf_quarters(
+    ocf: list[Quarter[FactView]], capex: list[Quarter[FactView]]
+) -> list[Quarter[FactView]]:
     """Free cash flow per quarter: both quarters known, their inputs kept (ADR-021)."""
     by_period = {(q.period_start, q.period_end): q for q in capex}
     out = []

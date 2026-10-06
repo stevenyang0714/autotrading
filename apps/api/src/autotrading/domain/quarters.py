@@ -22,8 +22,10 @@ from itertools import pairwise
 from autotrading.domain.derived import ValueFact
 from autotrading.domain.fundamentals import FISCAL_YEAR_DAYS
 
-# Days from start to end of a year-to-date period (end - start), by quarters covered.
-YTD_DAYS = {1: range(80, 101), 2: range(170, 196), 3: range(260, 286)}
+# Days from start to end of a year-to-date period (end - start), by quarters covered: 13-week
+# quarters (90/181/272 days), a 14-week quarter, and AutoZone's 12/12/12/16-week year
+# (83/167/251 days). The ranges do not overlap.
+YTD_DAYS = {1: range(80, 101), 2: range(160, 197), 3: range(245, 288)}
 NON_ADDITIVE = frozenset({"eps_diluted", "diluted_shares"})
 TTM_QUARTERS = 4
 

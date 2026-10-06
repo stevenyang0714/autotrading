@@ -41,7 +41,14 @@ export type CompleteTermId =
   | "diluted_shares"
   | "dividends_paid"
   | "duplicate_group"
+  | "earnings_yield"
+  | "ebitda_ttm"
+  | "enterprise_value"
   | "eps_diluted"
+  | "eps_diluted_ttm"
+  | "ev_to_ebitda"
+  | "ev_to_sales"
+  | "fcf_yield"
   | "feed_status"
   | "filing_date"
   | "filing_reconciliation"
@@ -69,6 +76,7 @@ export type CompleteTermId =
   | "macro_treasury_2y"
   | "macro_unemployment_rate"
   | "macro_vix"
+  | "market_cap"
   | "market_session"
   | "milestone_status"
   | "net_debt"
@@ -90,12 +98,14 @@ export type CompleteTermId =
   | "payrolls_monthly_change"
   | "payrolls_prior_month_revision"
   | "pct_below_52w_high"
+  | "pe_ratio_ttm"
   | "planned_phase"
   | "point_in_time"
   | "predecessor_issuer"
   | "pretax_income"
   | "price_change_1d"
   | "price_history"
+  | "price_to_book"
   | "quarterly_derived_value"
   | "rate_limit"
   | "real_fed_funds_rate"
@@ -121,6 +131,7 @@ export type CompleteTermId =
   | "total_debt"
   | "trailing_twelve_months"
   | "update_cadence"
+  | "valuation_price"
   | "vintage"
   | "vix_percentile_1y"
   | "volume"
@@ -1039,6 +1050,84 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "轉載群組",
     "hint_zh": "同一則新聞的各個轉載版本歸成一組，只算一則報導。"
   },
+  "earnings_yield": {
+    "term_id": "earnings_yield",
+    "display_name": "Earnings Yield",
+    "category": "valuation",
+    "short_definition": "TTM diluted EPS as a percentage of the share price: the inverse of P/E.",
+    "full_definition": "TTM diluted EPS divided by the valuation price. Negative when TTM EPS is negative.",
+    "formula": "eps_diluted_ttm / valuation_price x 100",
+    "unit": "percent",
+    "example": "Apple: $8.72 / $332.89 = 2.62%.",
+    "direction": "Higher = cheaper relative to earnings",
+    "interpretation": "Compare directly with bond yields; works when P/E is not meaningful.",
+    "why_it_matters": "Puts equity earnings on the same scale as interest rates.",
+    "source": "Derived",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/valuation.py",
+    "as_of": "2026-10-07",
+    "update_cadence": "daily",
+    "caveats": "Only an end-of-day consolidated close feeds it; with a fixture, demo or stale close it shows Data unavailable (errata E4).",
+    "related_terms": [
+      "pe_ratio_ttm",
+      "eps_diluted_ttm"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "盈餘殖利率",
+    "hint_zh": "近四季 EPS ÷ 股價，本益比的倒數。"
+  },
+  "ebitda_ttm": {
+    "term_id": "ebitda_ttm",
+    "display_name": "EBITDA, Trailing Twelve Months",
+    "category": "valuation",
+    "short_definition": "Operating income plus depreciation and amortization over the last four quarters.",
+    "full_definition": "The sum of the last four quarterly values of operating income and of D&A (quarters differenced from year-to-date values). Unavailable when a company reports no operating income (JPMorgan, ExxonMobil) or no usable D&A (Microsoft, Alphabet) (ADR-022, V3).",
+    "formula": "operating_income_ttm + depreciation_amortization_ttm",
+    "unit": "USD",
+    "example": "Apple to 2026-06-27: $167.959 billion.",
+    "direction": "Higher = more operating cash earnings",
+    "interpretation": "A proxy for operating cash earnings before capital structure and taxes.",
+    "why_it_matters": "The denominator of EV/EBITDA.",
+    "source": "Derived from SEC XBRL operating income and D&A",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/valuation.py",
+    "as_of": "2026-10-07",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "Not a GAAP measure; capex is not deducted.",
+    "related_terms": [
+      "ev_to_ebitda",
+      "depreciation_amortization",
+      "operating_income"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "近四季 EBITDA",
+    "hint_zh": "近四季營業利益加折舊攤銷。"
+  },
+  "enterprise_value": {
+    "term_id": "enterprise_value",
+    "display_name": "Enterprise Value",
+    "category": "valuation",
+    "short_definition": "Market capitalization plus net debt: the value of the whole business, debt included.",
+    "full_definition": "Market capitalization plus total debt minus cash at the latest balance-sheet date with both. Debt components a balance sheet does not report count as 0 and are named. Banks have no comparable debt figure, so JPMorgan has none.",
+    "formula": "market_cap + total_debt - cash",
+    "unit": "USD",
+    "example": "Apple: $4.858 trillion + $44.8 billion net debt (2026-06-27) = $4.903 trillion.",
+    "direction": "N/A",
+    "interpretation": "Compare companies with different debt levels on operating measures (EBITDA, revenue).",
+    "why_it_matters": "Debt holders have a claim on the business too; EV multiples include it.",
+    "source": "Derived from market cap and SEC XBRL debt and cash",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/valuation.py",
+    "as_of": "2026-10-07",
+    "update_cadence": "daily (price) and per filing",
+    "caveats": "Only an end-of-day consolidated close feeds it; with a fixture, demo or stale close it shows Data unavailable (errata E4). Cash excludes marketable securities.",
+    "related_terms": [
+      "market_cap",
+      "net_debt",
+      "ev_to_ebitda",
+      "ev_to_sales"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "企業價值（EV）",
+    "hint_zh": "市值加淨負債，包含債權人的部分。"
+  },
   "eps_diluted": {
     "term_id": "eps_diluted",
     "display_name": "Diluted EPS",
@@ -1064,6 +1153,107 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "稀釋每股盈餘",
     "hint_zh": "考慮選擇權與可轉債潛在稀釋後的每股獲利。"
+  },
+  "eps_diluted_ttm": {
+    "term_id": "eps_diluted_ttm",
+    "display_name": "Diluted EPS, Trailing Twelve Months",
+    "category": "valuation",
+    "short_definition": "Diluted earnings per share over the last twelve months, from reported EPS.",
+    "full_definition": "Last fiscal year EPS + this year's year-to-date EPS - last year's year-to-date EPS of the same length, all as reported, each moved to the price's split basis; right after a 10-K, the fiscal-year EPS alone (ADR-022, V1). EPS is not strictly additive (share counts change), so this is close to, not exactly, the EPS of the twelve months.",
+    "formula": "FY EPS + YTD EPS (this year) - YTD EPS (last year)",
+    "unit": "USD/share",
+    "example": "Apple to 2026-06-27: FY2025 EPS + nine months of FY2026 - nine months of FY2025 = $8.72.",
+    "direction": "Higher = more earnings per share",
+    "interpretation": "The denominator of P/E and the numerator of earnings yield.",
+    "why_it_matters": "More current than the last fiscal year, without estimating quarters EPS does not report.",
+    "source": "Derived from SEC XBRL diluted EPS",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/valuation.py",
+    "as_of": "2026-10-07",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "Small non-additivity error; split-adjusted to the price date.",
+    "related_terms": [
+      "pe_ratio_ttm",
+      "earnings_yield",
+      "eps_diluted"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "近四季稀釋 EPS",
+    "hint_zh": "全年 EPS + 今年累計 − 去年同期累計，皆為申報值。"
+  },
+  "ev_to_ebitda": {
+    "term_id": "ev_to_ebitda",
+    "display_name": "EV/EBITDA",
+    "category": "valuation",
+    "short_definition": "Enterprise value divided by EBITDA over the last twelve months.",
+    "full_definition": "Enterprise value divided by TTM EBITDA. Not meaningful when EBITDA is zero or negative; unavailable when EBITDA is.",
+    "formula": "enterprise_value / ebitda_ttm",
+    "unit": "x",
+    "example": "Apple: $4.903 trillion / $167.959 billion = 29.19x.",
+    "direction": "Higher = more expensive",
+    "interpretation": "Comparable across capital structures; ignores capex intensity.",
+    "why_it_matters": "A capital-structure-neutral valuation multiple.",
+    "source": "Derived",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/valuation.py",
+    "as_of": "2026-10-07",
+    "update_cadence": "daily",
+    "caveats": "Only an end-of-day consolidated close feeds it; with a fixture, demo or stale close it shows Data unavailable (errata E4).",
+    "related_terms": [
+      "enterprise_value",
+      "ebitda_ttm"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "EV/EBITDA",
+    "hint_zh": "企業價值 ÷ 近四季 EBITDA，不受資本結構影響。"
+  },
+  "ev_to_sales": {
+    "term_id": "ev_to_sales",
+    "display_name": "EV/Sales",
+    "category": "valuation",
+    "short_definition": "Enterprise value divided by revenue over the last twelve months.",
+    "full_definition": "Enterprise value divided by TTM revenue (quarters differenced from year-to-date values).",
+    "formula": "enterprise_value / revenue_ttm",
+    "unit": "x",
+    "example": "Apple: $4.903 trillion / $466.823 billion = 10.50x.",
+    "direction": "Higher = more expensive per dollar of sales",
+    "interpretation": "Useful when earnings are depressed or negative; read with margins.",
+    "why_it_matters": "A valuation anchor that does not depend on profitability.",
+    "source": "Derived",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/valuation.py",
+    "as_of": "2026-10-07",
+    "update_cadence": "daily",
+    "caveats": "Only an end-of-day consolidated close feeds it; with a fixture, demo or stale close it shows Data unavailable (errata E4).",
+    "related_terms": [
+      "enterprise_value",
+      "revenue"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "EV/營收",
+    "hint_zh": "企業價值 ÷ 近四季營收。"
+  },
+  "fcf_yield": {
+    "term_id": "fcf_yield",
+    "display_name": "Free Cash Flow Yield",
+    "category": "valuation",
+    "short_definition": "Free cash flow over the last twelve months as a percentage of market capitalization.",
+    "full_definition": "TTM free cash flow (operating cash flow - capex, last four quarters) divided by market capitalization.",
+    "formula": "free_cash_flow_ttm / market_cap x 100",
+    "unit": "percent",
+    "example": "Apple: $136.683 billion / $4.858 trillion = 2.81%.",
+    "direction": "Higher = cheaper relative to cash generation",
+    "interpretation": "Compare with bond yields and with the buyback and dividend yield.",
+    "why_it_matters": "Cash that could fund buybacks and dividends, relative to price; an input of the buyback engine (M1.4).",
+    "source": "Derived",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/valuation.py",
+    "as_of": "2026-10-07",
+    "update_cadence": "daily",
+    "caveats": "Only an end-of-day consolidated close feeds it; with a fixture, demo or stale close it shows Data unavailable (errata E4). Banks report no capex, so none.",
+    "related_terms": [
+      "free_cash_flow",
+      "market_cap"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "自由現金流殖利率",
+    "hint_zh": "近四季自由現金流 ÷ 市值。"
   },
   "feed_status": {
     "term_id": "feed_status",
@@ -1743,6 +1933,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "VIX 恐慌指數",
     "hint_zh": "S&P 500 選擇權隱含的未來 30 天波動率。"
   },
+  "market_cap": {
+    "term_id": "market_cap",
+    "display_name": "Market Capitalization",
+    "category": "valuation",
+    "short_definition": "Share price times shares outstanding: the market value of the equity.",
+    "full_definition": "The valuation price times the most recently dated share count known then: cover-page or balance-sheet shares, whichever is later, moved to the price's split basis. Companies with several share classes count every common class (Alphabet: Class A, B and C at the Class A price; Meta: Class A and B) (ADR-022, V2).",
+    "formula": "valuation_price x latest shares outstanding (split-adjusted to the price date)",
+    "unit": "USD",
+    "example": "Apple: $332.89 x 14,594,180,000 shares (cover page, 2026-07-17) = $4.858 trillion.",
+    "direction": "N/A",
+    "interpretation": "The size of the company in the market; the base of P/B and FCF yield.",
+    "why_it_matters": "Every equity multiple starts from it.",
+    "source": "Derived from the valuation price and SEC XBRL share counts",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/valuation.py",
+    "as_of": "2026-10-07",
+    "update_cadence": "daily (price) and per filing (shares)",
+    "caveats": "Only an end-of-day consolidated close feeds it; with a fixture, demo or stale close it shows Data unavailable (errata E4). Alphabet's Class C trades at a slightly different price than Class A.",
+    "related_terms": [
+      "valuation_price",
+      "shares_outstanding",
+      "enterprise_value"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "市值",
+    "hint_zh": "股價 × 最新流通股數（依分割換算到股價日）。"
+  },
   "market_session": {
     "term_id": "market_session",
     "display_name": "Market Session",
@@ -2274,6 +2490,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "距 52 週高點",
     "hint_zh": "最新價低於過去一年最高收盤價多少百分比；0 代表創新高。"
   },
+  "pe_ratio_ttm": {
+    "term_id": "pe_ratio_ttm",
+    "display_name": "P/E Ratio (TTM)",
+    "category": "valuation",
+    "short_definition": "Share price divided by diluted EPS over the last twelve months.",
+    "full_definition": "The valuation price divided by TTM diluted EPS. Not meaningful (n/m) when TTM EPS is zero or negative.",
+    "formula": "valuation_price / eps_diluted_ttm",
+    "unit": "x",
+    "example": "Apple: $332.89 / $8.72 = 38.18x.",
+    "direction": "Higher = more expensive per dollar of earnings",
+    "interpretation": "Compare with the company's own history and peers; growth and quality justify higher multiples.",
+    "why_it_matters": "The most common equity valuation multiple.",
+    "source": "Derived",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/valuation.py",
+    "as_of": "2026-10-07",
+    "update_cadence": "daily",
+    "caveats": "Only an end-of-day consolidated close feeds it; with a fixture, demo or stale close it shows Data unavailable (errata E4).",
+    "related_terms": [
+      "eps_diluted_ttm",
+      "earnings_yield",
+      "valuation_price"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "本益比（TTM）",
+    "hint_zh": "股價 ÷ 近四季稀釋 EPS；EPS 為負時無意義。"
+  },
   "planned_phase": {
     "term_id": "planned_phase",
     "display_name": "Planned Phase",
@@ -2423,6 +2665,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "價格走勢",
     "hint_zh": "過去一年經股票分割調整的每日收盤價；查過去日期時只用當時已知的資料。"
+  },
+  "price_to_book": {
+    "term_id": "price_to_book",
+    "display_name": "Price/Book",
+    "category": "valuation",
+    "short_definition": "Market capitalization divided by stockholders' equity.",
+    "full_definition": "Market capitalization divided by stockholders' equity at the latest balance-sheet date. Not meaningful when equity is zero or negative (AutoZone, O'Reilly and Lowe's, after years of buybacks).",
+    "formula": "market_cap / stockholders_equity",
+    "unit": "x",
+    "example": "Apple: $4.858 trillion / $107.520 billion = 45.18x.",
+    "direction": "Higher = more expensive relative to book value",
+    "interpretation": "Most meaningful for banks and asset-heavy companies; buybacks distort it.",
+    "why_it_matters": "A balance-sheet anchor, especially for financials.",
+    "source": "Derived",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/valuation.py",
+    "as_of": "2026-10-07",
+    "update_cadence": "daily",
+    "caveats": "Only an end-of-day consolidated close feeds it; with a fixture, demo or stale close it shows Data unavailable (errata E4).",
+    "related_terms": [
+      "market_cap",
+      "stockholders_equity"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "股價淨值比",
+    "hint_zh": "市值 ÷ 股東權益；權益為負時無意義。"
   },
   "quarterly_derived_value": {
     "term_id": "quarterly_derived_value",
@@ -3047,6 +3314,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "更新頻率",
     "hint_zh": "來源多久發布一次新資料。"
+  },
+  "valuation_price": {
+    "term_id": "valuation_price",
+    "display_name": "Valuation Price",
+    "category": "market_data",
+    "short_definition": "The daily closing price a valuation uses: the last end-of-day consolidated (SIP) close public at the As known on time.",
+    "full_definition": "The raw (unadjusted) close of the last session whose bar was public by the As known on time. Only a close stored as end_of_day is used; a fixture or demo close, a close older than five calendar days, and any intraday IEX quote never feed a valuation, and every multiple then shows Data unavailable with the reason (errata E4).",
+    "formula": "last raw daily close with published_at <= T and feed_status end_of_day, not older than 5 days",
+    "unit": "USD/share",
+    "example": "Apple on 2026-10-06: the 2026-10-05 close, $332.89.",
+    "direction": "N/A",
+    "interpretation": "Check its date: a valuation is as of that close, not of the live quote.",
+    "why_it_matters": "Mixing a live single-venue quote with filed fundamentals would make multiples jump with every trade.",
+    "source": "Alpaca Market Data daily bars (SIP)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/valuation.py",
+    "as_of": "2026-10-07",
+    "update_cadence": "daily, 06:30 SGT",
+    "caveats": "Daily bars start on 2016-01-04; earlier dates have no valuation.",
+    "related_terms": [
+      "market_cap",
+      "pe_ratio_ttm"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "估值股價",
+    "hint_zh": "當時已公開的最後一個每日收盤價；fixture、過期或盤中報價都不用。"
   },
   "vintage": {
     "term_id": "vintage",
