@@ -28,7 +28,7 @@ export async function loadDataHealth(): Promise<DataHealthData | null> {
   try {
     const [health, runs, deadLetters] = await Promise.all([
       client.GET("/data-health", { cache: "no-store" }),
-      client.GET("/ingestion-runs", { params: { query: { limit: 20 } }, cache: "no-store" }),
+      client.GET("/ingestion-runs", { params: { query: { limit: 30, per_job: 3 } }, cache: "no-store" }),
       client.GET("/dead-letters", { cache: "no-store" }),
     ]);
     if (!health.data || !runs.data || !deadLetters.data) return null;
@@ -165,5 +165,51 @@ export async function loadProgress(): Promise<Progress | null> {
     return data ?? null;
   } catch {
     return null;
+  }
+}
+
+// ---------- prices (M0.7, ADR-017) ----------
+
+export type LatestPrices = components["schemas"]["LatestPrices"];
+export type Quote = components["schemas"]["QuoteOut"];
+export type FeedStatus = Quote["feed_status"];
+export type MarketState = components["schemas"]["MarketState"];
+export type InstrumentPrices = components["schemas"]["InstrumentPrices"];
+export type PriceTile = components["schemas"]["PriceTile"];
+
+/** Latest quotes with their feed status (all universe symbols by default), or null. */
+export async function loadLatestPrices(symbols?: string[]): Promise<LatestPrices | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/prices/latest", {
+      params: { query: symbols ? { symbols: symbols.join(",") } : {} },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export type InstrumentPricesResult =
+  | { status: "ok"; data: InstrumentPrices }
+  | { status: "not_found" }
+  | { status: "unavailable" };
+
+/** One instrument's quote (live view) and daily closes as known at `knownAt`. */
+export async function loadInstrumentPrices(
+  ticker: string,
+  knownAt?: string,
+): Promise<InstrumentPricesResult> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data, response } = await client.GET("/instruments/{ticker}/prices", {
+      params: { path: { ticker }, query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    if (data) return { status: "ok", data };
+    return response.status === 404 ? { status: "not_found" } : { status: "unavailable" };
+  } catch {
+    return { status: "unavailable" };
   }
 }

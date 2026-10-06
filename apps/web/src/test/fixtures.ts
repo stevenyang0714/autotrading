@@ -7,12 +7,18 @@ import fundamentalsAaplAfter from "../../tests/fixtures/api/fundamentals-aapl-af
 import fundamentalsAaplBefore from "../../tests/fixtures/api/fundamentals-aapl-before-10ka.json";
 import fundamentalsXom from "../../tests/fixtures/api/fundamentals-xom.json";
 import ingestionRuns from "../../tests/fixtures/api/ingestion-runs.json";
+import instrumentPricesAaplNoKey from "../../tests/fixtures/api/instrument-prices-aapl-no-key.json";
+import instrumentPricesAapl from "../../tests/fixtures/api/instrument-prices-aapl.json";
+import instrumentPricesNvdaBefore from "../../tests/fixtures/api/instrument-prices-nvda-before-split.json";
 import instruments from "../../tests/fixtures/api/instruments.json";
 import macroPayems from "../../tests/fixtures/api/macro-payems.json";
 import macroPayemsBefore from "../../tests/fixtures/api/macro-payems-before-revision.json";
 import macroSeries from "../../tests/fixtures/api/macro-series.json";
 import overviewBefore from "../../tests/fixtures/api/overview-before-revision.json";
+import overviewMarkets from "../../tests/fixtures/api/overview-markets.json";
 import overview from "../../tests/fixtures/api/overview.json";
+import pricesLatestNoKey from "../../tests/fixtures/api/prices-latest-no-key.json";
+import pricesLatest from "../../tests/fixtures/api/prices-latest.json";
 import progress from "../../tests/fixtures/api/progress.json";
 
 import type {
@@ -22,6 +28,8 @@ import type {
   Fundamentals,
   IngestionRun,
   InstrumentList,
+  InstrumentPrices,
+  LatestPrices,
   MacroSeriesList,
   Overview,
   Progress,
@@ -63,3 +71,18 @@ export const recordedOverview = {
 export const recordedSources = dataHealthSources.response.sources as SourceHealth[];
 
 export const recordedProgress = progress.response as Progress;
+
+/**
+ * Prices from the recorded Alpaca data (2026-10-05 close), with the provider configured and
+ * without keys; NVDA as known midday on 2024-06-07, before its 10-for-1 split.
+ */
+export const recordedPrices = {
+  latest: pricesLatest.response as LatestPrices,
+  latestNoKey: pricesLatestNoKey.response as LatestPrices,
+  aapl: instrumentPricesAapl.response as InstrumentPrices,
+  aaplNoKey: instrumentPricesAaplNoKey.response as InstrumentPrices,
+  nvdaBeforeSplit: instrumentPricesNvdaBefore.response as InstrumentPrices,
+};
+
+/** The overview from the same database: the markets block (no macro data there). */
+export const recordedMarketsOverview = overviewMarkets.response as Overview;

@@ -2,11 +2,14 @@ import Link from "next/link";
 
 import { AsKnownOnForm } from "@/components/AsKnownOnForm";
 import { Metric } from "@/components/Metric";
+import { DemoBanner } from "@/components/prices/DemoBanner";
+import { MarketSession } from "@/components/prices/MarketSession";
+import { PriceBadge, changeTone } from "@/components/prices/PriceBadge";
 import { SourceFreshness } from "@/components/SourceFreshness";
 import { Sparkline } from "@/components/Sparkline";
 import type { CompleteTermId } from "@/generated/glossary";
-import type { Overview, OverviewBlock, OverviewIndicator, SourceHealth } from "@/lib/api";
-import { groupDigits } from "@/lib/format";
+import type { MarketState, Overview, OverviewBlock, OverviewIndicator, PriceTile, SourceHealth } from "@/lib/api";
+import { formatChange, formatPrice, groupDigits } from "@/lib/format";
 import { completeTermId } from "@/lib/glossary";
 import { formatSgtEt } from "@/lib/time";
 
@@ -18,6 +21,7 @@ interface Props {
 }
 
 const BLOCK_TERM: Record<OverviewBlock["id"], CompleteTermId> = {
+  markets: "market_session",
   inflation: "cpi_inflation_yoy",
   labor: "macro_nonfarm_payrolls",
   growth: "macro_real_gdp",
@@ -38,6 +42,7 @@ const LABEL_TONE: Record<string, string> = {
 /** Indicator values as shown: units follow the API (percent, pp, thousands, ...). */
 export function formatIndicator(indicator: OverviewIndicator): string {
   const value = Number(indicator.value);
+  if (indicator.term_id === "price_change_1d") return formatChange(indicator.value);
   switch (indicator.unit) {
     case "percent":
       return `${value.toFixed(1)}%`;
@@ -55,13 +60,15 @@ export function formatIndicator(indicator: OverviewIndicator): string {
 }
 
 function chartFormat(unit: string): (value: number) => string {
+  if (unit === "usd") return (v) => formatPrice(String(v));
   return unit === "percent" ? (v) => `${v.toFixed(1)}%` : unit === "pp" ? (v) => `${v.toFixed(2)}` : (v) => v.toFixed(1);
 }
 
 /**
- * Home dashboard (M0.6 overview, ADR-016): six macro blocks as known at `data.known_at`, each
- * with latest values, computed indicators, a chart and one rule-based insight that cites its
- * observations. Every number renders through <Metric> or inside a chart figure bound to a term.
+ * Home dashboard (M0.6 overview, ADR-016): market prices (M0.7) and six macro blocks as known at
+ * `data.known_at`, each with latest values, computed indicators, a chart and one rule-based
+ * insight that cites its inputs. Every number renders through <Metric> or inside a chart figure
+ * bound to a term; every price carries its feed status.
  */
 export function OverviewView({ data, sources, knownOn, invalidKnownOn }: Props) {
   const newest = data.blocks
@@ -69,8 +76,10 @@ export function OverviewView({ data, sources, knownOn, invalidKnownOn }: Props) 
     .map((latest) => latest.vintage)
     .sort()
     .at(-1);
+  const prices = data.blocks.flatMap((block) => block.prices ?? []);
   return (
     <section className="space-y-6">
+      <DemoBanner statuses={prices.map((tile) => tile.feed_status)} />
       <header className="space-y-3">
         <h1 className="text-2xl font-semibold">
           <Metric termId="page_overview" zh>
@@ -87,13 +96,13 @@ export function OverviewView({ data, sources, knownOn, invalidKnownOn }: Props) 
         </p>
         <SourceFreshness
           sources={sources}
-          ids={["fred", "sec_edgar"]}
+          ids={["alpaca_iex", "fred", "sec_edgar"]}
           newestPublishedAt={knownOn ? null : newest ? `${newest}T23:59:59-04:00` : null}
         />
       </header>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {data.blocks.map((block) => (
-          <BlockCard key={block.id} block={block} />
+          <BlockCard key={block.id} block={block} market={data.market ?? null} />
         ))}
       </div>
       <p className="text-xs text-neutral-500">
@@ -104,20 +113,23 @@ export function OverviewView({ data, sources, knownOn, invalidKnownOn }: Props) 
   );
 }
 
-function BlockCard({ block }: { block: OverviewBlock }) {
+function BlockCard({ block, market }: { block: OverviewBlock; market: MarketState | null }) {
   const chart = block.charts[0];
   const chartTerm = chart ? completeTermId(chart.term_id) : null;
+  const isMarkets = block.id === "markets";
   return (
     <article
       aria-labelledby={`block-${block.id}`}
-      className="space-y-3 rounded border border-neutral-800 p-4"
+      className={`space-y-3 rounded border border-neutral-800 p-4 ${isMarkets ? "md:col-span-2 xl:col-span-3" : ""}`}
       data-block={block.id}
     >
-      <h2 id={`block-${block.id}`} className="text-base font-medium">
+      <h2 id={`block-${block.id}`} className="flex flex-wrap items-baseline gap-x-3 text-base font-medium">
         <Metric termId={BLOCK_TERM[block.id]} icon={false}>
           {block.title}
         </Metric>
+        {isMarkets && market ? <MarketSession market={market} /> : null}
       </h2>
+      {block.prices?.length ? <PriceTiles tiles={block.prices} /> : null}
       <dl className="space-y-1 text-sm">
         {block.latest.map((latest) => {
           const termId = completeTermId(latest.term_id) ?? "page_macro";
@@ -187,9 +199,18 @@ function BlockCard({ block }: { block: OverviewBlock }) {
               <span key={`${input.series_id}-${input.observation_date}-${input.vintage}`}>
                 {i ? ", " : ""}
                 <span data-identifier="">{input.series_id}</span>{" "}
-                <Metric termId="vintage" icon={false}>
-                  {input.observation_date} (released {input.vintage})
-                </Metric>
+                {isMarkets ? (
+                  <>
+                    price of{" "}
+                    <Metric termId="as_of" icon={false}>
+                      {input.observation_date}
+                    </Metric>
+                  </>
+                ) : (
+                  <Metric termId="vintage" icon={false}>
+                    {input.observation_date} (released {input.vintage})
+                  </Metric>
+                )}
               </span>
             ))}
           </p>
@@ -198,5 +219,41 @@ function BlockCard({ block }: { block: OverviewBlock }) {
         <p className="text-sm text-neutral-500">Not enough data as of this date.</p>
       )}
     </article>
+  );
+}
+
+/** ETF prices with their feed status; no number when a price is unavailable. */
+function PriceTiles({ tiles }: { tiles: PriceTile[] }) {
+  return (
+    <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Market prices">
+      {tiles.map((tile) => (
+        <li
+          key={tile.symbol}
+          data-symbol={tile.symbol}
+          className="space-y-1 rounded border border-neutral-800 px-3 py-2"
+        >
+          <p className="flex items-center justify-between gap-2">
+            <span data-identifier="" className="font-medium">
+              {tile.symbol}
+            </span>
+            <PriceBadge status={tile.feed_status} />
+          </p>
+          {tile.last && tile.feed_status !== "unavailable" ? (
+            <p className="flex flex-wrap items-baseline gap-x-2 tabular-nums">
+              <Metric termId="last_price" icon={false}>
+                <span title={`${tile.last} USD`}>{formatPrice(tile.last)}</span>
+              </Metric>
+              {tile.change_pct ? (
+                <Metric termId="price_change_1d" icon={false}>
+                  <span className={`text-sm ${changeTone(tile.change_pct)}`}>{formatChange(tile.change_pct)}</span>
+                </Metric>
+              ) : null}
+            </p>
+          ) : (
+            <p className="text-sm text-neutral-500">No price</p>
+          )}
+        </li>
+      ))}
+    </ul>
   );
 }

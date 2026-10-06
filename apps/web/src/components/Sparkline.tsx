@@ -14,6 +14,8 @@ interface Props {
   zeroLine?: boolean;
   width?: number;
   height?: number;
+  /** Tailwind height of the drawn chart (it scales to the container width). */
+  heightClass?: string;
 }
 
 const PAD = 4;
@@ -23,7 +25,16 @@ const PAD = 4;
  * chart library. The figure carries data-metric for its term, so its min, max and last labels
  * count as explained numbers; the exact series is on the Macro page.
  */
-export function Sparkline({ points, termId, label, format, zeroLine = false, width = 240, height = 56 }: Props) {
+export function Sparkline({
+  points,
+  termId,
+  label,
+  format,
+  zeroLine = false,
+  width = 240,
+  height = 56,
+  heightClass = "h-14",
+}: Props) {
   const values = points.map((p) => Number(p.value));
   if (values.length < 2) return null;
   let low = Math.min(...values);
@@ -45,7 +56,7 @@ export function Sparkline({ points, termId, label, format, zeroLine = false, wid
         role="img"
         aria-label={`${label}: ${values.length} points from ${first} to ${end}`}
         viewBox={`0 0 ${width} ${height}`}
-        className="h-14 w-full text-sky-400"
+        className={`${heightClass} w-full text-sky-400`}
         preserveAspectRatio="none"
       >
         {zeroLine && low < 0 && high > 0 ? (
