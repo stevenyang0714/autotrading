@@ -4,7 +4,7 @@ Read-only. The Data Health page (M0.4) renders these through the glossary <Metri
 """
 
 from collections.abc import Iterator
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Annotated, Any
 from uuid import UUID
@@ -13,15 +13,21 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import distinct_on
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session, aliased, sessionmaker
 
 from autotrading.db.models import DeadLetter, IngestionRun, Source
 from autotrading.domain.freshness import FreshnessStatus, freshness_status
-from autotrading.ingestion.schedule import SCHEDULES
+from autotrading.ingestion.schedule import (
+    INTRADAY_SOURCES,
+    SCHEDULES,
+    SNAPSHOT_SECONDS,
+    market_calendar,
+)
 
 router = APIRouter(tags=["data health"])
 
 FAILED_STATUSES = ("failed", "dead_lettered")
+AFTER_CLOSE = timedelta(minutes=3)
 FINISHED_STATUSES = ("succeeded", *FAILED_STATUSES)
 
 
@@ -99,6 +105,30 @@ class DataHealthReport(BaseModel):
     sources: list[SourceHealth]
 
 
+def judged_at(source_id: str, now: datetime) -> datetime:
+    """The time freshness is judged at. Intraday sources only update during US market hours,
+    so outside them they are judged as of just after the last close (ADR-017)."""
+    if source_id not in INTRADAY_SOURCES:
+        return now
+    calendar = market_calendar()
+    if calendar.is_open(now):
+        return now
+    return min(now, calendar.last_close(now) + AFTER_CLOSE)
+
+
+def next_refresh(source_id: str, enabled: bool, now: datetime) -> datetime | None:
+    if not enabled:
+        return None
+    if source_id in INTRADAY_SOURCES:
+        calendar = market_calendar()
+        if calendar.is_open(now):
+            minute = now.replace(second=0, microsecond=0)
+            return minute + timedelta(seconds=SNAPSHOT_SECONDS)
+        return calendar.next_open(now)
+    schedule = SCHEDULES.get(source_id)
+    return schedule.next_after(now) if schedule else None
+
+
 @router.get("/data-health")
 def data_health(session: SessionDep) -> DataHealthReport:
     now: datetime = session.execute(select(func.now())).scalar_one()
@@ -154,18 +184,14 @@ def data_health(session: SessionDep) -> DataHealthReport:
                 rate_limit_burst=source.rate_limit_burst,
                 topics=source.topics,
                 freshness=freshness_status(
-                    now=now,
+                    now=judged_at(source.id, now),
                     enabled=source.enabled,
                     sla_seconds=source.freshness_sla_seconds,
                     last_success_at=last_success.get(source.id),
                     last_attempt_failed=latest_finished.get(source.id) in FAILED_STATUSES,
                 ),
                 last_success_at=last_success.get(source.id),
-                next_refresh_at=(
-                    SCHEDULES[source.id].next_after(now)
-                    if source.enabled and source.id in SCHEDULES
-                    else None
-                ),
+                next_refresh_at=next_refresh(source.id, source.enabled, now),
                 last_run=RunOut.model_validate(last_run) if last_run else None,
                 open_dead_letters=open_dead_letters.get(source.id, 0),
             )
@@ -179,13 +205,31 @@ def ingestion_runs(
     source_id: str | None = None,
     status: str | None = None,
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    per_job: Annotated[
+        int | None, Query(ge=1, le=50, description="Keep only the newest N runs of each job")
+    ] = None,
 ) -> list[RunOut]:
-    query = select(IngestionRun).order_by(IngestionRun.created_at.desc()).limit(limit)
+    query = select(IngestionRun)
     if source_id is not None:
         query = query.where(IngestionRun.source_id == source_id)
     if status is not None:
         query = query.where(IngestionRun.status == status)
-    return [RunOut.model_validate(run) for run in session.scalars(query)]
+    if per_job is not None:
+        # The minute-by-minute price snapshots would otherwise push every other job out.
+        rank = (
+            func.row_number()
+            .over(partition_by=IngestionRun.job, order_by=IngestionRun.created_at.desc())
+            .label("rank")
+        )
+        ranked = query.add_columns(rank).subquery()
+        run = aliased(IngestionRun, ranked)
+        query = select(run).where(ranked.c.rank <= per_job)
+        newest = run.created_at.desc()
+    else:
+        newest = IngestionRun.created_at.desc()
+    return [
+        RunOut.model_validate(row) for row in session.scalars(query.order_by(newest).limit(limit))
+    ]
 
 
 @router.get("/dead-letters")

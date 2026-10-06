@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from typing import Annotated, Literal
+from uuid import UUID
 
 from fastapi import APIRouter, Query
 from pydantic import AwareDatetime, BaseModel
@@ -19,14 +20,26 @@ from sqlalchemy.dialects.postgresql import distinct_on
 from sqlalchemy.orm import Session, aliased
 
 from autotrading.api.data_health import SessionDep
+from autotrading.api.prices import (
+    MarketState,
+    market_state,
+    price_history,
+    provider_ready,
+    quote_out,
+)
 from autotrading.db.models import IngestionRun, MacroObservation, MacroSeries
 from autotrading.domain import indicators as ind
 from autotrading.domain.indicators import Point
+from autotrading.domain.market_calendar import NEW_YORK
+from autotrading.domain.prices import FeedStatus, change_percent
+from autotrading.domain.provenance import end_of_day
+from autotrading.ingestion.schedule import market_calendar
 from autotrading.repositories.facts import as_of_query
+from autotrading.repositories.prices import instruments_by_symbol, latest_quotes
 
 router = APIRouter(tags=["overview"])
 
-Unit = Literal["percent", "pp", "thousands", "observations", "percentile", "index"]
+Unit = Literal["percent", "pp", "thousands", "observations", "percentile", "index", "usd"]
 # How far back each frequency is read: enough for 36 months, the Sahm rule, 12 quarters and
 # one year of daily data.
 LOOKBACK = {"M": timedelta(days=4 * 366), "Q": timedelta(days=5 * 366), "D": timedelta(days=380)}
@@ -75,19 +88,31 @@ class Insight(BaseModel):
     inputs: list[InputRef]
 
 
+class PriceTile(BaseModel):
+    """One market price on the overview, with the feed status shown next to it (errata E4)."""
+
+    symbol: str
+    feed_status: FeedStatus
+    last: Decimal | None = None
+    change_pct: Decimal | None = None
+    published_at: datetime | None = None
+
+
 class Block(BaseModel):
-    id: Literal["inflation", "labor", "growth", "policy", "curve", "risk"]
+    id: Literal["markets", "inflation", "labor", "growth", "policy", "curve", "risk"]
     title: str
     latest: list[LatestValue]
     indicators: list[Indicator]
     charts: list[Chart]
     insight: Insight | None
+    prices: list[PriceTile] = []
 
 
 class Overview(BaseModel):
     known_at: datetime
     blocks: list[Block]
     last_refresh_at: datetime | None
+    market: MarketState | None = None  # live view only: is the US session open now
 
 
 # ---------- data access ----------
@@ -103,9 +128,10 @@ class Obs:
 class _Data:
     """As-of observations per series, loaded once per request."""
 
-    def __init__(self, session: Session, known_at: datetime) -> None:
+    def __init__(self, session: Session, known_at: datetime, *, live: bool = False) -> None:
         self.session = session
         self.known_at = known_at
+        self.live = live  # no known_at given: quotes instead of daily closes
         self.series = {s.id: s for s in session.scalars(select(MacroSeries))}
         self._cache: dict[str, list[Obs]] = {}
 
@@ -474,7 +500,132 @@ def _risk(data: _Data) -> Block:
     )
 
 
-BLOCKS: tuple[Callable[[_Data], Block], ...] = (_inflation, _labor, _growth, _policy, _curve, _risk)
+MARKET_SYMBOLS = ("SPY", "QQQ", "IWM", "TLT", "IEF", "GLD", "XLE", "XLK")
+BENCHMARK = "SPY"
+
+
+# How the insight names a live quote's feed status (the badge shows it too).
+LIVE_FEED_TEXT = {
+    "live_single_venue": "live, IEX only",
+    "end_of_day": "IEX close",
+    "stale": "stale IEX quote",
+}
+
+
+def _markets(data: _Data) -> Block:
+    """Universe ETFs: live IEX quotes (or daily closes for a past date), SPY's year and its
+    distance from the 52-week high (M0.7, ADR-017)."""
+    session, now = data.session, data.known_at
+    calendar = market_calendar()
+    ready = provider_ready(session)
+    instruments = instruments_by_symbol(session, list(MARKET_SYMBOLS))
+    tiles: list[PriceTile] = []
+    if data.live:
+        quotes = latest_quotes(session, instruments.values())
+        for symbol in MARKET_SYMBOLS:
+            stored = quotes.get(instruments[symbol]) if symbol in instruments else None
+            q = quote_out(symbol, stored, now=now, calendar=calendar, ready=ready)
+            tiles.append(
+                PriceTile(
+                    symbol=symbol,
+                    feed_status=q.feed_status,
+                    last=q.last,
+                    change_pct=q.change_pct,
+                    published_at=q.published_at,
+                )
+            )
+    else:
+        for symbol in MARKET_SYMBOLS:
+            tiles.append(_close_tile(session, symbol, instruments.get(symbol), now, ready))
+    indicators: list[Indicator] = []
+    charts: list[Chart] = []
+    insight = None
+    spy = next(t for t in tiles if t.symbol == BENCHMARK)
+    if BENCHMARK in instruments and spy.last is not None:
+        history = price_history(
+            session, instruments[BENCHMARK], known_at=now, last=spy.last, ready=ready
+        )
+        day = (spy.published_at or now).astimezone(NEW_YORK).date()
+        below = history.pct_below_52w_high
+        if spy.change_pct is not None:
+            indicators.append(
+                Indicator(
+                    term_id="price_change_1d", value=spy.change_pct, unit="percent", as_of=day
+                )
+            )
+        if below is not None:
+            indicators.append(
+                Indicator(term_id="pct_below_52w_high", value=below, unit="percent", as_of=day)
+            )
+        if history.closes:
+            charts.append(
+                Chart(
+                    term_id="price_history",
+                    unit="usd",
+                    zero_line=False,
+                    points=[ChartPoint(day=p.day, value=p.close) for p in history.closes],
+                )
+            )
+        if spy.feed_status == "fixture":
+            feed = "recorded fixture"
+        elif data.live:
+            feed = LIVE_FEED_TEXT.get(spy.feed_status, spy.feed_status)
+        else:
+            feed = "consolidated close"
+        change = (
+            f"{_signed(spy.change_pct, 2, '%')} on the day " if spy.change_pct is not None else ""
+        )
+        high_text = f"{_fmt(below, 1)}% below its 52-week high" if below else "at its 52-week high"
+        insight = Insight(
+            text=f"SPY {_fmt(spy.last, 2)}, {change}({feed}); {high_text}.",
+            inputs=[InputRef(series_id=BENCHMARK, observation_date=day, vintage=day)],
+        )
+    return Block(
+        id="markets",
+        title="Markets",
+        latest=[],
+        indicators=indicators,
+        charts=charts,
+        insight=insight,
+        prices=tiles,
+    )
+
+
+def _close_tile(
+    session: Session, symbol: str, instrument: UUID | None, known_at: datetime, ready: bool
+) -> PriceTile:
+    """A past point in time: the latest raw close known then and its change on the day."""
+    if instrument is None:
+        return PriceTile(symbol=symbol, feed_status="unavailable")
+    history = price_history(
+        session,
+        instrument,
+        known_at=known_at,
+        last=None,
+        ready=ready,
+        since=known_at - timedelta(days=10),
+    )
+    if history.last_close is None:
+        return PriceTile(symbol=symbol, feed_status="unavailable")
+    last, previous = history.last_close, history.previous_close
+    return PriceTile(
+        symbol=symbol,
+        feed_status=history.feed_status,
+        last=last.close,
+        change_pct=change_percent(last.close, previous.close) if previous else None,
+        published_at=end_of_day(last.day),
+    )
+
+
+BLOCKS: tuple[Callable[[_Data], Block], ...] = (
+    _markets,
+    _inflation,
+    _labor,
+    _growth,
+    _policy,
+    _curve,
+    _risk,
+)
 
 
 @router.get("/overview")
@@ -485,9 +636,10 @@ def overview(
     ] = None,
 ) -> Overview:
     at: datetime = known_at or session.execute(select(func.now())).scalar_one()
-    data = _Data(session, at)
+    data = _Data(session, at, live=known_at is None)
     return Overview(
         known_at=at,
+        market=market_state(market_calendar(), at) if known_at is None else None,
         blocks=[build(data) for build in BLOCKS],
         last_refresh_at=session.scalar(
             select(func.max(IngestionRun.finished_at)).where(

@@ -14,6 +14,7 @@ from autotrading.api.health import router as health_router
 from autotrading.api.instruments import router as instruments_router
 from autotrading.api.macro import router as macro_router
 from autotrading.api.overview import router as overview_router
+from autotrading.api.prices import router as prices_router
 from autotrading.api.progress import router as progress_router
 from autotrading.infra.dependencies import Dependencies
 from autotrading.infra.object_store import ensure_bucket
@@ -59,6 +60,7 @@ def create_app(
     app.include_router(macro_router)
     app.include_router(overview_router)
     app.include_router(progress_router)
+    app.include_router(prices_router)
     return app
 
 

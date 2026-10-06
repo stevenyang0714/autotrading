@@ -87,7 +87,8 @@ jobs:
       - run: cd apps/api && uv sync --locked
       - run: make up
       - run: make migrate
-      # Recorded real SEC and FRED data (no network, no credentials) for the e2e tests.
+      # Recorded real SEC, FRED and Alpaca data (no network, no credentials) for the e2e tests;
+      # prices are labelled fixture, so pages show the DEMO DATA banner.
       - run: make replay-fixtures
       - run: make test-integration
       - run: curl -fsS http://127.0.0.1:8000/health
