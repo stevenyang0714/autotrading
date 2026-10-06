@@ -157,6 +157,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/instruments/{ticker}/prices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Instrument Prices */
+        get: operations["instrument_prices_instruments__ticker__prices_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/macro/series": {
         parameters: {
             query?: never;
@@ -208,6 +225,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/prices/latest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Prices Latest */
+        get: operations["prices_latest_prices_latest_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/progress": {
         parameters: {
             query?: never;
@@ -237,12 +271,17 @@ export interface components {
              * Id
              * @enum {string}
              */
-            id: "inflation" | "labor" | "growth" | "policy" | "curve" | "risk";
+            id: "markets" | "inflation" | "labor" | "growth" | "policy" | "curve" | "risk";
             /** Indicators */
             indicators: components["schemas"]["Indicator"][];
             insight: components["schemas"]["Insight"] | null;
             /** Latest */
             latest: components["schemas"]["LatestValue"][];
+            /**
+             * Prices
+             * @default []
+             */
+            prices: components["schemas"]["PriceTile"][];
             /** Title */
             title: string;
         };
@@ -256,7 +295,7 @@ export interface components {
              * Unit
              * @enum {string}
              */
-            unit: "percent" | "pp" | "thousands" | "observations" | "percentile" | "index";
+            unit: "percent" | "pp" | "thousands" | "observations" | "percentile" | "index" | "usd";
             /** Zero Line */
             zero_line: boolean;
         };
@@ -269,6 +308,16 @@ export interface components {
             day: string;
             /** Value */
             value: string;
+        };
+        /** ClosePoint */
+        ClosePoint: {
+            /** Close */
+            close: string;
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
         };
         /** ComponentHealth */
         ComponentHealth: {
@@ -542,7 +591,7 @@ export interface components {
              * Unit
              * @enum {string}
              */
-            unit: "percent" | "pp" | "thousands" | "observations" | "percentile" | "index";
+            unit: "percent" | "pp" | "thousands" | "observations" | "percentile" | "index" | "usd";
             /** Value */
             value: string;
         };
@@ -575,6 +624,35 @@ export interface components {
             /** Last Refresh At */
             last_refresh_at: string | null;
         };
+        /** InstrumentPrices */
+        InstrumentPrices: {
+            /** Close Change Pct */
+            close_change_pct: string | null;
+            /**
+             * Closes Feed Status
+             * @enum {string}
+             */
+            closes_feed_status: "live_consolidated" | "live_single_venue" | "delayed" | "end_of_day" | "stale" | "unavailable" | "fixture" | "demo";
+            /** High 52W */
+            high_52w: string | null;
+            /** History */
+            history: components["schemas"]["ClosePoint"][];
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            last_close: components["schemas"]["ClosePoint"] | null;
+            market: components["schemas"]["MarketState"];
+            /** Pct Below 52W High */
+            pct_below_52w_high: string | null;
+            previous_close: components["schemas"]["ClosePoint"] | null;
+            /** Provider Configured */
+            provider_configured: boolean;
+            quote: components["schemas"]["QuoteOut"] | null;
+            /** Ticker */
+            ticker: string;
+        };
         /** InstrumentSummary */
         InstrumentSummary: {
             /** Cik */
@@ -588,6 +666,19 @@ export interface components {
             predecessors: string[];
             /** Ticker */
             ticker: string;
+        };
+        /** LatestPrices */
+        LatestPrices: {
+            /**
+             * As Of
+             * Format: date-time
+             */
+            as_of: string;
+            market: components["schemas"]["MarketState"];
+            /** Provider Configured */
+            provider_configured: boolean;
+            /** Quotes */
+            quotes: components["schemas"]["QuoteOut"][];
         };
         /** LatestValue */
         LatestValue: {
@@ -627,6 +718,26 @@ export interface components {
             last_refresh_at: string | null;
             /** Series */
             series: components["schemas"]["SeriesSummary"][];
+        };
+        /** MarketState */
+        MarketState: {
+            /**
+             * Calendar Covered Until
+             * Format: date
+             */
+            calendar_covered_until: string;
+            /**
+             * Last Close
+             * Format: date-time
+             */
+            last_close: string;
+            /**
+             * Next Open
+             * Format: date-time
+             */
+            next_open: string;
+            /** Open */
+            open: boolean;
         };
         /** MetricRow */
         MetricRow: {
@@ -688,6 +799,7 @@ export interface components {
             known_at: string;
             /** Last Refresh At */
             last_refresh_at: string | null;
+            market?: components["schemas"]["MarketState"] | null;
         };
         /** PeriodColumn */
         PeriodColumn: {
@@ -714,6 +826,25 @@ export interface components {
             /** Value */
             value: string;
         };
+        /**
+         * PriceTile
+         * @description One market price on the overview, with the feed status shown next to it (errata E4).
+         */
+        PriceTile: {
+            /** Change Pct */
+            change_pct?: string | null;
+            /**
+             * Feed Status
+             * @enum {string}
+             */
+            feed_status: "live_consolidated" | "live_single_venue" | "delayed" | "end_of_day" | "stale" | "unavailable" | "fixture" | "demo";
+            /** Last */
+            last?: string | null;
+            /** Published At */
+            published_at?: string | null;
+            /** Symbol */
+            symbol: string;
+        };
         /** Progress */
         Progress: {
             /** Current */
@@ -733,6 +864,34 @@ export interface components {
              * Format: date-time
              */
             read_at: string;
+        };
+        /** QuoteOut */
+        QuoteOut: {
+            /** Ask */
+            ask?: string | null;
+            /** Bid */
+            bid?: string | null;
+            /** Change Pct */
+            change_pct?: string | null;
+            /** Day Volume */
+            day_volume?: number | null;
+            /**
+             * Feed Status
+             * @enum {string}
+             */
+            feed_status: "live_consolidated" | "live_single_venue" | "delayed" | "end_of_day" | "stale" | "unavailable" | "fixture" | "demo";
+            /** Last */
+            last?: string | null;
+            /** Prev Close */
+            prev_close?: string | null;
+            /** Published At */
+            published_at?: string | null;
+            /** Received At */
+            received_at?: string | null;
+            /** Symbol */
+            symbol: string;
+            /** Venue */
+            venue?: string | null;
         };
         /** RunOut */
         RunOut: {
@@ -1046,6 +1205,8 @@ export interface operations {
                 source_id?: string | null;
                 status?: string | null;
                 limit?: number;
+                /** @description Keep only the newest N runs of each job */
+                per_job?: number | null;
             };
             header?: never;
             path?: never;
@@ -1114,6 +1275,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Fundamentals"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    instrument_prices_instruments__ticker__prices_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+            };
+            header?: never;
+            path: {
+                ticker: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InstrumentPrices"];
                 };
             };
             /** @description Validation Error */
@@ -1201,6 +1396,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Overview"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    prices_latest_prices_latest_get: {
+        parameters: {
+            query?: {
+                /** @description Comma-separated; default all */
+                symbols?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LatestPrices"];
                 };
             };
             /** @description Validation Error */

@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { FundamentalsView } from "@/components/instruments/FundamentalsView";
-import { loadFundamentals, loadSourceHealth } from "@/lib/api";
+import { DemoBanner } from "@/components/prices/DemoBanner";
+import { InstrumentPricePanel } from "@/components/prices/InstrumentPricePanel";
+import { loadFundamentals, loadInstrumentPrices, loadSourceHealth } from "@/lib/api";
 import { endOfDaySgt } from "@/lib/time";
 
 // Point-in-time data: always read live, never serve a cached page.
@@ -24,8 +26,9 @@ export default async function InstrumentPage({
   const knownOn = typeof query.known_on === "string" && query.known_on ? query.known_on : undefined;
   const knownAt = knownOn ? endOfDaySgt(knownOn) : null;
 
-  const [result, sources] = await Promise.all([
+  const [result, prices, sources] = await Promise.all([
     loadFundamentals(ticker, knownAt ?? undefined),
+    loadInstrumentPrices(ticker, knownAt ?? undefined),
     loadSourceHealth(),
   ]);
   if (result.status === "not_found") notFound();
@@ -44,12 +47,18 @@ export default async function InstrumentPage({
       </section>
     );
   }
+  const shown =
+    prices.status === "ok" ? [prices.data.quote?.feed_status, prices.data.closes_feed_status] : [];
   return (
-    <FundamentalsView
-      data={result.data}
-      knownOn={knownAt ? knownOn : undefined}
-      invalidKnownOn={Boolean(knownOn) && knownAt === null}
-      sources={sources}
-    />
+    <div className="space-y-4">
+      <DemoBanner statuses={shown} />
+      <FundamentalsView
+        data={result.data}
+        knownOn={knownAt ? knownOn : undefined}
+        invalidKnownOn={Boolean(knownOn) && knownAt === null}
+        sources={sources}
+        prices={prices.status === "not_found" ? undefined : <InstrumentPricePanel result={prices} />}
+      />
+    </div>
   );
 }

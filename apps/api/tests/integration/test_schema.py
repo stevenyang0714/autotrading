@@ -49,6 +49,8 @@ APP_TABLES = {
     "entity_relationships",
     "macro_series",
     "macro_observations",
+    "market_quotes",
+    "price_bars",
 }
 FEB = datetime(2025, 2, 1, 21, 5, tzinfo=UTC)
 AUG = datetime(2025, 8, 1, 20, 30, tzinfo=UTC)
@@ -152,6 +154,12 @@ def test_guardrails_exist(engine: Engine) -> None:
         "macro_observations_system_time",
         "macro_observations_append_only",
         "macro_observations_no_truncate",
+        "market_quotes_append_only",
+        "market_quotes_no_truncate",
+        "price_bars_system_time",
+        "price_bars_append_only",
+        "price_bars_no_truncate",
+        "price_bars_audit",
     } <= triggers
     assert exclusions == {"ex_identifiers_value_period", "ex_identifiers_subject_period"}
 

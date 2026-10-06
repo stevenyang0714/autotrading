@@ -241,7 +241,11 @@ def blocks(client: TestClient, known_at: str | None = None) -> dict[str, dict[st
 
 def test_overview_has_six_blocks_with_charts_and_cited_insights(client: TestClient) -> None:
     now = blocks(client)
-    assert list(now) == ["inflation", "labor", "growth", "policy", "curve", "risk"]
+    assert list(now) == ["markets", "inflation", "labor", "growth", "policy", "curve", "risk"]
+    # No prices in this database: every market tile is unavailable, without a number (M0.7).
+    markets = now.pop("markets")
+    assert {(t["feed_status"], t["last"]) for t in markets["prices"]} == {("unavailable", None)}
+    assert markets["insight"] is None
     for block in now.values():
         assert block["charts"] and block["charts"][0]["points"], block["id"]
         assert block["insight"]["inputs"], block["id"]
@@ -280,7 +284,7 @@ def test_progress_reads_the_project_documents(client: TestClient) -> None:
     assert milestones["M0.1"]["status"] == "done"
     assert milestones["M0.6"]["done"] == milestones["M0.6"]["total"] > 0
     assert [p["number"] for p in body["phases"]] == [1, 2, 3, 4, 5, 6]
-    assert body["open_decisions"][0]["id"] == "OD-1"
+    assert body["open_decisions"][0]["id"] == "OD-2"  # OD-1 decided 2026-10-06
     assert body["current"]["Phase"].startswith("0")
 
 

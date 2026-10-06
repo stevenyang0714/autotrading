@@ -1,0 +1,99 @@
+{
+  "recorded_at": "2026-10-06T05:00:15+00:00",
+  "runs": [
+    {
+      "job": "alpaca.snapshots",
+      "params": {
+        "symbols": [
+          "AAPL",
+          "MSFT",
+          "GOOGL",
+          "META",
+          "NVDA",
+          "JPM",
+          "XOM",
+          "AZO",
+          "ORLY",
+          "LOW",
+          "SPY",
+          "QQQ",
+          "IWM",
+          "TLT",
+          "IEF",
+          "GLD",
+          "XLE",
+          "XLK"
+        ],
+        "etfs": [
+          "SPY",
+          "QQQ",
+          "IWM",
+          "TLT",
+          "IEF",
+          "GLD",
+          "XLE",
+          "XLK"
+        ]
+      }
+    },
+    {
+      "job": "alpaca.daily_bars",
+      "params": {
+        "symbols": [
+          "AAPL",
+          "MSFT",
+          "GOOGL",
+          "META",
+          "NVDA",
+          "JPM",
+          "XOM",
+          "AZO",
+          "ORLY",
+          "LOW",
+          "SPY",
+          "QQQ",
+          "IWM",
+          "TLT",
+          "IEF",
+          "GLD",
+          "XLE",
+          "XLK"
+        ],
+        "etfs": [
+          "SPY",
+          "QQQ",
+          "IWM",
+          "TLT",
+          "IEF",
+          "GLD",
+          "XLE",
+          "XLK"
+        ],
+        "start": "2025-10-05",
+        "end": "2026-10-05"
+      }
+    },
+    {
+      "job": "alpaca.daily_bars",
+      "params": {
+        "symbols": [
+          "NVDA"
+        ],
+        "etfs": [],
+        "start": "2024-06-03",
+        "end": "2024-06-14"
+      }
+    }
+  ],
+  "files": {
+    "https://data.alpaca.markets/v2/stocks/snapshots?symbols=AAPL%2CMSFT%2CGOOGL%2CMETA%2CNVDA%2CJPM%2CXOM%2CAZO%2CORLY%2CLOW%2CSPY%2CQQQ%2CIWM%2CTLT%2CIEF%2CGLD%2CXLE%2CXLK&feed=iex": "snapshots_00.json",
+    "https://data.alpaca.markets/v1/corporate-actions?symbols=AAPL%2CMSFT%2CGOOGL%2CMETA%2CNVDA%2CJPM%2CXOM%2CAZO%2CORLY%2CLOW%2CSPY%2CQQQ%2CIWM%2CTLT%2CIEF%2CGLD%2CXLE%2CXLK&types=forward_split%2Creverse_split&start=2025-10-05&end=2026-10-05": "bars_year_00.json",
+    "https://data.alpaca.markets/v2/stocks/bars?symbols=AAPL%2CMSFT%2CGOOGL%2CMETA%2CNVDA%2CJPM%2CXOM%2CAZO%2CORLY%2CLOW%2CSPY%2CQQQ%2CIWM%2CTLT%2CIEF%2CGLD%2CXLE%2CXLK&timeframe=1Day&adjustment=raw&feed=sip&start=2025-10-05&limit=10000&end=2026-10-05": "bars_year_01.json",
+    "https://data.alpaca.markets/v2/stocks/bars?symbols=AAPL%2CMSFT%2CGOOGL%2CMETA%2CNVDA%2CJPM%2CXOM%2CAZO%2CORLY%2CLOW%2CSPY%2CQQQ%2CIWM%2CTLT%2CIEF%2CGLD%2CXLE%2CXLK&timeframe=1Day&adjustment=split&feed=sip&start=2025-10-05&limit=10000&end=2026-10-05": "bars_year_02.json",
+    "https://data.alpaca.markets/v2/stocks/bars?symbols=XLE%2CXLK&timeframe=1Day&adjustment=split&feed=sip&start=2016-01-01&limit=10000&end=2026-10-05": "bars_year_03.json",
+    "https://data.alpaca.markets/v1/corporate-actions?symbols=NVDA&types=forward_split%2Creverse_split&start=2024-06-03&end=2024-06-14": "bars_nvda_split_00.json",
+    "https://data.alpaca.markets/v2/stocks/bars?symbols=NVDA&timeframe=1Day&adjustment=raw&feed=sip&start=2024-06-03&limit=10000&end=2024-06-14": "bars_nvda_split_01.json",
+    "https://data.alpaca.markets/v2/stocks/bars?symbols=NVDA&timeframe=1Day&adjustment=split&feed=sip&start=2024-06-03&limit=10000&end=2024-06-14": "bars_nvda_split_02.json",
+    "https://data.alpaca.markets/v2/stocks/bars?symbols=NVDA&timeframe=1Day&adjustment=split&feed=sip&start=2016-01-01&limit=10000&end=2024-06-14": "bars_nvda_split_03.json"
+  }
+}

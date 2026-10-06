@@ -182,7 +182,7 @@ test("pages show how fresh their data is", async ({ page }) => {
 test("Build Progress reads the milestones", async ({ page }) => {
   await page.goto("/system/progress");
   await expect(page.locator('[data-milestone="M0.1"]')).toHaveAttribute("data-status", "done");
-  await expect(page.getByRole("list", { name: "Open decisions" })).toContainText("OD-1");
+  await expect(page.getByRole("list", { name: "Open decisions" })).toContainText("OD-2");
 });
 
 test.describe("Chinese hints", () => {
@@ -194,6 +194,40 @@ test.describe("Chinese hints", () => {
     await page.getByText("非農就業人數").first().hover();
     await expect(page.getByRole("tooltip")).toContainText("非農就業人數");
   });
+});
+
+// ---------- prices (M0.7, ADR-017) ----------
+
+test("every price carries its feed status", async ({ page }) => {
+  for (const path of ["/", "/instruments", "/instruments/AAPL"]) {
+    await page.goto(path);
+    const prices = page.locator('[data-term-id="last_price"]:not([role]) >> visible=true');
+    const count = await prices.count();
+    for (let i = 0; i < count; i++) {
+      // The badge sits in the same tile, row or price block as the price.
+      const holder = prices.nth(i).locator("xpath=ancestor::*[self::li or self::section][1]");
+      await expect(holder.locator("[data-feed-status]").first(), `${path} price ${i}`).toBeVisible();
+    }
+  }
+});
+
+test("DEMO DATA banner appears exactly when recorded prices are shown", async ({ page }) => {
+  for (const path of ["/", "/instruments", "/instruments/AAPL"]) {
+    await page.goto(path);
+    const recorded = await page.locator('[data-feed-status="fixture"], [data-feed-status="demo"]').count();
+    // CI replays recorded Alpaca data (make replay-fixtures), labelled fixture.
+    if (process.env.CI) expect(recorded, path).toBeGreaterThan(0);
+    await expect(page.locator("[data-demo-banner]"), path).toHaveCount(recorded > 0 ? 1 : 0);
+  }
+});
+
+test("a past date shows that day's last public close", async ({ page }) => {
+  // As known on 2026-09-30 (end of day SGT, midday in New York): the 09-29 close.
+  await page.goto("/instruments/AAPL?known_on=2026-09-30");
+  const price = page.getByRole("region", { name: "Price" });
+  await expect(price).toContainText("close of 2026-09-29");
+  await expect(price.locator("[data-feed-status]").first()).toBeVisible();
+  await expect(price).not.toContainText("US market");
 });
 
 // ---------- macro page (M0.6) ----------

@@ -12,6 +12,7 @@
           },
           "id": {
             "enum": [
+              "markets",
               "inflation",
               "labor",
               "growth",
@@ -44,6 +45,14 @@
               "$ref": "#/components/schemas/LatestValue"
             },
             "title": "Latest",
+            "type": "array"
+          },
+          "prices": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/PriceTile"
+            },
+            "title": "Prices",
             "type": "array"
           },
           "title": {
@@ -82,7 +91,8 @@
               "thousands",
               "observations",
               "percentile",
-              "index"
+              "index",
+              "usd"
             ],
             "title": "Unit",
             "type": "string"
@@ -119,6 +129,26 @@
           "value"
         ],
         "title": "ChartPoint",
+        "type": "object"
+      },
+      "ClosePoint": {
+        "properties": {
+          "close": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Close",
+            "type": "string"
+          },
+          "day": {
+            "format": "date",
+            "title": "Day",
+            "type": "string"
+          }
+        },
+        "required": [
+          "day",
+          "close"
+        ],
+        "title": "ClosePoint",
         "type": "object"
       },
       "ComponentHealth": {
@@ -857,7 +887,8 @@
               "thousands",
               "observations",
               "percentile",
-              "index"
+              "index",
+              "usd"
             ],
             "title": "Unit",
             "type": "string"
@@ -952,6 +983,129 @@
         "title": "InstrumentList",
         "type": "object"
       },
+      "InstrumentPrices": {
+        "properties": {
+          "close_change_pct": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Close Change Pct"
+          },
+          "closes_feed_status": {
+            "enum": [
+              "live_consolidated",
+              "live_single_venue",
+              "delayed",
+              "end_of_day",
+              "stale",
+              "unavailable",
+              "fixture",
+              "demo"
+            ],
+            "title": "Closes Feed Status",
+            "type": "string"
+          },
+          "high_52w": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "High 52W"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/ClosePoint"
+            },
+            "title": "History",
+            "type": "array"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "last_close": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ClosePoint"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "market": {
+            "$ref": "#/components/schemas/MarketState"
+          },
+          "pct_below_52w_high": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pct Below 52W High"
+          },
+          "previous_close": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ClosePoint"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "provider_configured": {
+            "title": "Provider Configured",
+            "type": "boolean"
+          },
+          "quote": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QuoteOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticker",
+          "known_at",
+          "provider_configured",
+          "market",
+          "quote",
+          "closes_feed_status",
+          "last_close",
+          "previous_close",
+          "close_change_pct",
+          "history",
+          "high_52w",
+          "pct_below_52w_high"
+        ],
+        "title": "InstrumentPrices",
+        "type": "object"
+      },
       "InstrumentSummary": {
         "properties": {
           "cik": {
@@ -1011,6 +1165,37 @@
           "latest_report"
         ],
         "title": "InstrumentSummary",
+        "type": "object"
+      },
+      "LatestPrices": {
+        "properties": {
+          "as_of": {
+            "format": "date-time",
+            "title": "As Of",
+            "type": "string"
+          },
+          "market": {
+            "$ref": "#/components/schemas/MarketState"
+          },
+          "provider_configured": {
+            "title": "Provider Configured",
+            "type": "boolean"
+          },
+          "quotes": {
+            "items": {
+              "$ref": "#/components/schemas/QuoteOut"
+            },
+            "title": "Quotes",
+            "type": "array"
+          }
+        },
+        "required": [
+          "as_of",
+          "provider_configured",
+          "market",
+          "quotes"
+        ],
+        "title": "LatestPrices",
         "type": "object"
       },
       "LatestValue": {
@@ -1123,6 +1308,37 @@
           "last_refresh_at"
         ],
         "title": "MacroSeriesList",
+        "type": "object"
+      },
+      "MarketState": {
+        "properties": {
+          "calendar_covered_until": {
+            "format": "date",
+            "title": "Calendar Covered Until",
+            "type": "string"
+          },
+          "last_close": {
+            "format": "date-time",
+            "title": "Last Close",
+            "type": "string"
+          },
+          "next_open": {
+            "format": "date-time",
+            "title": "Next Open",
+            "type": "string"
+          },
+          "open": {
+            "title": "Open",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "open",
+          "last_close",
+          "next_open",
+          "calendar_covered_until"
+        ],
+        "title": "MarketState",
         "type": "object"
       },
       "MetricRow": {
@@ -1282,6 +1498,16 @@
               }
             ],
             "title": "Last Refresh At"
+          },
+          "market": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MarketState"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -1360,6 +1586,71 @@
         "title": "PreviousVersion",
         "type": "object"
       },
+      "PriceTile": {
+        "description": "One market price on the overview, with the feed status shown next to it (errata E4).",
+        "properties": {
+          "change_pct": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Pct"
+          },
+          "feed_status": {
+            "enum": [
+              "live_consolidated",
+              "live_single_venue",
+              "delayed",
+              "end_of_day",
+              "stale",
+              "unavailable",
+              "fixture",
+              "demo"
+            ],
+            "title": "Feed Status",
+            "type": "string"
+          },
+          "last": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol",
+          "feed_status"
+        ],
+        "title": "PriceTile",
+        "type": "object"
+      },
       "Progress": {
         "properties": {
           "current": {
@@ -1412,6 +1703,140 @@
           "log"
         ],
         "title": "Progress",
+        "type": "object"
+      },
+      "QuoteOut": {
+        "properties": {
+          "ask": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ask"
+          },
+          "bid": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bid"
+          },
+          "change_pct": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Pct"
+          },
+          "day_volume": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Day Volume"
+          },
+          "feed_status": {
+            "enum": [
+              "live_consolidated",
+              "live_single_venue",
+              "delayed",
+              "end_of_day",
+              "stale",
+              "unavailable",
+              "fixture",
+              "demo"
+            ],
+            "title": "Feed Status",
+            "type": "string"
+          },
+          "last": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last"
+          },
+          "prev_close": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prev Close"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "received_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Received At"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "venue": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Venue"
+          }
+        },
+        "required": [
+          "symbol",
+          "feed_status"
+        ],
+        "title": "QuoteOut",
         "type": "object"
       },
       "RunOut": {
@@ -2185,6 +2610,26 @@
               "title": "Limit",
               "type": "integer"
             }
+          },
+          {
+            "description": "Keep only the newest N runs of each job",
+            "in": "query",
+            "name": "per_job",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 50,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Keep only the newest N runs of each job",
+              "title": "Per Job"
+            }
           }
         ],
         "responses": {
@@ -2298,6 +2743,67 @@
         "summary": "Fundamentals",
         "tags": [
           "instruments"
+        ]
+      }
+    },
+    "/instruments/{ticker}/prices": {
+      "get": {
+        "operationId": "instrument_prices_instruments__ticker__prices_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ticker",
+            "required": true,
+            "schema": {
+              "title": "Ticker",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstrumentPrices"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Instrument Prices",
+        "tags": [
+          "prices"
         ]
       }
     },
@@ -2444,6 +2950,57 @@
         "summary": "Overview",
         "tags": [
           "overview"
+        ]
+      }
+    },
+    "/prices/latest": {
+      "get": {
+        "operationId": "prices_latest_prices_latest_get",
+        "parameters": [
+          {
+            "description": "Comma-separated; default all",
+            "in": "query",
+            "name": "symbols",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated; default all",
+              "title": "Symbols"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LatestPrices"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Prices Latest",
+        "tags": [
+          "prices"
         ]
       }
     },

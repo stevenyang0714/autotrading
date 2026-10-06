@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { recordedOverview, recordedSources } from "@/test/fixtures";
+import { recordedMarketsOverview, recordedOverview, recordedSources } from "@/test/fixtures";
 import { unexplainedNumbers } from "@/test/numbers";
 
 import { OverviewView } from "./OverviewView";
@@ -43,6 +43,21 @@ describe("OverviewView (recorded FRED data)", () => {
     expect(screen.getByRole("heading", { level: 1 }).textContent).toContain("總覽");
     fireEvent.mouseEnter(screen.getAllByText("非農就業人數")[0]);
     expect(screen.getByRole("tooltip").textContent).toContain("非農就業人數");
+  });
+
+  it("shows the markets block: ETF prices with feed status, SPY's year and an insight", () => {
+    const { container } = render(<OverviewView data={recordedMarketsOverview} sources={recordedSources} />);
+    const markets = block(container, "markets");
+    const tiles = within(markets).getByRole("list", { name: "Market prices" });
+    expect(tiles.querySelectorAll("li")).toHaveLength(8);
+    const spy = tiles.querySelector('[data-symbol="SPY"]');
+    expect(spy?.textContent).toContain("$774.74");
+    expect(spy?.textContent).toContain("+0.66%");
+    expect(spy?.querySelector("[data-feed-status]")).not.toBeNull();
+    expect(markets.querySelector("svg[role=img]")).not.toBeNull();
+    expect(markets.textContent).toContain("0.4% below its 52-week high");
+    expect(markets.querySelector("[data-market-open]")).not.toBeNull();
+    expect(unexplainedNumbers(container)).toEqual([]);
   });
 
   it.each(Object.entries(recordedOverview))("%s renders no unexplained number", (_name, data) => {

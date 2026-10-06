@@ -54,6 +54,17 @@ terms:
   dashboard_strategy_lab: {name: 策略實驗室, hint: 模擬交易日誌與回測（Phase 1–2）。}
   dashboard_execution: {name: 下單執行, hint: 下單預覽與模擬帳戶（Phase 5）。}
 
+  # market data (M0.7)
+  last_price: {name: 最新成交價, hint: 行情來源最近一筆成交價；免費方案只有 IEX 單一交易所。}
+  bid: {name: 買價, hint: 目前買方出的最高價（此交易所內）。}
+  ask: {name: 賣價, hint: 目前賣方出的最低價（此交易所內）。}
+  volume: {name: 成交量, hint: 期間內成交的股數；IEX 只是全市場的一小部分。}
+  feed_status: {name: 報價狀態, hint: 價格有多即時、多完整：單一交易所即時、收盤價、過期、無資料或測試資料。}
+  price_change_1d: {name: 當日漲跌幅, hint: 最新價相對前一日收盤的變動百分比。}
+  pct_below_52w_high: {name: 距 52 週高點, hint: 最新價低於過去一年最高收盤價多少百分比；0 代表創新高。}
+  market_session: {name: 交易時段, hint: 美股是否開盤（紐約時間 09:30–16:00，扣除假日與提早收盤）。}
+  price_history: {name: 價格走勢, hint: 過去一年經股票分割調整的每日收盤價；查過去日期時只用當時已知的資料。}
+
   # SEC fundamentals
   revenue: {name: 營收, hint: 公司在該期間報告的總銷售額，未扣除任何成本。}
   gross_profit: {name: 毛利, hint: 營收減去銷貨成本。}

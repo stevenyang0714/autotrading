@@ -141,9 +141,9 @@ Delivered with M0.4: glossary registry (`glossary_terms`, migration 0003, synced
 - Daily bars backfilled for the universe; latest quotes on a schedule during US market hours.
 
 **Acceptance**
-- [ ] With no API key configured, every price component shows `Data unavailable` (no numbers).
-- [ ] With Alpaca configured, prices show the `live_single_venue` badge and as-of time in SGT and ET.
-- [ ] Test: a quote older than its SLA renders `stale`.
+- [x] With no API key configured, every price component shows `Data unavailable` (no numbers). (API and UI tests, 2026-10-06)
+- [x] With Alpaca configured, prices show the `live_single_venue` badge and as-of time in SGT and ET. (Rule and badge tested; outside the session the same quotes show `end_of_day`. First live session: 2026-10-06 21:30 SGT.)
+- [x] Test: a quote older than its SLA renders `stale`. (`tests/unit/test_prices_domain.py`)
 
 ## M0.8 English news adapter (GDELT + RSS)
 **Build**

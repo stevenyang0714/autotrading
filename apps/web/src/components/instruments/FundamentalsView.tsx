@@ -63,6 +63,8 @@ interface Props {
   /** Set when the URL carried a date that is not a real calendar date. */
   invalidKnownOn?: boolean;
   sources?: SourceHealth[] | null;
+  /** The price block (M0.7), shown under the header; absent for instruments without prices. */
+  prices?: ReactNode;
 }
 
 /**
@@ -70,7 +72,7 @@ interface Props {
  * (ADR-012); each links to its filing. Every number renders through <Metric>; tickers,
  * accession numbers, forms and CIKs are identifiers ([data-identifier]).
  */
-export function FundamentalsView({ data, knownOn, invalidKnownOn, sources }: Props) {
+export function FundamentalsView({ data, knownOn, invalidKnownOn, sources, prices }: Props) {
   const newest = [...data.annual.rows, ...data.balance_sheet.rows]
     .flatMap((row) => row.cells)
     .map((cell) => cell?.filing.published_at)
@@ -127,12 +129,14 @@ export function FundamentalsView({ data, knownOn, invalidKnownOn, sources }: Pro
         {sources !== undefined ? (
           <SourceFreshness
             sources={sources}
-            ids={["sec_edgar"]}
+            ids={prices ? ["sec_edgar", "alpaca_iex"] : ["sec_edgar"]}
             newestPublishedAt={knownOn ? null : newest}
           />
         ) : null}
         <Predecessors entities={data.entities.slice(1)} />
       </header>
+
+      {prices}
 
       <Table
         id="annual"

@@ -44,3 +44,17 @@ export function exactReported(value: string, unit: string): string {
 export function groupDigits(value: string): string {
   return exactReported(value, "").trimEnd();
 }
+
+/** "$774.74": a market price, two decimals (the exact value goes into a title). */
+export function formatPrice(value: string): string {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return value;
+  return withDollar(number.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+}
+
+/** "+0.66%", "-0.19%": a change in percent with its sign. */
+export function formatChange(value: string): string {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return value;
+  return `${number > 0 ? "+" : ""}${number.toFixed(2)}%`;
+}

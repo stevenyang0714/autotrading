@@ -50,6 +50,18 @@ INSTRUMENT_TYPES = ("equity", "etf", "index", "future", "option", "fx", "other")
 ID_TYPES = ("ticker", "cik", "figi", "composite_figi", "share_class_figi")
 RELATIONSHIP_TYPES = ("successor_issuer",)
 FREQUENCIES = ("D", "W", "BW", "M", "Q", "SA", "A")
+FEED_STATUSES = (
+    "live_consolidated",
+    "live_single_venue",
+    "delayed",
+    "end_of_day",
+    "stale",
+    "unavailable",
+    "fixture",
+    "demo",
+)
+BAR_FEED_STATUSES = ("end_of_day", "fixture")  # daily bars are closes, never live
+ADJUSTMENTS = ("raw", "split")
 REVISION_REASONS = ("restatement", "revision", "correction")
 AUDIT_ACTIONS = ("insert", "update", "delete", "supersede")
 RUN_STATUSES = ("queued", "running", "succeeded", "failed", "dead_lettered", "skipped")
@@ -569,6 +581,117 @@ class MacroObservation(FactMixin, Base):
         Uuid, ForeignKey("macro_observations.id")
     )
     revision_reason: Mapped[str | None] = mapped_column(Text)
+
+
+# ---------- prices (M0.7, TimescaleDB hypertables) ----------
+
+
+class MarketQuote(ProvenanceMixin, Base):
+    """MarketPriceObservation (errata E1): one provider snapshot of an instrument's latest
+    trade and quote. Append-only; a hypertable on published_at (the newer of the trade and
+    quote times). feed_status is the provider's label at ingest (live_single_venue, or fixture
+    for recorded data); the UI derives what to show from it and the quote's age (ADR-017)."""
+
+    __tablename__ = "market_quotes"
+    __table_args__ = (
+        *provenance_constraints(),
+        CheckConstraint(sql_in("feed_status", FEED_STATUSES), name="feed_status"),
+        CheckConstraint("adjustment_status = 'raw'", name="adjustment_status"),
+        CheckConstraint("currency ~ '^[A-Z]{3}$'", name="currency_format"),
+        UniqueConstraint(
+            "instrument_id", "published_at", name="uq_market_quotes_instrument_id_published_at"
+        ),
+        Index("ix_market_quotes_symbol_published_at", "symbol", "published_at"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    # The hypertable's time column must be part of every unique index, the key included.
+    published_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), primary_key=True)
+    instrument_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("instruments.id"))
+    symbol: Mapped[str] = mapped_column(Text)
+    venue: Mapped[str] = mapped_column(Text)
+    bid: Mapped[Decimal | None] = mapped_column(Numeric)
+    ask: Mapped[Decimal | None] = mapped_column(Numeric)
+    bid_size: Mapped[int | None] = mapped_column(BigInteger)
+    ask_size: Mapped[int | None] = mapped_column(BigInteger)
+    last: Mapped[Decimal | None] = mapped_column(Numeric)
+    last_size: Mapped[int | None] = mapped_column(BigInteger)
+    day_open: Mapped[Decimal | None] = mapped_column(Numeric)
+    day_high: Mapped[Decimal | None] = mapped_column(Numeric)
+    day_low: Mapped[Decimal | None] = mapped_column(Numeric)
+    day_volume: Mapped[int | None] = mapped_column(BigInteger)
+    prev_close: Mapped[Decimal | None] = mapped_column(Numeric)
+    currency: Mapped[str] = mapped_column(Text)
+    received_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    feed_status: Mapped[str] = mapped_column(Text)
+    adjustment_status: Mapped[str] = mapped_column(Text, server_default=text("'raw'"))
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class PriceBar(FactMixin, Base):
+    """A daily bar (consolidated SIP), raw or split-adjusted (ADR-017). Versioned facts: a new
+    split re-bases the split-adjusted history, which is stored as new versions (`revision`).
+    Raw bars count as public at the end of their New York day (ADR-012); split-adjusted bars
+    from when they were fetched. feed_status is end_of_day, or fixture for recorded test data
+    (ADR-006). A hypertable on bar_time, so supersedes_id has no foreign key (TimescaleDB cannot
+    reference a hypertable row by id alone)."""
+
+    __tablename__ = "price_bars"
+    __fact_key__ = ("instrument_id", "adjustment", "bar_time")
+    __table_args__ = (
+        *provenance_constraints(),
+        *bitemporal_constraints(),
+        CheckConstraint(sql_in("adjustment", ADJUSTMENTS), name="adjustment"),
+        CheckConstraint(sql_in("feed_status", BAR_FEED_STATUSES), name="feed_status"),
+        CheckConstraint("close NOT IN ('NaN', 'Infinity', '-Infinity')", name="close_finite"),
+        CheckConstraint(
+            "revision_reason IS NULL OR " + sql_in("revision_reason", REVISION_REASONS),
+            name="revision_reason",
+        ),
+        CheckConstraint(
+            "(supersedes_id IS NULL) = (revision_reason IS NULL)", name="revision_link"
+        ),
+        Index("uq_price_bars_key_version", *__fact_key__, "version", unique=True),
+        Index(
+            "uq_price_bars_current_key_published",
+            *__fact_key__,
+            "published_at",
+            unique=True,
+            postgresql_where=text("superseded_at IS NULL"),
+        ),
+        Index("ix_price_bars_symbol_bar_date", "symbol", "bar_date"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    bar_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), primary_key=True)
+    instrument_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("instruments.id"))
+    symbol: Mapped[str] = mapped_column(Text)
+    adjustment: Mapped[str] = mapped_column(Text)
+    bar_date: Mapped[date] = mapped_column(Date)
+    open: Mapped[Decimal] = mapped_column(Numeric)
+    high: Mapped[Decimal] = mapped_column(Numeric)
+    low: Mapped[Decimal] = mapped_column(Numeric)
+    close: Mapped[Decimal] = mapped_column(Numeric)
+    volume: Mapped[int] = mapped_column(BigInteger)
+    vwap: Mapped[Decimal | None] = mapped_column(Numeric)
+    trade_count: Mapped[int | None] = mapped_column(BigInteger)
+    feed: Mapped[str] = mapped_column(Text)
+    feed_status: Mapped[str] = mapped_column(Text)
+    supersedes_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    revision_reason: Mapped[str | None] = mapped_column(Text)
+
+    @property
+    def value(self) -> Decimal:
+        """The compared value for versioning (apply_versions): the close."""
+        return self.close
 
 
 # ---------- audit (append-only, written by triggers) ----------
