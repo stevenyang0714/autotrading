@@ -1,17 +1,34 @@
 import Link from "next/link";
 
 import { Metric } from "@/components/Metric";
-import type { InstrumentList as InstrumentListData } from "@/lib/api";
+import { SourceFreshness } from "@/components/SourceFreshness";
+import type { InstrumentList as InstrumentListData, SourceHealth } from "@/lib/api";
 import { formatSgtEt } from "@/lib/time";
 
 /** Instruments index (M0.5b). `data` is null when the API is unreachable. */
-export function InstrumentList({ data }: { data: InstrumentListData | null }) {
+export function InstrumentList({
+  data,
+  sources,
+}: {
+  data: InstrumentListData | null;
+  sources?: SourceHealth[] | null;
+}) {
+  const newest = data?.instruments
+    .map((i) => i.latest_report?.published_at)
+    .filter((v): v is string => Boolean(v))
+    .sort()
+    .at(-1);
   return (
     <section className="space-y-6">
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold">
-          <Metric termId="page_instruments">Instruments</Metric>
+          <Metric termId="page_instruments" zh>
+            Instruments
+          </Metric>
         </h1>
+        {sources !== undefined ? (
+          <SourceFreshness sources={sources} ids={["sec_edgar"]} newestPublishedAt={newest} />
+        ) : null}
         {data?.last_refresh_at ? (
           <p className="text-sm text-neutral-500">
             Last SEC refresh{" "}

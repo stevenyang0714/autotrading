@@ -1,0 +1,98 @@
+# Chinese hints for glossary terms (M0.6, ADR-016). Presentation only: not part of the 17
+# fields of 02 §22 and not in the term's content hash, so editing a hint needs no
+# methodology_version bump. English stays the primary language; these appear in tooltips and as
+# small labels next to key headings. Every complete term needs an entry (tested).
+# Format: term_id: {name: 中文名稱, hint: 一句中文說明}. Traditional Chinese, Taiwan usage.
+version: 0.1.0
+terms:
+  # provenance and data quality
+  point_in_time: {name: 時點資料, hint: 只使用在該時間點之前已公開的資訊，避免用到「未來的資料」。}
+  vintage: {name: 版本（公布值）, hint: 某個數值在某次發布時的版本；修正後舊版本仍保留可查。}
+  restated_flag: {name: 重編, hint: 後來的申報改寫了同一期間的數值，原值仍保留。}
+  filing_date: {name: 申報時間, hint: SEC 受理申報、資訊公開的時間。}
+  accession_number: {name: 申報編號, hint: SEC 為每份申報指定的唯一編號，可連到原始文件。}
+  reporting_period: {name: 報告期間, hint: 數值所描述的期間，以期末日標示；不是公布日。}
+  predecessor_issuer: {name: 前身發行人, hint: 公司改組前的原發行公司，其財報屬於這檔股票的歷史。}
+  source_tier: {name: 來源等級, hint: 資料來源的可信程度，數字越小越權威（1 為官方來源）。}
+  license_status: {name: 授權狀態, hint: 這份資料可以怎麼使用：公開、個人授權或受限。}
+  access_status: {name: 存取狀態, hint: 是否已具備取得這個來源資料的條件（例如 API key）。}
+  data_freshness: {name: 資料新鮮度, hint: 距離上次成功更新多久，和該來源的預期更新頻率比較。}
+  freshness_sla: {name: 新鮮度標準, hint: 該來源可接受的最長未更新時間，超過即視為過期。}
+  rate_limit: {name: 請求速率上限, hint: 平台每秒最多向該來源發出的請求數。}
+  update_cadence: {name: 更新頻率, hint: 來源多久發布一次新資料。}
+  ingestion_status: {name: 擷取狀態, hint: 某次資料擷取的結果：成功、略過、失敗等。}
+  dead_letter: {name: 失敗佇列, hint: 重試多次仍失敗的擷取工作，需要人工處理。}
+  as_of: {name: 資料時間, hint: 資料所反映的時間點。}
+  planned_phase: {name: 預計階段, hint: 這個儀表板預計在哪個開發階段開始有內容。}
+  next_refresh: {name: 下次更新, hint: 平台下一次依排程抓取這個來源的時間。}
+  data_age: {name: 資料年齡, hint: 來源發布最新數值至今經過多久。}
+
+  # pages and navigation
+  page_data_health: {name: 資料健康度, hint: 所有資料來源的狀態、最近擷取紀錄與失敗項目。}
+  page_instruments: {name: 個股, hint: 投資範圍內股票的 SEC 財報數字，可切換「當時已知」的版本。}
+  page_macro: {name: 總經, hint: 美國主要總經序列及其每次修正，可切換「當時已知」的版本。}
+  page_overview: {name: 總覽, hint: 首頁總經儀表板：六大區塊、圖表與規則式重點。}
+  page_progress: {name: 開發進度, hint: 即時讀取專案文件的里程碑、驗收項目與待決事項。}
+  milestone_status: {name: 里程碑狀態, hint: 驗收項目完成數，以及完成、進行中或未開始。}
+  open_decision: {name: 待決事項, hint: 需要你決定的事項、需要的時間點與決定前的預設做法。}
+  dev_log: {name: 開發紀錄, hint: 每個步驟完成內容的紀錄，最新在前。}
+
+  # dashboards
+  dashboard_global_monitor: {name: 全球監控, hint: 全球事件、實體與政策的總覽（Phase 3）。}
+  dashboard_market_regime: {name: 市場環境, hint: 總經與市場所處的狀態判斷（Phase 2）。}
+  dashboard_opportunity_radar: {name: 機會雷達, hint: 依訊號篩選出的研究候選標的（Phase 2）。}
+  dashboard_fundamental_research: {name: 基本面研究, hint: 財報、估值與買回分析（Phase 1）。}
+  dashboard_corporate_actions: {name: 公司行動, hint: 買回、股利、分割等公司行動（Phase 1）。}
+  dashboard_event_transmission: {name: 事件傳導, hint: 事件如何經由產業鏈影響資產（Phase 3）。}
+  dashboard_earnings: {name: 財報季, hint: 實際財報與前期比較、財測與市場反應（Phase 1）。}
+  dashboard_x_expert_watch: {name: X 專家觀察, hint: 追蹤研究者在 X 上的觀點變化（Phase 4）。}
+  dashboard_policy_monitor: {name: 政策監控, hint: 政策提案到實施的生命週期（Phase 3）。}
+  dashboard_congress_trades: {name: 國會交易, hint: 美國議員申報的交易與申報延遲（Phase 4）。}
+  dashboard_options_vol: {name: 選擇權與波動率, hint: 選擇權分析與避險（Phase 5）。}
+  dashboard_portfolio_risk: {name: 投組風險, hint: 部位風險與風險否決規則（Phase 2）。}
+  dashboard_alerts_center: {name: 警示中心, hint: 所有警示與通知（Phase 1）。}
+  dashboard_strategy_lab: {name: 策略實驗室, hint: 模擬交易日誌與回測（Phase 1–2）。}
+  dashboard_execution: {name: 下單執行, hint: 下單預覽與模擬帳戶（Phase 5）。}
+
+  # SEC fundamentals
+  revenue: {name: 營收, hint: 公司在該期間報告的總銷售額，未扣除任何成本。}
+  gross_profit: {name: 毛利, hint: 營收減去銷貨成本。}
+  operating_income: {name: 營業利益, hint: 本業獲利，未計利息與稅。}
+  net_income: {name: 淨利, hint: 歸屬於母公司股東的稅後淨利。}
+  eps_diluted: {name: 稀釋每股盈餘, hint: 考慮選擇權與可轉債潛在稀釋後的每股獲利。}
+  diluted_shares: {name: 稀釋加權股數, hint: 期間內的加權平均股數，含潛在稀釋股份。}
+  cash: {name: 現金及約當現金, hint: 期末的現金與極短期、高流動性投資。}
+  long_term_debt_noncurrent: {name: 長期負債（非流動）, hint: 一年後才到期的借款。}
+  long_term_debt_current: {name: 一年內到期長期負債, hint: 長期借款中一年內到期的部分。}
+  commercial_paper: {name: 商業本票, hint: 短期無擔保借款，通常 270 天內到期。}
+  operating_cash_flow: {name: 營業現金流, hint: 本業營運在期間內產生的現金。}
+  capex: {name: 資本支出, hint: 購置廠房、設備等固定資產支付的現金。}
+  share_repurchases: {name: 庫藏股買回, hint: 公司實際支付買回自家股票的現金。}
+  stock_based_compensation: {name: 股票酬勞, hint: 發給員工的股票與選擇權費用，屬非現金費用。}
+
+  # macro series
+  observation_date: {name: 觀測日期, hint: FRED 標示數值的日期，為期間的第一天；不是公布日。}
+  macro_cpi: {name: 消費者物價指數（CPI）, hint: 美國都市消費者整體物價指數，季調後。}
+  macro_core_pce: {name: 核心 PCE 物價指數, hint: 排除食品與能源的個人消費支出物價指數，聯準會偏好的通膨指標。}
+  macro_unemployment_rate: {name: 失業率, hint: 勞動力中失業者的比例，季調後。}
+  macro_nonfarm_payrolls: {name: 非農就業人數, hint: 美國非農業部門受雇總人數（千人），月增減即「非農數字」。}
+  macro_real_gdp: {name: 實質 GDP, hint: 扣除物價因素後的國內生產毛額，季調年率。}
+  macro_fed_funds: {name: 聯邦基金利率, hint: 銀行間隔夜拆款的有效利率（月平均），受聯準會政策引導。}
+  macro_treasury_2y: {name: 2 年期美債殖利率, hint: 2 年期固定期限美國公債殖利率，反映政策利率預期。}
+  macro_treasury_10y: {name: 10 年期美債殖利率, hint: 10 年期固定期限美國公債殖利率，長期資產的折現基準。}
+  macro_curve_10y_2y: {name: 10 年減 2 年利差, hint: 殖利率曲線斜率；負值即「倒掛」。}
+  macro_hy_oas: {name: 高收益債利差, hint: 高收益公司債相對美債的額外殖利率（OAS）。}
+  macro_vix: {name: VIX 恐慌指數, hint: S&P 500 選擇權隱含的未來 30 天波動率。}
+
+  # overview indicators
+  cpi_inflation_yoy: {name: CPI 年增率, hint: CPI 與 12 個月前相比的變動百分比。}
+  core_pce_inflation_yoy: {name: 核心 PCE 年增率, hint: 核心 PCE 與 12 個月前相比的變動百分比，對照聯準會 2% 目標。}
+  payrolls_monthly_change: {name: 非農月增減, hint: 最新一個月非農就業人數相對前一月的變化（千人）。}
+  payrolls_prior_month_revision: {name: 前月非農修正, hint: 前一個月的非農數字相對初值被修正了多少（千人）。}
+  sahm_rule_indicator: {name: 薩姆規則指標, hint: 失業率 3 個月平均高於前 12 個月低點的幅度；≥ 0.50 個百分點視為觸發。}
+  real_gdp_growth_annualized: {name: 實質 GDP 年化季增率, hint: 實質 GDP 季增率換算為年率。}
+  real_fed_funds_rate: {name: 實質聯邦基金利率, hint: 聯邦基金利率減去核心 PCE 年增率。}
+  yield_curve_inversion: {name: 殖利率曲線狀態, hint: 10 年減 2 年利差是否為負（倒掛），以及已維持多少交易日。}
+  hy_oas_percentile: {name: 高收益債利差百分位, hint: 目前利差在可取得歷史中的排名（0–100）。}
+  rule_insight: {name: 規則式重點, hint: 以固定規則與門檻由資料產生的一句摘要，列出所用數據與版本；不是預測或建議。}
+  vix_percentile_1y: {name: VIX 一年百分位, hint: 目前 VIX 在過去 12 個月收盤值中的排名（0–100）。}

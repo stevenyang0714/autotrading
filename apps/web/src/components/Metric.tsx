@@ -3,7 +3,7 @@
 import { type ReactNode, useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { GLOSSARY, type CompleteTermId } from "@/generated/glossary";
+import { GLOSSARY, type CompleteTermId, type GlossaryTerm } from "@/generated/glossary";
 
 interface MetricProps {
   /** Only complete glossary terms type-check: an unknown or unfinished term fails `tsc`. */
@@ -14,6 +14,8 @@ interface MetricProps {
   icon?: boolean;
   placement?: "below" | "right";
   className?: string;
+  /** Show the Chinese name as a small label after the text (headings, key metric names). */
+  zh?: boolean;
 }
 
 interface Position {
@@ -33,7 +35,14 @@ const MARGIN = 8;
  * nowrap cells cannot clip or squash them. They carry data-metric too: their text is the
  * explanation of this metric.
  */
-export function Metric({ termId, children, icon = true, placement = "below", className }: MetricProps) {
+export function Metric({
+  termId,
+  children,
+  icon = true,
+  placement = "below",
+  className,
+  zh = false,
+}: MetricProps) {
   const term = GLOSSARY[termId];
   const [hovered, setHovered] = useState(false);
   const [open, setOpen] = useState(false);
@@ -108,6 +117,11 @@ export function Metric({ termId, children, icon = true, placement = "below", cla
       }}
     >
       <span>{children ?? term.display_name}</span>
+      {zh && term.name_zh ? (
+        <span lang="zh-Hant" className="text-[0.75em] font-normal text-neutral-500">
+          {term.name_zh}
+        </span>
+      ) : null}
       {icon && (
         <button
           type="button"
@@ -135,6 +149,7 @@ export function Metric({ termId, children, icon = true, placement = "below", cla
             <span className="block font-medium">{term.display_name}</span>
             <span className="mt-1 block">{term.short_definition}</span>
             <span className="mt-1 block text-neutral-400">{term.interpretation}</span>
+            <ZhHint term={term} />
           </span>,
           document.body,
         )}
@@ -161,6 +176,7 @@ export function Metric({ termId, children, icon = true, placement = "below", cla
                 ×
               </button>
             </span>
+            <ZhHint term={term} />
             <span className="mt-2 block">{term.full_definition}</span>
             <Field label="Formula">{term.formula}</Field>
             <Field label="Unit">{term.unit}</Field>
@@ -189,6 +205,17 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
     <span className="mt-2 block">
       <span className="text-neutral-400">{label}: </span>
       {children}
+    </span>
+  );
+}
+
+/** Chinese name and hint (docs/glossary/glossary_zh.yaml), when the term has one. */
+function ZhHint({ term }: { term: GlossaryTerm }) {
+  if (!term.name_zh) return null;
+  return (
+    <span lang="zh-Hant" className="mt-1 block border-t border-neutral-700 pt-1 text-neutral-300">
+      <span className="font-medium">{term.name_zh}</span>
+      {term.hint_zh ? <span className="text-neutral-400">：{term.hint_zh}</span> : null}
     </span>
   );
 }

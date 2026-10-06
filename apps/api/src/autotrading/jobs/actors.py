@@ -15,6 +15,7 @@ import dramatiq
 from sqlalchemy.orm import sessionmaker
 
 from autotrading import adapters  # noqa: F401  (adapters register their ingestion jobs)
+from autotrading.adapters.fred import refresh as fred_refresh
 from autotrading.adapters.sec import refresh as sec_refresh
 from autotrading.infra.db import make_engine
 from autotrading.infra.heartbeat import write_heartbeat
@@ -86,3 +87,16 @@ def start_sec_refresh(*, manual: bool) -> UUID | None:
         return None
     run_ingestion.send_with_options(args=(str(run_id),), on_success=enqueue_sec_companies)
     return run_id
+
+
+# ---------- FRED / ALFRED refresh (M0.6) ----------
+
+
+def start_fred_refresh(*, manual: bool) -> list[UUID]:
+    """Queue one run per enabled macro series; empty when the source is not enabled."""
+    run_ids = fred_refresh.start_refresh(ingestion_runner(), now=datetime.now(UTC), manual=manual)
+    if not run_ids:
+        logger.info("FRED refresh skipped: source fred is not enabled or no series is enabled")
+    for run_id in run_ids:
+        run_ingestion.send(str(run_id))
+    return run_ids

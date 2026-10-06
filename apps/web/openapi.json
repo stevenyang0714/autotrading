@@ -1,6 +1,126 @@
 {
   "components": {
     "schemas": {
+      "Block": {
+        "properties": {
+          "charts": {
+            "items": {
+              "$ref": "#/components/schemas/Chart"
+            },
+            "title": "Charts",
+            "type": "array"
+          },
+          "id": {
+            "enum": [
+              "inflation",
+              "labor",
+              "growth",
+              "policy",
+              "curve",
+              "risk"
+            ],
+            "title": "Id",
+            "type": "string"
+          },
+          "indicators": {
+            "items": {
+              "$ref": "#/components/schemas/Indicator"
+            },
+            "title": "Indicators",
+            "type": "array"
+          },
+          "insight": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Insight"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "latest": {
+            "items": {
+              "$ref": "#/components/schemas/LatestValue"
+            },
+            "title": "Latest",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "latest",
+          "indicators",
+          "charts",
+          "insight"
+        ],
+        "title": "Block",
+        "type": "object"
+      },
+      "Chart": {
+        "properties": {
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/ChartPoint"
+            },
+            "title": "Points",
+            "type": "array"
+          },
+          "term_id": {
+            "title": "Term Id",
+            "type": "string"
+          },
+          "unit": {
+            "enum": [
+              "percent",
+              "pp",
+              "thousands",
+              "observations",
+              "percentile",
+              "index"
+            ],
+            "title": "Unit",
+            "type": "string"
+          },
+          "zero_line": {
+            "title": "Zero Line",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "term_id",
+          "unit",
+          "zero_line",
+          "points"
+        ],
+        "title": "Chart",
+        "type": "object"
+      },
+      "ChartPoint": {
+        "properties": {
+          "day": {
+            "format": "date",
+            "title": "Day",
+            "type": "string"
+          },
+          "value": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "day",
+          "value"
+        ],
+        "title": "ChartPoint",
+        "type": "object"
+      },
       "ComponentHealth": {
         "properties": {
           "detail": {
@@ -152,6 +272,34 @@
           "resolution"
         ],
         "title": "DeadLetterOut",
+        "type": "object"
+      },
+      "DecisionOut": {
+        "properties": {
+          "decision": {
+            "title": "Decision",
+            "type": "string"
+          },
+          "default": {
+            "title": "Default",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "needed_by": {
+            "title": "Needed By",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "decision",
+          "needed_by",
+          "default"
+        ],
+        "title": "DecisionOut",
         "type": "object"
       },
       "EntityOut": {
@@ -391,6 +539,26 @@
           "published_at_precision"
         ],
         "title": "FilingRef",
+        "type": "object"
+      },
+      "FirstRelease": {
+        "properties": {
+          "value": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Value",
+            "type": "string"
+          },
+          "vintage": {
+            "format": "date",
+            "title": "Vintage",
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "vintage"
+        ],
+        "title": "FirstRelease",
         "type": "object"
       },
       "Fundamentals": {
@@ -648,6 +816,113 @@
         "title": "HealthReport",
         "type": "object"
       },
+      "Indicator": {
+        "properties": {
+          "as_of": {
+            "format": "date",
+            "title": "As Of",
+            "type": "string"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "since": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Since"
+          },
+          "term_id": {
+            "title": "Term Id",
+            "type": "string"
+          },
+          "unit": {
+            "enum": [
+              "percent",
+              "pp",
+              "thousands",
+              "observations",
+              "percentile",
+              "index"
+            ],
+            "title": "Unit",
+            "type": "string"
+          },
+          "value": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "term_id",
+          "value",
+          "unit",
+          "as_of"
+        ],
+        "title": "Indicator",
+        "type": "object"
+      },
+      "InputRef": {
+        "properties": {
+          "observation_date": {
+            "format": "date",
+            "title": "Observation Date",
+            "type": "string"
+          },
+          "series_id": {
+            "title": "Series Id",
+            "type": "string"
+          },
+          "vintage": {
+            "format": "date",
+            "title": "Vintage",
+            "type": "string"
+          }
+        },
+        "required": [
+          "series_id",
+          "observation_date",
+          "vintage"
+        ],
+        "title": "InputRef",
+        "type": "object"
+      },
+      "Insight": {
+        "properties": {
+          "inputs": {
+            "items": {
+              "$ref": "#/components/schemas/InputRef"
+            },
+            "title": "Inputs",
+            "type": "array"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "inputs"
+        ],
+        "title": "Insight",
+        "type": "object"
+      },
       "InstrumentList": {
         "properties": {
           "instruments": {
@@ -738,6 +1013,118 @@
         "title": "InstrumentSummary",
         "type": "object"
       },
+      "LatestValue": {
+        "properties": {
+          "observation_date": {
+            "format": "date",
+            "title": "Observation Date",
+            "type": "string"
+          },
+          "series_id": {
+            "title": "Series Id",
+            "type": "string"
+          },
+          "term_id": {
+            "title": "Term Id",
+            "type": "string"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "units_short": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Units Short"
+          },
+          "value": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Value",
+            "type": "string"
+          },
+          "vintage": {
+            "format": "date",
+            "title": "Vintage",
+            "type": "string"
+          }
+        },
+        "required": [
+          "series_id",
+          "term_id",
+          "title",
+          "units_short",
+          "observation_date",
+          "value",
+          "vintage"
+        ],
+        "title": "LatestValue",
+        "type": "object"
+      },
+      "LogOut": {
+        "properties": {
+          "date": {
+            "title": "Date",
+            "type": "string"
+          },
+          "milestone": {
+            "title": "Milestone",
+            "type": "string"
+          },
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "date",
+          "milestone",
+          "result"
+        ],
+        "title": "LogOut",
+        "type": "object"
+      },
+      "MacroSeriesList": {
+        "properties": {
+          "last_refresh_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Refresh At"
+          },
+          "series": {
+            "items": {
+              "$ref": "#/components/schemas/SeriesSummary"
+            },
+            "title": "Series",
+            "type": "array"
+          }
+        },
+        "required": [
+          "series",
+          "last_refresh_at"
+        ],
+        "title": "MacroSeriesList",
+        "type": "object"
+      },
       "MetricRow": {
         "properties": {
           "cells": {
@@ -764,6 +1151,145 @@
           "cells"
         ],
         "title": "MetricRow",
+        "type": "object"
+      },
+      "MilestoneOut": {
+        "properties": {
+          "done": {
+            "title": "Done",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "done",
+          "total",
+          "status"
+        ],
+        "title": "MilestoneOut",
+        "type": "object"
+      },
+      "ObservationOut": {
+        "properties": {
+          "first_release": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FirstRelease"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "observation_date": {
+            "format": "date",
+            "title": "Observation Date",
+            "type": "string"
+          },
+          "period_end": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period End"
+          },
+          "published_at": {
+            "format": "date-time",
+            "title": "Published At",
+            "type": "string"
+          },
+          "published_at_precision": {
+            "title": "Published At Precision",
+            "type": "string"
+          },
+          "revised": {
+            "title": "Revised",
+            "type": "boolean"
+          },
+          "source_url": {
+            "title": "Source Url",
+            "type": "string"
+          },
+          "value": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Value",
+            "type": "string"
+          },
+          "vintage": {
+            "format": "date",
+            "title": "Vintage",
+            "type": "string"
+          }
+        },
+        "required": [
+          "observation_date",
+          "period_end",
+          "value",
+          "vintage",
+          "published_at",
+          "published_at_precision",
+          "source_url",
+          "revised",
+          "first_release"
+        ],
+        "title": "ObservationOut",
+        "type": "object"
+      },
+      "Overview": {
+        "properties": {
+          "blocks": {
+            "items": {
+              "$ref": "#/components/schemas/Block"
+            },
+            "title": "Blocks",
+            "type": "array"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "last_refresh_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Refresh At"
+          }
+        },
+        "required": [
+          "known_at",
+          "blocks",
+          "last_refresh_at"
+        ],
+        "title": "Overview",
         "type": "object"
       },
       "PeriodColumn": {
@@ -793,6 +1319,29 @@
         "title": "PeriodColumn",
         "type": "object"
       },
+      "PhaseOut": {
+        "properties": {
+          "blocking": {
+            "title": "Blocking",
+            "type": "string"
+          },
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          },
+          "scope": {
+            "title": "Scope",
+            "type": "string"
+          }
+        },
+        "required": [
+          "number",
+          "scope",
+          "blocking"
+        ],
+        "title": "PhaseOut",
+        "type": "object"
+      },
       "PreviousVersion": {
         "properties": {
           "filing": {
@@ -809,6 +1358,60 @@
           "filing"
         ],
         "title": "PreviousVersion",
+        "type": "object"
+      },
+      "Progress": {
+        "properties": {
+          "current": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Current",
+            "type": "object"
+          },
+          "log": {
+            "items": {
+              "$ref": "#/components/schemas/LogOut"
+            },
+            "title": "Log",
+            "type": "array"
+          },
+          "milestones": {
+            "items": {
+              "$ref": "#/components/schemas/MilestoneOut"
+            },
+            "title": "Milestones",
+            "type": "array"
+          },
+          "open_decisions": {
+            "items": {
+              "$ref": "#/components/schemas/DecisionOut"
+            },
+            "title": "Open Decisions",
+            "type": "array"
+          },
+          "phases": {
+            "items": {
+              "$ref": "#/components/schemas/PhaseOut"
+            },
+            "title": "Phases",
+            "type": "array"
+          },
+          "read_at": {
+            "format": "date-time",
+            "title": "Read At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "read_at",
+          "current",
+          "milestones",
+          "phases",
+          "open_decisions",
+          "log"
+        ],
+        "title": "Progress",
         "type": "object"
       },
       "RunOut": {
@@ -956,6 +1559,159 @@
         "title": "RunOut",
         "type": "object"
       },
+      "SeriesObservations": {
+        "properties": {
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "last_refresh_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Refresh At"
+          },
+          "observations": {
+            "items": {
+              "$ref": "#/components/schemas/ObservationOut"
+            },
+            "title": "Observations",
+            "type": "array"
+          },
+          "series": {
+            "$ref": "#/components/schemas/SeriesOut"
+          }
+        },
+        "required": [
+          "series",
+          "known_at",
+          "observations",
+          "last_refresh_at"
+        ],
+        "title": "SeriesObservations",
+        "type": "object"
+      },
+      "SeriesOut": {
+        "properties": {
+          "frequency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Frequency"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "last_updated": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Updated"
+          },
+          "seasonal_adjustment_short": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seasonal Adjustment Short"
+          },
+          "term_id": {
+            "title": "Term Id",
+            "type": "string"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "units": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Units"
+          },
+          "units_short": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Units Short"
+          }
+        },
+        "required": [
+          "id",
+          "term_id",
+          "title",
+          "units",
+          "units_short",
+          "frequency",
+          "seasonal_adjustment_short",
+          "last_updated"
+        ],
+        "title": "SeriesOut",
+        "type": "object"
+      },
+      "SeriesSummary": {
+        "properties": {
+          "latest": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ObservationOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "series": {
+            "$ref": "#/components/schemas/SeriesOut"
+          }
+        },
+        "required": [
+          "series",
+          "latest"
+        ],
+        "title": "SeriesSummary",
+        "type": "object"
+      },
       "SourceHealth": {
         "properties": {
           "access_status": {
@@ -1020,6 +1776,18 @@
             "title": "Name",
             "type": "string"
           },
+          "next_refresh_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Refresh At"
+          },
           "open_dead_letters": {
             "title": "Open Dead Letters",
             "type": "integer"
@@ -1068,6 +1836,7 @@
           "topics",
           "freshness",
           "last_success_at",
+          "next_refresh_at",
           "last_run",
           "open_dead_letters"
         ],
@@ -1529,6 +2298,173 @@
         "summary": "Fundamentals",
         "tags": [
           "instruments"
+        ]
+      }
+    },
+    "/macro/series": {
+      "get": {
+        "operationId": "list_series_macro_series_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MacroSeriesList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Series",
+        "tags": [
+          "macro"
+        ]
+      }
+    },
+    "/macro/series/{series_id}/observations": {
+      "get": {
+        "operationId": "series_observations_macro_series__series_id__observations_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "series_id",
+            "required": true,
+            "schema": {
+              "title": "Series Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 24,
+              "maximum": 240,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeriesObservations"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Series Observations",
+        "tags": [
+          "macro"
+        ]
+      }
+    },
+    "/overview": {
+      "get": {
+        "operationId": "overview_overview_get",
+        "parameters": [
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Overview"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Overview",
+        "tags": [
+          "overview"
+        ]
+      }
+    },
+    "/progress": {
+      "get": {
+        "operationId": "progress_progress_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Progress"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Progress",
+        "tags": [
+          "progress"
         ]
       }
     }

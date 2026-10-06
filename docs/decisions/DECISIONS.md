@@ -157,6 +157,68 @@ Resolves the XOM gap in ADR-013.
   - **Overlap:** the 11 periods both XOM issuers report (2025-2026) are equal.
 - **Limits:** only `successor_issuer` exists. Spin-offs and mergers (where history does not simply continue) need their own types and rules before they are modelled.
 
+## ADR-015 FRED / ALFRED vintages — Accepted (2026-10-06, approved by Steven with the M0.6 plan)
+Applies ADR-007 and ADR-012 to macro series (M0.6). Code: `apps/api/src/autotrading/adapters/fred/`.
+- **Storage:**
+  - `macro_series` is the registry: series ids from `config/macro_series.yaml`, metadata from FRED. Rows are mutable and audited.
+  - `macro_observations` is an append-only bitemporal fact table with key (`series_id`, `observation_date`).
+  - Each ALFRED real-time period is a version. A later vintage with a different value is a new version with `revision_reason = revision`. Versioning uses the same `decide_version` / `apply_versions` rules as financial facts.
+- **Publication time:**
+  - A vintage's `realtime_start` is a date, so the value counts as public from the end of that day in New York (precision `day`, ADR-012). Example: CPI released at 08:30 ET counts as known at 23:59:59 ET.
+  - ALFRED's archive starts at a different date per series. Values published before it carry the archive start as their vintage. That is later than the true release, never earlier.
+- **Fetching:**
+  - Each run reads all vintages: the series record, its vintage dates, then observations over the full real-time range, paged by 100,000.
+  - FRED serves at most 2,000 vintage dates per request. Daily market series have 3,000-5,000, so they are read in real-time windows of at most 1,900 vintages.
+  - A value that spans two windows comes back once per window. The repeat is classified unchanged, so it is never stored twice.
+  - Missing values (`.`) are not stored. A value that disappears is the tombstone gap noted in ADR-012.
+- **API key:**
+  - FRED accepts the key only as a query parameter. It lives in Settings as a secret.
+  - Stored and shown URLs are built without it (`public_url`). Observations link to `https://fred.stlouisfed.org/series/<ID>`.
+  - Errors name the public URL and are raised without exception chaining.
+  - httpx2/httpcore2 request logging is limited to warnings.
+  - Recorded fixtures are checked for the key before the manifest is written.
+- **Refresh:** daily at 10:15 SGT, plus `make fred-refresh`. There is one `fred.series` run per enabled series, in the shared refresh window (`ingestion/schedule.py`).
+- **Limits:**
+  - ICE BofA series (BAMLH0A0HYM2) are limited by ICE licensing to about the last three years on FRED (from 2023-10-06 at first ingest).
+  - ICE and Cboe series carry third-party copyright: personal use only (ADR-001).
+
+## ADR-016 Overview dashboard, Chinese hints, freshness and build progress — Accepted (2026-10-06, approved by Steven with the M0.6 additions plan)
+Added on the M0.6 branch at Steven's request. The overview pulls parts of M0.9 forward: charts, and the home screen as the first working dashboard.
+- **Computed indicators:**
+  - Ten indicators are pure functions in `domain/indicators.py`:
+    - CPI and core PCE inflation over 12 months;
+    - payroll change and prior-month revision;
+    - the Sahm rule indicator;
+    - annualized real GDP growth;
+    - the real fed funds rate;
+    - the yield curve state and streak;
+    - the HY spread percentile and the 1-year VIX percentile.
+  - Each has a complete glossary term and a METRICS registration (methodology 0.1.0).
+  - Inputs are values known at the chosen time (`as_of`), so a past date reproduces the dashboard as it could be computed then.
+  - Streaks and the HY percentile read the full stored history. A streak that reaches the first stored observation is reported as such ("throughout the data stored").
+- **Insights are rules, not inference:**
+  - Each block's sentence is a template filled with computed values.
+  - Labels come from thresholds stated in the glossary: the Fed's 2% target, the 0.50 pp Sahm trigger, and the 25th/75th percentile bands.
+  - Every sentence lists the observations and vintages it used. No language model writes them (ADR-009 stays proposed).
+  - They are not forecasts or advice.
+- **Charts:**
+  - Server-rendered SVG sparklines, with no chart library and no client JavaScript.
+  - Each `<figure>` carries `data-metric` for its term, so its axis labels count as explained numbers.
+- **Chinese hints:**
+  - `docs/glossary/glossary_zh.yaml` holds a name and a one-line hint for every complete term (tested).
+  - They are presentation only: not part of the 17 fields of 02 §22 and not in the content hash, so editing a hint needs no methodology_version bump.
+  - Shown in tooltips, and as small labels via `<Metric zh>`. English stays primary.
+- **Freshness:**
+  - `ingestion/schedule.py` `SCHEDULES` is the single source of refresh times; the scheduler reads it.
+  - `/data-health` reports `next_refresh_at`.
+  - Pages show, per source, the freshness state, last refresh, next refresh and how old the newest value shown is.
+  - Date-only releases count from the end of their New York day (ADR-012), so a release can be "not yet public" for part of the next Singapore morning.
+- **Build progress:**
+  - `/system/progress` parses `docs/` (milestone checkboxes, ROADMAP phases, STATUS, open decisions) on every request.
+  - Containers mount `docs/` read-only, so edits show without a rebuild.
+  - A milestone counts as done only when all checks are ticked and STATUS no longer marks it pending.
+- **Not included: intraday data.** It needs the M0.7 price feed: Steven decides OD-1 and checks OD-9 (Alpaca account and data keys) first.
+
 ---
 
 ## Open decisions (owner: Steven)

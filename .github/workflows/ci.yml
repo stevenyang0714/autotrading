@@ -87,8 +87,8 @@ jobs:
       - run: cd apps/api && uv sync --locked
       - run: make up
       - run: make migrate
-      # Recorded real SEC data (no network, no SEC_USER_AGENT) for the instrument page e2e tests.
-      - run: make sec-replay
+      # Recorded real SEC and FRED data (no network, no credentials) for the e2e tests.
+      - run: make replay-fixtures
       - run: make test-integration
       - run: curl -fsS http://127.0.0.1:8000/health
       - uses: pnpm/action-setup@v6

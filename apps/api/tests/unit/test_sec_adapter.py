@@ -23,11 +23,11 @@ from autotrading.adapters.sec.parsing import (
     publication_time,
     select_values,
 )
-from autotrading.adapters.sec.refresh import refresh_window
 from autotrading.adapters.sec.tickers import parse_tickers
 from autotrading.domain.metrics import SEC_XBRL_METRICS
 from autotrading.domain.provenance import end_of_day
 from autotrading.ingestion.job import idempotency_key
+from autotrading.ingestion.schedule import refresh_window
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "sec"
 UA = "Test Runner test@example.com"
@@ -243,3 +243,14 @@ def test_scheduled_refresh_is_once_per_singapore_day_and_manual_always_runs() ->
         return idempotency_key("sec_edgar", "sec.tickers", {"tickers": ["AAPL"]}, window)
 
     assert key(refresh_window(morning, manual=True)) != key(refresh_window(evening, manual=True))
+
+
+def test_next_scheduled_refresh_is_the_next_singapore_time_slot() -> None:
+    from autotrading.ingestion.schedule import SCHEDULES
+
+    sec, fred = SCHEDULES["sec_edgar"], SCHEDULES["fred"]
+    before = datetime(2026, 10, 5, 1, 0, tzinfo=UTC)  # 09:00 SGT
+    after = datetime(2026, 10, 5, 3, 0, tzinfo=UTC)  # 11:00 SGT
+    assert sec.next_after(before) == datetime(2026, 10, 5, 2, 0, tzinfo=UTC)
+    assert fred.next_after(before) == datetime(2026, 10, 5, 2, 15, tzinfo=UTC)
+    assert sec.next_after(after) == datetime(2026, 10, 6, 2, 0, tzinfo=UTC)

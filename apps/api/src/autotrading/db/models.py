@@ -49,6 +49,7 @@ ENTITY_TYPES = ("company", "fund", "government", "other")
 INSTRUMENT_TYPES = ("equity", "etf", "index", "future", "option", "fx", "other")
 ID_TYPES = ("ticker", "cik", "figi", "composite_figi", "share_class_figi")
 RELATIONSHIP_TYPES = ("successor_issuer",)
+FREQUENCIES = ("D", "W", "BW", "M", "Q", "SA", "A")
 REVISION_REASONS = ("restatement", "revision", "correction")
 AUDIT_ACTIONS = ("insert", "update", "delete", "supersede")
 RUN_STATUSES = ("queued", "running", "succeeded", "failed", "dead_lettered", "skipped")
@@ -485,6 +486,89 @@ class Filing(ProvenanceMixin, Base):
     recorded_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+
+
+# ---------- macro series (M0.6) ----------
+
+
+class MacroSeries(MutableRowMixin, Base):
+    """A FRED series in the registry (config/macro_series.yaml; metadata from FRED, ADR-015)."""
+
+    __tablename__ = "macro_series"
+    __table_args__ = (
+        CheckConstraint("id ~ '^[A-Z0-9_]+$'", name="id_format"),
+        CheckConstraint("term_id ~ '^[a-z][a-z0-9_]*$'", name="term_id_format"),
+        CheckConstraint(
+            "frequency_short IS NULL OR " + sql_in("frequency_short", FREQUENCIES),
+            name="frequency_short",
+        ),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[str] = mapped_column(Text, primary_key=True)  # FRED series id, e.g. PAYEMS
+    term_id: Mapped[str] = mapped_column(Text)  # glossary term shown for the series
+    position: Mapped[int] = mapped_column(SmallInteger, server_default=text("100"))
+    enabled: Mapped[bool] = mapped_column(Boolean, server_default=text("true"))
+    source_id: Mapped[str] = mapped_column(Text, ForeignKey("sources.id"))
+    # From FRED's series endpoint; empty until the first fred.series run.
+    title: Mapped[str | None] = mapped_column(Text)
+    units: Mapped[str | None] = mapped_column(Text)
+    units_short: Mapped[str | None] = mapped_column(Text)
+    frequency: Mapped[str | None] = mapped_column(Text)
+    frequency_short: Mapped[str | None] = mapped_column(Text)
+    seasonal_adjustment_short: Mapped[str | None] = mapped_column(Text)
+    last_updated: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class MacroObservation(FactMixin, Base):
+    """One value of a series for one observation date, as published in one ALFRED vintage.
+
+    A later vintage with a different value is a new version (revision_reason `revision`);
+    published_at is the end of the vintage's first day in New York (ADR-012, ADR-015).
+    """
+
+    __tablename__ = "macro_observations"
+    __fact_key__ = ("series_id", "observation_date")
+    __table_args__ = (
+        *provenance_constraints(),
+        *bitemporal_constraints(),
+        CheckConstraint("value NOT IN ('NaN', 'Infinity', '-Infinity')", name="value_finite"),
+        CheckConstraint(
+            "revision_reason IS NULL OR " + sql_in("revision_reason", REVISION_REASONS),
+            name="revision_reason",
+        ),
+        CheckConstraint(
+            "(supersedes_id IS NULL) = (revision_reason IS NULL)",
+            name="revision_link",
+        ),
+        Index(
+            "uq_macro_observations_key_version",
+            *__fact_key__,
+            "version",
+            unique=True,
+        ),
+        # One current version per observation and publication time; also the idempotency key.
+        Index(
+            "uq_macro_observations_current_key_published",
+            *__fact_key__,
+            "published_at",
+            unique=True,
+            postgresql_where=text("superseded_at IS NULL"),
+        ),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    series_id: Mapped[str] = mapped_column(Text, ForeignKey("macro_series.id"))
+    observation_date: Mapped[date] = mapped_column(Date)
+    value: Mapped[Decimal] = mapped_column(Numeric)
+    vintage: Mapped[date] = mapped_column(Date)  # ALFRED realtime_start
+    supersedes_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("macro_observations.id")
+    )
+    revision_reason: Mapped[str | None] = mapped_column(Text)
 
 
 # ---------- audit (append-only, written by triggers) ----------

@@ -110,16 +110,21 @@ terms:
     display_name: Vintage
     category: provenance
     short_definition: A version of a data value as published at a specific time.
-    formula: "FRED/ALFRED real-time period or filing accession for financial facts"
-    unit: date range or accession
+    full_definition: "For macro series, ALFRED records each value with the date it was first published (its real-time start). When a later release revises the value, the new figure is a new vintage and the earlier one stays queryable. On the Macro page, Released is the vintage date of the value shown and Revised marks a value that changed since its first release."
+    formula: "ALFRED realtime_start of the value; counted as public from the end of that day in New York (ADR-012, ADR-015)"
+    unit: date
+    example: "Nonfarm payrolls for August 2026: first released on 2026-09-04 as 159,075 thousand, revised on 2026-10-02 to 159,015 thousand."
     direction: N/A
     interpretation: Revised data creates a new vintage; old vintages stay queryable.
     why_it_matters: Lets the system reproduce what the market knew on any date.
-    caveats: Not every provider publishes vintages.
-    related_terms: [point_in_time, restated_flag]
+    source: "ALFRED (Archival FRED), Federal Reserve Bank of St. Louis; ADR-015"
+    source_url: https://alfred.stlouisfed.org/
+    as_of: "2026-10-06"
     update_cadence: per release
+    caveats: ALFRED's archive starts at a different date per series; values first published before that carry the archive start as their vintage, which is later than the real release.
+    related_terms: [point_in_time, restated_flag]
     methodology_version: 0.1.0
-    status: seed
+    status: complete
 
   - term_id: restated_flag
     display_name: Restated
@@ -1095,6 +1100,629 @@ terms:
     update_cadence: per filing (10-Q, 10-K)
     caveats: The two concepts can differ slightly (e.g. capitalized amounts or tax effects).
     related_terms: [share_repurchases, diluted_shares]
+    methodology_version: 0.1.0
+    status: complete
+
+  # ---------- Phase 0: macro series (M0.6) ----------
+  # FRED / ALFRED series in config/macro_series.yaml; values as published, with vintages (ADR-015).
+  - term_id: page_macro
+    display_name: Macro
+    category: navigation
+    short_definition: Key US macro series with every published revision, as known at a chosen date.
+    full_definition: "System page listing the series in config/macro_series.yaml from FRED / ALFRED. Each series page shows recent observations as they were public at an As known on date, the vintage each value comes from, and the first release of values revised since. Charts follow in M0.9."
+    formula: "not a calculation; reads GET /macro/series and /macro/series/{id}/observations"
+    unit: page
+    example: "Nonfarm payrolls as known on 2026-09-30 show August 2026 at 159,075 thousand; today the revised 159,015 thousand."
+    direction: N/A
+    interpretation: Check what a release said at the time before comparing it with today's revised figure.
+    why_it_matters: Macro signals and backtests must use first releases, not later revisions.
+    source: "Milestone M0.6 (FRED / ALFRED adapter)"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M0_foundation.md
+    as_of: "2026-10-06"
+    update_cadence: live (each page load); FRED data refreshed daily at 10:15 SGT
+    caveats: Only the series in the registry; titles and units come from FRED.
+    related_terms: [vintage, point_in_time, observation_date]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: observation_date
+    display_name: Observation Date
+    category: macro
+    short_definition: The date FRED uses to label a value; the first day of the period it covers.
+    full_definition: "Monthly values are labelled with the first of the month, quarterly with the first day of the quarter, daily with the day itself. It is not the release date: August 2026 CPI is labelled 2026-08-01 and was released on 2026-09-11."
+    formula: "FRED observation date = start of the period"
+    unit: date
+    example: "CPI for August 2026 is the observation 2026-08-01 (334.131)."
+    direction: N/A
+    interpretation: Read the label as the period, and the vintage as when it became public.
+    why_it_matters: Confusing the period with the release date would let a backtest see data early.
+    source: "FRED API documentation (observation dates)"
+    source_url: https://fred.stlouisfed.org/docs/api/fred/series_observations.html
+    as_of: "2026-10-06"
+    update_cadence: per release
+    caveats: Daily market series skip weekends and holidays; FRED marks missing days with a dot, which is not stored.
+    related_terms: [vintage, reporting_period]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: macro_cpi
+    display_name: CPI (All Items)
+    category: macro
+    short_definition: Consumer price index for all urban consumers, all items, seasonally adjusted.
+    full_definition: "The headline US consumer price index published monthly by the Bureau of Labor Statistics, as an index level (1982-84 = 100). Inflation is its percentage change over a period."
+    formula: "FRED series CPIAUCSL, value as published in the vintage shown"
+    unit: Index 1982-1984=100
+    example: "August 2026: 334.131, released 2026-09-11."
+    direction: Faster rise = more inflation
+    interpretation: Compare the change over 12 months or annualized over 3 months, not the level.
+    why_it_matters: Inflation drives Fed policy, rates and equity valuations.
+    source: "U.S. Bureau of Labor Statistics via FRED (CPIAUCSL)"
+    source_url: https://fred.stlouisfed.org/series/CPIAUCSL
+    as_of: "2026-10-06"
+    update_cadence: monthly
+    caveats: "Seasonal factors are revised each February, which changes earlier months."
+    related_terms: [macro_core_pce, vintage]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: macro_core_pce
+    display_name: Core PCE Price Index
+    category: macro
+    short_definition: Price index of personal consumption expenditures excluding food and energy.
+    full_definition: "The Federal Reserve's preferred inflation gauge, published monthly by the Bureau of Economic Analysis as an index level (2017 = 100)."
+    formula: "FRED series PCEPILFE, value as published in the vintage shown"
+    unit: Index 2017=100
+    example: "August 2026: 130.455, released 2026-09-30."
+    direction: Faster rise = more underlying inflation
+    interpretation: The 12-month change is compared with the Fed's 2% inflation target.
+    why_it_matters: It anchors the Fed's reading of underlying inflation.
+    source: "U.S. Bureau of Economic Analysis via FRED (PCEPILFE)"
+    source_url: https://fred.stlouisfed.org/series/PCEPILFE
+    as_of: "2026-10-06"
+    update_cadence: monthly
+    caveats: "Revised with every release and in annual and comprehensive updates."
+    related_terms: [macro_cpi, vintage]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: macro_unemployment_rate
+    display_name: Unemployment Rate
+    category: macro
+    short_definition: Share of the labor force that is unemployed, seasonally adjusted.
+    full_definition: "From the monthly household survey of the Bureau of Labor Statistics, released with the jobs report."
+    formula: "FRED series UNRATE, value as published in the vintage shown"
+    unit: Percent
+    example: "September 2026: 4.2%, released 2026-10-02."
+    direction: Higher = weaker labor market
+    interpretation: A rise of half a point or more from its recent low has often come with recessions.
+    why_it_matters: The labor market is half of the Fed's dual mandate.
+    source: "U.S. Bureau of Labor Statistics via FRED (UNRATE)"
+    source_url: https://fred.stlouisfed.org/series/UNRATE
+    as_of: "2026-10-06"
+    update_cadence: monthly
+    caveats: "Seasonal factors are revised each January, which changes up to five years of history."
+    related_terms: [macro_nonfarm_payrolls]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: macro_nonfarm_payrolls
+    display_name: Nonfarm Payrolls
+    category: macro
+    short_definition: Total employees on nonfarm payrolls in the US, in thousands, seasonally adjusted.
+    full_definition: "From the monthly establishment survey of the Bureau of Labor Statistics. The monthly change is the headline jobs number; each month is revised in the next two releases and again in the annual benchmark."
+    formula: "FRED series PAYEMS, value as published in the vintage shown"
+    unit: Thousands of persons
+    example: "August 2026: 159,075 thousand at first release (2026-09-04), revised to 159,015 thousand (2026-10-02)."
+    direction: Higher = more jobs
+    interpretation: Look at the monthly change and at how earlier months were revised.
+    why_it_matters: Large revisions change the picture markets traded on at the time.
+    source: "U.S. Bureau of Labor Statistics via FRED (PAYEMS)"
+    source_url: https://fred.stlouisfed.org/series/PAYEMS
+    as_of: "2026-10-06"
+    update_cadence: monthly
+    caveats: "First releases are often revised by tens of thousands; the annual benchmark can move the level further."
+    related_terms: [macro_unemployment_rate, vintage]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: macro_real_gdp
+    display_name: Real GDP
+    category: macro
+    short_definition: Inflation-adjusted gross domestic product, seasonally adjusted at an annual rate.
+    full_definition: "Quarterly output of the US economy from the Bureau of Economic Analysis, in chained dollars. Each quarter is estimated three times (advance, second, third) and revised in annual updates."
+    formula: "FRED series GDPC1, value as published in the vintage shown"
+    unit: Billions of chained 2017 dollars, annual rate
+    example: "Q2 2026: 24,408.011 billion, in the release of 2026-09-30."
+    direction: Higher = larger economy
+    interpretation: Growth is the annualized change from the previous quarter.
+    why_it_matters: Defines expansions and recessions together with jobs data.
+    source: "U.S. Bureau of Economic Analysis via FRED (GDPC1)"
+    source_url: https://fred.stlouisfed.org/series/GDPC1
+    as_of: "2026-10-06"
+    update_cadence: quarterly
+    caveats: "Comprehensive revisions can rebase the whole history to a new reference year."
+    related_terms: [vintage]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: macro_fed_funds
+    display_name: Fed Funds Rate
+    category: macro
+    short_definition: Monthly average of the effective federal funds rate.
+    full_definition: "The rate banks charge each other for overnight reserves, which the Federal Reserve steers with its policy target range. FRED publishes the monthly average."
+    formula: "FRED series FEDFUNDS, value as published in the vintage shown"
+    unit: Percent
+    example: "September 2026: 3.75%, released 2026-10-01."
+    direction: Higher = tighter monetary policy
+    interpretation: Compare with inflation for the real policy rate.
+    why_it_matters: Sets the base cost of money for all other rates.
+    source: "Board of Governors of the Federal Reserve System via FRED (FEDFUNDS)"
+    source_url: https://fred.stlouisfed.org/series/FEDFUNDS
+    as_of: "2026-10-06"
+    update_cadence: monthly
+    caveats: "A monthly average; the daily rate moves on the day of a policy decision."
+    related_terms: [macro_treasury_2y]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: macro_treasury_2y
+    display_name: 2-Year Treasury Yield
+    category: macro
+    short_definition: Market yield on US Treasury securities at 2-year constant maturity.
+    full_definition: "Daily yield from the Federal Reserve's H.15 release, quoted on an investment basis."
+    formula: "FRED series DGS2, value as published in the vintage shown"
+    unit: Percent
+    example: "2026-10-01: 4.78%."
+    direction: Higher = markets expect higher policy rates
+    interpretation: Moves most with expectations for the Fed's next steps.
+    why_it_matters: The market's view of the policy path over the next two years.
+    source: "Board of Governors of the Federal Reserve System via FRED (DGS2)"
+    source_url: https://fred.stlouisfed.org/series/DGS2
+    as_of: "2026-10-06"
+    update_cadence: daily (business days)
+    caveats: "Published the next business day; holidays are missing."
+    related_terms: [macro_treasury_10y, macro_curve_10y_2y, macro_fed_funds]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: macro_treasury_10y
+    display_name: 10-Year Treasury Yield
+    category: macro
+    short_definition: Market yield on US Treasury securities at 10-year constant maturity.
+    full_definition: "Daily yield from the Federal Reserve's H.15 release, quoted on an investment basis."
+    formula: "FRED series DGS10, value as published in the vintage shown"
+    unit: Percent
+    example: "2026-10-01: 5.24%."
+    direction: Higher = tighter financial conditions
+    interpretation: The benchmark discount rate for long-duration assets such as growth stocks.
+    why_it_matters: Drives mortgage rates and equity valuations.
+    source: "Board of Governors of the Federal Reserve System via FRED (DGS10)"
+    source_url: https://fred.stlouisfed.org/series/DGS10
+    as_of: "2026-10-06"
+    update_cadence: daily (business days)
+    caveats: "Published the next business day; holidays are missing."
+    related_terms: [macro_treasury_2y, macro_curve_10y_2y]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: macro_curve_10y_2y
+    display_name: 10Y-2Y Treasury Spread
+    category: macro
+    short_definition: 10-year minus 2-year Treasury constant maturity yield.
+    full_definition: "The slope of the Treasury yield curve. Negative values (an inverted curve) have preceded most US recessions."
+    formula: "FRED series T10Y2Y, value as published in the vintage shown"
+    unit: Percentage points
+    example: "2026-10-02: 0.45 percentage points."
+    direction: Lower or negative = more recession risk priced
+    interpretation: Watch the turn from inverted back to positive as well as the inversion itself.
+    why_it_matters: A widely used recession and regime indicator.
+    source: "Federal Reserve Bank of St. Louis (calculated from H.15) via FRED (T10Y2Y)"
+    source_url: https://fred.stlouisfed.org/series/T10Y2Y
+    as_of: "2026-10-06"
+    update_cadence: daily (business days)
+    caveats: "Signals have long and variable lead times."
+    related_terms: [macro_treasury_2y, macro_treasury_10y]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: macro_hy_oas
+    display_name: High-Yield Credit Spread
+    category: macro
+    short_definition: Option-adjusted spread of the ICE BofA US High Yield Index over Treasuries.
+    full_definition: "The extra yield investors demand to hold US high-yield corporate bonds instead of Treasuries."
+    formula: "FRED series BAMLH0A0HYM2, value as published in the vintage shown"
+    unit: Percent
+    example: "2026-10-02: 3.10%."
+    direction: Higher = more credit stress
+    interpretation: Rapid widening often comes with equity drawdowns.
+    why_it_matters: A fast gauge of credit conditions and risk appetite.
+    source: "ICE Data Indices via FRED (BAMLH0A0HYM2)"
+    source_url: https://fred.stlouisfed.org/series/BAMLH0A0HYM2
+    as_of: "2026-10-06"
+    update_cadence: daily (business days)
+    caveats: "ICE licensing limits FRED to about the last three years (from 2023-10-06 here); third-party copyright, personal use only."
+    related_terms: [macro_vix]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: macro_vix
+    display_name: VIX
+    category: macro
+    short_definition: "CBOE Volatility Index: implied volatility of S&P 500 options over the next 30 days."
+    full_definition: "Daily closing level of the VIX, computed by Cboe from S&P 500 option prices."
+    formula: "FRED series VIXCLS, value as published in the vintage shown"
+    unit: Index
+    example: "2026-10-02 close: 15.31."
+    direction: Higher = more expected volatility
+    interpretation: Spikes mark stress; very low levels can mean complacency.
+    why_it_matters: A standard measure of equity market fear.
+    source: "Chicago Board Options Exchange via FRED (VIXCLS)"
+    source_url: https://fred.stlouisfed.org/series/VIXCLS
+    as_of: "2026-10-06"
+    update_cadence: daily (business days)
+    caveats: "Third-party copyright, personal use only; an index level, not a percentage."
+    related_terms: [macro_hy_oas]
+    methodology_version: 0.1.0
+    status: complete
+
+  # ---------- Phase 0: overview indicators and system pages (M0.6, ADR-016) ----------
+  - term_id: cpi_inflation_yoy
+    display_name: "CPI Inflation (y/y)"
+    category: macro_indicator
+    short_definition: "Change in the consumer price index over the last 12 months, in percent."
+    full_definition: "Computed from the CPI values known at the chosen time: the latest month against the same month a year earlier. Labelled above, at or below the Fed's 2% target after rounding to one decimal."
+    formula: "(CPI latest month / CPI same month a year earlier - 1) x 100"
+    unit: "percent"
+    example: "August 2026: 3.4% (3.35%)."
+    direction: "Higher = faster inflation"
+    interpretation: "Compare with core PCE and with the 2% target; CPI usually runs above PCE."
+    why_it_matters: "Headline inflation drives rate expectations and real returns."
+    source: "Computed from FRED CPIAUCSL (BLS)"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/indicators.py
+    as_of: "2026-10-06"
+    update_cadence: "monthly"
+    caveats: "The Fed's 2% target refers to PCE, not CPI; the comparison is a reference point."
+    related_terms: [macro_cpi, core_pce_inflation_yoy]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: core_pce_inflation_yoy
+    display_name: "Core PCE Inflation (y/y)"
+    category: macro_indicator
+    short_definition: "Change in the core PCE price index over the last 12 months, in percent."
+    full_definition: "The Federal Reserve's preferred inflation gauge, computed from the core PCE values known at the chosen time. Labelled above, at or below the 2% target after rounding to one decimal."
+    formula: "(core PCE latest month / same month a year earlier - 1) x 100"
+    unit: "percent"
+    example: "August 2026: 3.0% (3.01%); as known on 2026-09-30, July 2026 was 3.3%."
+    direction: "Higher = faster underlying inflation"
+    interpretation: "Above 2% means inflation is running over the Fed's target."
+    why_it_matters: "The anchor of the Fed's inflation reading and of the real policy rate here."
+    source: "Computed from FRED PCEPILFE (BEA)"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/indicators.py
+    as_of: "2026-10-06"
+    update_cadence: "monthly"
+    caveats: "Each release revises earlier months, so the value as known at a date can differ from today's."
+    related_terms: [macro_core_pce, real_fed_funds_rate]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: payrolls_monthly_change
+    display_name: "Payroll Change"
+    category: macro_indicator
+    short_definition: "Monthly change in nonfarm payrolls: the headline jobs number, in thousands."
+    full_definition: "The latest month of nonfarm payrolls minus the month before, both as known at the chosen time."
+    formula: "PAYEMS latest month - PAYEMS previous month"
+    unit: "thousands of jobs"
+    example: "September 2026: +29K."
+    direction: "Higher = more jobs added"
+    interpretation: "Read with the revision to the previous month and the unemployment rate."
+    why_it_matters: "The most watched monthly labor market number."
+    source: "Computed from FRED PAYEMS (BLS)"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/indicators.py
+    as_of: "2026-10-06"
+    update_cadence: "monthly"
+    caveats: "The first estimate is often revised by tens of thousands in the next two releases."
+    related_terms: [macro_nonfarm_payrolls, payrolls_prior_month_revision]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: payrolls_prior_month_revision
+    display_name: "Prior-Month Payroll Revision"
+    category: macro_indicator
+    short_definition: "How much the previous month's payrolls moved from their first release, in thousands."
+    full_definition: "The previous month's payroll level as known at the chosen time minus its first released level (its earliest ALFRED vintage). Negative means revised down."
+    formula: "PAYEMS previous month (current vintage) - PAYEMS previous month (first vintage)"
+    unit: "thousands of jobs"
+    example: "August 2026: first released at 159,075K on 2026-09-04, now 159,015K: -60K."
+    direction: "Negative = earlier strength overstated"
+    interpretation: "Repeated downward revisions mean the first prints were too optimistic."
+    why_it_matters: "Markets trade the first release; revisions show what they got wrong."
+    source: "Computed from ALFRED vintages of PAYEMS (BLS)"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/indicators.py
+    as_of: "2026-10-06"
+    update_cadence: "monthly"
+    caveats: "Needs the first vintage of that month; months published before the ALFRED archive have none."
+    related_terms: [payrolls_monthly_change, vintage]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: sahm_rule_indicator
+    display_name: "Sahm Rule Indicator"
+    category: macro_indicator
+    short_definition: "Rise in the 3-month average unemployment rate above its low of the previous 12 months."
+    full_definition: "Claudia Sahm's recession indicator: the 3-month average of the unemployment rate minus the lowest 3-month average of the previous 12 months, in percentage points. A reading of 0.50 or more has marked the start of every US recession since 1970."
+    formula: "avg3(UNRATE latest) - min(avg3 over the previous 12 months)"
+    unit: "percentage points"
+    example: "September 2026: 0.00 pp, below the 0.50 trigger."
+    direction: "Higher = labor market deteriorating"
+    interpretation: "0.50 or more is labelled triggered."
+    why_it_matters: "A simple, real-time recession signal."
+    source: "Computed from FRED UNRATE (BLS); rule by Claudia Sahm (2019)"
+    source_url: https://fred.stlouisfed.org/series/SAHMREALTIME
+    as_of: "2026-10-06"
+    update_cadence: "monthly"
+    caveats: "A rule of thumb, not a forecast; it has given false signals, and it uses values as known then, not later revisions."
+    related_terms: [macro_unemployment_rate]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: real_gdp_growth_annualized
+    display_name: "Real GDP Growth (annualized)"
+    category: macro_indicator
+    short_definition: "Quarter-on-quarter growth of real GDP, expressed at an annual rate, in percent."
+    full_definition: "The latest quarter's real GDP against the previous quarter, compounded to a yearly rate, from the estimates known at the chosen time."
+    formula: "((GDP latest quarter / GDP previous quarter)^4 - 1) x 100"
+    unit: "percent"
+    example: "Q2 2026: 2.2% today; as known on 2026-09-30 it was 1.5%."
+    direction: "Higher = faster growth"
+    interpretation: "Negative is labelled contraction."
+    why_it_matters: "The broadest measure of the economy's pace."
+    source: "Computed from FRED GDPC1 (BEA)"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/indicators.py
+    as_of: "2026-10-06"
+    update_cadence: "quarterly"
+    caveats: "Advance estimates are revised twice within months and again in annual updates."
+    related_terms: [macro_real_gdp]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: real_fed_funds_rate
+    display_name: "Real Fed Funds Rate"
+    category: macro_indicator
+    short_definition: "Fed funds rate minus core PCE inflation, in percentage points."
+    full_definition: "The latest monthly effective fed funds rate minus the latest core PCE inflation over 12 months, both as known at the chosen time."
+    formula: "FEDFUNDS latest month - core PCE inflation (y/y)"
+    unit: "percentage points"
+    example: "September 2026: 3.75% - 3.01% = +0.74 pp."
+    direction: "Higher = tighter policy in real terms"
+    interpretation: "Positive means the policy rate is above inflation."
+    why_it_matters: "Shows how restrictive monetary policy is after inflation."
+    source: "Computed from FRED FEDFUNDS and PCEPILFE"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/indicators.py
+    as_of: "2026-10-06"
+    update_cadence: "monthly"
+    caveats: "The two inputs can refer to different months (core PCE is released later)."
+    related_terms: [macro_fed_funds, core_pce_inflation_yoy]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: yield_curve_inversion
+    display_name: "Yield Curve State"
+    category: macro_indicator
+    short_definition: "Whether the 10Y-2Y spread is below zero, and for how many trading days it has been on that side."
+    full_definition: "Inverted when the 10-year minus 2-year Treasury spread is negative. The count goes back to the last change of sign in the stored data, and the date it started is shown."
+    formula: "inverted = T10Y2Y < 0; streak = consecutive observations on the same side"
+    unit: "label and trading days"
+    example: "2026-10-02: positive for 518 trading days, since 2024-09-06."
+    direction: "Inverted = recession risk priced"
+    interpretation: "The turn from inverted back to positive has often come shortly before recessions."
+    why_it_matters: "A widely watched regime and recession signal."
+    source: "Computed from FRED T10Y2Y"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/indicators.py
+    as_of: "2026-10-06"
+    update_cadence: "daily (business days)"
+    caveats: "If the streak reaches the first stored observation, it may be longer than shown."
+    related_terms: [macro_curve_10y_2y]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: hy_oas_percentile
+    display_name: "HY Spread Percentile"
+    category: macro_indicator
+    short_definition: "Where today's high-yield credit spread ranks in its available history, from 0 to 100."
+    full_definition: "Share of stored observations of the ICE BofA US High Yield OAS that are at or below the latest one. Labelled low below the 25th percentile and high above the 75th."
+    formula: "count(values <= latest) / count(values) x 100"
+    unit: "percentile"
+    example: "2026-10-02: 3.10%, 57th percentile since 2023-10-06 (mid-range)."
+    direction: "Higher = wider spreads, more credit stress"
+    interpretation: "Low means credit is priced tightly by recent standards."
+    why_it_matters: "Credit spreads often widen before equity drawdowns."
+    source: "Computed from FRED BAMLH0A0HYM2 (ICE)"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/indicators.py
+    as_of: "2026-10-06"
+    update_cadence: "daily (business days)"
+    caveats: "History on FRED only goes back about three years (ICE licensing), so the ranking is short-term."
+    related_terms: [macro_hy_oas, vix_percentile_1y]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: vix_percentile_1y
+    display_name: "VIX Percentile (1y)"
+    category: macro_indicator
+    short_definition: "Where today's VIX ranks among its closes of the last 12 months, from 0 to 100."
+    full_definition: "Share of VIX closes in the last 365 days that are at or below the latest close. Labelled low below the 25th percentile and high above the 75th."
+    formula: "count(closes in 12 months <= latest) / count(closes in 12 months) x 100"
+    unit: "percentile"
+    example: "2026-10-02: 15.31, 15th percentile (low)."
+    direction: "Higher = more fear"
+    interpretation: "Low can mean calm or complacency; high marks stress."
+    why_it_matters: "Puts the VIX level in recent context."
+    source: "Computed from FRED VIXCLS (Cboe)"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/indicators.py
+    as_of: "2026-10-06"
+    update_cadence: "daily (business days)"
+    caveats: "A one-year window ranks against recent conditions only."
+    related_terms: [macro_vix, hy_oas_percentile]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: rule_insight
+    display_name: "Insight (rule-based)"
+    category: macro_indicator
+    short_definition: "One sentence per overview block, built from fixed rules on reported data."
+    full_definition: "Each sentence is a template filled with computed indicators and the latest values known at the chosen time; labels such as above target, triggered or low come from thresholds stated in the indicator's glossary entry. The observations and vintages used are listed under the sentence. No language model writes or interprets them."
+    formula: "template(indicators, thresholds); inputs listed with their vintages"
+    unit: "text"
+    example: "Payrolls +29K in Sep 2026; Aug 2026 revised -60K from its first release."
+    direction: "N/A"
+    interpretation: "A factual summary, not a forecast or a recommendation."
+    why_it_matters: "Reads the dashboard in one line while staying traceable to the data."
+    source: "apps/api/src/autotrading/api/overview.py (ADR-016)"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/api/overview.py
+    as_of: "2026-10-06"
+    update_cadence: "live (each page load)"
+    caveats: "Only as current as the data shown; thresholds are reference points, not signals."
+    related_terms: [page_overview, vintage]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: page_overview
+    display_name: "Overview"
+    category: navigation
+    short_definition: "The home dashboard: the US macro picture in six blocks, with charts and rule-based insights."
+    full_definition: "Inflation, labor, growth, policy rates, yield curve and risk, each with its latest values, computed indicators, a chart and one sentence built from fixed rules. Every sentence lists the observations and vintages it used, and an As known on date shows the dashboard as it could be computed then."
+    formula: "not a calculation; reads GET /overview"
+    unit: "page"
+    example: "As known on 2026-09-30, the labor block reports August payrolls before their October revision."
+    direction: "N/A"
+    interpretation: "Start here for the macro picture, then open a series on the Macro page."
+    why_it_matters: "One screen for the state of the economy, without look-ahead."
+    source: "M0.6 overview (ADR-016)"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/decisions/DECISIONS.md
+    as_of: "2026-10-06"
+    update_cadence: "live (each page load); FRED data refreshed daily at 10:15 SGT"
+    caveats: "Insights are fixed rules on reported data, not forecasts or advice."
+    related_terms: [page_macro, point_in_time]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: next_refresh
+    display_name: "Next Refresh"
+    category: data_quality
+    short_definition: "When the platform will next fetch this source on its schedule."
+    full_definition: "The next scheduled run of the source's daily refresh, in SGT and ET. Manual refreshes (make sec-refresh, make fred-refresh) can run at any time."
+    formula: "next daily slot after now (SEC 10:00 SGT, FRED 10:15 SGT)"
+    unit: "timestamp"
+    example: "FRED at 10:15 SGT is 22:15 ET the previous evening."
+    direction: "N/A"
+    interpretation: "Data newer than the source's own release cannot arrive before this time."
+    why_it_matters: "Tells you how current the data can be."
+    source: "apps/api/src/autotrading/ingestion/schedule.py"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/ingestion/schedule.py
+    as_of: "2026-10-06"
+    update_cadence: "per source schedule"
+    caveats: "Shown only for enabled, scheduled sources."
+    related_terms: [data_freshness, data_age]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: data_age
+    display_name: "Data Age"
+    category: data_quality
+    short_definition: "Time since the source published the newest value shown."
+    full_definition: "For a macro series, time since its newest vintage was released; for SEC data, time since the newest filing was accepted. Different from our last refresh, which is when we fetched it."
+    formula: "now - publication time of the newest value"
+    unit: "duration"
+    example: "CPI for August 2026, released 2026-09-11: about 25 days old on 2026-10-06."
+    direction: "Longer = older information"
+    interpretation: "Monthly series are normally weeks old; daily ones a day or two."
+    why_it_matters: "Separates a stale source from a source that simply publishes rarely."
+    source: "Publication times from SEC and ALFRED (ADR-013, ADR-015)"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/decisions/DECISIONS.md
+    as_of: "2026-10-06"
+    update_cadence: "continuous"
+    caveats: "Date-only releases count from the end of that day in New York."
+    related_terms: [next_refresh, data_freshness, vintage]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: page_progress
+    display_name: "Build Progress"
+    category: navigation
+    short_definition: "Live view of the build: milestones, acceptance checks, current step, open decisions and the log."
+    full_definition: "Parsed on every page load from the project documents (milestones, ROADMAP, STATUS and DECISIONS), so updates appear as soon as the documents change."
+    formula: "not a calculation; reads GET /progress"
+    unit: "page"
+    example: "M0.6 shows 2 of 2 acceptance checks while its PR is pending."
+    direction: "N/A"
+    interpretation: "See what is done, what is in progress and what needs your decision."
+    why_it_matters: "Keeps the build visible without reading the repository."
+    source: "docs/STATUS.md and docs/milestones"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M0_foundation.md
+    as_of: "2026-10-06"
+    update_cadence: "live (each page load)"
+    caveats: "Reflects the documents, which are updated at the end of each step."
+    related_terms: [milestone_status, open_decision, dev_log]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: milestone_status
+    display_name: "Milestone Status"
+    category: navigation
+    short_definition: "Acceptance checks ticked for a milestone, and whether it is done, in progress or not started."
+    full_definition: "Done when every acceptance check is ticked and its PR is merged; in progress when some are ticked or it is the current sub-milestone; otherwise not started."
+    formula: "ticked checkboxes / all checkboxes under the milestone"
+    unit: "count"
+    example: "M0.5: 3 of 3, done."
+    direction: "Higher = closer to done"
+    interpretation: "A milestone counts as done only after its PR is merged."
+    why_it_matters: "Shows where Phase 0 stands."
+    source: "docs/milestones/M0_foundation.md"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M0_foundation.md
+    as_of: "2026-10-06"
+    update_cadence: "live (each page load)"
+    caveats: "Milestones without checkboxes (e.g. reports) depend on STATUS only."
+    related_terms: [page_progress]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: open_decision
+    display_name: "Open Decision"
+    category: navigation
+    short_definition: "A decision only you can make, with when it is needed and what happens until then."
+    full_definition: "Rows of the open decisions table in DECISIONS.md (OD-n): the question, the milestone that needs it, and the default the build follows until you decide."
+    formula: "from docs/decisions/DECISIONS.md"
+    unit: "label"
+    example: "OD-9: verify Alpaca eligibility from Singapore, needed before M0.7."
+    direction: "N/A"
+    interpretation: "Decisions due soon can block the next milestone."
+    why_it_matters: "Nothing that needs your approval is decided silently."
+    source: "docs/decisions/DECISIONS.md"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/decisions/DECISIONS.md
+    as_of: "2026-10-06"
+    update_cadence: "per decision"
+    caveats: "Shows the first sentence of each decision; the document has the details."
+    related_terms: [page_progress]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: dev_log
+    display_name: "Development Log"
+    category: navigation
+    short_definition: "Dated entries of what each step delivered, newest first."
+    full_definition: "The first sentence of each row in the log of docs/STATUS.md, written at the end of every step."
+    formula: "from docs/STATUS.md"
+    unit: "text"
+    example: "2026-10-06, M0.6: Local acceptance passed."
+    direction: "N/A"
+    interpretation: "Read the full entry in STATUS.md for numbers and known gaps."
+    why_it_matters: "A short audit trail of the build."
+    source: "docs/STATUS.md"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/STATUS.md
+    as_of: "2026-10-06"
+    update_cadence: "per step"
+    caveats: "Text is quoted from the document; numbers in it are not metrics."
+    related_terms: [page_progress]
     methodology_version: 0.1.0
     status: complete
 

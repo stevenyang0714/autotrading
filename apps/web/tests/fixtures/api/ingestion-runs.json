@@ -1,11 +1,11 @@
 {
-  "recorded_at": "2026-10-05T14:24:20.894487+00:00",
+  "recorded_at": "2026-10-05T18:15:40.329023+00:00",
   "recorded_from": "integration test database via FastAPI TestClient (tests/integration/test_ingestion.py)",
   "endpoint": "/ingestion-runs",
   "response": [
     {
-      "id": "74257128-c2fa-4e4a-9923-0a4cb9a92ebf",
-      "source_id": "failing_ad2b47",
+      "id": "0c79c7ad-0176-4b70-b76c-374e7e3240c1",
+      "source_id": "failing_eb61d8",
       "job": "test.fake_filing",
       "params": {},
       "window_start": null,
@@ -13,18 +13,18 @@
       "status": "failed",
       "attempt": 1,
       "started_at": null,
-      "finished_at": "2026-10-05T14:19:20.847988Z",
+      "finished_at": "2026-10-05T18:10:40.263493Z",
       "rows_inserted": 0,
       "rows_unchanged": 0,
       "rows_conflicted": 0,
       "raw_payload_keys": [],
       "error_class": null,
       "error_message": null,
-      "created_at": "2026-10-05T14:24:20.847988Z"
+      "created_at": "2026-10-05T18:15:40.263493Z"
     },
     {
-      "id": "9f6ba811-eabb-4153-9cf1-a4ba36f89261",
-      "source_id": "failing_ad2b47",
+      "id": "90500f13-a176-4ee7-b3d8-c1891422af9b",
+      "source_id": "failing_eb61d8",
       "job": "test.fake_filing",
       "params": {},
       "window_start": null,
@@ -32,18 +32,18 @@
       "status": "succeeded",
       "attempt": 1,
       "started_at": null,
-      "finished_at": "2026-10-05T14:04:20.847988Z",
+      "finished_at": "2026-10-05T17:55:40.263493Z",
       "rows_inserted": 0,
       "rows_unchanged": 0,
       "rows_conflicted": 0,
       "raw_payload_keys": [],
       "error_class": null,
       "error_message": null,
-      "created_at": "2026-10-05T14:24:20.847988Z"
+      "created_at": "2026-10-05T18:15:40.263493Z"
     },
     {
-      "id": "7f230816-787e-4cda-a951-3ec8ed588e75",
-      "source_id": "stale_ad2b47",
+      "id": "7aba364e-eb55-49c3-9e25-e217565676ae",
+      "source_id": "stale_eb61d8",
       "job": "test.fake_filing",
       "params": {},
       "window_start": null,
@@ -51,18 +51,18 @@
       "status": "succeeded",
       "attempt": 1,
       "started_at": null,
-      "finished_at": "2026-10-05T12:24:20.847988Z",
+      "finished_at": "2026-10-05T16:15:40.263493Z",
       "rows_inserted": 0,
       "rows_unchanged": 0,
       "rows_conflicted": 0,
       "raw_payload_keys": [],
       "error_class": null,
       "error_message": null,
-      "created_at": "2026-10-05T14:24:20.847988Z"
+      "created_at": "2026-10-05T18:15:40.263493Z"
     },
     {
-      "id": "49ad2b87-41f2-429b-8f00-a6ec7f7548fc",
-      "source_id": "fresh_ad2b47",
+      "id": "b4a1d2a0-9c7d-4f80-9a22-0823f2cb5ae7",
+      "source_id": "fresh_eb61d8",
       "job": "test.fake_filing",
       "params": {},
       "window_start": null,
@@ -70,224 +70,224 @@
       "status": "succeeded",
       "attempt": 1,
       "started_at": null,
-      "finished_at": "2026-10-05T14:14:20.847988Z",
+      "finished_at": "2026-10-05T18:05:40.263493Z",
       "rows_inserted": 0,
       "rows_unchanged": 0,
       "rows_conflicted": 0,
       "raw_payload_keys": [],
       "error_class": null,
       "error_message": null,
-      "created_at": "2026-10-05T14:24:20.847988Z"
+      "created_at": "2026-10-05T18:15:40.263493Z"
     },
     {
-      "id": "21e5ffa9-40d5-4087-87da-09c2a2d45267",
+      "id": "9107a56d-0890-4a3d-8193-0d1b52110548",
       "source_id": "test_source",
       "job": "test.fake_filing",
       "params": {
         "value": "7",
-        "entity_id": "8e4408a2-afe5-43bf-ab06-a039a0ec5173"
+        "entity_id": "2aaed84f-f1f0-41ff-998f-fd1396740245"
       },
       "window_start": null,
       "window_end": null,
       "status": "succeeded",
       "attempt": 1,
-      "started_at": "2026-10-05T14:24:20.822480Z",
-      "finished_at": "2026-10-05T14:24:20.832378Z",
+      "started_at": "2026-10-05T18:15:40.221366Z",
+      "finished_at": "2026-10-05T18:15:40.239894Z",
       "rows_inserted": 1,
       "rows_unchanged": 0,
       "rows_conflicted": 0,
       "raw_payload_keys": [
-        "raw/test_source/a5/a586e0b47c017359a89917724e511bbf6ec82748b7668babb522edc7b3cc3240"
+        "raw/test_source/ec/ec8d7e45e7ce0ad896e59f92c746fdf49dc779310efe3c285b9a102b20c1fa13"
       ],
       "error_class": null,
       "error_message": null,
-      "created_at": "2026-10-05T14:24:20.819276Z"
+      "created_at": "2026-10-05T18:15:40.215580Z"
     },
     {
-      "id": "d9efed1f-88de-4584-925c-83d9833fa240",
+      "id": "a79dcfe4-6cfb-4512-98a8-72cb037f954e",
       "source_id": "test_source",
       "job": "test.fake_filing",
       "params": {
         "value": "7",
-        "entity_id": "4b14ce2c-f687-4f08-8a2f-36da84e22a74"
+        "entity_id": "ee86d4c3-4840-48aa-942c-20f77598813f"
       },
       "window_start": null,
       "window_end": null,
       "status": "succeeded",
       "attempt": 1,
-      "started_at": "2026-10-05T14:24:20.779116Z",
-      "finished_at": "2026-10-05T14:24:20.794586Z",
+      "started_at": "2026-10-05T18:15:40.155691Z",
+      "finished_at": "2026-10-05T18:15:40.176952Z",
       "rows_inserted": 1,
       "rows_unchanged": 0,
       "rows_conflicted": 0,
       "raw_payload_keys": [
-        "raw/test_source/01/016b596d5106f9a51be5d40f1a3f44dd625acb02e4cbfaefd1398a03a0885c87"
+        "raw/test_source/20/202d1c7a577053dc4b1c5c235365cdc86071816be7e3044438d5687ebaf129e9"
       ],
       "error_class": null,
       "error_message": null,
-      "created_at": "2026-10-05T14:24:20.773086Z"
+      "created_at": "2026-10-05T18:15:40.149564Z"
     },
     {
-      "id": "bfb2ea36-da4c-437e-b5a3-c37554a649a5",
+      "id": "fd9c227e-8a7c-4115-a227-69a70fe5ca6f",
       "source_id": "test_source",
       "job": "test.always_fails",
       "params": {
-        "attempt": "97ae3034a1904f10975e46f0193fb59e"
+        "attempt": "c676b0c933924d969e403eb1f2711646"
       },
       "window_start": null,
       "window_end": null,
       "status": "dead_lettered",
       "attempt": 3,
-      "started_at": "2026-10-05T14:24:19.506859Z",
-      "finished_at": "2026-10-05T14:24:19.516607Z",
+      "started_at": "2026-10-05T18:15:38.928757Z",
+      "finished_at": "2026-10-05T18:15:38.944510Z",
       "rows_inserted": 0,
       "rows_unchanged": 0,
       "rows_conflicted": 0,
       "raw_payload_keys": [],
       "error_class": "RuntimeError",
       "error_message": "provider returned 500 for https://example.com/x?api_key=***",
-      "created_at": "2026-10-05T14:24:19.375412Z"
+      "created_at": "2026-10-05T18:15:38.856414Z"
     },
     {
-      "id": "474bc945-d305-4d49-86dc-a797d971ed9d",
+      "id": "2fe9cdea-9859-40e4-9195-914e090660fa",
       "source_id": "test_source",
       "job": "test.fake_filing",
       "params": {
         "value": "2",
-        "entity_id": "c033b0c8-1317-4b83-b413-32ef10cf508e"
+        "entity_id": "5a3df85e-2eb4-4409-aa57-ebd2a0333b35"
       },
       "window_start": null,
       "window_end": null,
       "status": "failed",
       "attempt": 1,
-      "started_at": "2026-10-05T14:24:19.356614Z",
-      "finished_at": "2026-10-05T14:24:19.369972Z",
+      "started_at": "2026-10-05T18:15:38.836287Z",
+      "finished_at": "2026-10-05T18:15:38.850369Z",
       "rows_inserted": 0,
       "rows_unchanged": 0,
       "rows_conflicted": 0,
       "raw_payload_keys": [],
       "error_class": "FactConflictError",
       "error_message": "revenue: two values for one publication at 2025-02-01T21:05:00+00:00: 1 stored, 2 received",
-      "created_at": "2026-10-05T14:24:19.354017Z"
+      "created_at": "2026-10-05T18:15:38.833409Z"
     },
     {
-      "id": "4093b5a5-4aa6-4fc5-be2e-a1c6369e9a93",
+      "id": "36b46157-3ffc-4a22-a50a-49636d359618",
       "source_id": "test_source",
       "job": "test.fake_filing",
       "params": {
         "value": "1",
-        "entity_id": "c033b0c8-1317-4b83-b413-32ef10cf508e"
+        "entity_id": "5a3df85e-2eb4-4409-aa57-ebd2a0333b35"
       },
       "window_start": null,
       "window_end": null,
       "status": "succeeded",
       "attempt": 1,
-      "started_at": "2026-10-05T14:24:19.338102Z",
-      "finished_at": "2026-10-05T14:24:19.346658Z",
+      "started_at": "2026-10-05T18:15:38.813360Z",
+      "finished_at": "2026-10-05T18:15:38.822653Z",
       "rows_inserted": 1,
       "rows_unchanged": 0,
       "rows_conflicted": 0,
       "raw_payload_keys": [
-        "raw/test_source/21/2155a676a2f60fd7a589b08795debd5ef1056b77ff6c6c1f1711a9830661b510"
+        "raw/test_source/ee/eedf1988d652678dc7363fd3cec45eda901b672efc3c4bbf05dd17dc284078ed"
       ],
       "error_class": null,
       "error_message": null,
-      "created_at": "2026-10-05T14:24:19.335418Z"
+      "created_at": "2026-10-05T18:15:38.809908Z"
     },
     {
-      "id": "60809b02-c43c-47f1-8737-750da0c8257f",
+      "id": "d49034e4-4993-439d-8947-b3246771da70",
       "source_id": "test_source",
       "job": "test.fake_filing",
       "params": {
         "note": "refetch",
         "value": "1",
-        "entity_id": "e01ba351-5487-4ef9-9107-2fb6b6fdee94"
+        "entity_id": "26cc7606-42d8-45da-8951-54396d3b9c67"
       },
       "window_start": null,
       "window_end": null,
       "status": "succeeded",
       "attempt": 1,
-      "started_at": "2026-10-05T14:24:19.314957Z",
-      "finished_at": "2026-10-05T14:24:19.324800Z",
+      "started_at": "2026-10-05T18:15:38.790804Z",
+      "finished_at": "2026-10-05T18:15:38.799735Z",
       "rows_inserted": 0,
       "rows_unchanged": 1,
       "rows_conflicted": 0,
       "raw_payload_keys": [
-        "raw/test_source/6d/6d98dd21523f8841acfa292e39eea57e45a6abaf572cc69343d4b89cd32a8f5d"
+        "raw/test_source/3d/3d0e1a6dab209d78d315dad0d9a12716b0ed21a7009af7ebc92455463cf886d0"
       ],
       "error_class": null,
       "error_message": null,
-      "created_at": "2026-10-05T14:24:19.286792Z"
+      "created_at": "2026-10-05T18:15:38.770194Z"
     },
     {
-      "id": "003c9c11-f064-47e0-8ca8-42915ffc7608",
+      "id": "3f9c6760-3b45-41e5-a1c1-7ac0f306e400",
       "source_id": "test_source",
       "job": "test.fake_filing",
       "params": {
         "value": "1",
-        "entity_id": "e01ba351-5487-4ef9-9107-2fb6b6fdee94"
+        "entity_id": "26cc7606-42d8-45da-8951-54396d3b9c67"
       },
       "window_start": null,
       "window_end": null,
       "status": "succeeded",
       "attempt": 1,
-      "started_at": "2026-10-05T14:24:19.293600Z",
-      "finished_at": "2026-10-05T14:24:19.306835Z",
+      "started_at": "2026-10-05T18:15:38.773706Z",
+      "finished_at": "2026-10-05T18:15:38.783682Z",
       "rows_inserted": 1,
       "rows_unchanged": 0,
       "rows_conflicted": 0,
       "raw_payload_keys": [
-        "raw/test_source/d1/d19d50d74a641456c1e7f16450fc4c765aba4ee8ccc83d5851a57edbc24c39ec"
+        "raw/test_source/a8/a87b4109edaa11f815ae1cddff82e02081dc60901a2ef0b6d317f189533b09fc"
       ],
       "error_class": null,
       "error_message": null,
-      "created_at": "2026-10-05T14:24:19.283876Z"
+      "created_at": "2026-10-05T18:15:38.767244Z"
     },
     {
-      "id": "07aa45b6-cc2d-4bb9-9ff5-b1d065f4b210",
+      "id": "a6747faf-f7c0-48e0-a578-aabf7c135b08",
       "source_id": "test_source",
       "job": "test.fake_filing",
       "params": {
         "value": "100",
-        "entity_id": "be2f2d2d-88ea-4409-a387-e4b121210800"
+        "entity_id": "36da7019-1b87-4908-9483-c7db4536cc85"
       },
       "window_start": null,
       "window_end": null,
       "status": "skipped",
       "attempt": 1,
       "started_at": null,
-      "finished_at": "2026-10-05T14:24:19.262359Z",
+      "finished_at": "2026-10-05T18:15:38.745973Z",
       "rows_inserted": 0,
       "rows_unchanged": 0,
       "rows_conflicted": 0,
       "raw_payload_keys": [],
       "error_class": null,
       "error_message": null,
-      "created_at": "2026-10-05T14:24:19.259195Z"
+      "created_at": "2026-10-05T18:15:38.740048Z"
     },
     {
-      "id": "810160e9-26da-413d-8a62-b13274a55077",
+      "id": "a4d4ce51-6826-462a-919b-5c3d9b67ee4a",
       "source_id": "test_source",
       "job": "test.fake_filing",
       "params": {
         "value": "100",
-        "entity_id": "be2f2d2d-88ea-4409-a387-e4b121210800"
+        "entity_id": "36da7019-1b87-4908-9483-c7db4536cc85"
       },
       "window_start": null,
       "window_end": null,
       "status": "succeeded",
       "attempt": 1,
-      "started_at": "2026-10-05T14:24:19.223105Z",
-      "finished_at": "2026-10-05T14:24:19.239531Z",
+      "started_at": "2026-10-05T18:15:38.688161Z",
+      "finished_at": "2026-10-05T18:15:38.719849Z",
       "rows_inserted": 1,
       "rows_unchanged": 0,
       "rows_conflicted": 0,
       "raw_payload_keys": [
-        "raw/test_source/c0/c0b556b6fefbccd2fe8329f647068f88525b1a8a59df4e4025d65a6d14d4aefe"
+        "raw/test_source/3d/3d37f0c9a0ea1a7c4d95d39be8a7c8dcc3b2982caf8b4522bbb95acf2216ee01"
       ],
       "error_class": null,
       "error_message": null,
-      "created_at": "2026-10-05T14:24:19.218330Z"
+      "created_at": "2026-10-05T18:15:38.681867Z"
     }
   ]
 }

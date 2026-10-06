@@ -15,7 +15,7 @@ export NEXT_TELEMETRY_DISABLED := 1
 export COREPACK_ENABLE_DOWNLOAD_PROMPT := 0
 
 .DEFAULT_GOAL := help
-.PHONY: help setup up down ps logs migrate sec-refresh sec-replay gen test test-unit test-integration e2e lint lint-api lint-web fmt dev-web
+.PHONY: help setup up down ps logs migrate sec-refresh fred-refresh replay-fixtures gen test test-unit test-integration e2e lint lint-api lint-web fmt dev-web
 
 help: ## Show available targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  %-18s %s\n", $$1, $$2}'
@@ -43,8 +43,11 @@ migrate: ## Apply Alembic migrations and sync config/sources.yaml (inside the ap
 sec-refresh: ## Queue an SEC EDGAR refresh now (tickers, then filings + XBRL facts per company)
 	$(COMPOSE) exec -T api python -m autotrading.jobs.sec_refresh
 
-sec-replay: ## CI only: load the recorded SEC fixtures (AAPL, XOM) into the stack database
-	cd $(API) && uv run python -m tests.sec_replay
+fred-refresh: ## Queue a FRED / ALFRED refresh now (every enabled series in config/macro_series.yaml)
+	$(COMPOSE) exec -T api python -m autotrading.jobs.fred_refresh
+
+replay-fixtures: ## CI only: load the recorded SEC and FRED fixtures into the stack database
+	cd $(API) && uv run python -m tests.replay
 
 gen: ## Regenerate apps/web/src/generated (glossary + API types) and apps/web/openapi.json
 	cd $(API) && uv run python -m autotrading.openapi_dump ../web/openapi.json

@@ -81,3 +81,89 @@ export async function loadFundamentals(
     return { status: "unavailable" };
   }
 }
+
+// ---------- macro (M0.6) ----------
+
+export type MacroSeriesList = components["schemas"]["MacroSeriesList"];
+export type MacroSeriesSummary = components["schemas"]["SeriesSummary"];
+export type MacroSeries = components["schemas"]["SeriesOut"];
+export type SeriesObservations = components["schemas"]["SeriesObservations"];
+export type MacroObservation = components["schemas"]["ObservationOut"];
+
+/** The macro series registry with each series' latest value, or null when the API is down. */
+export async function loadMacroSeries(): Promise<MacroSeriesList | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/macro/series", { cache: "no-store" });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export type SeriesObservationsResult =
+  | { status: "ok"; data: SeriesObservations }
+  | { status: "not_found" }
+  | { status: "unavailable" };
+
+/** The latest observations of one series as known at `knownAt` (ISO timestamp; default now). */
+export async function loadSeriesObservations(
+  seriesId: string,
+  knownAt?: string,
+): Promise<SeriesObservationsResult> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data, response } = await client.GET("/macro/series/{series_id}/observations", {
+      params: { path: { series_id: seriesId }, query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    if (data) return { status: "ok", data };
+    return response.status === 404 ? { status: "not_found" } : { status: "unavailable" };
+  } catch {
+    return { status: "unavailable" };
+  }
+}
+
+// ---------- overview, freshness, progress (M0.6, ADR-016) ----------
+
+export type Overview = components["schemas"]["Overview"];
+export type OverviewBlock = components["schemas"]["Block"];
+export type OverviewIndicator = components["schemas"]["Indicator"];
+export type OverviewChart = components["schemas"]["Chart"];
+export type Progress = components["schemas"]["Progress"];
+
+/** The macro dashboard as known at `knownAt` (ISO timestamp; default now), or null. */
+export async function loadOverview(knownAt?: string): Promise<Overview | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/overview", {
+      params: { query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Source registry with freshness and next scheduled refresh, or null. */
+export async function loadSourceHealth(): Promise<SourceHealth[] | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/data-health", { cache: "no-store" });
+    return data?.sources ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Build progress parsed from the project documents, or null. */
+export async function loadProgress(): Promise<Progress | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/progress", { cache: "no-store" });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}

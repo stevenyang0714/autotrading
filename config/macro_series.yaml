@@ -1,0 +1,17 @@
+# Macro series registry (M0.6, ADR-015). Loaded by `make migrate` into macro_series; the daily
+# FRED refresh (10:15 SGT) ingests every enabled series with all its ALFRED vintages.
+# term_id: the glossary term shown for the series (docs/glossary/glossary_seed.yaml, complete).
+# position: display order on the Macro page. Edit freely; titles and units come from FRED.
+version: 0.1.0
+series:
+  - {id: CPIAUCSL, term_id: macro_cpi, position: 10}
+  - {id: PCEPILFE, term_id: macro_core_pce, position: 20}
+  - {id: UNRATE, term_id: macro_unemployment_rate, position: 30}
+  - {id: PAYEMS, term_id: macro_nonfarm_payrolls, position: 40}
+  - {id: GDPC1, term_id: macro_real_gdp, position: 50}
+  - {id: FEDFUNDS, term_id: macro_fed_funds, position: 60}
+  - {id: DGS2, term_id: macro_treasury_2y, position: 70}
+  - {id: DGS10, term_id: macro_treasury_10y, position: 80}
+  - {id: T10Y2Y, term_id: macro_curve_10y_2y, position: 90}
+  - {id: BAMLH0A0HYM2, term_id: macro_hy_oas, position: 100}
+  - {id: VIXCLS, term_id: macro_vix, position: 110}

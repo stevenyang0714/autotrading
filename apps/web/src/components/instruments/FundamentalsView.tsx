@@ -2,12 +2,20 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { Metric } from "@/components/Metric";
+import { SourceFreshness } from "@/components/SourceFreshness";
 import type { CompleteTermId } from "@/generated/glossary";
-import type { EntityOut, FactCell, FactTable, FilingRef, Fundamentals } from "@/lib/api";
+import type {
+  EntityOut,
+  FactCell,
+  FactTable,
+  FilingRef,
+  Fundamentals,
+  SourceHealth,
+} from "@/lib/api";
 import { exactReported, formatReported } from "@/lib/format";
 import { formatSgtEt } from "@/lib/time";
 
-import { AsKnownOnForm } from "./AsKnownOnForm";
+import { AsKnownOnForm } from "@/components/AsKnownOnForm";
 
 type TableMetric = Extract<
   CompleteTermId,
@@ -54,6 +62,7 @@ interface Props {
   knownOn?: string;
   /** Set when the URL carried a date that is not a real calendar date. */
   invalidKnownOn?: boolean;
+  sources?: SourceHealth[] | null;
 }
 
 /**
@@ -61,7 +70,13 @@ interface Props {
  * (ADR-012); each links to its filing. Every number renders through <Metric>; tickers,
  * accession numbers, forms and CIKs are identifiers ([data-identifier]).
  */
-export function FundamentalsView({ data, knownOn, invalidKnownOn }: Props) {
+export function FundamentalsView({ data, knownOn, invalidKnownOn, sources }: Props) {
+  const newest = [...data.annual.rows, ...data.balance_sheet.rows]
+    .flatMap((row) => row.cells)
+    .map((cell) => cell?.filing.published_at)
+    .filter((v): v is string => Boolean(v))
+    .sort()
+    .at(-1);
   const names = new Map(data.entities.map((entity) => [entity.id, entity]));
   const current = data.entities[0];
   return (
@@ -90,7 +105,11 @@ export function FundamentalsView({ data, knownOn, invalidKnownOn }: Props) {
             </span>
           ) : null}
         </p>
-        <AsKnownOnForm ticker={data.ticker} knownOn={knownOn} invalid={invalidKnownOn} />
+        <AsKnownOnForm
+          href={`/instruments/${encodeURIComponent(data.ticker)}`}
+          knownOn={knownOn}
+          invalid={invalidKnownOn}
+        />
         <p className="text-sm text-neutral-400">
           Showing what was public by{" "}
           <Metric termId="point_in_time" icon={false}>
@@ -105,6 +124,13 @@ export function FundamentalsView({ data, knownOn, invalidKnownOn }: Props) {
             </>
           ) : null}
         </p>
+        {sources !== undefined ? (
+          <SourceFreshness
+            sources={sources}
+            ids={["sec_edgar"]}
+            newestPublishedAt={knownOn ? null : newest}
+          />
+        ) : null}
         <Predecessors entities={data.entities.slice(1)} />
       </header>
 

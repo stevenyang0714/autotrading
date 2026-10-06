@@ -1,0 +1,154 @@
+{
+  "recorded_at": "2026-10-05T18:13:35.834936+00:00",
+  "recorded_from": "recorded FRED fixtures replayed into the integration test database (tests/integration/test_macro.py)",
+  "endpoint": "/data-health",
+  "params": {},
+  "response": {
+    "checked_at": "2026-10-05T18:13:35.824481Z",
+    "sources": [
+      {
+        "id": "sec_edgar",
+        "name": "SEC EDGAR (submissions and XBRL company facts)",
+        "url": "https://www.sec.gov/search-filings/edgar-application-programming-interfaces",
+        "tier": 1,
+        "license_status": "public",
+        "access_status": "active",
+        "enabled": true,
+        "update_cadence": "per_filing",
+        "freshness_sla_seconds": 172800,
+        "rate_limit_per_second": "5.000",
+        "rate_limit_burst": 5,
+        "topics": [
+          "filings",
+          "fundamentals",
+          "corporate_actions"
+        ],
+        "freshness": "stale",
+        "last_success_at": null,
+        "next_refresh_at": "2026-10-06T02:00:00Z",
+        "last_run": null,
+        "open_dead_letters": 0
+      },
+      {
+        "id": "fred",
+        "name": "FRED / ALFRED (Federal Reserve Bank of St. Louis)",
+        "url": "https://fred.stlouisfed.org/docs/api/fred/",
+        "tier": 1,
+        "license_status": "restricted",
+        "access_status": "active",
+        "enabled": true,
+        "update_cadence": "daily",
+        "freshness_sla_seconds": 172800,
+        "rate_limit_per_second": "100.000",
+        "rate_limit_burst": 100,
+        "topics": [
+          "macro",
+          "rates",
+          "inflation",
+          "labor",
+          "credit"
+        ],
+        "freshness": "fresh",
+        "last_success_at": "2026-10-05T18:13:35.081376Z",
+        "next_refresh_at": "2026-10-06T02:15:00Z",
+        "last_run": {
+          "id": "dfcb4937-9588-4c81-b88f-aefbb243f7d6",
+          "source_id": "fred",
+          "job": "fred.series",
+          "params": {
+            "series_id": "VIXCLS",
+            "observation_start": "2025-06-01"
+          },
+          "window_start": "2026-10-01T00:00:00Z",
+          "window_end": "2026-10-02T00:00:00Z",
+          "status": "succeeded",
+          "attempt": 1,
+          "started_at": "2026-10-05T18:13:35.036737Z",
+          "finished_at": "2026-10-05T18:13:35.081376Z",
+          "rows_inserted": 348,
+          "rows_unchanged": 196,
+          "rows_conflicted": 0,
+          "raw_payload_keys": [
+            "raw/fred/b1/b14bf845a40ba7250701b7d964f05c5ae8a3e790fd1e33f057663a4ea3722471",
+            "raw/fred/07/07283f74320fa9761729e26148584052cc0a3ea6e2db17089b01bf6e0485e136",
+            "raw/fred/b8/b80242be712646b95124f89578bf04138662e5e871d1c46ead8522fa9802845f",
+            "raw/fred/17/1730905b59dbc3f723a70086eda5f24b9f562b0ffd2a52b13c35ead8fe7da9a4",
+            "raw/fred/c7/c7704ca3d0a85aa2bc807ab7b8a7debe54df226f16005f1b62bbea41101950ea"
+          ],
+          "error_class": null,
+          "error_message": null,
+          "created_at": "2026-10-05T18:13:32.107720Z"
+        },
+        "open_dead_letters": 0
+      },
+      {
+        "id": "massive",
+        "name": "Massive (formerly Polygon.io) Stocks",
+        "url": "https://www.massive.com/stocks",
+        "tier": 1,
+        "license_status": "licensed_personal",
+        "access_status": "disabled",
+        "enabled": false,
+        "update_cadence": "intraday",
+        "freshness_sla_seconds": 900,
+        "rate_limit_per_second": "5.000",
+        "rate_limit_burst": 10,
+        "topics": [
+          "prices",
+          "quotes",
+          "bars",
+          "financials"
+        ],
+        "freshness": null,
+        "last_success_at": null,
+        "next_refresh_at": null,
+        "last_run": null,
+        "open_dead_letters": 0
+      },
+      {
+        "id": "alpaca_iex",
+        "name": "Alpaca Market Data, Basic plan (IEX real-time)",
+        "url": "https://docs.alpaca.markets/us/v1.1/docs/about-market-data-api",
+        "tier": 1,
+        "license_status": "licensed_personal",
+        "access_status": "pending_review",
+        "enabled": false,
+        "update_cadence": "intraday",
+        "freshness_sla_seconds": 900,
+        "rate_limit_per_second": "3.000",
+        "rate_limit_burst": 5,
+        "topics": [
+          "prices",
+          "quotes",
+          "bars"
+        ],
+        "freshness": null,
+        "last_success_at": null,
+        "next_refresh_at": null,
+        "last_run": null,
+        "open_dead_letters": 0
+      },
+      {
+        "id": "gdelt",
+        "name": "GDELT DOC 2.0 API",
+        "url": "https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/",
+        "tier": 2,
+        "license_status": "public",
+        "access_status": "pending_review",
+        "enabled": false,
+        "update_cadence": "intraday",
+        "freshness_sla_seconds": 7200,
+        "rate_limit_per_second": "0.200",
+        "rate_limit_burst": 1,
+        "topics": [
+          "news"
+        ],
+        "freshness": null,
+        "last_success_at": null,
+        "next_refresh_at": null,
+        "last_run": null,
+        "open_dead_letters": 0
+      }
+    ]
+  }
+}

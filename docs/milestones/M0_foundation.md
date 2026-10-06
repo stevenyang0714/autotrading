@@ -119,8 +119,19 @@ Delivered with M0.4: glossary registry (`glossary_terms`, migration 0003, synced
 - Pull observations with real-time periods so each value keeps its vintage.
 
 **Acceptance**
-- [ ] Test (recorded real fixture): querying a revised series as known on an earlier date returns the first-release value, not today's revised value.
-- [ ] Macro page can toggle "latest" vs "as known on date X".
+- [x] Test (recorded real fixture): querying a revised series as known on an earlier date returns the first-release value, not today's revised value. Case: PAYEMS for August 2026, 159,075 thousand at first release (2026-09-04), revised to 159,015 thousand (2026-10-02) (`tests/integration/test_macro.py`).
+- [x] Macro page can toggle "latest" vs "as known on date X" (`/macro/[series]`, vitest and Playwright).
+
+**Notes (M0.6)**
+- Live refresh on 2026-10-06: 11/11 series succeeded in about 52 s, 0 conflicts. Six point-in-time values match FRED's own vintage queries, including GDPC1 Q2 2026 at 24,270.599 as known on 2026-08-15 and 24,408.011 today.
+- Daily series are read in real-time windows under FRED's limit of 2,000 vintage dates (ADR-015).
+- BAMLH0A0HYM2 history starts 2023-10-06 (ICE licensing on FRED).
+- Added on this branch at Steven's request (ADR-016):
+  - home Overview dashboard: six macro blocks with ten computed indicators, SVG charts and rule-based insights that cite their vintages;
+  - Chinese hints for every glossary term;
+  - per-page data freshness, with the next scheduled refresh;
+  - a live Build Progress page.
+- The overview pulls the macro charts of M0.9 forward. M0.9 keeps the larger series charts with a vintage toggle, the news feed and the audit log.
 
 ## M0.7 Market data adapter (PriceProvider)
 **Build**
