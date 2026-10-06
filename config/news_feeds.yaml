@@ -1,0 +1,50 @@
+# Official RSS / Atom feeds (M0.8, ADR-018). Each feed is a source in config/sources.yaml with
+# the same id (tier, license, rate limit, enabled). `ticker` binds an issuer's own feed to its
+# universe equity: every item from it mentions that company (rule feed_issuer).
+# kind: official (government) | press_release (issuer). Verified reachable on 2026-10-06.
+# BLS was removed on 2026-10-06: its feed is one rolling item at a fixed URL, so no release after
+# the first would ever be stored; FRED / ALFRED carries the BLS numbers with their release dates.
+version: 0.1.0
+
+feeds:
+  - source_id: sec_press
+    url: https://www.sec.gov/news/pressreleases.rss
+    publisher: U.S. Securities and Exchange Commission
+    kind: official
+  - source_id: fed_press
+    url: https://www.federalreserve.gov/feeds/press_all.xml
+    publisher: Federal Reserve Board
+    kind: official
+  - source_id: bea_releases
+    url: https://apps.bea.gov/rss/rss.xml
+    publisher: U.S. Bureau of Economic Analysis
+    kind: official
+  - source_id: whitehouse_actions
+    url: https://www.whitehouse.gov/presidential-actions/feed/
+    publisher: The White House
+    kind: official
+  - source_id: apple_newsroom
+    url: https://www.apple.com/newsroom/rss-feed.rss
+    publisher: Apple Newsroom
+    kind: press_release
+    ticker: AAPL
+  - source_id: nvidia_newsroom
+    url: https://nvidianews.nvidia.com/releases.xml
+    publisher: NVIDIA Newsroom
+    kind: press_release
+    ticker: NVDA
+  - source_id: microsoft_news
+    url: https://news.microsoft.com/source/feed/
+    publisher: Microsoft News Center
+    kind: press_release
+    ticker: MSFT
+  - source_id: meta_newsroom
+    url: https://about.fb.com/news/feed/
+    publisher: Meta Newsroom
+    kind: press_release
+    ticker: META
+  - source_id: google_blog
+    url: https://blog.google/rss/
+    publisher: Google (The Keyword)
+    kind: press_release
+    ticker: GOOGL

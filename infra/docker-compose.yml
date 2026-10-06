@@ -25,6 +25,7 @@ x-app-env: &app-env
   APCA_API_KEY_ID: ${APCA_API_KEY_ID:-}
   APCA_API_SECRET_KEY: ${APCA_API_SECRET_KEY:-}
   ALPACA_DATA_FEED: ${ALPACA_DATA_FEED:-iex}
+  SCHEDULED_INGESTION: ${SCHEDULED_INGESTION:-true}
   CONFIG_DIR: /app/config
   GLOSSARY_PATH: /app/glossary/glossary_seed.yaml
   DOCS_DIR: /app/docs

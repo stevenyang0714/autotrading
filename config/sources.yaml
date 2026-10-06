@@ -70,12 +70,169 @@ sources:
     url: https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/
     tier: 2
     license_status: public
-    note: Discovery layer; each news item keeps the tier of its own publisher.
-    access_status: pending_review
+    note: >-
+      Discovery layer; each news item keeps the tier of its own publisher (config/news_publishers.yaml).
+      Terms (gdeltproject.org/about.html, read 2026-10-06): unrestricted use without fee; any use must
+      cite the GDELT Project and link to https://www.gdeltproject.org/. Metadata only: no article text.
+    access_status: active           # terms checked 2026-10-06 (ADR-018)
     update_cadence: intraday
-    freshness_sla_seconds: 7200
-    enabled: false                  # M0.8
+    freshness_sla_seconds: 7200     # hourly runs (M0.8)
+    enabled: true                   # M0.8
     priority: 40
     topics: [news]
-    rate_limit_per_second: 0.2      # one request every 5 seconds
+    rate_limit_per_second: 0.1      # one request every 10 seconds; GDELT asks for at most one per 5
+    rate_limit_burst: 1
+
+  # Official RSS feeds (M0.8, ADR-018): feed URLs in config/news_feeds.yaml. Titles, links, times
+  # and short summaries only; full text is stripped before anything is stored. Polled every 30 min.
+  - id: sec_press
+    name: SEC press releases (RSS)
+    url: https://www.sec.gov/news/pressreleases.rss
+    tier: 1
+    license_status: public
+    note: "U.S. government work. SEC fair access policy: User-Agent with name and email."
+    access_status: active
+    update_cadence: per_release
+    freshness_sla_seconds: 7200
+    enabled: true
+    priority: 41
+    topics: [news, official]
+    rate_limit_per_second: 1
+    rate_limit_burst: 1
+
+  - id: fed_press
+    name: Federal Reserve press releases (RSS)
+    url: https://www.federalreserve.gov/feeds/press_all.xml
+    tier: 1
+    license_status: public
+    note: U.S. government work.
+    access_status: active
+    update_cadence: per_release
+    freshness_sla_seconds: 7200
+    enabled: true
+    priority: 42
+    topics: [news, official, macro]
+    rate_limit_per_second: 1
+    rate_limit_burst: 1
+
+  - id: bls_releases
+    name: BLS latest releases (RSS)
+    url: https://www.bls.gov/feed/bls_latest.rss
+    tier: 1
+    license_status: public
+    note: >-
+      Disabled 2026-10-06 (Steven): one rolling "latest numbers" item at a fixed URL, so later
+      releases are never stored; FRED / ALFRED has the numbers with release dates.
+    access_status: disabled
+    update_cadence: per_release
+    freshness_sla_seconds: 7200
+    enabled: false
+    priority: 43
+    topics: [news, official, macro]
+    rate_limit_per_second: 1
+    rate_limit_burst: 1
+
+  - id: bea_releases
+    name: BEA releases (RSS)
+    url: https://apps.bea.gov/rss/rss.xml
+    tier: 1
+    license_status: public
+    note: U.S. government work.
+    access_status: active
+    update_cadence: per_release
+    freshness_sla_seconds: 7200
+    enabled: true
+    priority: 44
+    topics: [news, official, macro]
+    rate_limit_per_second: 1
+    rate_limit_burst: 1
+
+  - id: whitehouse_actions
+    name: White House presidential actions (RSS)
+    url: https://www.whitehouse.gov/presidential-actions/feed/
+    tier: 1
+    license_status: public
+    note: U.S. government work. The feed carries full text, which is stripped before storage.
+    access_status: active
+    update_cadence: per_release
+    freshness_sla_seconds: 7200
+    enabled: true
+    priority: 45
+    topics: [news, official, policy]
+    rate_limit_per_second: 1
+    rate_limit_burst: 1
+
+  - id: apple_newsroom
+    name: Apple Newsroom (RSS)
+    url: https://www.apple.com/newsroom/rss-feed.rss
+    tier: 1
+    license_status: public
+    note: Issuer press releases (AAPL). Publisher copyright; metadata and short summary only.
+    access_status: active
+    update_cadence: per_release
+    freshness_sla_seconds: 7200
+    enabled: true
+    priority: 46
+    topics: [news, issuer]
+    rate_limit_per_second: 1
+    rate_limit_burst: 1
+
+  - id: nvidia_newsroom
+    name: NVIDIA Newsroom releases (RSS)
+    url: https://nvidianews.nvidia.com/releases.xml
+    tier: 1
+    license_status: public
+    note: Issuer press releases (NVDA). Publisher copyright; metadata and short summary only.
+    access_status: active
+    update_cadence: per_release
+    freshness_sla_seconds: 7200
+    enabled: true
+    priority: 47
+    topics: [news, issuer]
+    rate_limit_per_second: 1
+    rate_limit_burst: 1
+
+  - id: microsoft_news
+    name: Microsoft News Center (RSS)
+    url: https://news.microsoft.com/source/feed/
+    tier: 1
+    license_status: public
+    note: Issuer news (MSFT). The feed carries full text, which is stripped before storage.
+    access_status: active
+    update_cadence: per_release
+    freshness_sla_seconds: 7200
+    enabled: true
+    priority: 48
+    topics: [news, issuer]
+    rate_limit_per_second: 1
+    rate_limit_burst: 1
+
+  - id: meta_newsroom
+    name: Meta Newsroom (RSS)
+    url: https://about.fb.com/news/feed/
+    tier: 1
+    license_status: public
+    note: Issuer news (META). The feed carries full text, which is stripped before storage.
+    access_status: active
+    update_cadence: per_release
+    freshness_sla_seconds: 7200
+    enabled: true
+    priority: 49
+    topics: [news, issuer]
+    rate_limit_per_second: 1
+    rate_limit_burst: 1
+
+  - id: google_blog
+    name: Google, The Keyword blog (RSS)
+    url: https://blog.google/rss/
+    tier: 1
+    license_status: public
+    note: Issuer news (GOOGL, Alphabet's official blog). Metadata and short summary only.
+    access_status: active
+    update_cadence: per_release
+    freshness_sla_seconds: 7200
+    enabled: true
+    priority: 50
+    topics: [news, issuer]
+    rate_limit_per_second: 1
     rate_limit_burst: 1

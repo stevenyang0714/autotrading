@@ -1,6 +1,7 @@
 """Repo config files are valid and agree with the glossary (M0.3 plan D1)."""
 
 import re
+from decimal import Decimal
 from pathlib import Path
 
 import yaml
@@ -68,3 +69,32 @@ def test_macro_series_are_registered_with_complete_glossary_terms() -> None:
         "CPIAUCSL", "PCEPILFE", "UNRATE", "PAYEMS", "GDPC1", "FEDFUNDS",
         "DGS2", "DGS10", "T10Y2Y", "BAMLH0A0HYM2", "VIXCLS",
     ]  # fmt: skip
+
+
+def test_news_config_files_agree_with_the_source_registry() -> None:
+    # M0.8 (ADR-018): every feed is an enabled tier-1 source; GDELT is enabled; every
+    # configured company is a universe equity with a GDELT query GDELT accepts.
+    from autotrading.adapters.news.config import load_entities, load_feeds, load_publishers
+
+    sources = {s.id: s for s in load_sources(CONFIG_DIR / "sources.yaml").sources}
+    feeds = load_feeds(CONFIG_DIR).feeds
+    assert len(feeds) == 9
+    assert sources["bls_releases"].enabled is False  # removed 2026-10-06 (rolling single item)
+    for feed in feeds:
+        source = sources[feed.source_id]
+        assert (source.tier, source.enabled, source.url) == (1, True, feed.url), feed.source_id
+        assert "news" in source.topics
+    assert sources["gdelt"].enabled and sources["gdelt"].rate_limit_per_second <= Decimal("0.2")
+    universe = yaml.safe_load((CONFIG_DIR / "universe.yaml").read_text(encoding="utf-8"))
+    companies = load_entities(CONFIG_DIR).companies
+    assert set(companies) == set(universe["equities"])
+    for ticker, company in companies.items():
+        query = company.gdelt_query
+        # GDELT refuses parentheses that do not wrap an OR.
+        assert (" OR " in query) == query.startswith("("), ticker
+    assert {f.ticker for f in feeds if f.ticker} <= set(companies)
+    publishers = load_publishers(CONFIG_DIR)
+    assert publishers.default_tier == 4
+    assert {p.tier for p in publishers.publishers.values()} == {2, 3}
+    tiers = publishers.tiers()
+    assert tiers.is_blocked("dhal3.com") and not tiers.is_blocked("reuters.com")
