@@ -56,6 +56,11 @@ class Settings(BaseSettings):
     sec_user_agent: SecretStr | None = None
     # FRED / ALFRED API key (M0.6). Sent only as a query parameter; never stored or logged.
     fred_api_key: SecretStr | None = None
+    # Alpaca Market Data (M0.7, ADR-004): paper-account keys, sent as headers to the market
+    # data API only. No trading or account endpoint is ever called.
+    apca_api_key_id: SecretStr | None = None
+    apca_api_secret_key: SecretStr | None = None
+    alpaca_data_feed: Literal["iex"] = "iex"
 
     # Ingestion retries (Dramatiq, exponential backoff); after the last one -> dead letter.
     ingestion_max_retries: int = 5

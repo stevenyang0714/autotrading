@@ -12,7 +12,12 @@ from apscheduler.triggers.cron import CronTrigger
 
 from autotrading.infra.heartbeat import HEARTBEAT_INTERVAL_SECONDS, write_heartbeat
 from autotrading.infra.redis_client import make_redis
-from autotrading.ingestion.schedule import REFRESH_TIMEZONE, SCHEDULES
+from autotrading.ingestion.schedule import (
+    DAILY_BARS,
+    REFRESH_TIMEZONE,
+    SCHEDULES,
+    SNAPSHOT_SECONDS,
+)
 from autotrading.jobs import actors
 from autotrading.settings import get_settings
 
@@ -60,6 +65,24 @@ def main() -> None:
             timezone=REFRESH_TIMEZONE,
         ),
         id="fred_refresh",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=12 * 3600,
+    )
+    # Alpaca (M0.7): snapshots each minute (the job checks US market hours itself) and daily
+    # SIP bars after the close.
+    scheduler.add_job(
+        lambda: actors.start_alpaca_snapshots(),
+        "interval",
+        seconds=SNAPSHOT_SECONDS,
+        id="alpaca_snapshots",
+        max_instances=1,
+        coalesce=True,
+    )
+    scheduler.add_job(
+        lambda: actors.start_alpaca_daily_bars(manual=False),
+        CronTrigger(hour=DAILY_BARS.hour, minute=DAILY_BARS.minute, timezone=REFRESH_TIMEZONE),
+        id="alpaca_daily_bars",
         max_instances=1,
         coalesce=True,
         misfire_grace_time=12 * 3600,

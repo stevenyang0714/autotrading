@@ -41,10 +41,10 @@ sources:
     url: https://docs.alpaca.markets/us/v1.1/docs/about-market-data-api
     tier: 1
     license_status: licensed_personal
-    access_status: pending_review   # needs Alpaca paper-account data keys; OD-9 (Singapore)
+    access_status: active           # paper-account data keys in .env; OD-9 Alpaca part verified 2026-10-06
     update_cadence: intraday
-    freshness_sla_seconds: 900      # refined to US market hours in M0.7
-    enabled: false                  # M0.7 (ADR-004)
+    freshness_sla_seconds: 900      # judged during US market hours only (ADR-017)
+    enabled: true                   # M0.7 (ADR-004)
     priority: 30
     topics: [prices, quotes, bars]
     rate_limit_per_second: 3

@@ -15,6 +15,7 @@ import dramatiq
 from sqlalchemy.orm import sessionmaker
 
 from autotrading import adapters  # noqa: F401  (adapters register their ingestion jobs)
+from autotrading.adapters.alpaca import refresh as alpaca_refresh
 from autotrading.adapters.fred import refresh as fred_refresh
 from autotrading.adapters.sec import refresh as sec_refresh
 from autotrading.infra.db import make_engine
@@ -25,6 +26,7 @@ from autotrading.ingestion.actors import INGESTION_QUEUE, declare_ingestion_acto
 from autotrading.ingestion.rate_limit import TokenBucketLimiter
 from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
+from autotrading.ingestion.schedule import market_calendar
 from autotrading.jobs.broker import WorkerHeartbeat, configure_broker
 from autotrading.settings import get_settings
 
@@ -100,3 +102,35 @@ def start_fred_refresh(*, manual: bool) -> list[UUID]:
     for run_id in run_ids:
         run_ingestion.send(str(run_id))
     return run_ids
+
+
+# ---------- Alpaca market data (M0.7) ----------
+
+
+def start_alpaca_snapshots(*, force: bool = False) -> UUID | None:
+    """Queue this minute's snapshot run during US market hours (or now, when forced)."""
+    run_id = alpaca_refresh.start_snapshots(
+        ingestion_runner(),
+        now=datetime.now(UTC),
+        calendar=market_calendar(),
+        config_dir=_settings.resolved_config_dir(),
+        force=force,
+    )
+    if run_id is not None:
+        run_ingestion.send(str(run_id))
+    return run_id
+
+
+def start_alpaca_daily_bars(*, manual: bool, backfill: bool = False) -> UUID | None:
+    run_id = alpaca_refresh.start_daily_bars(
+        ingestion_runner(),
+        now=datetime.now(UTC),
+        manual=manual,
+        config_dir=_settings.resolved_config_dir(),
+        backfill=backfill,
+    )
+    if run_id is None:
+        logger.info("Alpaca bars skipped: alpaca_iex is not enabled or has no keys")
+    else:
+        run_ingestion.send(str(run_id))
+    return run_id
