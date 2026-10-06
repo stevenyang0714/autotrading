@@ -38,12 +38,13 @@ def upgrade() -> None:
         sa.Column("extra", sa.Integer(), nullable=False),
         sa.Column("restated_later", sa.Integer(), nullable=False),
         sa.Column("checks_failed", sa.Integer(), nullable=False),
+        sa.Column("checks_flagged", sa.Integer(), nullable=False),
         sa.Column("status", sa.Text(), nullable=False),
         sa.Column("ingestion_run_id", sa.Uuid(), nullable=False),
         sa.Column(
             "recorded_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False
         ),
-        sa.CheckConstraint("status IN ('pass', 'fail')", name="status"),
+        sa.CheckConstraint("status IN ('pass', 'warn', 'fail')", name="status"),
         sa.CheckConstraint("source_url ~ '^https://'", name="source_url_scheme"),
         sa.ForeignKeyConstraint(
             ["entity_id"], ["entities.id"], name="fk_filing_reconciliations_entity_id_entities"

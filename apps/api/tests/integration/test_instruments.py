@@ -202,11 +202,10 @@ def test_meta_share_counts_are_added_from_its_own_filing_xbrl(
         assert balance.source_concept == "us-gaap:CommonStockSharesOutstanding (sum of classes)"
         assert balance.published_at == filing.published_at  # the filing's stored acceptance
         assert balance.source_url == filing.source_url
-        # Read once: a later refresh creates no run for the same filings.
-        assert all(
-            f.accession_number not in RECORDED_INSTANCES
-            for f in filing_xbrl_candidates(session, "0001326801")
-        )
+        # Read once: a later refresh reads only the filings not read yet, plus the latest 10-K
+        # to confirm the share classes while other class sums are due.
+        again = {f.accession_number for f in filing_xbrl_candidates(session, "0001326801")}
+        assert again & RECORDED_INSTANCES == {meta_10k}
 
 
 # ---------- split-adjusted per-share history (ADR-021) ----------

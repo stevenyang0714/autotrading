@@ -20,7 +20,12 @@ from sqlalchemy import select
 
 from autotrading.adapters.sec.client import SecClient
 from autotrading.adapters.sec.company import Stamp, fact_in
-from autotrading.adapters.sec.instance import class_sums, instance_url, parse_instance
+from autotrading.adapters.sec.instance import (
+    class_sums,
+    confirmed_class_sets,
+    instance_url,
+    parse_instance,
+)
 from autotrading.adapters.sec.parsing import normalize_cik
 from autotrading.adapters.sec.reconcile import reconcile_filing
 from autotrading.adapters.sec.tickers import NAMESPACE, SOURCE_ID
@@ -37,7 +42,7 @@ from autotrading.ingestion.job import (
 from autotrading.repositories.facts import FinancialFactRepository
 from autotrading.repositories.identifiers import current_identifier
 
-METHODOLOGY_VERSION = "0.1.0"
+METHODOLOGY_VERSION = "0.1.1"
 ACTOR = f"ingest:{SOURCE_ID}"
 
 
@@ -87,13 +92,16 @@ class SecFilingXbrlJob(IngestionJob):
         }
         stamp = Stamp(session.get_one(Source, SOURCE_ID), ctx.run_id)
         rows, notes, parsed = [], [], []
+        instances = {p.source_url: parse_instance(p.content) for p in ctx.payloads}
+        # Class sets any filing of the run confirms (the latest 10-K for Alphabet's Class C).
+        confirmed = set().union(*(confirmed_class_sets(i) for i in instances.values()))
         for payload in ctx.payloads:
             accession = documents[payload.source_url]
             filing = filings.get(accession)
             if filing is None:
                 raise FilingNotStoredError(f"filing {accession} of CIK {self.cik} is not stored")
-            instance = parse_instance(payload.content)
-            sums = class_sums(instance, accession, filing.form, filing.filing_date)
+            instance = instances[payload.source_url]
+            sums = class_sums(instance, accession, filing.form, filing.filing_date, confirmed)
             parsed.append((filing, payload, instance, sums.values))
             published: dict[str, tuple[datetime, TimePrecision]] = {
                 accession: (filing.published_at, cast(TimePrecision, filing.published_at_precision))
@@ -118,11 +126,12 @@ class SecFilingXbrlJob(IngestionJob):
                 run_id=ctx.run_id,
                 with_split_check=filing is split_checked,
             )
-            if reconciliation is not None and reconciliation.status == "fail":
+            if reconciliation is not None and reconciliation.status != "pass":
                 notes.append(
-                    f"{filing.accession_number}: reconciliation failed ("
+                    f"{filing.accession_number}: reconciliation {reconciliation.status} ("
                     f"{reconciliation.mismatched} mismatched, {reconciliation.missing} missing, "
-                    f"{reconciliation.extra} extra, {reconciliation.checks_failed} checks failed)"
+                    f"{reconciliation.extra} extra, {reconciliation.checks_failed} checks failed, "
+                    f"{reconciliation.checks_flagged} flagged)"
                 )
         return StoreResult(
             inserted=result.inserted,

@@ -1239,6 +1239,8 @@ export interface components {
             checked: number;
             /** Checks Failed */
             checks_failed: number;
+            /** Checks Flagged */
+            checks_flagged: number;
             /** Company */
             company: string;
             /** Extra */
@@ -1273,7 +1275,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "pass" | "fail";
+            status: "pass" | "warn" | "fail";
             /** Ticker */
             ticker: string | null;
         };
@@ -2004,7 +2006,7 @@ export interface operations {
     reconciliations_reconciliation_get: {
         parameters: {
             query?: {
-                status?: ("pass" | "fail") | null;
+                status?: ("pass" | "warn" | "fail") | null;
                 form?: ("10-K" | "10-Q") | null;
             };
             header?: never;

@@ -4,9 +4,12 @@ A refresh is one `sec.tickers` run followed, once it succeeds, by one `sec.compa
 universe equity and per linked predecessor issuer (ADR-014). All runs share one refresh window
 (ingestion/schedule.py); the schedule runs daily at 10:00 SGT.
 
-Each `sec.company` run is followed by `sec.filing_xbrl` runs (ADR-021) for filings not read yet
+Each `sec.company` run is followed by a `sec.filing_xbrl` run (ADR-021) for filings not read yet
 at the current methodology version: the latest 10-K and 10-Q (reconciliation), and every
-inline XBRL 10-K/10-Q since mid-2019 that left a share count unstored (class sums).
+inline XBRL 10-K/10-Q since mid-2019 that left a share count unstored (class sums). A filing
+another issuer co-filed and holds the XBRL of (ExxonMobil Holdings' 10-Q also listed under
+Exxon Mobil Corp) is not this issuer's to read. When class sums are due, the latest 10-K joins
+the run so its balance sheet can confirm the share classes.
 """
 
 from datetime import date, datetime
@@ -168,12 +171,30 @@ def filing_xbrl_candidates(session: Session, cik: str) -> list[Filing]:
         )
     ]
     read = read_accessions(session, cik)
+    others = co_filed(session, [f for f in filings if f is not None])
     chosen = {
         f.accession_number: f
         for f in [*latest, *missing_shares]
-        if f is not None and f.accession_number not in read
+        if f is not None and f.accession_number not in read and f.accession_number not in others
     }
+    if missing_shares and latest[0] is not None and latest[0].accession_number not in others:
+        chosen.setdefault(latest[0].accession_number, latest[0])  # confirms share classes
     return sorted(chosen.values(), key=lambda f: (f.filing_date, f.accession_number))
+
+
+def co_filed(session: Session, filings: list[Filing]) -> set[str]:
+    """Accessions whose XBRL facts another issuer holds and this one does not."""
+    if not filings:
+        return set()
+    entity_id = filings[0].entity_id
+    accessions = [f.accession_number for f in filings]
+    holders = session.execute(
+        select(FinancialFact.accession_id, FinancialFact.entity_id)
+        .where(FinancialFact.accession_id.in_(accessions))
+        .distinct()
+    ).all()
+    mine = {a for a, e in holders if a and e == entity_id}
+    return {a for a, e in holders if a and e != entity_id} - mine
 
 
 def create_filing_xbrl_run(

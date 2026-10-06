@@ -38,7 +38,7 @@ class ReconciliationOut(BaseModel):
     filing_published_at: datetime
     filing_url: str | None  # EDGAR index page
     instance_url: str  # the filing's own XBRL instance
-    status: Literal["pass", "fail"]
+    status: Literal["pass", "warn", "fail"]
     checked: int
     matched: int
     mismatched: int
@@ -46,6 +46,7 @@ class ReconciliationOut(BaseModel):
     extra: int
     restated_later: int
     checks_failed: int
+    checks_flagged: int
     methodology_version: str
     recorded_at: datetime
 
@@ -114,7 +115,7 @@ def _out(session: Session, row: FilingReconciliation) -> ReconciliationOut:
         filing_published_at=row.filing_published_at,
         filing_url=filing_url,
         instance_url=row.source_url,
-        status="pass" if row.status == "pass" else "fail",
+        status=cast(Literal["pass", "warn", "fail"], row.status),
         checked=row.checked,
         matched=row.matched,
         mismatched=row.mismatched,
@@ -122,6 +123,7 @@ def _out(session: Session, row: FilingReconciliation) -> ReconciliationOut:
         extra=row.extra,
         restated_later=row.restated_later,
         checks_failed=row.checks_failed,
+        checks_flagged=row.checks_flagged,
         methodology_version=row.methodology_version,
         recorded_at=row.recorded_at,
     )
@@ -130,7 +132,7 @@ def _out(session: Session, row: FilingReconciliation) -> ReconciliationOut:
 @router.get("/reconciliation")
 def reconciliations(
     session: SessionDep,
-    status: Annotated[Literal["pass", "fail"] | None, Query()] = None,
+    status: Annotated[Literal["pass", "warn", "fail"] | None, Query()] = None,
     form: Annotated[Literal["10-K", "10-Q"] | None, Query()] = None,
 ) -> ReconciliationList:
     latest = (
@@ -165,7 +167,7 @@ def reconciliation(accession: str, session: SessionDep) -> ReconciliationDetail:
     ).first()
     if row is None:
         raise HTTPException(status_code=404, detail=f"no reconciliation for {accession!r}")
-    order = {"mismatch": 0, "missing": 1, "extra": 2, "fail": 3, "flag": 4}
+    order = {"mismatch": 0, "missing": 1, "extra": 2, "fail": 3, "flag": 4, "restated_later": 5}
     items = sorted(
         session.scalars(
             select(ReconciliationItem).where(ReconciliationItem.reconciliation_id == row.id)

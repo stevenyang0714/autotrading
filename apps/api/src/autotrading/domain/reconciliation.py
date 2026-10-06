@@ -12,9 +12,11 @@ concept selection as company facts, plus its class sums):
   acceptance case "a mismatch explained by a later restatement": comparing at the filing's own
   time keeps later restatements from counting as errors.
 Checks: the balance identity (assets = liabilities and equity) on every balance-sheet date
-the filing reports both, quarters differenced from stored
+the filing reports both (fail), and two warnings (flag): quarters differenced from stored
 year-to-date values against the three-month values the filing reports, and restatements that
-look like an unrecorded split. A filing passes when no fact check fails and no check fails.
+look like an unrecorded split. A quarter flag usually means the company revised an earlier
+quarter inside a later 10-Q, so a quarter differenced from the values known then is off.
+Status: fail (a fact check or the identity failed), warn (only flags), pass.
 """
 
 from collections.abc import Iterable, Mapping
@@ -26,9 +28,10 @@ from typing import Literal
 from autotrading.domain.derived import ValueFact
 from autotrading.domain.quarters import quarters
 
-METHODOLOGY_VERSION = "0.1.0"
+METHODOLOGY_VERSION = "0.1.1"
 QUARTER_CHECK_METRICS = ("revenue", "gross_profit", "operating_income", "net_income")
-FAILING = frozenset({"mismatch", "missing", "extra", "fail", "flag"})
+FAILING = frozenset({"mismatch", "missing", "extra", "fail"})
+WARNING = frozenset({"flag"})
 
 Check = Literal["fact", "identity", "quarter", "split"]
 Status = Literal["match", "mismatch", "missing", "extra", "restated_later", "ok", "fail", "flag"]
@@ -65,8 +68,16 @@ class Result:
         )
 
     @property
+    def status(self) -> Literal["pass", "warn", "fail"]:
+        if any(i.status in FAILING for i in self.items):
+            return "fail"
+        if any(i.status in WARNING for i in self.items):
+            return "warn"
+        return "pass"
+
+    @property
     def passed(self) -> bool:
-        return not any(i.status in FAILING for i in self.items)
+        return self.status == "pass"
 
 
 def fact_items(
@@ -179,7 +190,7 @@ def quarter_items[FactT: ValueFact](
             items.append(
                 Item(
                     "quarter",
-                    "ok" if difference <= unit else "fail",
+                    "ok" if difference <= unit else "flag",
                     metric,
                     quarter.period_start,
                     quarter.period_end,

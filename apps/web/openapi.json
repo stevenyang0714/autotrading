@@ -2752,6 +2752,10 @@
             "title": "Checks Failed",
             "type": "integer"
           },
+          "checks_flagged": {
+            "title": "Checks Flagged",
+            "type": "integer"
+          },
           "company": {
             "title": "Company",
             "type": "string"
@@ -2812,6 +2816,7 @@
           "status": {
             "enum": [
               "pass",
+              "warn",
               "fail"
             ],
             "title": "Status",
@@ -2845,6 +2850,7 @@
           "extra",
           "restated_later",
           "checks_failed",
+          "checks_flagged",
           "methodology_version",
           "recorded_at"
         ],
@@ -4547,6 +4553,7 @@
                 {
                   "enum": [
                     "pass",
+                    "warn",
                     "fail"
                   ],
                   "type": "string"

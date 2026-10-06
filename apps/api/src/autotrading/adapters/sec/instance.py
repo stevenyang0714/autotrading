@@ -23,9 +23,9 @@ from autotrading.adapters.sec.parsing import SEC_ARCHIVES, XbrlValue
 XBRLI = "{http://www.xbrl.org/2003/instance}"
 XBRLDI = "{http://xbrl.org/2006/xbrldi}"
 XSI_NIL = "{http://www.w3.org/2001/XMLSchema-instance}nil"
-# us-gaap/2025, dei/2025; before 2020 dated: us-gaap/2019-01-31, dei/2019-01-31.
+# us-gaap/2025, dei/2025; dated before 2020 (us-gaap/2019-01-31); dei/2021q4 in 2022 filings.
 TAXONOMY_URI = re.compile(
-    r"^http://(?:fasb\.org/(us-gaap|srt)|xbrl\.sec\.gov/(dei))/\d{4}(?:-\d{2}-\d{2})?$"
+    r"^http://(?:fasb\.org/(us-gaap|srt)|xbrl\.sec\.gov/(dei))/\d{4}(?:q\d|-\d{2}-\d{2})?$"
 )
 
 CLASS_AXIS = "us-gaap:StatementClassOfStockAxis"
@@ -147,8 +147,8 @@ def as_companyfacts(
     """The filing's non-dimensional values in the company facts layout (`select_values`)."""
     shaped: dict[str, dict[str, Any]] = defaultdict(dict)
     for fact in facts:
-        if fact.context.dims:
-            continue
+        if fact.context.dims or fact.context.start == fact.context.end:
+            continue  # zero-length durations: company facts drop them too
         taxonomy, name = fact.concept.split(":", 1)
         observation: dict[str, Any] = {
             "accn": accession,
@@ -170,7 +170,34 @@ class ClassSumResult:
     findings: list[str]  # class sets that could not be confirmed, not added
 
 
-def class_sums(facts: list[InstanceFact], accession: str, form: str, filed: date) -> ClassSumResult:
+def confirmed_class_sets(facts: list[InstanceFact]) -> set[frozenset[str]]:
+    """Class sets that add up exactly to a total common share count the filing reports."""
+    totals: dict[date, Decimal] = {}
+    by_class: dict[date, dict[str, Decimal]] = defaultdict(dict)
+    for fact in facts:
+        if fact.concept != BALANCE_SHARES or fact.unit != "shares":
+            continue
+        dims = fact.context.dims
+        if not dims or dims == ((EQUITY_AXIS, COMMON_STOCK),):
+            totals.setdefault(fact.context.end, fact.value)
+        elif len(dims) == 1 and dims[0][0] == CLASS_AXIS:
+            by_class[fact.context.end][dims[0][1]] = fact.value
+    return {
+        frozenset(classes)
+        for end, classes in by_class.items()
+        if end in totals and sum(classes.values()) == totals[end]
+    }
+
+
+def class_sums(
+    facts: list[InstanceFact],
+    accession: str,
+    form: str,
+    filed: date,
+    confirmed_elsewhere: set[frozenset[str]] | None = None,
+) -> ClassSumResult:
+    """`confirmed_elsewhere`: class sets other filings of the issuer confirmed (a 10-Q cover
+    page has no per-class balance sheet to confirm Alphabet's custom Class C member)."""
     totals: dict[tuple[str, date], Decimal] = {}
     confirmed_totals: dict[date, Decimal] = {}  # common stock totals, by balance-sheet date
     by_class: dict[tuple[str, date], dict[str, Decimal]] = defaultdict(dict)
@@ -194,7 +221,7 @@ def class_sums(facts: list[InstanceFact], accession: str, form: str, filed: date
         if concept == BALANCE_SHARES
         and end in confirmed_totals
         and sum(classes.values()) == confirmed_totals[end]
-    }
+    } | (confirmed_elsewhere or set())
     values, findings = [], []
     for (concept, end), classes in sorted(by_class.items()):
         if (concept, end) in totals:

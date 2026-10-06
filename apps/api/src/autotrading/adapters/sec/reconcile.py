@@ -153,8 +153,9 @@ def reconcile_filing(
         missing=result.count("missing", "fact"),
         extra=result.count("extra", "fact"),
         restated_later=result.count("restated_later", "fact"),
-        checks_failed=result.count("fail") + result.count("flag"),
-        status="pass" if result.passed else "fail",
+        checks_failed=result.count("fail"),
+        checks_flagged=result.count("flag"),
+        status=result.status,
         ingestion_run_id=run_id,
     )
     session.add(row)

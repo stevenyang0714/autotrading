@@ -89,8 +89,10 @@ def test_quarters_from_stored_year_to_date_values_against_the_filing() -> None:
     q2 = ("revenue", date(2024, 12, 29), date(2025, 3, 29))
     [ok] = quarter_items(stored, {q2: Decimal(95359)})
     assert (ok.status, ok.stored_value) == ("ok", Decimal(95359))
+    # Off by more than rounding: usually an earlier quarter revised inside a later 10-Q.
     [bad] = quarter_items(stored, {q2: Decimal(95362)})
-    assert bad.status == "fail"
+    assert bad.status == "flag"
+    assert (Result([bad]).status, Result([ok]).status) == ("warn", "pass")
 
 
 def test_a_quarter_one_rounding_unit_off_is_within_rounding() -> None:

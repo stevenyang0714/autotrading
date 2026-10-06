@@ -845,7 +845,7 @@ class FilingReconciliation(Base):
 
     __tablename__ = "filing_reconciliations"
     __table_args__ = (
-        CheckConstraint(sql_in("status", ("pass", "fail")), name="status"),
+        CheckConstraint(sql_in("status", ("pass", "warn", "fail")), name="status"),
         CheckConstraint("source_url ~ '^https://'", name="source_url_scheme"),
         UniqueConstraint(
             "entity_id",
@@ -874,6 +874,7 @@ class FilingReconciliation(Base):
     extra: Mapped[int] = mapped_column(Integer)
     restated_later: Mapped[int] = mapped_column(Integer)
     checks_failed: Mapped[int] = mapped_column(Integer)
+    checks_flagged: Mapped[int] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(Text)
     ingestion_run_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("ingestion_runs.id"))
     recorded_at: Mapped[datetime] = mapped_column(
