@@ -71,7 +71,7 @@ Defined in the root `Makefile` (`make help` lists them). Keep this list current:
 - `SCHEDULED_INGESTION=false` (compose env) leaves the scheduler on heartbeat only; CI uses it so nothing fetches live data during tests
 - Market calendar: `config/market_calendar.yaml` (NYSE holidays and early closes, covered until 2028-12-31; extend before then)
 - `make replay-fixtures` — CI only: load the recorded SEC, FRED, Alpaca and news fixtures into the stack database, offline (prices and news labelled `fixture`, with a DEMO DATA banner)
-- Pages (System group): Overview http://127.0.0.1:3000/, Instruments `/instruments`, Macro `/macro`, News `/news`, Build Progress `/system/progress`; `?known_on=YYYY-MM-DD` shows what was public by the end of that day in SGT
+- Pages (System group): Overview http://127.0.0.1:3000/, Instruments `/instruments`, Macro `/macro` (series pages chart the value and its first release with ECharts, ADR-019), News `/news`, Audit Log `/system/audit-log` (read-only, every audited change), Build Progress `/system/progress`; `?known_on=YYYY-MM-DD` shows what was public by the end of that day in SGT
 - Chinese hints: `docs/glossary/glossary_zh.yaml` (name + hint per complete term; a test requires one per term); then `make gen`
 - Refresh times: `apps/api/src/autotrading/ingestion/schedule.py` `SCHEDULES` (read by the scheduler and `/data-health`)
 - `make gen` — regenerate `apps/web/openapi.json` and `apps/web/src/generated/` (glossary + API types) after changing the glossary or the API; CI fails if they are stale
