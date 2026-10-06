@@ -1,0 +1,76 @@
+{
+  "recorded_at": "2026-10-06T09:59:40.593470+00:00",
+  "recorded_from": "config sync, a config change and a deleted probe source in the integration test database (tests/integration/test_audit.py)",
+  "endpoint": "/audit-log",
+  "params": {
+    "table": "sources",
+    "action": "update"
+  },
+  "response": {
+    "entries": [
+      {
+        "id": 16,
+        "occurred_at": "2026-10-06T09:59:40.454256Z",
+        "actor": "config:sources.yaml",
+        "action": "update",
+        "table": "sources",
+        "object_id": "gdelt",
+        "object_label": "GDELT DOC 2.0 API",
+        "before_hash": "5e3bde768493da5589138f8b248516eb2bf8ac5232d8cf9c78b121869befb85f",
+        "after_hash": "e7eb560413524e725eb102b6981b3785e63e113a8bcc956654b00909301969b5",
+        "changes": [
+          {
+            "field": "priority",
+            "old": 40,
+            "new": 99
+          },
+          {
+            "field": "updated_at",
+            "old": "2026-10-06T09:59:40.390447+00:00",
+            "new": "2026-10-06T09:59:40.454256+00:00"
+          },
+          {
+            "field": "version",
+            "old": 1,
+            "new": 2
+          }
+        ],
+        "removed": null
+      }
+    ],
+    "matching": 1,
+    "next_before_id": null,
+    "facets": {
+      "tables": [
+        {
+          "value": "sources",
+          "count": 18
+        }
+      ],
+      "actions": [
+        {
+          "value": "insert",
+          "count": 16
+        },
+        {
+          "value": "delete",
+          "count": 1
+        },
+        {
+          "value": "update",
+          "count": 1
+        }
+      ],
+      "actors": [
+        {
+          "value": "config:sources.yaml",
+          "count": 16
+        },
+        {
+          "value": "test:delete",
+          "count": 2
+        }
+      ]
+    }
+  }
+}

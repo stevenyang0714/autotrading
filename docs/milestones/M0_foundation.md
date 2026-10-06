@@ -167,8 +167,8 @@ Delivered with M0.4: glossary registry (`glossary_terms`, migration 0003, synced
 - All metrics through `<Metric>`; all timestamps SGT + ET where relevant.
 
 **Acceptance**
-- [ ] Playwright smoke test across all Phase 0 screens.
-- [ ] Glossary validation green; no element shows a number without a tooltip.
+- [x] Playwright smoke test across all Phase 0 screens. (Overview, Data Health, Instruments, AAPL / XOM, Macro and PAYEMS with its chart, News and its filters, Audit Log, Build Progress, the 15 planned dashboards; desktop and mobile, 2026-10-06)
+- [x] Glossary validation green; no element shows a number without a tooltip. (`tsc` against complete terms, glossary tests, and the numbers check on every Phase 0 screen in vitest and Playwright)
 
 ## M0.10 Phase 0 exit report
 Write `docs/reports/phase0_exit.md` using the Build Output Contract (02 §31): implementation status, file tree, migrations, API routes, provider adapters, UI routes, test results, acceptance checklist with evidence, known gaps, data freshness snapshot, and which open decisions block Phase 1. Then propose `docs/milestones/M1_*.md` in the same format for user approval.

@@ -54,6 +54,12 @@ terms:
   dashboard_strategy_lab: {name: 策略實驗室, hint: 模擬交易日誌與回測（Phase 1–2）。}
   dashboard_execution: {name: 下單執行, hint: 下單預覽與模擬帳戶（Phase 5）。}
 
+  # audit log and macro chart (M0.9)
+  page_audit_log: {name: 稽核紀錄, hint: 系統對來源設定與資料的每一次變更：誰、何時、改了什麼、前後值。}
+  audit_action: {name: 動作, hint: 新增、修改、刪除，或事實被更正版本取代。}
+  audit_actor: {name: 操作者, hint: 做出變更的程序：資料擷取工作、設定同步或資料庫使用者。}
+  first_release_overlay: {name: 首次公布值, hint: 每個數據第一次公布時的數值，和目前數值並列，差距就是修正。}
+
   # news (M0.8)
   duplicate_group: {name: 轉載群組, hint: 同一則新聞的各個轉載版本歸成一組，只算一則報導。}
   page_news: {name: 新聞, hint: universe 公司的英文新聞與官方發布，同一則新聞的轉載收合成一列。}

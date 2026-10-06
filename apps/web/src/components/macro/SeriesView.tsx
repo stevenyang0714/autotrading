@@ -7,7 +7,13 @@ import type { CompleteTermId } from "@/generated/glossary";
 import type { MacroObservation, SeriesObservations, SourceHealth } from "@/lib/api";
 import { groupDigits } from "@/lib/format";
 import { completeTermId } from "@/lib/glossary";
+import { chartRows } from "@/lib/macroChart";
 import { formatSgtEt } from "@/lib/time";
+
+import { SeriesChart } from "./SeriesChart";
+
+/** Rows the observations table shows; the chart uses every observation loaded. */
+const TABLE_ROWS = 24;
 
 interface Props {
   data: SeriesObservations;
@@ -17,8 +23,9 @@ interface Props {
 }
 
 /**
- * One macro series (M0.6): the latest observations as known at `data.known_at` (ADR-012,
- * ADR-015). A revised value shows its first release. Every number renders through <Metric>.
+ * One macro series (M0.6): a chart of the years loaded with the first release beside it (M0.9,
+ * ADR-019), then the latest observations as known at `data.known_at` (ADR-012, ADR-015). A
+ * revised value shows its first release. Every number renders through <Metric>.
  */
 export function SeriesView({ data, knownOn, invalidKnownOn, sources }: Props) {
   const { series } = data;
@@ -86,6 +93,15 @@ export function SeriesView({ data, knownOn, invalidKnownOn, sources }: Props) {
         </p>
       </header>
 
+      {data.observations.length > 1 ? (
+        <SeriesChart
+          rows={chartRows(data.observations)}
+          termId={termId}
+          label={series.title ?? series.id}
+          units={series.units_short ?? series.units}
+        />
+      ) : null}
+
       {data.observations.length === 0 ? (
         <p className="text-sm text-neutral-500">Nothing published as of this date.</p>
       ) : (
@@ -106,7 +122,7 @@ export function SeriesView({ data, knownOn, invalidKnownOn, sources }: Props) {
               </tr>
             </thead>
             <tbody>
-              {data.observations.map((obs) => (
+              {data.observations.slice(0, TABLE_ROWS).map((obs) => (
                 <Row key={obs.observation_date} obs={obs} termId={termId} />
               ))}
             </tbody>

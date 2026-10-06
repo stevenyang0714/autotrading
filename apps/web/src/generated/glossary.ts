@@ -9,6 +9,8 @@ export type CompleteTermId =
   | "accession_number"
   | "as_of"
   | "ask"
+  | "audit_action"
+  | "audit_actor"
   | "bid"
   | "capex"
   | "cash"
@@ -39,6 +41,7 @@ export type CompleteTermId =
   | "eps_diluted"
   | "feed_status"
   | "filing_date"
+  | "first_release_overlay"
   | "freshness_sla"
   | "gross_profit"
   | "hy_oas_percentile"
@@ -67,6 +70,7 @@ export type CompleteTermId =
   | "open_decision"
   | "operating_cash_flow"
   | "operating_income"
+  | "page_audit_log"
   | "page_data_health"
   | "page_instruments"
   | "page_macro"
@@ -224,6 +228,56 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "賣價",
     "hint_zh": "目前賣方出的最低價（此交易所內）。"
+  },
+  "audit_action": {
+    "term_id": "audit_action",
+    "display_name": "Audit Action",
+    "category": "data_quality",
+    "short_definition": "What happened to a row: insert, update, delete, or supersede (a fact replaced by a correction).",
+    "full_definition": "Written by the database trigger. insert: a new registry row. update: changed fields, each with its old and new value. delete: the removed row is kept in the log. supersede: a fact row was marked superseded by a correction. Each entry carries hashes of the row before and after.",
+    "formula": "enum: insert | update | delete | supersede",
+    "unit": "label",
+    "example": "On 2026-10-06 the BLS feed's source row was updated: enabled true to false, access disabled.",
+    "direction": "N/A",
+    "interpretation": "Updates and deletes on registries deserve a look; inserts are normal ingestion.",
+    "why_it_matters": "Shows exactly how configuration and data changed over time.",
+    "source": "Migration 0001 audit trigger (ADR-007)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/decisions/DECISIONS.md",
+    "as_of": "2026-10-06",
+    "update_cadence": "per change",
+    "caveats": "Fields such as updated_at and version change with every update.",
+    "related_terms": [
+      "page_audit_log",
+      "audit_actor"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "動作",
+    "hint_zh": "新增、修改、刪除，或事實被更正版本取代。"
+  },
+  "audit_actor": {
+    "term_id": "audit_actor",
+    "display_name": "Actor",
+    "category": "data_quality",
+    "short_definition": "Who made a change: an ingestion job, a config sync, or a database user.",
+    "full_definition": "Set per transaction by the code that writes: ingest:<source> for an ingestion job (ingest:sec_edgar), config:<file> for make migrate syncing a config file (config:sources.yaml), otherwise the database user.",
+    "formula": "ingest:<source> | config:<file> | database user",
+    "unit": "label",
+    "example": "ingest:alpaca_iex created the ETF instruments such as XLK on 2026-10-06; config:sources.yaml records registry edits.",
+    "direction": "N/A",
+    "interpretation": "An unexpected actor on a registry change is worth checking.",
+    "why_it_matters": "Ties every change to the process that made it.",
+    "source": "repositories/audit.py set_actor",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/repositories/audit.py",
+    "as_of": "2026-10-06",
+    "update_cadence": "per change",
+    "caveats": "A single-user system: the actor is a process, not a person.",
+    "related_terms": [
+      "page_audit_log",
+      "audit_action"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "操作者",
+    "hint_zh": "做出變更的程序：資料擷取工作、設定同步或資料庫使用者。"
   },
   "bid": {
     "term_id": "bid",
@@ -965,6 +1019,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "申報時間",
     "hint_zh": "SEC 受理申報、資訊公開的時間。"
   },
+  "first_release_overlay": {
+    "term_id": "first_release_overlay",
+    "display_name": "First Release",
+    "category": "macro",
+    "short_definition": "The value as first published, drawn next to the value known at the chosen date.",
+    "full_definition": "For each observation, the value of its first vintage (ALFRED). Where a later vintage changed it, the macro chart shows both lines and marks the point; where nothing changed, the lines coincide. With As known on, only vintages public by then count.",
+    "formula": "value of the earliest vintage per observation date",
+    "unit": "series units",
+    "example": "Nonfarm payrolls, August 2026: first released 159,075 thousand on 2026-09-04, revised to 159,015 thousand on 2026-10-02.",
+    "direction": "N/A",
+    "interpretation": "A gap between the lines is a revision; large or repeated revisions mean early figures are less reliable.",
+    "why_it_matters": "Signals and backtests must use what was known at the time, not later revisions.",
+    "source": "FRED / ALFRED vintages (ADR-015)",
+    "source_url": "https://alfred.stlouisfed.org/",
+    "as_of": "2026-10-06",
+    "update_cadence": "per release",
+    "caveats": "ALFRED's archive starts at a different date per series; earlier values show their archive start as first release.",
+    "related_terms": [
+      "vintage",
+      "point_in_time",
+      "page_macro"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "首次公布值",
+    "hint_zh": "每個數據第一次公布時的數值，和目前數值並列，差距就是修正。"
+  },
   "freshness_sla": {
     "term_id": "freshness_sla",
     "display_name": "Freshness SLA",
@@ -1663,6 +1743,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "營業利益",
     "hint_zh": "本業獲利，未計利息與稅。"
   },
+  "page_audit_log": {
+    "term_id": "page_audit_log",
+    "display_name": "Audit Log",
+    "category": "navigation",
+    "short_definition": "Every change the system made to its registries and facts: who, what, when, before and after.",
+    "full_definition": "System page reading the append-only audit log written by database triggers. Inserts, updates and deletes of registry rows (sources, companies, instruments, identifiers, company relationships, macro series, dead letters) and supersedes of fact rows appear newest first, with the actor, the table, the object and, for an update, each changed field old and new. Filters: table, action, actor and dates. Read-only.",
+    "formula": "not a calculation; reads GET /audit-log",
+    "unit": "page",
+    "example": "Filtering sources shows GDELT enabled on 2026-10-06 by config:sources.yaml: enabled false to true, rate limit 0.2 to 0.1 requests per second.",
+    "direction": "N/A",
+    "interpretation": "Check what changed and who changed it before trusting a number that moved.",
+    "why_it_matters": "An audit trail is a Phase 0 deliverable: no silent changes to sources or facts.",
+    "source": "Milestone M0.9 (audit log viewer, ADR-019)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M0_foundation.md",
+    "as_of": "2026-10-06",
+    "update_cadence": "live (each page load)",
+    "caveats": "New fact versions (revisions) are inserts in their own tables, not audit rows; news, filings and quotes are append-only and not audited.",
+    "related_terms": [
+      "audit_action",
+      "audit_actor",
+      "point_in_time"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "稽核紀錄",
+    "hint_zh": "系統對來源設定與資料的每一次變更：誰、何時、改了什麼、前後值。"
+  },
   "page_data_health": {
     "term_id": "page_data_health",
     "display_name": "Data Health",
@@ -1720,8 +1826,8 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "Macro",
     "category": "navigation",
     "short_definition": "Key US macro series with every published revision, as known at a chosen date.",
-    "full_definition": "System page listing the series in config/macro_series.yaml from FRED / ALFRED. Each series page shows recent observations as they were public at an As known on date, the vintage each value comes from, and the first release of values revised since. Charts follow in M0.9.",
-    "formula": "not a calculation; reads GET /macro/series and /macro/series/{id}/observations",
+    "full_definition": "System page listing the series in config/macro_series.yaml from FRED / ALFRED. Each series page shows recent observations as they were public at an As known on date, the vintage each value comes from, and the first release of values revised since. A chart shows the series over years with the first release drawn beside it, so revisions stand out (M0.9).",
+    "formula": "not a calculation; reads GET /macro/series and /macro/series/{id}/observations (since, up to 1,000 points for the chart)",
     "unit": "page",
     "example": "Nonfarm payrolls as known on 2026-09-30 show August 2026 at 159,075 thousand; today the revised 159,015 thousand.",
     "direction": "N/A",
@@ -1737,7 +1843,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "point_in_time",
       "observation_date"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "總經",
     "hint_zh": "美國主要總經序列及其每次修正，可切換「當時已知」的版本。"
   },

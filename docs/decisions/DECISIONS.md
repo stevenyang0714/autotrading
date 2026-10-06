@@ -348,6 +348,28 @@ Applies ADR-006, ADR-007 and ADR-012 to news (M0.8, errata E8). Code: `apps/api/
   - Rewritten stories with different headlines are not grouped, and groups are never merged later. One event can therefore be several stories: NVIDIA's buyback on 2026-09-28 is its press release, 33 copies of one syndicated headline and 5 copies of another. Linking them is event clustering (Phase 3).
   - The first copy of a feed item is kept; publisher edits are not stored.
 
+
+## ADR-019 Phase 0 screens: chart split and audit log viewer — Accepted (2026-10-06, approved by Steven with the M0.9 plan)
+Completes the M0.9 screens. Code: `apps/web/src/components/macro/SeriesChart.tsx`, `apps/web/src/lib/macroChart.ts`, `apps/api/src/autotrading/api/audit.py`.
+- **Charts, two kinds (Steven chose "both", 2026-10-06):**
+  - Small trend charts stay server-rendered SVG (`Sparkline`, ADR-016): the Overview and the instrument page's year of closes, with no JavaScript.
+  - The macro series page uses Apache ECharts 6 (named in ADR-002, Apache-2.0): only the line chart, axis, tooltip, zoom and legend modules on the canvas renderer, loaded on that page only.
+  - Rule 4 ("no number without a tooltip"): the canvas holds no DOM text, and the figure carries `data-metric` for the series term, so its tooltip is inside an explained element. A caption repeats the range, low, high, latest and the revised-point count in text, for readers without JavaScript.
+- **The vintage toggle is a first-release overlay:**
+  - Two lines: the value known at the As known on date, and each observation's first release (dashed). Where they differ, the value was revised. The tooltip shows both with their vintages.
+  - Revised points are not marked one by one: monthly payrolls revise almost every month (118 of 119 points since 2016), so the marks hid the line.
+  - Range by frequency: daily 2 years, weekly 5, monthly 10, quarterly 20, annual 30. `GET /macro/series/{id}/observations` takes `since` and up to 1,000 points.
+  - The chart reads data points by their own date: the time axis works in the browser's time zone, which put PAYEMS points on the previous UTC day in the first version.
+- **Audit log viewer (`/system/audit-log`, `GET /audit-log`):**
+  - Reads `audit_log` as the triggers write it (ADR-007), newest first, read-only. Covered: inserts, updates and deletes of sources, entities, instruments, identifiers, entity relationships, macro series and dead letters, and supersedes of financial facts, macro observations and price bars.
+  - New fact versions are inserts in their own tables, not audit rows. News, filings and quotes are append-only and not audited.
+  - Filters: table, action, actor, object and Singapore dates. Pages by entry id ("Older"). Choices come with counts.
+  - An update lists each changed field old → new, with bookkeeping fields (`updated_at`, `version`) last and muted. A delete shows the removed row.
+  - Objects are named where the row still exists (source name, ticker, company, series title); otherwise the id is shown. Stored values are shown as code, exactly as recorded.
+  - Index `ix_audit_log_object_type_object_id_id` (migration 0010).
+  - Data Health links each source to its history.
+- **Deferred to Phase 1 (stated, not forgotten):** saved views and export (02 §21), per-row sparklines on the Macro list, ETF instrument pages, news paging.
+
 ---
 
 ## Open decisions (owner: Steven)

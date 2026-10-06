@@ -1,6 +1,171 @@
 {
   "components": {
     "schemas": {
+      "AuditEntry": {
+        "properties": {
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "actor": {
+            "title": "Actor",
+            "type": "string"
+          },
+          "after_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "After Hash"
+          },
+          "before_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Before Hash"
+          },
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/FieldChange"
+            },
+            "title": "Changes",
+            "type": "array"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "object_id": {
+            "title": "Object Id",
+            "type": "string"
+          },
+          "object_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Object Label"
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "title": "Occurred At",
+            "type": "string"
+          },
+          "removed": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Removed"
+          },
+          "table": {
+            "title": "Table",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "occurred_at",
+          "actor",
+          "action",
+          "table",
+          "object_id",
+          "object_label",
+          "before_hash",
+          "after_hash",
+          "changes",
+          "removed"
+        ],
+        "title": "AuditEntry",
+        "type": "object"
+      },
+      "AuditFacets": {
+        "properties": {
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/FacetCount"
+            },
+            "title": "Actions",
+            "type": "array"
+          },
+          "actors": {
+            "items": {
+              "$ref": "#/components/schemas/FacetCount"
+            },
+            "title": "Actors",
+            "type": "array"
+          },
+          "tables": {
+            "items": {
+              "$ref": "#/components/schemas/FacetCount"
+            },
+            "title": "Tables",
+            "type": "array"
+          }
+        },
+        "required": [
+          "tables",
+          "actions",
+          "actors"
+        ],
+        "title": "AuditFacets",
+        "type": "object"
+      },
+      "AuditLogPage": {
+        "properties": {
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/AuditEntry"
+            },
+            "title": "Entries",
+            "type": "array"
+          },
+          "facets": {
+            "$ref": "#/components/schemas/AuditFacets"
+          },
+          "matching": {
+            "title": "Matching",
+            "type": "integer"
+          },
+          "next_before_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Before Id"
+          }
+        },
+        "required": [
+          "entries",
+          "matching",
+          "next_before_id",
+          "facets"
+        ],
+        "title": "AuditLogPage",
+        "type": "object"
+      },
       "Block": {
         "properties": {
           "charts": {
@@ -406,6 +571,24 @@
         "title": "EntityOut",
         "type": "object"
       },
+      "FacetCount": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "count"
+        ],
+        "title": "FacetCount",
+        "type": "object"
+      },
       "FactCell": {
         "properties": {
           "currency": {
@@ -528,6 +711,27 @@
           "rows"
         ],
         "title": "FactTable",
+        "type": "object"
+      },
+      "FieldChange": {
+        "properties": {
+          "field": {
+            "title": "Field",
+            "type": "string"
+          },
+          "new": {
+            "title": "New"
+          },
+          "old": {
+            "title": "Old"
+          }
+        },
+        "required": [
+          "field",
+          "old",
+          "new"
+        ],
+        "title": "FieldChange",
         "type": "object"
       },
       "FilingRef": {
@@ -2663,6 +2867,180 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/audit-log": {
+      "get": {
+        "operationId": "audit_log_audit_log_get",
+        "parameters": [
+          {
+            "description": "Audited table, e.g. sources",
+            "in": "query",
+            "name": "table",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Audited table, e.g. sources",
+              "title": "Table"
+            }
+          },
+          {
+            "in": "query",
+            "name": "action",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "insert",
+                    "update",
+                    "delete",
+                    "supersede"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Action"
+            }
+          },
+          {
+            "description": "e.g. ingest:sec_edgar",
+            "in": "query",
+            "name": "actor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "e.g. ingest:sec_edgar",
+              "title": "Actor"
+            }
+          },
+          {
+            "description": "One object's history",
+            "in": "query",
+            "name": "object_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "One object's history",
+              "title": "Object Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Since"
+            }
+          },
+          {
+            "in": "query",
+            "name": "until",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Until"
+            }
+          },
+          {
+            "description": "Older than this entry",
+            "in": "query",
+            "name": "before_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Older than this entry",
+              "title": "Before Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditLogPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Audit Log",
+        "tags": [
+          "audit"
+        ]
+      }
+    },
     "/data-health": {
       "get": {
         "operationId": "data_health_data_health_get",
@@ -3213,10 +3591,29 @@
             "required": false,
             "schema": {
               "default": 24,
-              "maximum": 240,
+              "maximum": 1000,
               "minimum": 1,
               "title": "Limit",
               "type": "integer"
+            }
+          },
+          {
+            "description": "Only observation dates on or after this day",
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only observation dates on or after this day",
+              "title": "Since"
             }
           }
         ],

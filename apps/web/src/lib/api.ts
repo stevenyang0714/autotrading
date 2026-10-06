@@ -106,15 +106,22 @@ export type SeriesObservationsResult =
   | { status: "not_found" }
   | { status: "unavailable" };
 
-/** The latest observations of one series as known at `knownAt` (ISO timestamp; default now). */
+/**
+ * Observations of one series as known at `knownAt` (ISO timestamp; default now), newest first:
+ * the latest `limit` (default 24), or for a chart every observation since `since` (YYYY-MM-DD).
+ */
 export async function loadSeriesObservations(
   seriesId: string,
   knownAt?: string,
+  range?: { since: string; limit: number },
 ): Promise<SeriesObservationsResult> {
   const client = createClient<paths>({ baseUrl: apiBaseUrl() });
   try {
     const { data, response } = await client.GET("/macro/series/{series_id}/observations", {
-      params: { path: { series_id: seriesId }, query: knownAt ? { known_at: knownAt } : {} },
+      params: {
+        path: { series_id: seriesId },
+        query: { ...(knownAt ? { known_at: knownAt } : {}), ...(range ?? {}) },
+      },
       cache: "no-store",
     });
     if (data) return { status: "ok", data };
@@ -246,6 +253,47 @@ export async function loadNews(query: NewsQuery = {}): Promise<NewsFeed | null> 
           ...(query.kinds?.length ? { kind: query.kinds.join(",") } : {}),
           ...(query.knownAt ? { known_at: query.knownAt } : {}),
           ...(query.limit ? { limit: query.limit } : {}),
+        },
+      },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// ---------- audit log (M0.9, ADR-019) ----------
+
+export type AuditLogPage = components["schemas"]["AuditLogPage"];
+export type AuditEntry = components["schemas"]["AuditEntry"];
+export type AuditAction = "insert" | "update" | "delete" | "supersede";
+
+export interface AuditQuery {
+  table?: string;
+  action?: AuditAction;
+  actor?: string;
+  objectId?: string;
+  since?: string;
+  until?: string;
+  beforeId?: number;
+}
+
+/** One page of the audit log, newest first, or null when the API is unreachable. */
+export async function loadAuditLog(query: AuditQuery = {}): Promise<AuditLogPage | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/audit-log", {
+      params: {
+        query: {
+          ...(query.table ? { table: query.table } : {}),
+          ...(query.action ? { action: query.action } : {}),
+          ...(query.actor ? { actor: query.actor } : {}),
+          ...(query.objectId ? { object_id: query.objectId } : {}),
+          ...(query.since ? { since: query.since } : {}),
+          ...(query.until ? { until: query.until } : {}),
+          ...(query.beforeId ? { before_id: query.beforeId } : {}),
+          limit: 50,
         },
       },
       cache: "no-store",

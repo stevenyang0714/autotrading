@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { Metric } from "@/components/Metric";
@@ -145,15 +146,24 @@ function Sources({ sources }: { sources: SourceHealth[] }) {
 
 function SourceName({ source }: { source: SourceHealth }) {
   return (
-    <a
-      href={source.url}
-      target="_blank"
-      rel="noreferrer"
-      data-identifier=""
-      className="font-medium underline-offset-2 hover:underline"
-    >
-      {source.name}
-    </a>
+    <span className="flex flex-wrap items-baseline gap-x-2">
+      <a
+        href={source.url}
+        target="_blank"
+        rel="noreferrer"
+        data-identifier=""
+        className="font-medium underline-offset-2 hover:underline"
+      >
+        {source.name}
+      </a>
+      <Link
+        href={`/system/audit-log?table=sources&object_id=${encodeURIComponent(source.id)}`}
+        aria-label={`History of ${source.name}`}
+        className="text-xs text-neutral-500 underline-offset-2 hover:underline"
+      >
+        History
+      </Link>
+    </span>
   );
 }
 

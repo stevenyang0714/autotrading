@@ -32,7 +32,7 @@ The phase is the first one in which the dashboard shows real content; until then
 | Strategy Lab | 1 | Paper journal in Phase 1; walk-forward in Phase 2 |
 | Execution | 5 | |
 
-The Phase 0 screens from M0.9 (Data Health, Instrument, Macro, News feed, Audit log) are not among the 15 dashboards. They go in a separate "System" nav group.
+The Phase 0 screens from M0.9 (Data Health, Instrument, Macro, News feed, Audit log) are not among the 15 dashboards. They go in a separate "System" nav group. All five were delivered by M0.9 (2026-10-06); Phase 0 closes with the M0.10 exit report.
 
 ## Standing rules across phases
 - Signals and strategies always reference canonical IDs (families 1–10, strategies S1–S12).
