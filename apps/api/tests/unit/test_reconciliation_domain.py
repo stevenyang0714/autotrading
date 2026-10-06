@@ -5,6 +5,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 from autotrading.domain.reconciliation import (
+    Key,
     Result,
     Stored,
     fact_items,
@@ -14,10 +15,10 @@ from autotrading.domain.reconciliation import (
     split_items,
 )
 
-FY = ("revenue", date(2024, 9, 29), date(2025, 9, 27))
-NI = ("net_income", date(2024, 9, 29), date(2025, 9, 27))
-CASH = ("cash", None, date(2025, 9, 27))
-EPS = ("eps_diluted", date(2024, 9, 29), date(2025, 9, 27))
+FY: Key = ("revenue", date(2024, 9, 29), date(2025, 9, 27))
+NI: Key = ("net_income", date(2024, 9, 29), date(2025, 9, 27))
+CASH: Key = ("cash", None, date(2025, 9, 27))
+EPS: Key = ("eps_diluted", date(2024, 9, 29), date(2025, 9, 27))
 TEN_K = "0000320193-25-000079"
 
 
@@ -29,7 +30,7 @@ def test_fact_statuses() -> None:
         EPS: Stored(Decimal("7.46"), TEN_K),
     }  # CASH unknown then: missing
     now = {**then, EPS: Stored(Decimal("7.40"), "later-10-K/A")}  # restated later
-    extra_key = ("capex", date(2024, 9, 29), date(2025, 9, 27))
+    extra_key: Key = ("capex", date(2024, 9, 29), date(2025, 9, 27))
     items = fact_items(filing, then, now, under_accession=[FY, extra_key])
     statuses = {(i.metric_id, i.status) for i in items}
     assert statuses == {

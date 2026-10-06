@@ -214,7 +214,7 @@ def _trimmed_instance(content: bytes) -> bytes:
             or element.tag.endswith("}footnoteLink")
         ):
             root.remove(element)
-    return ET.tostring(root, xml_declaration=True, encoding="utf-8")
+    return bytes(ET.tostring(root, xml_declaration=True, encoding="utf-8"))
 
 
 def _header_times(client: SecClient, cik: str, block: dict[str, list[Any]]) -> None:
