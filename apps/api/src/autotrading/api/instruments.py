@@ -1,7 +1,9 @@
-"""Instrument API (M0.5b): universe equities and their SEC fundamentals as known at a time.
+"""Instrument API (M0.5b, M1.1): universe equities and their SEC fundamentals as known at a time.
 
 Facts come from `as_of(known_at)` (ADR-012) for the current issuer and its predecessors
-(ADR-014); the current issuer's value wins for a period both reported. Read-only.
+(ADR-014); the current issuer's value wins for a period both reported. Per-share values and
+share counts carry their split-adjusted value on the basis of known_at beside the reported one
+(domain/splits.py, ADR-021), using the splits effective by then. Read-only.
 """
 
 from dataclasses import dataclass
@@ -25,6 +27,7 @@ from autotrading.db.models import (
     Identifier,
     IngestionRun,
     Instrument,
+    SplitEvent,
 )
 from autotrading.domain.fundamentals import (
     ANNUAL_METRICS,
@@ -37,6 +40,7 @@ from autotrading.domain.fundamentals import (
     issuer_at,
     merge_by_precedence,
 )
+from autotrading.domain.splits import ADJUSTED_METRICS, Split, adjust
 from autotrading.repositories.facts import as_of_query
 
 router = APIRouter(tags=["instruments"])
@@ -44,6 +48,8 @@ router = APIRouter(tags=["instruments"])
 SEC_SOURCE = "sec_edgar"
 SEC_NAMESPACE = "sec"
 PERIODIC_FORMS = ("10-K", "10-K/A", "10-Q", "10-Q/A", "20-F", "20-F/A")
+PER_SHARE_HISTORY_METRICS = ("eps_diluted", "diluted_shares")
+PER_SHARE_HISTORY_YEARS = 15
 
 
 class EntityOut(BaseModel):
@@ -70,6 +76,24 @@ class PreviousVersion(BaseModel):
     filing: FilingRef
 
 
+class SplitOut(BaseModel):
+    ex_date: date
+    old_rate: Decimal
+    new_rate: Decimal
+    kind: str
+    source_id: str
+    source_url: str
+
+
+class SplitAdjusted(BaseModel):
+    """The value on the basis of known_at: share counts times `factor`, per-share amounts
+    divided by it, for the splits after the value's filing (ADR-021)."""
+
+    value: Decimal
+    factor: str  # e.g. "4", "28", "3/2"
+    splits: list[date]  # ex-dates applied
+
+
 class FactCell(BaseModel):
     value: Decimal
     unit: str
@@ -82,6 +106,7 @@ class FactCell(BaseModel):
     restated: bool
     previous: PreviousVersion | None
     reported_by: UUID
+    split_adjusted: SplitAdjusted | None = None  # None: no split after the filing
 
 
 class PeriodColumn(BaseModel):
@@ -121,6 +146,9 @@ class Fundamentals(BaseModel):
     entities: list[EntityOut]  # current issuer first, then predecessors
     annual: FactTable
     balance_sheet: FactTable
+    # Diluted EPS and shares for up to 15 fiscal years, reported and split-adjusted (M1.1).
+    per_share_history: FactTable
+    splits: list[SplitOut]  # effective by known_at, oldest first
     last_refresh_at: datetime | None
 
 
@@ -181,7 +209,13 @@ def fundamentals(
     merged = merge_by_precedence(facts, chain.order)
     years = annual_periods(merged)
     balance_dates = balance_sheet_periods(merged, years)
-    cells = _CellBuilder(session, merged)
+    split_rows = session.scalars(
+        select(SplitEvent)
+        .where(SplitEvent.instrument_id == instrument.id, SplitEvent.published_at <= at)
+        .order_by(SplitEvent.ex_date)
+    ).all()
+    splits = [Split(s.ex_date, s.old_rate, s.new_rate) for s in split_rows]
+    cells = _CellBuilder(session, merged, splits, at)
 
     entities = [_entity_out(session, e, chain) for e in chain.order]
     issuer_id = issuer_at(current.id, chain.successions, at)
@@ -193,6 +227,20 @@ def fundamentals(
         entities=entities,
         annual=cells.table(ANNUAL_METRICS, years),
         balance_sheet=cells.table(BALANCE_SHEET_METRICS, balance_dates),
+        per_share_history=cells.table(
+            PER_SHARE_HISTORY_METRICS, annual_periods(merged, count=PER_SHARE_HISTORY_YEARS)
+        ),
+        splits=[
+            SplitOut(
+                ex_date=s.ex_date,
+                old_rate=s.old_rate,
+                new_rate=s.new_rate,
+                kind=s.kind,
+                source_id=s.source_id,
+                source_url=s.source_url,
+            )
+            for s in split_rows
+        ],
         last_refresh_at=_last_refresh(session),
     )
 
@@ -288,8 +336,12 @@ def _latest_report(session: Session, entity_ids: list[UUID]) -> FilingRef | None
 class _CellBuilder:
     """Builds table cells; filing forms and earlier versions are loaded once per request."""
 
-    def __init__(self, session: Session, facts: list[FinancialFact]) -> None:
+    def __init__(
+        self, session: Session, facts: list[FinancialFact], splits: list[Split], at: datetime
+    ) -> None:
         self._facts = facts
+        self._splits = splits
+        self._at = at
         superseded_ids = [f.supersedes_fact_id for f in facts if f.supersedes_fact_id]
         self._previous = {
             row.id: row
@@ -352,4 +404,17 @@ class _CellBuilder:
                 else None
             ),
             reported_by=fact.entity_id,
+            split_adjusted=self._adjusted(fact),
+        )
+
+    def _adjusted(self, fact: FinancialFact) -> SplitAdjusted | None:
+        if fact.metric_id not in ADJUSTED_METRICS:
+            return None
+        adjusted = adjust(fact.metric_id, fact.value, fact.published_at, self._at, self._splits)
+        if adjusted is None:
+            return None
+        return SplitAdjusted(
+            value=adjusted.value,
+            factor=str(adjusted.factor),
+            splits=[s.ex_date for s in adjusted.splits],
         )

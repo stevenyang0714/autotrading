@@ -65,6 +65,7 @@ ADJUSTMENTS = ("raw", "split")
 NEWS_KINDS = ("article", "press_release", "official")
 NEWS_TIME_BASES = ("publisher", "first_seen")
 DATA_MODES = ("live", "fixture")
+SPLIT_KINDS = ("forward_split", "reverse_split", "stock_dividend")
 MENTION_RULES = ("exchange_ticker", "feed_issuer", "company_name", "bare_ticker")
 REVISION_REASONS = ("restatement", "revision", "correction")
 AUDIT_ACTIONS = ("insert", "update", "delete", "supersede")
@@ -783,6 +784,41 @@ class NewsMention(Base):
     matched_text: Mapped[str] = mapped_column(Text)
     confidence: Mapped[Decimal] = mapped_column(Numeric(4, 3))
     extractor_version: Mapped[str] = mapped_column(Text)
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+# ---------- corporate actions (M1.1) ----------
+
+
+class SplitEvent(ProvenanceMixin, Base):
+    """A stock split of an instrument (ADR-021): `new_rate` shares for every `old_rate` from the
+    ex-date on. Append-only: a trigger rejects UPDATE and DELETE.
+
+    From Alpaca corporate actions (2016 on) or the reviewed list config/splits.yaml (earlier
+    splits, each citing the issuer's 8-K). published_at is the start of the ex-date in New York:
+    a split is announced weeks before, so this is never early.
+    """
+
+    __tablename__ = "split_events"
+    __table_args__ = (
+        *provenance_constraints(),
+        CheckConstraint(sql_in("kind", SPLIT_KINDS), name="kind"),
+        CheckConstraint("old_rate > 0 AND new_rate > 0", name="rates_positive"),
+        UniqueConstraint("instrument_id", "ex_date", name="uq_split_events_instrument_id_ex_date"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    instrument_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("instruments.id"))
+    symbol: Mapped[str] = mapped_column(Text)
+    ex_date: Mapped[date] = mapped_column(Date)
+    old_rate: Mapped[Decimal] = mapped_column(Numeric)
+    new_rate: Mapped[Decimal] = mapped_column(Numeric)
+    kind: Mapped[str] = mapped_column(Text)
     recorded_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

@@ -1,0 +1,20 @@
+# Reviewed stock splits before Alpaca's corporate-actions history, which starts in 2016
+# (M1.1, ADR-021). Written by the `alpaca.splits` job next to Alpaca's splits.
+# ex_date: the first session on the new basis. Each entry cites the issuer's 8-K.
+# Checked 2026-10-06: the only splits of the universe equities between 2009 (the start of XBRL
+# company facts) and 2016.
+splits:
+  - ticker: AAPL
+    ex_date: 2014-06-09
+    old_rate: 1
+    new_rate: 7
+    kind: forward_split
+    source_url: https://www.sec.gov/Archives/edgar/data/320193/000119312514228798/0001193125-14-228798-index.htm
+    evidence: "Apple 8-K, Item 5.03: as of 5 p.m. PDT on 2014-06-06 each share of common stock split into seven shares"
+  - ticker: GOOGL
+    ex_date: 2014-04-03
+    old_rate: 1
+    new_rate: 2
+    kind: stock_dividend
+    source_url: https://www.sec.gov/Archives/edgar/data/1288776/000119312514116456/0001193125-14-116456-index.htm
+    evidence: "Google Inc. 8-K: one Class C share for each Class A and Class B share outstanding on 2014-03-27, paid 2014-04-02. Alphabet's own filings start in 2015, so no stored value predates it"

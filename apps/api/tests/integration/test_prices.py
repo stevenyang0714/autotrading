@@ -25,7 +25,14 @@ from autotrading.adapters.alpaca.refresh import universe
 from autotrading.adapters.alpaca.snapshots import parse_time
 from autotrading.adapters.sec.tickers import SecTickersJob
 from autotrading.config_sync import load_sources, sync_sources
-from autotrading.db.models import IngestionRun, MarketQuote, PriceBar, RawPayload, Source
+from autotrading.db.models import (
+    IngestionRun,
+    MarketQuote,
+    PriceBar,
+    RawPayload,
+    Source,
+    SplitEvent,
+)
 from autotrading.domain.market_calendar import NEW_YORK
 from autotrading.domain.prices import quote_feed_status
 from autotrading.domain.provenance import Provenance, end_of_day
@@ -209,7 +216,8 @@ def spy_snapshot() -> dict[str, Any]:
 
 
 def test_runs_store_every_quote_and_bar(runs: dict[str, Any], engine: Engine) -> None:
-    assert [(r.status, r.rows_conflicted) for r in runs["runs"]] == [("succeeded", 0)] * 3
+    # snapshots, one year of bars, the NVDA split window, splits (M1.1)
+    assert [(r.status, r.rows_conflicted) for r in runs["runs"]] == [("succeeded", 0)] * 4
     with Session(engine) as session:
         quotes = session.scalar(select(func.count()).select_from(MarketQuote))
         keys = session.execute(
@@ -221,6 +229,49 @@ def test_runs_store_every_quote_and_bar(runs: dict[str, Any], engine: Engine) ->
     assert stored == {(s, a, parse_time(t)) for s, a, t in recorded_keys()}
     # One row per key, plus the second versions of XLK's re-based days.
     assert rows == len(stored) + runs["pre_split"]
+
+
+def test_splits_since_2016_and_the_reviewed_earlier_ones_are_stored(
+    runs: dict[str, Any], engine: Engine, runner: IngestionRunner
+) -> None:
+    with Session(engine) as session:
+        splits = {
+            (s.symbol, s.ex_date): s
+            for s in session.scalars(select(SplitEvent).order_by(SplitEvent.ex_date))
+        }
+    assert {
+        (symbol, day.isoformat(), s.new_rate / s.old_rate) for (symbol, day), s in splits.items()
+    } == {
+        ("AAPL", "2014-06-09", 7),  # config/splits.yaml
+        ("GOOGL", "2014-04-03", 2),  # config/splits.yaml
+        ("AAPL", "2020-08-31", 4),
+        ("NVDA", "2021-07-20", 4),
+        ("GOOGL", "2022-07-18", 20),
+        ("NVDA", "2024-06-10", 10),
+        ("ORLY", "2025-06-10", 15),
+    }
+    aapl_2020 = splits[("AAPL", date(2020, 8, 31))]
+    # Effective from the start of the ex-date in New York (EDT): 04:00 UTC.
+    assert aapl_2020.published_at == datetime(2020, 8, 31, 4, 0, tzinfo=UTC)
+    assert (aapl_2020.source_id, aapl_2020.kind) == ("alpaca_iex", "forward_split")
+    aapl_2014 = splits[("AAPL", date(2014, 6, 9))]
+    assert aapl_2014.source_id == "sec_edgar"
+    assert "0001193125-14-228798" in aapl_2014.source_url
+    # A second run adds nothing.
+    params = next(r["params"] for r in MANIFEST["runs"] if r["job"] == "alpaca.splits")
+    again = runner.create_run("alpaca.splits", params, Window(start=WINDOW.end, end=None))
+    runner.execute(again)
+    with runner.sessions() as session:
+        rerun = session.get_one(IngestionRun, again)
+    assert (rerun.status, rerun.rows_inserted, rerun.rows_unchanged) == ("succeeded", 0, 7)
+
+
+@pytest.mark.parametrize(
+    "statement", ["UPDATE split_events SET new_rate = 5", "DELETE FROM split_events"]
+)
+def test_split_events_are_append_only(runs: dict[str, Any], engine: Engine, statement: str) -> None:
+    with Session(engine) as session, pytest.raises(DBAPIError):
+        session.execute(text(statement))
 
 
 def test_raw_and_split_adjusted_bars_across_the_nvda_split(

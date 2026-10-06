@@ -144,6 +144,14 @@ def start_alpaca_daily_bars(*, manual: bool, backfill: bool = False) -> UUID | N
         logger.info("Alpaca bars skipped: alpaca_iex is not enabled or has no keys")
     else:
         run_ingestion.send(str(run_id))
+    splits_run = alpaca_refresh.start_splits(
+        ingestion_runner(),
+        now=datetime.now(UTC),
+        manual=manual or backfill,
+        config_dir=_settings.resolved_config_dir(),
+    )
+    if splits_run is not None:
+        run_ingestion.send(str(splits_run))
     return run_id
 
 

@@ -5,6 +5,7 @@
   the same minute is skipped.
 - Daily bars: the last weeks of raw and split-adjusted bars once a day (06:30 SGT), or the full
   history since 2016 for a backfill.
+- Splits: the universe equities' splits since 2016, queued with the daily bars (M1.1).
 """
 
 from datetime import UTC, datetime, timedelta
@@ -17,6 +18,7 @@ from sqlalchemy.orm import Session
 from autotrading.adapters.alpaca.bars import BACKFILL_START, AlpacaDailyBarsJob
 from autotrading.adapters.alpaca.client import configured
 from autotrading.adapters.alpaca.snapshots import AlpacaSnapshotsJob
+from autotrading.adapters.alpaca.splits import HISTORY_START, AlpacaSplitsJob
 from autotrading.adapters.alpaca.symbols import SOURCE_ID
 from autotrading.db.models import Source
 from autotrading.domain.market_calendar import MarketCalendar
@@ -83,4 +85,19 @@ def start_daily_bars(
         AlpacaDailyBarsJob.name,
         {"symbols": symbols, "etfs": etfs, "start": start},
         refresh_window(now, manual=manual or backfill),
+    )
+
+
+def start_splits(
+    runner: IngestionRunner, *, now: datetime, manual: bool, config_dir: Path
+) -> UUID | None:
+    with runner.sessions() as session:
+        if not source_ready(session):
+            return None
+    symbols, etfs = universe(config_dir)
+    equities = [s for s in symbols if s not in etfs]
+    return runner.create_run(
+        AlpacaSplitsJob.name,
+        {"symbols": equities, "start": HISTORY_START},
+        refresh_window(now, manual=manual),
     )

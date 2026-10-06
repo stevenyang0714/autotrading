@@ -663,6 +663,16 @@
             ],
             "title": "Source Concept"
           },
+          "split_adjusted": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SplitAdjusted"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "unit": {
             "title": "Unit",
             "type": "string"
@@ -841,6 +851,16 @@
             ],
             "title": "Last Refresh At"
           },
+          "per_share_history": {
+            "$ref": "#/components/schemas/FactTable"
+          },
+          "splits": {
+            "items": {
+              "$ref": "#/components/schemas/SplitOut"
+            },
+            "title": "Splits",
+            "type": "array"
+          },
           "ticker": {
             "title": "Ticker",
             "type": "string"
@@ -854,6 +874,8 @@
           "entities",
           "annual",
           "balance_sheet",
+          "per_share_history",
+          "splits",
           "last_refresh_at"
         ],
         "title": "Fundamentals",
@@ -2825,6 +2847,76 @@
           "open_dead_letters"
         ],
         "title": "SourceHealth",
+        "type": "object"
+      },
+      "SplitAdjusted": {
+        "description": "The value on the basis of known_at: share counts times `factor`, per-share amounts\ndivided by it, for the splits after the value's filing (ADR-021).",
+        "properties": {
+          "factor": {
+            "title": "Factor",
+            "type": "string"
+          },
+          "splits": {
+            "items": {
+              "format": "date",
+              "type": "string"
+            },
+            "title": "Splits",
+            "type": "array"
+          },
+          "value": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "factor",
+          "splits"
+        ],
+        "title": "SplitAdjusted",
+        "type": "object"
+      },
+      "SplitOut": {
+        "properties": {
+          "ex_date": {
+            "format": "date",
+            "title": "Ex Date",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "new_rate": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "New Rate",
+            "type": "string"
+          },
+          "old_rate": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Old Rate",
+            "type": "string"
+          },
+          "source_id": {
+            "title": "Source Id",
+            "type": "string"
+          },
+          "source_url": {
+            "title": "Source Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ex_date",
+          "old_rate",
+          "new_rate",
+          "kind",
+          "source_id",
+          "source_url"
+        ],
+        "title": "SplitOut",
         "type": "object"
       },
       "ValidationError": {

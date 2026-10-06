@@ -11,6 +11,7 @@ import os
 from collections.abc import Callable, Iterator
 from datetime import UTC, date, datetime
 from decimal import Decimal
+from itertools import pairwise
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -45,6 +46,7 @@ from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.main import create_app
 from autotrading.settings import get_settings
+from tests import alpaca_replay
 from tests.integration.conftest import alembic_config
 from tests.sec_replay import RECORDED_INSTANCES, recorded_registry, replay
 
@@ -96,9 +98,13 @@ def replayed(sessions: sessionmaker[Session]) -> Iterator[list[IngestionRun]]:
         sessions,
         RawPayloadStore(s3, bucket),
         TokenBucketLimiter(make_redis(settings), prefix=f"test-ratelimit-{uuid4().hex[:8]}"),
-        recorded_registry(),
+        alpaca_replay.register_recorded(recorded_registry(), fixture=False),
     )
     run_ids = replay(runner, WINDOW, universe_predecessors(settings.resolved_config_dir()))
+    # Splits since 2016 and the reviewed earlier ones (ADR-021).
+    splits = alpaca_replay.recorded_params("alpaca.splits")
+    run_ids.append(runner.create_run("alpaca.splits", splits, WINDOW))
+    runner.execute(run_ids[-1])
     with sessions() as session:
         yield [session.get_one(IngestionRun, run_id) for run_id in run_ids]
     for obj in s3.list_objects_v2(Bucket=bucket).get("Contents", []):
@@ -137,13 +143,14 @@ def ends(table: dict[str, Any]) -> list[str]:
 def test_replay_ingests_both_xom_issuers(
     replayed: list[IngestionRun], sessions: sessionmaker[Session]
 ) -> None:
-    # tickers, 4 companies (META included), filing XBRL of Apple and Meta (ADR-021)
+    # tickers, 4 companies (META included), filing XBRL of Apple and Meta, splits (ADR-021)
     assert [(r.job, r.status) for r in replayed] == (
         [("sec.tickers", "succeeded")]
         + [("sec.company", "succeeded")] * 4
         + [("sec.filing_xbrl", "succeeded")] * 2
+        + [("alpaca.splits", "succeeded")]
     )
-    read = [f["accession"] for r in replayed[5:] for f in r.params["filings"]]
+    read = [f["accession"] for r in replayed[5:7] for f in r.params["filings"]]
     assert sorted(read) == sorted(RECORDED_INSTANCES)
     with sessions() as session:
         assert company_ciks(session, ["XOM"]) == ["0000034088", "0002115436"]
@@ -194,6 +201,50 @@ def test_meta_share_counts_are_added_from_its_own_filing_xbrl(
             f.accession_number not in RECORDED_INSTANCES
             for f in filing_xbrl_candidates(session, "0001326801")
         )
+
+
+# ---------- split-adjusted per-share history (ADR-021) ----------
+
+
+def test_apple_per_share_history_is_continuous_across_the_2020_split(client: TestClient) -> None:
+    body = fundamentals(client, "AAPL", "2026-10-06T00:00:00Z")
+    assert [(s["ex_date"], s["new_rate"]) for s in body["splits"]] == [
+        ("2014-06-09", "7"),
+        ("2020-08-31", "4"),
+    ]
+    history = body["per_share_history"]
+    years = ends(history)
+    eps = dict(zip(years, row(history, "eps_diluted"), strict=True))
+    fy2017 = eps["2017-09-30"]
+    assert fy2017 is not None
+    # As reported (first in the FY2017 10-K, before the split), the adjusted value beside it.
+    assert (fy2017["value"], fy2017["filing"]["accession"]) == ("9.21", "0000320193-17-000070")
+    assert fy2017["split_adjusted"] == {"value": "2.3025", "factor": "4", "splits": ["2020-08-31"]}
+    fy2018 = eps["2018-09-29"]
+    assert fy2018 is not None and fy2018["split_adjusted"] is None  # restated by Apple already
+    shown = [
+        Decimal(c["split_adjusted"]["value"] if c["split_adjusted"] else c["value"])
+        for c in (eps[y] for y in sorted(years))
+        if c is not None
+    ]
+    assert len(shown) >= 10
+    # No step of a split's size between consecutive years.
+    assert all(Decimal("0.5") < b / a < Decimal(2) for a, b in pairwise(shown))
+
+
+def test_before_the_split_was_effective_nothing_is_adjusted(client: TestClient) -> None:
+    body = fundamentals(client, "AAPL", "2020-08-30T00:00:00Z")
+    assert [s["ex_date"] for s in body["splits"]] == ["2014-06-09"]
+    eps = dict(
+        zip(
+            ends(body["per_share_history"]),
+            row(body["per_share_history"], "eps_diluted"),
+            strict=True,
+        )
+    )
+    fy2019 = eps["2019-09-28"]
+    assert fy2019 is not None
+    assert (fy2019["value"], fy2019["split_adjusted"]) == ("11.89", None)
 
 
 # ---------- API ----------

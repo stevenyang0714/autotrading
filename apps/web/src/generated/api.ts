@@ -525,6 +525,7 @@ export interface components {
             restated: boolean;
             /** Source Concept */
             source_concept: string | null;
+            split_adjusted?: components["schemas"]["SplitAdjusted"] | null;
             /** Unit */
             unit: string;
             /** Value */
@@ -588,6 +589,9 @@ export interface components {
             known_at: string;
             /** Last Refresh At */
             last_refresh_at: string | null;
+            per_share_history: components["schemas"]["FactTable"];
+            /** Splits */
+            splits: components["schemas"]["SplitOut"][];
             /** Ticker */
             ticker: string;
         };
@@ -1233,6 +1237,37 @@ export interface components {
             update_cadence: string;
             /** Url */
             url: string;
+        };
+        /**
+         * SplitAdjusted
+         * @description The value on the basis of known_at: share counts times `factor`, per-share amounts
+         *     divided by it, for the splits after the value's filing (ADR-021).
+         */
+        SplitAdjusted: {
+            /** Factor */
+            factor: string;
+            /** Splits */
+            splits: string[];
+            /** Value */
+            value: string;
+        };
+        /** SplitOut */
+        SplitOut: {
+            /**
+             * Ex Date
+             * Format: date
+             */
+            ex_date: string;
+            /** Kind */
+            kind: string;
+            /** New Rate */
+            new_rate: string;
+            /** Old Rate */
+            old_rate: string;
+            /** Source Id */
+            source_id: string;
+            /** Source Url */
+            source_url: string;
         };
         /** ValidationError */
         ValidationError: {
