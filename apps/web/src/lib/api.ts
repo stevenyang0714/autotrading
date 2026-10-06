@@ -272,6 +272,32 @@ export async function loadInstrumentPrices(
   }
 }
 
+// ---------- valuation (M1.2, ADR-022) ----------
+
+export type Valuation = components["schemas"]["Valuation"];
+export type ValuationMetric = components["schemas"]["MetricOut"];
+export type ValuationInput = components["schemas"]["InputOut"];
+
+export type ValuationResult =
+  | { status: "ok"; data: Valuation }
+  | { status: "not_found" }
+  | { status: "unavailable" };
+
+/** Market cap, EV and multiples as known at `knownAt` (ISO timestamp; default now). */
+export async function loadValuation(ticker: string, knownAt?: string): Promise<ValuationResult> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data, response } = await client.GET("/instruments/{ticker}/valuation", {
+      params: { path: { ticker }, query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    if (data) return { status: "ok", data };
+    return response.status === 404 ? { status: "not_found" } : { status: "unavailable" };
+  } catch {
+    return { status: "unavailable" };
+  }
+}
+
 // ---------- news (M0.8, ADR-018) ----------
 
 export type NewsFeed = components["schemas"]["NewsFeed"];

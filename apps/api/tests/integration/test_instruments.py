@@ -640,6 +640,12 @@ def test_record_web_fixtures(client: TestClient) -> None:
         ("fundamentals-meta", "/instruments/META/fundamentals", {}),
         ("reconciliation", "/reconciliation", {}),
         ("reconciliation-aapl-10k", f"/reconciliation/{AAPL_10K}", {}),
+        ("valuation-aapl", "/instruments/AAPL/valuation", {"known_at": VALUED_AT}),
+        (
+            "valuation-aapl-stale",
+            "/instruments/AAPL/valuation",
+            {"known_at": "2026-10-20T00:00:00Z"},
+        ),
     ):
         response = client.get(path, params=params)
         assert response.status_code == 200

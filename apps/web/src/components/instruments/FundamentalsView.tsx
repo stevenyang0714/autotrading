@@ -41,6 +41,8 @@ interface Props {
   prices?: ReactNode;
   /** Recent news stories (M0.8), shown after the price block. */
   news?: ReactNode;
+  /** Market cap, EV and multiples (M1.2), shown after the price block. */
+  valuation?: ReactNode;
 }
 
 /**
@@ -50,7 +52,15 @@ interface Props {
  * (ADR-021). Every number renders through <Metric>; tickers, accession numbers, forms and CIKs
  * are identifiers ([data-identifier]).
  */
-export function FundamentalsView({ data, knownOn, invalidKnownOn, sources, prices, news }: Props) {
+export function FundamentalsView({
+  data,
+  knownOn,
+  invalidKnownOn,
+  sources,
+  prices,
+  news,
+  valuation,
+}: Props) {
   const newest = [...data.annual.rows, ...data.balance_sheet.rows]
     .flatMap((row) => row.cells)
     .map((cell) => (cell && cell.kind !== "derived" ? cell.filing.published_at : undefined))
@@ -115,6 +125,8 @@ export function FundamentalsView({ data, knownOn, invalidKnownOn, sources, price
       </header>
 
       {prices}
+
+      {valuation}
 
       {news}
 

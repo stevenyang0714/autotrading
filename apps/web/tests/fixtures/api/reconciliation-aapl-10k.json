@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-06T15:43:31.305200+00:00",
+  "recorded_at": "2026-10-06T16:40:01.982322+00:00",
   "recorded_from": "recorded SEC fixtures replayed into the integration test database (tests/integration/test_instruments.py)",
   "endpoint": "/reconciliation/0000320193-25-000079",
   "params": {},
@@ -22,7 +22,7 @@
       "checks_failed": 0,
       "checks_flagged": 0,
       "methodology_version": "0.1.1",
-      "recorded_at": "2026-10-06T15:43:28.953077Z"
+      "recorded_at": "2026-10-06T16:39:37.296283Z"
     },
     "items": [
       {

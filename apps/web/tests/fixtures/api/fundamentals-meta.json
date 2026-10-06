@@ -1,14 +1,14 @@
 {
-  "recorded_at": "2026-10-06T15:43:31.274449+00:00",
+  "recorded_at": "2026-10-06T16:40:01.958383+00:00",
   "recorded_from": "recorded SEC fixtures replayed into the integration test database (tests/integration/test_instruments.py)",
   "endpoint": "/instruments/META/fundamentals",
   "params": {},
   "response": {
     "ticker": "META",
     "exchange": "XNAS",
-    "known_at": "2026-10-06T15:43:31.212954Z",
+    "known_at": "2026-10-06T16:40:01.845731Z",
     "issuer": {
-      "id": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+      "id": "0339e248-202e-4bb8-a6c6-180d5266f408",
       "name": "Meta Platforms, Inc.",
       "cik": "0001326801",
       "role": "issuer",
@@ -18,7 +18,7 @@
     },
     "entities": [
       {
-        "id": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+        "id": "0339e248-202e-4bb8-a6c6-180d5266f408",
         "name": "Meta Platforms, Inc.",
         "cik": "0001326801",
         "role": "issuer",
@@ -64,7 +64,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -85,7 +85,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -106,7 +106,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             }
           ]
@@ -140,7 +140,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -161,7 +161,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -182,7 +182,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             }
           ]
@@ -208,7 +208,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -229,7 +229,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -250,7 +250,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             }
           ]
@@ -276,7 +276,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -297,7 +297,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -318,7 +318,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             }
           ]
@@ -344,7 +344,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -365,7 +365,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -386,7 +386,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             }
           ]
@@ -412,7 +412,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -433,7 +433,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -454,7 +454,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             }
           ]
@@ -480,7 +480,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -501,7 +501,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -522,7 +522,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             }
           ]
@@ -548,7 +548,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -569,7 +569,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -590,7 +590,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             }
           ]
@@ -616,7 +616,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -637,7 +637,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -658,7 +658,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             }
           ]
@@ -684,7 +684,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -705,7 +705,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -726,7 +726,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             }
           ]
@@ -752,7 +752,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -773,7 +773,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -803,7 +803,7 @@
                   "published_at_precision": "exact"
                 }
               },
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             }
           ]
@@ -829,7 +829,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -850,7 +850,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -871,7 +871,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             }
           ]
@@ -905,7 +905,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -926,7 +926,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -947,7 +947,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             }
           ]
@@ -973,7 +973,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -994,7 +994,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -1015,7 +1015,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             }
           ]
@@ -1184,7 +1184,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -1205,7 +1205,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -1226,7 +1226,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             }
           ]
@@ -1260,7 +1260,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -1281,7 +1281,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -1302,7 +1302,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             }
           ]
@@ -1336,7 +1336,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -1357,7 +1357,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -1378,7 +1378,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             }
           ]
@@ -1404,7 +1404,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -1425,7 +1425,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -1446,7 +1446,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             }
           ]
@@ -1473,7 +1473,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -1494,7 +1494,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             }
           ]
@@ -5726,7 +5726,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -5747,7 +5747,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -5768,7 +5768,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -5789,7 +5789,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -5810,7 +5810,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -5831,7 +5831,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -5852,7 +5852,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -5873,7 +5873,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -5894,7 +5894,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -5915,7 +5915,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -5936,7 +5936,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -5957,7 +5957,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -5978,7 +5978,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -5999,7 +5999,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -6020,7 +6020,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             }
           ]
@@ -6046,7 +6046,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -6067,7 +6067,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -6088,7 +6088,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -6109,7 +6109,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -6130,7 +6130,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -6151,7 +6151,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -6172,7 +6172,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -6193,7 +6193,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -6214,7 +6214,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -6235,7 +6235,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -6256,7 +6256,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -6277,7 +6277,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -6298,7 +6298,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -6319,7 +6319,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             },
             {
@@ -6340,7 +6340,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
               "split_adjusted": null
             }
           ]
@@ -6369,7 +6369,7 @@
             },
             "restated": false,
             "previous": null,
-            "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+            "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
             "split_adjusted": null
           }
         ]
@@ -6395,13 +6395,13 @@
             },
             "restated": false,
             "previous": null,
-            "reported_by": "d07ef023-b0a2-4f75-ba5a-5713a7d6a90c",
+            "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
             "split_adjusted": null
           }
         ]
       }
     ],
     "splits": [],
-    "last_refresh_at": "2026-10-06T15:43:29.338588Z"
+    "last_refresh_at": "2026-10-06T16:39:37.630023Z"
   }
 }
