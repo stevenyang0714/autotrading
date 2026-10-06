@@ -176,4 +176,4 @@ Write `docs/reports/phase0_exit.md` using the Build Output Contract (02 §31): i
 **Acceptance**
 - [x] `docs/reports/phase0_exit.md` covers every Build Output Contract field, with reproducible evidence for each Phase 0 exit criterion. (2026-10-06; evidence queries run twice with identical results)
 - [x] `docs/milestones/M1_fundamentals.md` proposed (`**Status:** Proposed`), defining the buyback states as versioned rules (errata E7). (2026-10-06; nine decisions listed for Steven)
-- [ ] Steven accepted the Phase 0 exit report (the Phase 1 entry gate).
+- [x] Steven accepted the Phase 0 exit report (the Phase 1 entry gate). (2026-10-06, with the M1 decisions recorded in ADR-020)

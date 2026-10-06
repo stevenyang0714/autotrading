@@ -1,6 +1,6 @@
 # Phase 1 — Fundamentals, buybacks, earnings, paper journal
 
-**Status:** Proposed — awaiting Steven's approval (written 2026-10-06 with the Phase 0 exit report). Nothing here is built until Steven approves this file and answers the decisions below.
+**Status:** Approved by Steven on 2026-10-06, with the decisions below (ADR-020). Each sub-milestone still starts in plan mode and is approved before it is built.
 
 **Goal:** for the universe equities, a persistent company Research Record:
 - financials that reconcile to filings;
@@ -13,7 +13,7 @@
 - ROADMAP: "Financial facts reconcile to filings; buyback states are versioned deterministic rules (errata E7); every fair value shows assumptions and as-of; paper journal records hypothetical decisions with full trace."
 - 02 §29: "Filing reconciliation; authorization vs actual repurchase; valuation assumptions; paper journal".
 
-**Entry gate:** the Phase 0 exit report is accepted, this file is approved, and the decisions below are answered.
+**Entry gate:** met on 2026-10-06. Steven accepted the Phase 0 exit report, approved this file and answered the decisions below.
 
 **Out of scope for Phase 1:**
 - **Phase 2:** macro regime and momentum/factor engines, the Portfolio Risk cockpit, walk-forward backtests.
@@ -27,19 +27,19 @@ Work one sub-milestone at a time, in order. Each one ends with the Build Output 
 
 ---
 
-## Decisions before Phase 1 starts (Steven)
+## Decisions (Steven, 2026-10-06; ADR-020)
 
-| # | Question | Proposed default |
+| # | Question | Decision |
 |---|---|---|
-| P1-1 | **OD-2:** alert delivery outside the app | In-app Alerts Center only |
+| P1-1 | **OD-2:** alert delivery outside the app | In-app Alerts Center only for Phase 1; external delivery decided later |
 | P1-2 | **OD-3:** point-in-time consensus provider | None for now. Consensus shows `Data unavailable`; earnings work is actual vs prior / YoY, guidance and price reaction (errata E6) |
-| P1-3 | **Guidance from 8-K exhibits:** rule-based, or accept ADR-009 early for language-model extraction | Rule-based. Keep only explicit numeric guidance sentences (at most 300 characters each, with the link); otherwise "guidance not extracted" |
-| P1-4 | **TRADE-READY:** needs a risk, liquidity and sizing check, which arrives in Phase 2 | Define the rule now; the state is unreachable until the Phase 2 risk check exists, and the UI says so |
-| P1-5 | **Buyback Quality Score:** 02 §5 weights cannot be validated before OD-7 | Show the components only; no composite score in Phase 1 |
+| P1-3 | **Guidance from 8-K exhibits** | Rule-based: only explicit numeric guidance sentences (at most 300 characters each, with the link); otherwise "guidance not extracted". When the rules prove too narrow, Claude proposes switching to language-model extraction (ADR-009) for Steven's approval |
+| P1-4 | **TRADE-READY** needs the Phase 2 risk check | Define the rule now; unreachable until the Phase 2 risk check exists, and the UI says so |
+| P1-5 | **Buyback Quality Score** (02 §5 weights) before OD-7 | Show the composite **and** its components, labelled "default weights, unvalidated". The 5% management/insider component needs Form 4 data (Phase 4): it is left out, the other weights are rescaled to 100%, and the label says so. A positive-direction score only, never mixed with risk (errata E3) |
 | P1-6 | **TradeDecision fields with no Phase 1 source** (`risk_check_id`, `portfolio_snapshot_id`, `broker`) | Nullable; `mode = paper` only; a database check forbids any broker value in Phase 1 |
-| P1-7 | **Opportunity Radar** in Phase 1 (ROADMAP note) | Stays Phase 2 |
+| P1-7 | **Opportunity Radar** | Stays Phase 2 |
 | P1-8 | **Universe** | Unchanged: 10 equities, with the 8 ETFs for market context |
-| P1-9 | **Buyback state thresholds v0.1** (M1.4) | As proposed in M1.4. They are defaults, versioned and unvalidated (OD-7) |
+| P1-9 | **Buyback state thresholds v0.1** (M1.4) | As proposed in M1.4: defaults, versioned, unvalidated (OD-7). M1.4 reports which state each universe company reaches so Steven can tune them |
 
 ---
 
@@ -118,7 +118,7 @@ Work one sub-milestone at a time, in order. Each one ends with the Build Output 
   - is stored with its inputs, thresholds and evidence every time it is assigned;
   - has its own glossary entry.
 
-| State | Rule v0.1 (proposed thresholds, P1-9) | Required evidence |
+| State | Rule v0.1 (thresholds approved as defaults, P1-9) | Required evidence |
 |---|---|---|
 | WATCH | A new or increased authorization in the last 365 days, or remaining authorization ≥ 2% of market cap | The announcement (8-K or issuer release) with its date and amount |
 | ACTIVE | WATCH, and repurchases in the latest reported quarter ≥ 0.5% of market cap, and diluted shares down ≥ 1% year over year | Repurchase amount from the 10-Q/10-K; share counts from two filings |
@@ -129,6 +129,8 @@ Work one sub-milestone at a time, in order. Each one ends with the Build Output 
   - An announcement alone reaches WATCH at most (E7).
   - No state ever triggers a buy (02 §5).
   - The thresholds are defaults, not validated (OD-7).
+- **Buyback Quality Score** (P1-5): the 02 §5 weights over the available components (undervaluation, actual repurchase intensity, FCF quality, balance-sheet strength, historical discipline, net share-count impact), rescaled without the insider component; shown with its components and the label "default weights, unvalidated".
+- **Threshold review** (P1-9): a table of the state each universe company reaches under v0.1, with the inputs, for Steven to confirm or tune (a change is a new rule version).
 - **Corporate Actions dashboard:** each company's buyback timeline and its state history.
 
 **Acceptance**

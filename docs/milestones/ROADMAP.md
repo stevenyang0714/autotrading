@@ -2,11 +2,11 @@
 
 Detailed milestone files are written **one phase at a time**, at the end of the previous phase, in the same format as `M0_foundation.md`, and approved by the user before work starts. Do not build ahead of the current phase.
 
-Phase 1: `M1_fundamentals.md` was proposed with the Phase 0 exit report (`docs/reports/phase0_exit.md`, 2026-10-06) and awaits Steven's approval.
+Phase 1: `M1_fundamentals.md` was approved on 2026-10-06 together with the Phase 0 exit report (`docs/reports/phase0_exit.md`); decisions in ADR-020.
 
 | Phase | Scope (02 §29) | Entry gate | Exit criteria | Blocking open decisions |
 |---|---|---|---|---|
-| 1 | Fundamental Research Record, valuation (DCF / reverse DCF / multiples with visible assumptions), Buyback engine (authorization vs actual vs net share reduction), Earnings (actual vs prior + guidance + reaction), paper journal | Phase 0 exit report accepted | Financial facts reconcile to filings; buyback states are versioned deterministic rules (errata E7); every fair value shows assumptions and as-of; paper journal records hypothetical decisions with full trace | OD-2, OD-3 |
+| 1 | Fundamental Research Record, valuation (DCF / reverse DCF / multiples with visible assumptions), Buyback engine (authorization vs actual vs net share reduction), Earnings (actual vs prior + guidance + reaction), paper journal | Phase 0 exit report accepted on 2026-10-06 | Financial facts reconcile to filings; buyback states are versioned deterministic rules (errata E7); every fair value shows assumptions and as-of; paper journal records hypothetical decisions with full trace | None for Phase 1 (OD-2, OD-3 decided for Phase 1 in ADR-020) |
 | 2 | Macro regime engine, momentum/factor engine, Portfolio Risk cockpit, ETF rotation research, Strategy Lab walk-forward | Phase 1 exit; Massive activation decided (ADR-004) | Regime reproducible from PIT data; factor definitions versioned; risk veto deterministic and tested; walk-forward with costs; backtest UI shows OOS period | OD-7 (backtests cannot report performance without it), OD-8 |
 | 3 | World / physical / policy: causal graph, Event Transmission dashboard, Policy Monitor with lifecycle states, LLM-assisted extraction (ADR-009) | Phase 2 exit; ADR-009 accepted | Every graph edge has evidence + timestamp; policy lifecycle correct; no execution path from a headline | OD-6 |
 | 4 | X researcher watchlists (official API, budget circuit breaker), thesis-change detection, Congress PTR ingestion and lag analytics, Corporate Insider (Form 4) | Phase 3 exit | Provenance on every post/PTR; "Reported Trade" + Disclosure Lag visible; X never a sole trigger | — |
