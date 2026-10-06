@@ -8,7 +8,10 @@ import deadLetters from "../../tests/fixtures/api/dead-letters.json";
 import fundamentalsAapl from "../../tests/fixtures/api/fundamentals-aapl.json";
 import fundamentalsAaplAfter from "../../tests/fixtures/api/fundamentals-aapl-after-10ka.json";
 import fundamentalsAaplBefore from "../../tests/fixtures/api/fundamentals-aapl-before-10ka.json";
+import fundamentalsMeta from "../../tests/fixtures/api/fundamentals-meta.json";
 import fundamentalsXom from "../../tests/fixtures/api/fundamentals-xom.json";
+import reconciliationAaplTenK from "../../tests/fixtures/api/reconciliation-aapl-10k.json";
+import reconciliationList from "../../tests/fixtures/api/reconciliation.json";
 import ingestionRuns from "../../tests/fixtures/api/ingestion-runs.json";
 import instrumentPricesAaplNoKey from "../../tests/fixtures/api/instrument-prices-aapl-no-key.json";
 import instrumentPricesAapl from "../../tests/fixtures/api/instrument-prices-aapl.json";
@@ -42,6 +45,8 @@ import type {
   NewsFeed,
   Overview,
   Progress,
+  ReconciliationDetail,
+  ReconciliationList,
   SeriesObservations,
   SourceHealth,
 } from "@/lib/api";
@@ -60,6 +65,13 @@ export const recordedFundamentals = {
   aaplBefore10KA: fundamentalsAaplBefore.response as Fundamentals,
   aaplAfter10KA: fundamentalsAaplAfter.response as Fundamentals,
   xom: fundamentalsXom.response as Fundamentals,
+  meta: fundamentalsMeta.response as Fundamentals,
+};
+
+/** Each issuer's latest 10-K and 10-Q reconciled (M1.1), and Apple's 10-K items. */
+export const recordedReconciliation = {
+  list: reconciliationList.response as ReconciliationList,
+  aapl10K: reconciliationAaplTenK.response as ReconciliationDetail,
 };
 
 export const recordedMacroSeries = macroSeries.response as MacroSeriesList;

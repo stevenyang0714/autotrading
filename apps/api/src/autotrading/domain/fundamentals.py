@@ -11,18 +11,26 @@ from datetime import date, datetime
 from typing import Protocol
 from uuid import UUID
 
-# Table rows, in display order. Duration metrics go into the annual table, instants into the
-# balance sheet (adapters/sec/concepts.py defines the period type of each).
+# Table rows, in display order. Duration metrics go into the annual table, instants dated at the
+# balance sheet into the balance sheet, and instants with their own date (the cover page, a
+# board authorization) are shown as the latest value with that date (adapters/sec/concepts.py
+# defines the period type of each).
 ANNUAL_METRICS: tuple[str, ...] = (
     "revenue",
     "gross_profit",
     "operating_income",
+    "pretax_income",
+    "income_tax_expense",
     "net_income",
     "eps_diluted",
     "diluted_shares",
+    "interest_expense",
+    "depreciation_amortization",
     "operating_cash_flow",
     "capex",
     "share_repurchases",
+    "shares_repurchased",
+    "dividends_paid",
     "stock_based_compensation",
 )
 BALANCE_SHEET_METRICS: tuple[str, ...] = (
@@ -30,6 +38,13 @@ BALANCE_SHEET_METRICS: tuple[str, ...] = (
     "long_term_debt_current",
     "long_term_debt_noncurrent",
     "commercial_paper",
+    "stockholders_equity",
+    "shares_outstanding",
+    "repurchase_remaining",
+)
+LATEST_METRICS: tuple[str, ...] = (
+    "shares_outstanding_cover",
+    "repurchase_authorized",
 )
 
 # A fiscal year: 52/53-week years last 364 or 371 days; calendar years 365/366.

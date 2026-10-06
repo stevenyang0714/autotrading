@@ -47,6 +47,12 @@ export type FactTable = components["schemas"]["FactTable"];
 export type FactCell = components["schemas"]["FactCell"];
 export type EntityOut = components["schemas"]["EntityOut"];
 export type FilingRef = components["schemas"]["FilingRef"];
+// M1.1 (ADR-021)
+export type DerivedCell = components["schemas"]["DerivedCell"];
+export type DerivedInput = components["schemas"]["DerivedInput"];
+export type QuarterTable = components["schemas"]["QuarterTable"];
+export type SplitOut = components["schemas"]["SplitOut"];
+export type SplitAdjusted = components["schemas"]["SplitAdjusted"];
 
 /** Universe stocks, or null when the API is unreachable. */
 export async function loadInstruments(): Promise<InstrumentList | null> {
@@ -73,6 +79,51 @@ export async function loadFundamentals(
   try {
     const { data, response } = await client.GET("/instruments/{ticker}/fundamentals", {
       params: { path: { ticker }, query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    if (data) return { status: "ok", data };
+    return response.status === 404 ? { status: "not_found" } : { status: "unavailable" };
+  } catch {
+    return { status: "unavailable" };
+  }
+}
+
+// ---------- filing reconciliation (M1.1, ADR-021) ----------
+
+export type ReconciliationList = components["schemas"]["ReconciliationList"];
+export type ReconciliationOut = components["schemas"]["ReconciliationOut"];
+export type ReconciliationDetail = components["schemas"]["ReconciliationDetail"];
+export type ReconciliationItem = components["schemas"]["ItemOut"];
+export type ReconciliationStatus = ReconciliationOut["status"];
+
+export interface ReconciliationQuery {
+  status?: ReconciliationStatus;
+  form?: "10-K" | "10-Q";
+}
+
+/** Each issuer's latest 10-K and 10-Q reconciliation, or null when the API is unreachable. */
+export async function loadReconciliations(
+  query: ReconciliationQuery = {},
+): Promise<ReconciliationList | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/reconciliation", { params: { query }, cache: "no-store" });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export type ReconciliationDetailResult =
+  | { status: "ok"; data: ReconciliationDetail }
+  | { status: "not_found" }
+  | { status: "unavailable" };
+
+export async function loadReconciliation(accession: string): Promise<ReconciliationDetailResult> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data, response } = await client.GET("/reconciliation/{accession}", {
+      params: { path: { accession } },
       cache: "no-store",
     });
     if (data) return { status: "ok", data };

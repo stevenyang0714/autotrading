@@ -73,8 +73,18 @@ def enqueue_sec_companies(message_data: dict[str, Any], result: str) -> None:
     tickers_run = UUID(message_data["args"][0])
     run_ids = sec_refresh.create_company_runs(ingestion_runner(), tickers_run)
     for run_id in run_ids:
-        run_ingestion.send(str(run_id))
+        run_ingestion.send_with_options(args=(str(run_id),), on_success=enqueue_sec_filing_xbrl)
     logger.info("SEC refresh: %d company runs queued after tickers run %s", len(run_ids), result)
+
+
+@dramatiq.actor(queue_name=INGESTION_QUEUE, max_retries=3, broker=broker)
+def enqueue_sec_filing_xbrl(message_data: dict[str, Any], result: str) -> None:
+    """on_success callback of a `sec.company` run: read new filings' own XBRL (M1.1)."""
+    company_run = UUID(message_data["args"][0])
+    run_id = sec_refresh.create_filing_xbrl_run(ingestion_runner(), company_run)
+    if run_id is not None:
+        run_ingestion.send(str(run_id))
+        logger.info("SEC refresh: filing XBRL run %s queued after %s", run_id, result)
 
 
 def start_sec_refresh(*, manual: bool) -> UUID | None:
@@ -134,6 +144,14 @@ def start_alpaca_daily_bars(*, manual: bool, backfill: bool = False) -> UUID | N
         logger.info("Alpaca bars skipped: alpaca_iex is not enabled or has no keys")
     else:
         run_ingestion.send(str(run_id))
+    splits_run = alpaca_refresh.start_splits(
+        ingestion_runner(),
+        now=datetime.now(UTC),
+        manual=manual or backfill,
+        config_dir=_settings.resolved_config_dir(),
+    )
+    if splits_run is not None:
+        run_ingestion.send(str(splits_run))
     return run_id
 
 

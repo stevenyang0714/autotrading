@@ -497,6 +497,148 @@
         "title": "DecisionOut",
         "type": "object"
       },
+      "DerivedCell": {
+        "description": "A value computed at read time from inputs known at known_at (ADR-021).",
+        "properties": {
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "inputs": {
+            "items": {
+              "$ref": "#/components/schemas/DerivedInput"
+            },
+            "title": "Inputs",
+            "type": "array"
+          },
+          "kind": {
+            "const": "derived",
+            "default": "derived",
+            "title": "Kind",
+            "type": "string"
+          },
+          "method": {
+            "title": "Method",
+            "type": "string"
+          },
+          "period_end": {
+            "format": "date",
+            "title": "Period End",
+            "type": "string"
+          },
+          "period_start": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Start"
+          },
+          "split_adjusted": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SplitAdjusted"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          },
+          "value": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "unit",
+          "currency",
+          "period_start",
+          "period_end",
+          "method",
+          "inputs"
+        ],
+        "title": "DerivedCell",
+        "type": "object"
+      },
+      "DerivedInput": {
+        "description": "One input of a derived value: a reported fact, a derived quarter, or 0 assumed.",
+        "properties": {
+          "assumed_zero": {
+            "default": false,
+            "title": "Assumed Zero",
+            "type": "boolean"
+          },
+          "filing": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FilingRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "metric_id": {
+            "title": "Metric Id",
+            "type": "string"
+          },
+          "period_end": {
+            "format": "date",
+            "title": "Period End",
+            "type": "string"
+          },
+          "period_start": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Start"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "metric_id",
+          "value",
+          "period_start",
+          "period_end",
+          "filing"
+        ],
+        "title": "DerivedInput",
+        "type": "object"
+      },
       "EntityOut": {
         "properties": {
           "cik": {
@@ -616,6 +758,12 @@
             ],
             "title": "Fiscal Period"
           },
+          "kind": {
+            "const": "reported",
+            "default": "reported",
+            "title": "Kind",
+            "type": "string"
+          },
           "period_end": {
             "format": "date",
             "title": "Period End",
@@ -662,6 +810,16 @@
               }
             ],
             "title": "Source Concept"
+          },
+          "split_adjusted": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SplitAdjusted"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "unit": {
             "title": "Unit",
@@ -841,6 +999,26 @@
             ],
             "title": "Last Refresh At"
           },
+          "latest": {
+            "items": {
+              "$ref": "#/components/schemas/MetricRow"
+            },
+            "title": "Latest",
+            "type": "array"
+          },
+          "per_share_history": {
+            "$ref": "#/components/schemas/FactTable"
+          },
+          "quarterly": {
+            "$ref": "#/components/schemas/QuarterTable"
+          },
+          "splits": {
+            "items": {
+              "$ref": "#/components/schemas/SplitOut"
+            },
+            "title": "Splits",
+            "type": "array"
+          },
           "ticker": {
             "title": "Ticker",
             "type": "string"
@@ -854,6 +1032,10 @@
           "entities",
           "annual",
           "balance_sheet",
+          "quarterly",
+          "per_share_history",
+          "latest",
+          "splits",
           "last_refresh_at"
         ],
         "title": "Fundamentals",
@@ -1371,6 +1553,141 @@
         "title": "InstrumentSummary",
         "type": "object"
       },
+      "ItemOut": {
+        "properties": {
+          "check": {
+            "enum": [
+              "fact",
+              "identity",
+              "quarter",
+              "split"
+            ],
+            "title": "Check",
+            "type": "string"
+          },
+          "current_value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Value"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "filing_value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filing Value"
+          },
+          "metric_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metric Id"
+          },
+          "period_end": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period End"
+          },
+          "period_start": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Start"
+          },
+          "status": {
+            "enum": [
+              "match",
+              "mismatch",
+              "missing",
+              "extra",
+              "restated_later",
+              "ok",
+              "fail",
+              "flag"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "stored_accession": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stored Accession"
+          },
+          "stored_value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stored Value"
+          }
+        },
+        "required": [
+          "check",
+          "status",
+          "metric_id",
+          "period_start",
+          "period_end",
+          "filing_value",
+          "stored_value",
+          "current_value",
+          "stored_accession",
+          "detail"
+        ],
+        "title": "ItemOut",
+        "type": "object"
+      },
       "LatestPrices": {
         "properties": {
           "as_of": {
@@ -1575,7 +1892,21 @@
             "items": {
               "anyOf": [
                 {
-                  "$ref": "#/components/schemas/FactCell"
+                  "discriminator": {
+                    "mapping": {
+                      "derived": "#/components/schemas/DerivedCell",
+                      "reported": "#/components/schemas/FactCell"
+                    },
+                    "propertyName": "kind"
+                  },
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/FactCell"
+                    },
+                    {
+                      "$ref": "#/components/schemas/DerivedCell"
+                    }
+                  ]
                 },
                 {
                   "type": "null"
@@ -2256,6 +2587,69 @@
         "title": "Progress",
         "type": "object"
       },
+      "QuarterRow": {
+        "properties": {
+          "cells": {
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/DerivedCell"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "title": "Cells",
+            "type": "array"
+          },
+          "metric_id": {
+            "title": "Metric Id",
+            "type": "string"
+          },
+          "ttm": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DerivedCell"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "metric_id",
+          "cells",
+          "ttm"
+        ],
+        "title": "QuarterRow",
+        "type": "object"
+      },
+      "QuarterTable": {
+        "properties": {
+          "periods": {
+            "items": {
+              "$ref": "#/components/schemas/PeriodColumn"
+            },
+            "title": "Periods",
+            "type": "array"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/QuarterRow"
+            },
+            "title": "Rows",
+            "type": "array"
+          }
+        },
+        "required": [
+          "periods",
+          "rows"
+        ],
+        "title": "QuarterTable",
+        "type": "object"
+      },
       "QuoteOut": {
         "properties": {
           "ask": {
@@ -2388,6 +2782,166 @@
           "feed_status"
         ],
         "title": "QuoteOut",
+        "type": "object"
+      },
+      "ReconciliationDetail": {
+        "properties": {
+          "filing": {
+            "$ref": "#/components/schemas/ReconciliationOut"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ItemOut"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "filing",
+          "items"
+        ],
+        "title": "ReconciliationDetail",
+        "type": "object"
+      },
+      "ReconciliationList": {
+        "properties": {
+          "filings": {
+            "items": {
+              "$ref": "#/components/schemas/ReconciliationOut"
+            },
+            "title": "Filings",
+            "type": "array"
+          },
+          "methodology_version": {
+            "title": "Methodology Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "methodology_version",
+          "filings"
+        ],
+        "title": "ReconciliationList",
+        "type": "object"
+      },
+      "ReconciliationOut": {
+        "properties": {
+          "accession": {
+            "title": "Accession",
+            "type": "string"
+          },
+          "checked": {
+            "title": "Checked",
+            "type": "integer"
+          },
+          "checks_failed": {
+            "title": "Checks Failed",
+            "type": "integer"
+          },
+          "checks_flagged": {
+            "title": "Checks Flagged",
+            "type": "integer"
+          },
+          "company": {
+            "title": "Company",
+            "type": "string"
+          },
+          "extra": {
+            "title": "Extra",
+            "type": "integer"
+          },
+          "filing_published_at": {
+            "format": "date-time",
+            "title": "Filing Published At",
+            "type": "string"
+          },
+          "filing_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filing Url"
+          },
+          "form": {
+            "title": "Form",
+            "type": "string"
+          },
+          "instance_url": {
+            "title": "Instance Url",
+            "type": "string"
+          },
+          "matched": {
+            "title": "Matched",
+            "type": "integer"
+          },
+          "methodology_version": {
+            "title": "Methodology Version",
+            "type": "string"
+          },
+          "mismatched": {
+            "title": "Mismatched",
+            "type": "integer"
+          },
+          "missing": {
+            "title": "Missing",
+            "type": "integer"
+          },
+          "recorded_at": {
+            "format": "date-time",
+            "title": "Recorded At",
+            "type": "string"
+          },
+          "restated_later": {
+            "title": "Restated Later",
+            "type": "integer"
+          },
+          "status": {
+            "enum": [
+              "pass",
+              "warn",
+              "fail"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "ticker": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ticker"
+          }
+        },
+        "required": [
+          "ticker",
+          "company",
+          "accession",
+          "form",
+          "filing_published_at",
+          "filing_url",
+          "instance_url",
+          "status",
+          "checked",
+          "matched",
+          "mismatched",
+          "missing",
+          "extra",
+          "restated_later",
+          "checks_failed",
+          "checks_flagged",
+          "methodology_version",
+          "recorded_at"
+        ],
+        "title": "ReconciliationOut",
         "type": "object"
       },
       "RunOut": {
@@ -2825,6 +3379,76 @@
           "open_dead_letters"
         ],
         "title": "SourceHealth",
+        "type": "object"
+      },
+      "SplitAdjusted": {
+        "description": "The value on the basis of known_at: share counts times `factor`, per-share amounts\ndivided by it, for the splits after the value's filing (ADR-021).",
+        "properties": {
+          "factor": {
+            "title": "Factor",
+            "type": "string"
+          },
+          "splits": {
+            "items": {
+              "format": "date",
+              "type": "string"
+            },
+            "title": "Splits",
+            "type": "array"
+          },
+          "value": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "factor",
+          "splits"
+        ],
+        "title": "SplitAdjusted",
+        "type": "object"
+      },
+      "SplitOut": {
+        "properties": {
+          "ex_date": {
+            "format": "date",
+            "title": "Ex Date",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "new_rate": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "New Rate",
+            "type": "string"
+          },
+          "old_rate": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Old Rate",
+            "type": "string"
+          },
+          "source_id": {
+            "title": "Source Id",
+            "type": "string"
+          },
+          "source_url": {
+            "title": "Source Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ex_date",
+          "old_rate",
+          "new_rate",
+          "kind",
+          "source_id",
+          "source_url"
+        ],
+        "title": "SplitOut",
         "type": "object"
       },
       "ValidationError": {
@@ -3913,6 +4537,122 @@
         "summary": "Progress",
         "tags": [
           "progress"
+        ]
+      }
+    },
+    "/reconciliation": {
+      "get": {
+        "operationId": "reconciliations_reconciliation_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "pass",
+                    "warn",
+                    "fail"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "form",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "10-K",
+                    "10-Q"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Form"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReconciliationList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reconciliations",
+        "tags": [
+          "reconciliation"
+        ]
+      }
+    },
+    "/reconciliation/{accession}": {
+      "get": {
+        "operationId": "reconciliation_reconciliation__accession__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "accession",
+            "required": true,
+            "schema": {
+              "title": "Accession",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReconciliationDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reconciliation",
+        "tags": [
+          "reconciliation"
         ]
       }
     }

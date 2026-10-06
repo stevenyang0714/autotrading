@@ -31,6 +31,18 @@ SEC_XBRL_METRICS = (
     "capex",
     "share_repurchases",
     "stock_based_compensation",
+    # M1.1 (ADR-021)
+    "shares_outstanding",
+    "shares_outstanding_cover",
+    "shares_repurchased",
+    "repurchase_authorized",
+    "repurchase_remaining",
+    "depreciation_amortization",
+    "stockholders_equity",
+    "dividends_paid",
+    "interest_expense",
+    "income_tax_expense",
+    "pretax_income",
 )
 
 # FRED series shown on the Macro page (M0.6): reported values with vintages, one term per
@@ -92,6 +104,22 @@ METRICS: tuple[MetricDefinition, ...] = (
             computed_by=f"autotrading.domain.indicators.{function}",
         )
         for term_id, function in OVERVIEW_INDICATORS.items()
+    ),
+    # M1.1 (ADR-021): computed at read time from facts known at the As known on time.
+    *(
+        MetricDefinition(
+            term_id=term_id,
+            methodology_version="0.1.0",
+            computed_by=f"autotrading.domain.{function}",
+        )
+        for term_id, function in {
+            "free_cash_flow": "derived.free_cash_flow",
+            "total_debt": "derived.total_debt",
+            "net_debt": "derived.net_debt",
+            "quarterly_derived_value": "quarters.quarters",
+            "trailing_twelve_months": "quarters.trailing_twelve_months",
+            "split_adjusted": "splits.adjust",
+        }.items()
     ),
     MetricDefinition(
         term_id="price_change_1d",

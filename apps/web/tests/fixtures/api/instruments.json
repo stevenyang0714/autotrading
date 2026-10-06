@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-05T15:26:17.904787+00:00",
+  "recorded_at": "2026-10-06T15:43:30.966676+00:00",
   "recorded_from": "recorded SEC fixtures replayed into the integration test database (tests/integration/test_instruments.py)",
   "endpoint": "/instruments",
   "params": {},
@@ -20,6 +20,20 @@
         }
       },
       {
+        "ticker": "META",
+        "name": "Meta Platforms, Inc.",
+        "cik": "0001326801",
+        "exchange": "XNAS",
+        "predecessors": [],
+        "latest_report": {
+          "accession": "0001628280-26-050705",
+          "form": "10-Q",
+          "url": "https://www.sec.gov/Archives/edgar/data/1326801/000162828026050705/0001628280-26-050705-index.htm",
+          "published_at": "2026-07-29T22:58:51Z",
+          "published_at_precision": "exact"
+        }
+      },
+      {
         "ticker": "XOM",
         "name": "ExxonMobil Holdings Corp",
         "cik": "0002115436",
@@ -36,6 +50,6 @@
         }
       }
     ],
-    "last_refresh_at": "2026-10-05T15:26:17.809243Z"
+    "last_refresh_at": "2026-10-06T15:43:29.338588Z"
   }
 }

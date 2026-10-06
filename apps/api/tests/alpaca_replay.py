@@ -19,6 +19,7 @@ import httpx2 as httpx
 from autotrading.adapters.alpaca.bars import AlpacaDailyBarsJob
 from autotrading.adapters.alpaca.client import BASE_URL, AlpacaClient
 from autotrading.adapters.alpaca.snapshots import AlpacaSnapshotsJob
+from autotrading.adapters.alpaca.splits import AlpacaSplitsJob
 from autotrading.domain.prices import FeedStatus
 from autotrading.ingestion.job import JobRegistry, Window, register_job
 from autotrading.ingestion.runner import IngestionRunner
@@ -59,6 +60,11 @@ class ReplayedDailyBars(AlpacaDailyBarsJob):
         return recorded_client()
 
 
+class ReplayedSplits(AlpacaSplitsJob):
+    def client(self) -> AlpacaClient:
+        return recorded_client()
+
+
 class FixtureSnapshots(ReplayedSnapshots):
     feed_status: ClassVar[FeedStatus] = "fixture"
 
@@ -74,12 +80,22 @@ def register_recorded(registry: JobRegistry, *, fixture: bool = True) -> JobRegi
     else:
         register_job(ReplayedSnapshots, registry)
         register_job(ReplayedDailyBars, registry)
+    register_job(ReplayedSplits, registry)  # splits have no feed status
     return registry
 
 
 def replay(runner: IngestionRunner, window: Window) -> list[UUID]:
-    """Every recorded run (snapshots, one year of bars, the NVDA split window), in order."""
+    """Every recorded run (snapshots, one year of bars, the NVDA split window, splits), in
+    order."""
     run_ids = [runner.create_run(run["job"], run["params"], window) for run in MANIFEST["runs"]]
     for run_id in run_ids:
         runner.execute(run_id)
     return run_ids
+
+
+def replay_splits(runner: IngestionRunner, window: Window) -> list[UUID]:
+    """The recorded `alpaca.splits` run alone: run before SEC's filing XBRL runs, as in
+    production (splits at 06:30 SGT, SEC at 10:00), so reconciliations see the splits."""
+    run_id = runner.create_run("alpaca.splits", recorded_params("alpaca.splits"), window)
+    runner.execute(run_id)
+    return [run_id]

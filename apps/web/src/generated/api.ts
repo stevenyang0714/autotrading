@@ -293,6 +293,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/reconciliation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reconciliations */
+        get: operations["reconciliations_reconciliation_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/reconciliation/{accession}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reconciliation */
+        get: operations["reconciliation_reconciliation__accession__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -471,6 +505,58 @@ export interface components {
             /** Needed By */
             needed_by: string;
         };
+        /**
+         * DerivedCell
+         * @description A value computed at read time from inputs known at known_at (ADR-021).
+         */
+        DerivedCell: {
+            /** Currency */
+            currency: string | null;
+            /** Inputs */
+            inputs: components["schemas"]["DerivedInput"][];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "derived";
+            /** Method */
+            method: string;
+            /**
+             * Period End
+             * Format: date
+             */
+            period_end: string;
+            /** Period Start */
+            period_start: string | null;
+            split_adjusted?: components["schemas"]["SplitAdjusted"] | null;
+            /** Unit */
+            unit: string;
+            /** Value */
+            value: string;
+        };
+        /**
+         * DerivedInput
+         * @description One input of a derived value: a reported fact, a derived quarter, or 0 assumed.
+         */
+        DerivedInput: {
+            /**
+             * Assumed Zero
+             * @default false
+             */
+            assumed_zero: boolean;
+            filing: components["schemas"]["FilingRef"] | null;
+            /** Metric Id */
+            metric_id: string;
+            /**
+             * Period End
+             * Format: date
+             */
+            period_end: string;
+            /** Period Start */
+            period_start: string | null;
+            /** Value */
+            value: string | null;
+        };
         /** EntityOut */
         EntityOut: {
             /** Cik */
@@ -509,6 +595,11 @@ export interface components {
             /** Fiscal Period */
             fiscal_period: string | null;
             /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "reported";
+            /**
              * Period End
              * Format: date
              */
@@ -525,6 +616,7 @@ export interface components {
             restated: boolean;
             /** Source Concept */
             source_concept: string | null;
+            split_adjusted?: components["schemas"]["SplitAdjusted"] | null;
             /** Unit */
             unit: string;
             /** Value */
@@ -588,6 +680,12 @@ export interface components {
             known_at: string;
             /** Last Refresh At */
             last_refresh_at: string | null;
+            /** Latest */
+            latest: components["schemas"]["MetricRow"][];
+            per_share_history: components["schemas"]["FactTable"];
+            quarterly: components["schemas"]["QuarterTable"];
+            /** Splits */
+            splits: components["schemas"]["SplitOut"][];
             /** Ticker */
             ticker: string;
         };
@@ -766,6 +864,35 @@ export interface components {
             /** Ticker */
             ticker: string;
         };
+        /** ItemOut */
+        ItemOut: {
+            /**
+             * Check
+             * @enum {string}
+             */
+            check: "fact" | "identity" | "quarter" | "split";
+            /** Current Value */
+            current_value: string | null;
+            /** Detail */
+            detail: string | null;
+            /** Filing Value */
+            filing_value: string | null;
+            /** Metric Id */
+            metric_id: string | null;
+            /** Period End */
+            period_end: string | null;
+            /** Period Start */
+            period_start: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "match" | "mismatch" | "missing" | "extra" | "restated_later" | "ok" | "fail" | "flag";
+            /** Stored Accession */
+            stored_accession: string | null;
+            /** Stored Value */
+            stored_value: string | null;
+        };
         /** LatestPrices */
         LatestPrices: {
             /**
@@ -850,7 +977,7 @@ export interface components {
         /** MetricRow */
         MetricRow: {
             /** Cells */
-            cells: (components["schemas"]["FactCell"] | null)[];
+            cells: ((components["schemas"]["FactCell"] | components["schemas"]["DerivedCell"]) | null)[];
             /** Metric Id */
             metric_id: string;
         };
@@ -1086,6 +1213,21 @@ export interface components {
              */
             read_at: string;
         };
+        /** QuarterRow */
+        QuarterRow: {
+            /** Cells */
+            cells: (components["schemas"]["DerivedCell"] | null)[];
+            /** Metric Id */
+            metric_id: string;
+            ttm: components["schemas"]["DerivedCell"] | null;
+        };
+        /** QuarterTable */
+        QuarterTable: {
+            /** Periods */
+            periods: components["schemas"]["PeriodColumn"][];
+            /** Rows */
+            rows: components["schemas"]["QuarterRow"][];
+        };
         /** QuoteOut */
         QuoteOut: {
             /** Ask */
@@ -1113,6 +1255,67 @@ export interface components {
             symbol: string;
             /** Venue */
             venue?: string | null;
+        };
+        /** ReconciliationDetail */
+        ReconciliationDetail: {
+            filing: components["schemas"]["ReconciliationOut"];
+            /** Items */
+            items: components["schemas"]["ItemOut"][];
+        };
+        /** ReconciliationList */
+        ReconciliationList: {
+            /** Filings */
+            filings: components["schemas"]["ReconciliationOut"][];
+            /** Methodology Version */
+            methodology_version: string;
+        };
+        /** ReconciliationOut */
+        ReconciliationOut: {
+            /** Accession */
+            accession: string;
+            /** Checked */
+            checked: number;
+            /** Checks Failed */
+            checks_failed: number;
+            /** Checks Flagged */
+            checks_flagged: number;
+            /** Company */
+            company: string;
+            /** Extra */
+            extra: number;
+            /**
+             * Filing Published At
+             * Format: date-time
+             */
+            filing_published_at: string;
+            /** Filing Url */
+            filing_url: string | null;
+            /** Form */
+            form: string;
+            /** Instance Url */
+            instance_url: string;
+            /** Matched */
+            matched: number;
+            /** Methodology Version */
+            methodology_version: string;
+            /** Mismatched */
+            mismatched: number;
+            /** Missing */
+            missing: number;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /** Restated Later */
+            restated_later: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pass" | "warn" | "fail";
+            /** Ticker */
+            ticker: string | null;
         };
         /** RunOut */
         RunOut: {
@@ -1233,6 +1436,37 @@ export interface components {
             update_cadence: string;
             /** Url */
             url: string;
+        };
+        /**
+         * SplitAdjusted
+         * @description The value on the basis of known_at: share counts times `factor`, per-share amounts
+         *     divided by it, for the splits after the value's filing (ADR-021).
+         */
+        SplitAdjusted: {
+            /** Factor */
+            factor: string;
+            /** Splits */
+            splits: string[];
+            /** Value */
+            value: string;
+        };
+        /** SplitOut */
+        SplitOut: {
+            /**
+             * Ex Date
+             * Format: date
+             */
+            ex_date: string;
+            /** Kind */
+            kind: string;
+            /** New Rate */
+            new_rate: string;
+            /** Old Rate */
+            old_rate: string;
+            /** Source Id */
+            source_id: string;
+            /** Source Url */
+            source_url: string;
         };
         /** ValidationError */
         ValidationError: {
@@ -1765,6 +1999,69 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Progress"];
+                };
+            };
+        };
+    };
+    reconciliations_reconciliation_get: {
+        parameters: {
+            query?: {
+                status?: ("pass" | "warn" | "fail") | null;
+                form?: ("10-K" | "10-Q") | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReconciliationList"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reconciliation_reconciliation__accession__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accession: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReconciliationDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

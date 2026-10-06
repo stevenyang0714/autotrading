@@ -5,6 +5,7 @@ the instrument page has real data without network access or a SEC_USER_AGENT.
 """
 
 import json
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 from uuid import UUID
@@ -13,7 +14,8 @@ import httpx2 as httpx
 
 from autotrading.adapters.sec.client import SecClient
 from autotrading.adapters.sec.company import SecCompanyJob
-from autotrading.adapters.sec.refresh import create_company_runs
+from autotrading.adapters.sec.filing_xbrl import SecFilingXbrlJob
+from autotrading.adapters.sec.refresh import create_company_runs, create_filing_xbrl_run
 from autotrading.adapters.sec.tickers import SecTickersJob
 from autotrading.ingestion.job import JobRegistry, Window, register_job
 from autotrading.ingestion.runner import IngestionRunner
@@ -21,8 +23,12 @@ from autotrading.ingestion.runner import IngestionRunner
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "sec"
 MANIFEST: dict[str, Any] = json.loads((FIXTURES / "manifest.json").read_text(encoding="utf-8"))
 USER_AGENT = "Test Runner test@example.com"
-# Universe tickers whose filings and facts are recorded (XOM includes its predecessor).
-RECORDED_TICKERS = ("AAPL", "XOM")
+# Universe tickers whose filings and facts are recorded (XOM includes its predecessor; META is
+# the issuer whose share counts are tagged per class only, ADR-021).
+RECORDED_TICKERS = ("AAPL", "XOM", "META")
+
+# Filings whose own XBRL instance is recorded (ADR-021).
+RECORDED_INSTANCES = frozenset(MANIFEST.get("instances", []))
 
 # Mutations of the recorded data for single tests, keyed by URL.
 OVERRIDES: dict[str, bytes] = {}
@@ -56,6 +62,11 @@ class RecordedCompany(SecCompanyJob):
         return recorded_client()
 
 
+class RecordedFilingXbrl(SecFilingXbrlJob):
+    def client(self) -> SecClient:
+        return recorded_client()
+
+
 class VerifyingCompany(SecCompanyJob):
     """Replays like production: new filings are timed from their EDGAR headers."""
 
@@ -67,6 +78,7 @@ def recorded_registry() -> JobRegistry:
     registry: JobRegistry = {}
     register_job(RecordedTickers, registry)
     register_job(RecordedCompany, registry)
+    register_job(RecordedFilingXbrl, registry)
     return registry
 
 
@@ -75,8 +87,10 @@ def replay(
     window: Window,
     predecessors: dict[str, list[dict[str, Any]]],
     tickers: tuple[str, ...] = RECORDED_TICKERS,
+    before_instances: Callable[[], list[UUID]] | None = None,
 ) -> list[UUID]:
-    """The tickers run, then one company run per CIK, as a refresh would; returns run ids."""
+    """The tickers run, one company run per CIK, then the filing XBRL runs of the recorded
+    instances, as a refresh would; returns run ids."""
     tickers_run = runner.create_run(
         SecTickersJob.name, {"tickers": list(tickers), "predecessors": predecessors}, window
     )
@@ -84,4 +98,13 @@ def replay(
     company_runs = create_company_runs(runner, tickers_run)
     for run_id in company_runs:
         runner.execute(run_id)
-    return [tickers_run, *company_runs]
+    # e.g. the splits, which production fetches before the SEC refresh
+    between = before_instances() if before_instances else []
+    instance_runs = [
+        run
+        for company_run in company_runs
+        if (run := create_filing_xbrl_run(runner, company_run, only=RECORDED_INSTANCES))
+    ]
+    for run_id in instance_runs:
+        runner.execute(run_id)
+    return [tickers_run, *company_runs, *between, *instance_runs]

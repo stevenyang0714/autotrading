@@ -40,6 +40,10 @@ test("every page loads without console errors", async ({ page }) => {
     "/news?kind=press_release",
     "/system/audit-log",
     "/system/audit-log?table=sources&action=insert",
+    "/system/reconciliation",
+    "/system/reconciliation?status=pass&form=10-K",
+    "/system/reconciliation/0000320193-25-000079",
+    "/instruments/META",
     "/system/progress",
     ...DASHBOARD_SLUGS.map((s) => `/dashboards/${s}`),
   ];
@@ -109,6 +113,9 @@ for (const path of [
   "/news?kind=article&tier=2",
   "/system/audit-log",
   "/system/audit-log?table=sources",
+  "/system/reconciliation",
+  "/system/reconciliation/0000320193-25-000079",
+  "/instruments/META",
   "/system/progress",
 ]) {
   test(`numbers on ${path} are all explained`, async ({ page }) => {
@@ -150,6 +157,42 @@ test("AAPL values link to the SEC filing that reported them", async ({ page }) =
   await expect(link).toHaveAttribute(
     "href",
     "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
+  );
+});
+
+test("AAPL: per-share history is continuous across the 2020 split (M1.1)", async ({ page }) => {
+  await page.goto("/instruments/AAPL");
+  const history = page.getByRole("table", { name: "Per-share history" });
+  const fy2017 = history.locator("th", { hasText: "2017-09-30" });
+  await expect(fy2017).toBeVisible();
+  const eps = history.getByRole("row").filter({ has: page.locator('th [data-term-id="eps_diluted"]') });
+  await expect(eps).toContainText("$9.21");
+  await expect(eps).toContainText("$2.3025 split-adjusted (÷4)");
+  await expect(page.getByRole("list", { name: "Latest reported values" })).toContainText(
+    "4-for-1 on 2020-08-31",
+  );
+});
+
+test("AAPL: quarters and trailing twelve months, with inputs (M1.1)", async ({ page }) => {
+  await page.goto("/instruments/AAPL");
+  const quarterly = page.getByRole("table", { name: "Quarterly" });
+  await expect(quarterly.locator("thead th")).toHaveCount(10);
+  const fcf = page
+    .getByRole("table", { name: "Annual results" })
+    .getByRole("row")
+    .filter({ has: page.locator('th [data-term-id="free_cash_flow"]') });
+  await fcf.locator("summary").first().click();
+  await expect(fcf).toContainText("Operating Cash Flow");
+});
+
+test("Reconciliation lists Apple's 10-K as pass and opens its items (M1.1)", async ({ page }) => {
+  await page.goto("/system/reconciliation");
+  const apple = page.locator("[data-filing]:visible", { hasText: "0000320193-25-000079" });
+  await expect(apple.locator("[data-status]")).toHaveText("pass");
+  await apple.getByRole("link").click();
+  await expect(page).toHaveURL(/\/system\/reconciliation\/0000320193-25-000079$/);
+  await expect(page.getByRole("table", { name: "Reconciliation items" })).toContainText(
+    "416,161,000,000",
   );
 });
 

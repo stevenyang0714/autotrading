@@ -8,6 +8,7 @@ from autotrading.adapters.sec.concepts import METRIC_MAPPINGS
 from autotrading.domain.fundamentals import (
     ANNUAL_METRICS,
     BALANCE_SHEET_METRICS,
+    LATEST_METRICS,
     Period,
     Succession,
     annual_periods,
@@ -39,7 +40,10 @@ def test_table_metrics_match_the_concept_period_types() -> None:
     kinds = {m.metric_id: m.period for m in METRIC_MAPPINGS}
     assert {kinds[m] for m in ANNUAL_METRICS} == {"duration"}
     assert {kinds[m] for m in BALANCE_SHEET_METRICS} == {"instant"}
-    assert set(ANNUAL_METRICS) | set(BALANCE_SHEET_METRICS) == set(kinds)
+    assert {kinds[m] for m in LATEST_METRICS} == {"instant"}
+    groups = [ANNUAL_METRICS, BALANCE_SHEET_METRICS, LATEST_METRICS]
+    assert sum(len(g) for g in groups) == len(kinds)
+    assert set().union(*groups) == set(kinds)
 
 
 def test_current_issuer_wins_where_both_reported_a_period() -> None:

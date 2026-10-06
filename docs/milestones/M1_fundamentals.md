@@ -44,26 +44,34 @@ Work one sub-milestone at a time, in order. Each one ends with the Build Output 
 ---
 
 ## M1.1 Financial data completion and filing reconciliation
+Plan approved 2026-10-06 with decisions D1–D4 (ADR-021).
+
 **Build**
-- **New XBRL concepts.** Each is checked against the ten issuers' real filings before it is mapped. Candidates:
-  - period-end shares outstanding (`dei:EntityCommonStockSharesOutstanding`, `us-gaap:CommonStockSharesOutstanding`);
-  - shares repurchased (`StockRepurchasedDuringPeriodShares`, `TreasuryStockSharesAcquired`);
-  - authorization and remaining amount (`StockRepurchaseProgramAuthorizedAmount1`, `StockRepurchaseProgramRemainingAuthorizedRepurchaseAmount1`);
-  - D&A, stockholders' equity, dividends paid, interest expense, income tax, shares issued for compensation.
-  - Same rule as ADR-013: a metric a company does not report stays unavailable and is never approximated.
-- **Derived metrics,** with a versioned methodology. Each is computed only when every input exists:
-  - free cash flow = operating cash flow − capex;
-  - total debt = the stored components;
+- **New XBRL concepts,** each checked against the ten issuers' real filings before mapping. Concepts are qualified by taxonomy (us-gaap, dei, srt). New metrics:
+  - period-end shares outstanding (us-gaap) and cover-page shares (dei);
+  - shares repurchased;
+  - buyback authorization (srt since 2021) and remaining authorization;
+  - D&A, stockholders' equity, dividends paid, interest expense, income tax, pre-tax income.
+
+  Same rule as ADR-013: a metric a company does not report stays unavailable and is never approximated. Shares issued for compensation is not mapped (3 of 10 report it, with different meanings).
+- **The filing's own XBRL (D1):** `sec.filing_xbrl` reads each filing's XBRL instance from SEC Archives. It is used for reconciliation and for class sums.
+- **Class sums (D2):** when a filing reports share counts per class only (Meta; Alphabet's cover page), the common classes are added, labelled "sum of classes". Only for inline XBRL filings since 2019-06.
+- **Derived metrics,** computed at read time from the values known at the As known on date:
+  - free cash flow = operating cash flow − capex (both required);
+  - total debt = non-current long-term debt (required) + current portion + commercial paper. A short item the balance sheet does not report counts as 0 and is shown as such (D4);
   - net debt = total debt − cash.
-- **Splits:** store split events (Alpaca corporate actions, already fetched in M0.7). Show per-share history split-adjusted beside the reported values. This resolves the ADR-013 restatement-vs-split gap.
-- **Quarterly and trailing-twelve-month tables:** 10-Q year-to-date values are differenced into quarters, keeping the provenance of both inputs.
-- **Reconciliation job:** every stored fact of an issuer's latest 10-K and 10-Q is compared with the value that filing's accession reports. Balance identities are checked where reported. Results appear on a reconciliation page.
+- **Splits (D3):** split events come from Alpaca corporate actions (2016 on) and a reviewed list citing the 8-K (AAPL 2014, Google 2014). Per-share history is split-adjusted beside the reported values. This resolves the ADR-013 restatement-vs-split gap.
+- **Quarterly and trailing-twelve-month tables:** 10-Q year-to-date values are differenced into quarters, keeping the provenance of both inputs. EPS uses only the reported three-month values.
+- **Reconciliation:**
+  - Each issuer's latest 10-K and 10-Q is compared, fact by fact, with what we stored as known at the filing's acceptance time.
+  - Also checked: the balance identity, quarters against the reported quarter, and split-like restatements.
+  - Results are on the Reconciliation page (`/system/reconciliation`).
 
 **Acceptance**
-- [ ] Every stored fact of each issuer's latest 10-K equals the value in that filing (accession-level check): 0 mismatches, or each mismatch explained by a later restatement.
-- [ ] FCF, total debt and net debt exist for every year where all inputs exist, and never otherwise.
-- [ ] AAPL per-share history is continuous across the August 2020 4-for-1 split, with the reported values still visible.
-- [ ] Quarterly values derived from year-to-date filings add up to the annual totals.
+- [x] Every stored fact of each issuer's latest 10-K equals the value in that filing (accession-level check): 0 mismatches, or each mismatch explained by a later restatement. (Live 2026-10-06: all ten issuers' latest 10-K and 10-Q pass, 0 mismatched / missing / extra; later restatements counted separately.)
+- [x] FCF, total debt and net debt exist for every year where all inputs exist, and never otherwise. (Integration test over AAPL, XOM, META; live: total debt for 9 of 10, none for JPMorgan.)
+- [x] AAPL per-share history is continuous across the August 2020 4-for-1 split, with the reported values still visible. (FY2017 EPS 9.21 reported, 2.3025 adjusted; also NVDA 2021/2024, GOOGL 2022, ORLY 2025.)
+- [x] Quarterly values derived from year-to-date filings add up to the annual totals. (Apple FY2025 quarters sum to $416.161B; Q2/Q3 equal the reported three-month values.)
 
 ## M1.2 Market inputs for valuation
 **Build**

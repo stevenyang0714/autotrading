@@ -21,6 +21,10 @@ terms:
   rate_limit: {name: 請求速率上限, hint: 平台每秒最多向該來源發出的請求數。}
   update_cadence: {name: 更新頻率, hint: 來源多久發布一次新資料。}
   ingestion_status: {name: 擷取狀態, hint: 某次資料擷取的結果：成功、略過、失敗等。}
+  page_reconciliation: {name: 財報對帳, hint: 每家公司最新 10-K、10-Q 與申報檔本身的 XBRL 逐項比對的結果。}
+  filing_reconciliation: {name: 申報對帳, hint: 用申報檔自己的 XBRL 數字，比對我們在受理當時存的值。}
+  reconciliation_status: {name: 對帳結果, hint: pass 全部一致；warn 只有提醒；fail 有數字不一致、缺漏或多存。}
+  balance_identity: {name: 資產負債恆等式, hint: 資產總額 = 負債加股東權益；不成立代表讀取或申報有問題。}
   ingestion_note: {name: 擷取備註, hint: 這次擷取對來源資料做過的檢查或校正，例如改用申報表頭的受理時間。}
   dead_letter: {name: 失敗佇列, hint: 重試多次仍失敗的擷取工作，需要人工處理。}
   as_of: {name: 資料時間, hint: 資料所反映的時間點。}
@@ -93,6 +97,24 @@ terms:
   capex: {name: 資本支出, hint: 購置廠房、設備等固定資產支付的現金。}
   share_repurchases: {name: 庫藏股買回, hint: 公司實際支付買回自家股票的現金。}
   stock_based_compensation: {name: 股票酬勞, hint: 發給員工的股票與選擇權費用，屬非現金費用。}
+  shares_outstanding: {name: 流通在外股數, hint: 資產負債表日的普通股流通股數；多股別公司為各股別加總。}
+  shares_outstanding_cover: {name: 封面流通股數, hint: 申報封面上、接近申報日的流通股數，日期在期末之後。}
+  shares_repurchased: {name: 買回股數, hint: 期間內實際買回的自家股票股數，不是授權額度。}
+  repurchase_authorized: {name: 買回授權額度, hint: 董事會批准可用於買回的金額；授權不等於實際買回。}
+  repurchase_remaining: {name: 剩餘買回額度, hint: 已授權但尚未用掉的買回金額，不代表一定會買。}
+  depreciation_amortization: {name: 折舊與攤銷, hint: 固定資產與無形資產的非現金費用，EBITDA 的組成之一。}
+  stockholders_equity: {name: 股東權益, hint: 歸屬母公司股東的帳面價值；大量買回會使它變小甚至為負。}
+  dividends_paid: {name: 已付股利, hint: 期間內實際以現金發放的股利。}
+  interest_expense: {name: 利息費用, hint: 借款在期間內認列的利息成本。}
+  income_tax_expense: {name: 所得稅費用, hint: 期間內認列的所得稅（含遞延），不等於實際繳納的稅。}
+  pretax_income: {name: 稅前淨利, hint: 繼續營業單位扣除所得稅前的利潤。}
+  free_cash_flow: {name: 自由現金流, hint: 營業現金流減資本支出；兩者都有申報才計算。}
+  total_debt: {name: 總負債（借款）, hint: 長期負債（含一年內到期）加商業本票；未申報的短期項目以 0 計並標示。}
+  net_debt: {name: 淨負債, hint: 總負債減現金；負值代表現金多於負債。}
+  quarterly_derived_value: {name: 單季值（推算）, hint: 由累計數相減得到單季，例如第二季 = 半年累計 − 第一季。}
+  trailing_twelve_months: {name: 近四季合計（TTM）, hint: 最近連續四個季度的合計，只用於流量類數字。}
+  split_adjusted: {name: 分割調整值, hint: 依之後的股票分割換算到目前股數基準的值，原始申報值仍並列。}
+  split_event: {name: 股票分割, hint: 股數按比例改變（例如一股變四股），從除權日起生效。}
 
   # macro series
   observation_date: {name: 觀測日期, hint: FRED 標示數值的日期，為期間的第一天；不是公布日。}

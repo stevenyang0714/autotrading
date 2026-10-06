@@ -133,7 +133,7 @@ Applies ADR-007 and ADR-012 to SEC data (M0.5). Code: `apps/api/src/autotrading/
   - **Unchanged:** an incoming value equal to the version known at its own publication time. Re-reading a full history after a restatement is therefore not a conflict.
   - **New version:** a later, different value. It is stored as a restatement.
   - **Conflict:** two different values from one publication (one filing, one period), or a new value older than the newest stored version. The batch path stores none of the disagreeing values, keeps the current version and counts the conflict in `ingestion_runs.rows_conflicted`, so the run still succeeds. The single-fact `insert` still raises.
-  - **Stock splits:** splits make later filings report different per-share values and share counts for past periods (Alphabet 20-for-1 in 2022, O'Reilly 15-for-1 in 2025). These are stored as restatement versions, as reported. Phase 1 per-share analytics must handle split adjustment explicitly.
+  - **Stock splits:** splits make later filings report different per-share values and share counts for past periods (Alphabet 20-for-1 in 2022, O'Reilly 15-for-1 in 2025). These are stored as restatement versions, as reported. Phase 1 per-share analytics must handle split adjustment explicitly. Resolved by ADR-021 (M1.1): splits are stored and per-share history is split-adjusted on read.
 - **Refresh:**
   - **Schedule:** daily at 10:00 SGT (APScheduler cron). `make sec-refresh` queues the same runs manually.
   - **Chain:** a `sec.tickers` run comes first. Its Dramatiq `on_success` callback queues one `sec.company` run per universe equity.
@@ -279,7 +279,7 @@ Applies ADR-004, ADR-006, ADR-007 and ADR-012 to prices (M0.7). Code: `apps/api/
 - **Universe:** ETFs in `config/universe.yaml` become instruments of type `etf`. Equities reuse their SEC instrument. Ticker identifiers use the `alpaca` namespace.
 - **Known gaps:**
   - IEX is a small share of volume and its spread can be wide. Examples from 2026-10-05: SPY traded 1.09M shares on IEX against 44.9M consolidated; AAPL's IEX quote at the close was 316.31 / 349.69. Prices are always labelled `live_single_venue`.
-  - On a split's ex-date, the live IEX day change may compare across the split, because the provider's previous close is not adjusted. This is fixed once corporate actions are stored.
+  - On a split's ex-date, the live IEX day change may compare across the split, because the provider's previous close is not adjusted. This is fixed once corporate actions are stored. Splits are stored since M1.1 (ADR-021); using them for the live day change is still to do.
   - Raw snapshot payloads (about 5–10 KB a minute, about 3 MB a session) have no retention policy yet.
   - Closes are split-adjusted only. Dividends are not added back, so the chart is not total return.
   - SEC and FRED data replayed in CI carry no feed status, so only prices trigger the DEMO DATA banner.
@@ -395,6 +395,54 @@ Steven accepted `docs/reports/phase0_exit.md` (the Phase 1 entry gate) and appro
 - **Opportunity Radar:** stays Phase 2.
 - **Universe:** unchanged.
 - **Buyback state thresholds:** v0.1 as proposed (M1.4). They are defaults, versioned and unvalidated; M1.4 shows each company's state for review.
+
+
+## ADR-021 Financial data completion and filing reconciliation — Accepted (2026-10-06, approved by Steven with the M1.1 plan)
+M1.1. Code: `adapters/sec/` (concepts, instance, filing_xbrl, reconcile), `adapters/alpaca/splits.py`, `domain/` (splits, derived, quarters, reconciliation).
+- **New concepts (D0, checked against the ten issuers' filings on 2026-10-06):**
+  - Concepts are qualified by taxonomy (us-gaap, dei, srt).
+  - 11 new metrics: shares_outstanding, shares_outstanding_cover (dei, cover date), shares_repurchased, repurchase_authorized (srt first: authorizations moved to srt in 2021), repurchase_remaining, depreciation_amortization, stockholders_equity, dividends_paid, interest_expense, income_tax_expense, pretax_income.
+  - ADR-013 still applies: Microsoft's and Alphabet's D&A, Apple's, Lowe's and JPMorgan's interest expense, and Apple's, Microsoft's and Alphabet's current authorizations stay unavailable.
+  - Shares issued for compensation is not mapped (3 of 10 report it, with different meanings). TTM EPS waits for M1.2.
+- **The filing's own XBRL (D1):**
+  - `sec.filing_xbrl` reads `{primary document}_htm.xml` from www.sec.gov/Archives for inline XBRL filings.
+  - Which filings: each issuer's latest 10-K and 10-Q, and every 10-K/10-Q since 2019-06-15 that left a share count unstored.
+  - One run per company after each `sec.company` run. Filings are written in publication order. Each filing is read once per methodology version (0.1.1).
+  - A filing another issuer co-filed and holds the facts of is skipped (ExxonMobil Holdings' 10-Q listed under Exxon Mobil Corp).
+  - The SEC client only requests the endpoints the adapter uses.
+- **Class sums (D2):**
+  - When a filing reports no total share count, the members of `StatementClassOfStockAxis` are added.
+  - Allowed when every member is a standard us-gaap common class, or when a filing of the run confirms the set: its classes add up exactly to a reported total on some date. Alphabet's custom `goog:CapitalClassCMember` is confirmed by its 10-K balance sheet; the latest 10-K joins runs that add class sums.
+  - Stored as the filing's facts with `source_concept` "... (sum of classes)". Meta 2025-12-31: 2,187M Class A + 343M Class B = 2,530M.
+- **Splits (D3):**
+  - `split_events` (migration 0012, append-only) holds one row per instrument and ex-date.
+  - Written by `alpaca.splits` (daily, with the bars) from Alpaca corporate actions since 2016, plus `config/splits.yaml` for earlier splits citing the issuer's 8-K: AAPL 7-for-1, ex 2014-06-09; Google's Class C dividend, ex 2014-04-03. These were the only universe splits between 2009 and 2016.
+  - A split is effective, and published, from the start of its ex-date in New York; it was announced weeks before, so this is never early.
+  - A reported value is on the basis of the splits effective before its filing was accepted. On read, share counts are multiplied and per-share amounts divided by the splits after the filing, up to the As known on time.
+  - Apple FY2017 EPS: 9.21 as reported, 2.3025 on today's basis.
+  - Closes ADR-013's split gap and ADR-017's "corporate actions not stored".
+- **Derived values (D4), at read time from facts known at the As known on time:**
+  - free cash flow = operating cash flow − capex, both required;
+  - total debt = non-current long-term debt (required) + current portion + commercial paper; unreported short items count as 0 and are named;
+  - net debt = total debt − cash.
+- **Quarters:**
+  - Quarters are differenced from year-to-date values: Q1 reported, Q2 and Q3 year-to-date differences, Q4 = year − 9 months. Fiscal years are found by length, which covers 52/53-week years.
+  - EPS and diluted shares use only the reported three-month values.
+  - TTM = four consecutive quarters, flows only.
+- **Reconciliation (migration 0013, append-only):** every filing read is compared with what we store as known at its acceptance time.
+  - Fact items: match, mismatch, missing, extra, and restated_later (information only).
+  - The balance identity (assets = liabilities and equity) per date.
+  - Warnings: quarters differenced from the values known then against the reported quarter (one rounding unit allowed), and EPS and diluted shares restated together by a split-like ratio no recorded split explains.
+  - Status: fail (a fact problem or a failed identity), warn (warnings only), pass.
+  - A "long-term debt = non-current + current" identity was dropped: the debt note's total is principal, the balance sheet shows carrying amounts.
+- **Live result 2026-10-06 (91 filings):**
+  - Every issuer's latest 10-K and 10-Q pass with 0 mismatched, missing or extra.
+  - 1 warn: JPMorgan revised Q1 2020 inside its Q2 2020 10-Q.
+- **Known gaps:**
+  - Dimensional facts other than share classes are not compared.
+  - Company-specific concepts are not read.
+  - The split check covers the newest 10-K of each run.
+  - Reconciliation is a snapshot at the time the filing was read.
 
 ---
 

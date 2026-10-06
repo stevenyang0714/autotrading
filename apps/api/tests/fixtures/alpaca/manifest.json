@@ -1,5 +1,6 @@
 {
   "recorded_at": "2026-10-06T05:00:15+00:00",
+  "splits_recorded_at": "2026-10-06T14:54:34+00:00",
   "runs": [
     {
       "job": "alpaca.snapshots",
@@ -83,6 +84,25 @@
         "start": "2024-06-03",
         "end": "2024-06-14"
       }
+    },
+    {
+      "job": "alpaca.splits",
+      "params": {
+        "symbols": [
+          "AAPL",
+          "MSFT",
+          "GOOGL",
+          "META",
+          "NVDA",
+          "JPM",
+          "XOM",
+          "AZO",
+          "ORLY",
+          "LOW"
+        ],
+        "start": "2016-01-01",
+        "end": "2026-10-05"
+      }
     }
   ],
   "files": {
@@ -94,6 +114,7 @@
     "https://data.alpaca.markets/v1/corporate-actions?symbols=NVDA&types=forward_split%2Creverse_split&start=2024-06-03&end=2024-06-14": "bars_nvda_split_00.json",
     "https://data.alpaca.markets/v2/stocks/bars?symbols=NVDA&timeframe=1Day&adjustment=raw&feed=sip&start=2024-06-03&limit=10000&end=2024-06-14": "bars_nvda_split_01.json",
     "https://data.alpaca.markets/v2/stocks/bars?symbols=NVDA&timeframe=1Day&adjustment=split&feed=sip&start=2024-06-03&limit=10000&end=2024-06-14": "bars_nvda_split_02.json",
-    "https://data.alpaca.markets/v2/stocks/bars?symbols=NVDA&timeframe=1Day&adjustment=split&feed=sip&start=2016-01-01&limit=10000&end=2024-06-14": "bars_nvda_split_03.json"
+    "https://data.alpaca.markets/v2/stocks/bars?symbols=NVDA&timeframe=1Day&adjustment=split&feed=sip&start=2016-01-01&limit=10000&end=2024-06-14": "bars_nvda_split_03.json",
+    "https://data.alpaca.markets/v1/corporate-actions?symbols=AAPL%2CMSFT%2CGOOGL%2CMETA%2CNVDA%2CJPM%2CXOM%2CAZO%2CORLY%2CLOW&types=forward_split%2Creverse_split&start=2016-01-01&end=2026-10-05&limit=1000": "splits_00.json"
   }
 }

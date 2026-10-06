@@ -13,7 +13,7 @@ import httpx2 as httpx
 import pytest
 
 from autotrading.adapters.sec.client import MAX_ATTEMPTS, SecClient, SecConfigError, SecRequestError
-from autotrading.adapters.sec.concepts import METRIC_MAPPINGS
+from autotrading.adapters.sec.concepts import METRIC_MAPPINGS, split_concept
 from autotrading.adapters.sec.parsing import (
     filing_index_url,
     load_companyfacts,
@@ -31,6 +31,9 @@ from autotrading.ingestion.schedule import refresh_window
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "sec"
 UA = "Test Runner test@example.com"
+
+
+SUBMISSIONS = "https://data.sec.gov/submissions/CIK0000320193.json"
 
 
 def fixture(name: str) -> bytes:
@@ -74,9 +77,9 @@ def test_every_attempt_takes_a_token_and_sends_the_user_agent() -> None:
         [httpx.Response(429, headers={"Retry-After": "3"}), httpx.Response(200, json={"ok": 1})]
     )
     tokens: list[None] = []
-    payload = client.get("https://data.sec.gov/x.json", lambda: tokens.append(None))
+    payload = client.get(SUBMISSIONS, lambda: tokens.append(None))
     assert json.loads(payload.content) == {"ok": 1}
-    assert payload.source_url == "https://data.sec.gov/x.json"
+    assert payload.source_url == SUBMISSIONS
     assert len(tokens) == 2
     assert sleeps == [3.0]  # Retry-After honoured
     assert all(r.headers["User-Agent"] == UA for r in requests)
@@ -85,16 +88,31 @@ def test_every_attempt_takes_a_token_and_sends_the_user_agent() -> None:
 def test_throttling_that_never_ends_fails_the_request() -> None:
     client, requests, sleeps = client_with([httpx.Response(403)] * MAX_ATTEMPTS)
     with pytest.raises(SecRequestError, match="HTTP 403"):
-        client.get("https://data.sec.gov/x.json", lambda: None)
+        client.get(SUBMISSIONS, lambda: None)
     assert len(requests) == MAX_ATTEMPTS
     assert sleeps == [2.0, 4.0, 8.0]  # exponential backoff between attempts
 
 
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://data.sec.gov/api/xbrl/frames/us-gaap/Revenues/USD/CY2024.json",
+        "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany",
+        "http://data.sec.gov/submissions/CIK0000320193.json",
+        "https://example.com/submissions/CIK0000320193.json",
+    ],
+)
+def test_only_the_endpoints_the_adapter_uses_are_requested(url: str) -> None:
+    client, _, _ = client_with([httpx.Response(200, content=b"{}")])
+    with pytest.raises(SecRequestError, match="refused"):
+        client.get(url, lambda: None)
+
+
 def test_not_found_is_an_error_unless_allowed() -> None:
     client, _, _ = client_with([httpx.Response(404), httpx.Response(404)])
-    assert client.get("https://data.sec.gov/x.json", lambda: None, allow_missing=True) is None
+    assert client.get(SUBMISSIONS, lambda: None, allow_missing=True) is None
     with pytest.raises(SecRequestError, match="HTTP 404"):
-        client.get("https://data.sec.gov/x.json", lambda: None)
+        client.get(SUBMISSIONS, lambda: None)
 
 
 # ---------- time rules (ADR-013) ----------
@@ -203,6 +221,31 @@ def test_wrong_unit_wrong_period_type_and_repeats_are_dropped() -> None:
         ("cash", "USD", Decimal(5), None),
         ("eps_diluted", "USD/shares", Decimal("7.46"), date(2024, 1, 1)),
     ]
+
+
+def test_concepts_are_read_across_taxonomies_in_priority_order() -> None:
+    authorization = {"units": {"USD": [obs("A", 50, "2024-01-31", start=None)]}}
+    older_tag = {"units": {"USD": [obs("A", 40, "2024-01-31", start=None)]}}
+    cover = {"units": {"shares": [obs("A", 2190, "2025-10-17", start=None)]}}
+    values = select_values(
+        {
+            "facts": {
+                "srt": {"StockRepurchaseProgramAuthorizedAmount1": authorization},
+                "us-gaap": {"StockRepurchaseProgramAuthorizedAmount1": older_tag},
+                "dei": {"EntityCommonStockSharesOutstanding": cover},
+            }
+        }
+    )
+    assert sorted((v.metric_id, v.concept, v.value) for v in values) == [
+        ("repurchase_authorized", "srt:StockRepurchaseProgramAuthorizedAmount1", Decimal(50)),
+        ("shares_outstanding_cover", "dei:EntityCommonStockSharesOutstanding", Decimal(2190)),
+    ]
+
+
+@pytest.mark.parametrize("concept", ["Revenues", "ifrs-full:Revenue", "us-gaap:"])
+def test_concepts_must_be_qualified_by_a_known_taxonomy(concept: str) -> None:
+    with pytest.raises(ValueError, match="qualified"):
+        split_concept(concept)
 
 
 def test_two_values_for_one_filing_and_period_are_both_kept_for_the_conflict_check() -> None:

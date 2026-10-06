@@ -38,7 +38,10 @@ def main() -> None:
     )
     window = refresh_window(datetime.now(UTC), manual=True)
     sec_runs = sec_replay.replay(
-        runner, window, universe_predecessors(settings.resolved_config_dir())
+        runner,
+        window,
+        universe_predecessors(settings.resolved_config_dir()),
+        before_instances=lambda: alpaca_replay.replay_splits(runner, window),
     )
     fred_runs = fred_replay.replay(runner, window)
     alpaca_runs = alpaca_replay.replay(runner, window)

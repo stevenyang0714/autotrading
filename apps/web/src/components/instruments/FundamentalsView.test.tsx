@@ -19,7 +19,8 @@ describe("FundamentalsView with recorded API responses", () => {
     const revenue = cellText(container, "Annual results", "revenue", 0);
     expect(revenue).toContain("$416.161B");
     expect(revenue).toContain("10-K 0000320193-25-000079");
-    const link = screen.getAllByRole("link", { name: "10-K 0000320193-25-000079" })[0];
+    const annual = screen.getByRole("table", { name: "Annual results" });
+    const link = within(annual).getAllByRole("link", { name: "10-K 0000320193-25-000079" })[0];
     expect(link.getAttribute("href")).toBe(
       "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
     );
@@ -52,6 +53,48 @@ describe("FundamentalsView with recorded API responses", () => {
     );
     expect(cellText(container, "Annual results", "revenue", 0)).toContain("by Exxon Mobil Corp");
     expect(cellText(container, "Balance sheet", "cash", 0)).not.toContain("by Exxon Mobil Corp");
+  });
+
+  it("derives free cash flow and names its inputs (ADR-021)", () => {
+    const { container } = render(<FundamentalsView data={recordedFundamentals.aapl} />);
+    const fcf = cellText(container, "Annual results", "free_cash_flow", 0);
+    expect(fcf).toContain("$98.767B");
+    expect(fcf).toContain("operating cash flow − capex");
+    expect(fcf).toContain("Operating Cash Flow $111.482B");
+  });
+
+  it("shows Apple's FY2017 EPS as reported and split-adjusted", () => {
+    const { container } = render(<FundamentalsView data={recordedFundamentals.aapl} />);
+    const table = screen.getByRole("table", { name: "Per-share history" });
+    const column = Array.from(table.querySelectorAll("thead th")).findIndex((th) =>
+      th.textContent?.includes("2017-09-30"),
+    );
+    const eps = cellText(container, "Per-share history", "eps_diluted", column - 1);
+    expect(eps).toContain("$9.21");
+    expect(eps).toContain("$2.3025 split-adjusted (÷4)");
+  });
+
+  it("shows quarters with trailing twelve months", () => {
+    render(<FundamentalsView data={recordedFundamentals.aapl} />);
+    const quarterly = screen.getByRole("table", { name: "Quarterly" });
+    expect(quarterly.querySelectorAll("thead th")).toHaveLength(10); // metric, 8 quarters, TTM
+    const revenue = within(quarterly)
+      .getAllByRole("row")
+      .find((r) => r.querySelector(`th [data-term-id="revenue"]`));
+    expect(revenue?.querySelector("[data-ttm]")?.textContent).toMatch(/\$\d+\.\d{3}B/);
+  });
+
+  it("says which debt components were counted as zero", () => {
+    const { container } = render(<FundamentalsView data={recordedFundamentals.meta} />);
+    expect(cellText(container, "Balance sheet", "total_debt", 0)).toContain(
+      "Not reported, counted as zero",
+    );
+    expect(screen.getByRole("list", { name: "Latest reported values" }).textContent).toContain(
+      "shares",
+    );
+    expect(cellText(container, "Balance sheet", "shares_outstanding", 0)).toContain(
+      "sum of share classes",
+    );
   });
 
   it.each(Object.entries(recordedFundamentals))("%s renders no unexplained number", (_name, data) => {
