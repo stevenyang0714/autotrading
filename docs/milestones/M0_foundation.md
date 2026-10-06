@@ -153,9 +153,9 @@ Delivered with M0.4: glossary registry (`glossary_terms`, migration 0003, synced
 - Rule-based entity/ticker extraction using the SEC ticker dictionary (no LLM in Phase 0).
 
 **Acceptance**
-- [ ] Every news item links to its original URL.
-- [ ] Test: syndicated copies of one story share a `duplicate_group_id`.
-- [ ] No stored field contains full article text.
+- [x] Every news item links to its original URL. (`tests/integration/test_news.py`, e2e)
+- [x] Test: syndicated copies of one story share a `duplicate_group_id`. (Real case: one Nvidia buyback headline on 33 sites, recorded from GDELT.)
+- [x] No stored field contains full article text. (Feeds stripped before storage; DB limits titles to 500 and summaries to 300 characters; stored payloads checked.)
 
 ## M0.9 Phase 0 dashboard (first working screens)
 **Build**

@@ -54,6 +54,12 @@ terms:
   dashboard_strategy_lab: {name: 策略實驗室, hint: 模擬交易日誌與回測（Phase 1–2）。}
   dashboard_execution: {name: 下單執行, hint: 下單預覽與模擬帳戶（Phase 5）。}
 
+  # news (M0.8)
+  duplicate_group: {name: 轉載群組, hint: 同一則新聞的各個轉載版本歸成一組，只算一則報導。}
+  page_news: {name: 新聞, hint: universe 公司的英文新聞與官方發布，同一則新聞的轉載收合成一列。}
+  news_time_basis: {name: 新聞時間, hint: 發布者自己的發布時間，或 GDELT 第一次看到的時間（不會早於發布）。}
+  story_count: {name: 報導數, hint: 不重複的新聞則數（以轉載群組計），不是文章數。}
+
   # market data (M0.7)
   last_price: {name: 最新成交價, hint: 行情來源最近一筆成交價；免費方案只有 IEX 單一交易所。}
   bid: {name: 買價, hint: 目前買方出的最高價（此交易所內）。}
