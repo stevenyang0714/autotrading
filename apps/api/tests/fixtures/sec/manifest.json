@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-06T14:34:50+00:00",
+  "recorded_at": "2026-10-06T14:44:49+00:00",
   "files": {
     "https://www.sec.gov/files/company_tickers_exchange.json": "company_tickers_exchange.json",
     "https://data.sec.gov/api/xbrl/companyfacts/CIK0000320193.json": "companyfacts_CIK0000320193.json",
@@ -14,7 +14,12 @@
     "https://data.sec.gov/api/xbrl/companyfacts/CIK0001326801.json": "companyfacts_CIK0001326801.json",
     "https://data.sec.gov/submissions/CIK0001326801.json": "submissions_CIK0001326801.json",
     "https://data.sec.gov/submissions/CIK0001326801-submissions-001.json": "CIK0001326801-submissions-001.json",
-    "https://data.sec.gov/submissions/CIK0001326801-submissions-002.json": "CIK0001326801-submissions-002.json"
+    "https://data.sec.gov/submissions/CIK0001326801-submissions-002.json": "CIK0001326801-submissions-002.json",
+    "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/aapl-20250927_htm.xml": "0000320193-25-000079_instance.xml",
+    "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/aapl-20260627_htm.xml": "0000320193-26-000020_instance.xml",
+    "https://www.sec.gov/Archives/edgar/data/1326801/000162828026003942/meta-20251231_htm.xml": "0001628280-26-003942_instance.xml",
+    "https://www.sec.gov/Archives/edgar/data/1326801/000162828026050705/meta-20260630_htm.xml": "0001628280-26-050705_instance.xml",
+    "https://www.sec.gov/Archives/edgar/data/1326801/000132680119000055/fb-06302019x10q_htm.xml": "0001326801-19-000055_instance.xml"
   },
   "trimmed": {
     "company_tickers_exchange.json": "data rows limited to config/universe.yaml equities",
@@ -27,8 +32,20 @@
     "companyfacts_CIK0001326801.json": "concepts limited to adapters/sec/concepts.py",
     "submissions_CIK0001326801.json": "filings limited to forms ['10-K', '10-K/A', '10-Q', '10-Q/A', '8-K', '8-K/A', '8-K12B', '8-K12B/A'] and accessions its facts cite; acceptanceDateTime of every row from its EDGAR header (ADR-013 amendment)",
     "CIK0001326801-submissions-001.json": "filings limited to forms ['10-K', '10-K/A', '10-Q', '10-Q/A', '8-K', '8-K/A', '8-K12B', '8-K12B/A'] and accessions its facts cite; acceptanceDateTime of every row from its EDGAR header (ADR-013 amendment)",
-    "CIK0001326801-submissions-002.json": "filings limited to forms ['10-K', '10-K/A', '10-Q', '10-Q/A', '8-K', '8-K/A', '8-K12B', '8-K12B/A'] and accessions its facts cite; acceptanceDateTime of every row from its EDGAR header (ADR-013 amendment)"
+    "CIK0001326801-submissions-002.json": "filings limited to forms ['10-K', '10-K/A', '10-Q', '10-Q/A', '8-K', '8-K/A', '8-K12B', '8-K12B/A'] and accessions its facts cite; acceptanceDateTime of every row from its EDGAR header (ADR-013 amendment)",
+    "0000320193-25-000079_instance.xml": "facts limited to mapped and identity concepts, with their contexts and units",
+    "0000320193-26-000020_instance.xml": "facts limited to mapped and identity concepts, with their contexts and units",
+    "0001628280-26-003942_instance.xml": "facts limited to mapped and identity concepts, with their contexts and units",
+    "0001628280-26-050705_instance.xml": "facts limited to mapped and identity concepts, with their contexts and units",
+    "0001326801-19-000055_instance.xml": "facts limited to mapped and identity concepts, with their contexts and units"
   },
+  "instances": [
+    "0000320193-25-000079",
+    "0000320193-26-000020",
+    "0001628280-26-003942",
+    "0001628280-26-050705",
+    "0001326801-19-000055"
+  ],
   "restatement_case": {
     "metric_id": "net_income",
     "period": [

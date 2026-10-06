@@ -128,7 +128,7 @@ class SecCompanyJob(IngestionJob):
             raise MissingEntityError(f"no entity for CIK {self.cik}; run sec.tickers first")
         entity_id = cik_identifier.entity_id
         source = session.get_one(Source, SOURCE_ID)
-        stamp = _Stamp(source, ctx.run_id)
+        stamp = Stamp(source, ctx.run_id)
 
         filings: dict[str, tuple[FilingRecord, StoredPayload]] = {}
         facts_payload: StoredPayload | None = None
@@ -164,7 +164,7 @@ class SecCompanyJob(IngestionJob):
         values = select_values(load_companyfacts(facts_payload.content))
         published = _publication_times(session, entity_id, values, filings, known)
         facts = [
-            _fact(value, entity_id, self.cik, published, facts_payload, stamp) for value in values
+            fact_in(value, entity_id, self.cik, published, facts_payload, stamp) for value in values
         ]
         result = FinancialFactRepository(session).insert_many(facts, actor=ACTOR)
         for conflict in result.conflicts:
@@ -202,7 +202,7 @@ def _publication_times(
     return times
 
 
-class _Stamp:
+class Stamp:
     """Provenance fields shared by every row of one run."""
 
     def __init__(self, source: Source, run_id: UUID) -> None:
@@ -251,7 +251,7 @@ def _store_filings(
     entity_id: UUID,
     filings: Iterable[tuple[FilingRecord, StoredPayload]],
     known: set[str],
-    stamp: _Stamp,
+    stamp: Stamp,
 ) -> int:
     rows = []
     for record, payload in filings:
@@ -291,13 +291,13 @@ def _store_filings(
     return len(rows)
 
 
-def _fact(
+def fact_in(
     value: XbrlValue,
     entity_id: UUID,
     cik: str,
     published_times: dict[str, tuple[datetime, TimePrecision]],
     payload: StoredPayload,
-    stamp: _Stamp,
+    stamp: Stamp,
 ) -> FinancialFactIn:
     # Not in the submissions index: fall back to the filing date from the XBRL data.
     published = published_times.get(value.accession) or publication_time(None, value.filed)

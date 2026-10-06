@@ -12,6 +12,10 @@ Writes real responses, trimmed only where noted in manifest.json:
   their XBRL facts cite (their full indexes are mostly Form 4 and proxy material).
 Fails if the cases the integration tests rely on are no longer in the data.
 
+Filing XBRL instances (ADR-021): Apple's latest 10-K and 10-Q, and Meta's latest 10-K and
+10-Q plus its first inline XBRL 10-Q, trimmed to the mapped and identity concepts with the
+contexts and units they use.
+
 Submissions already recorded are kept: they were recorded on 2026-10-05, before SEC's
 acceptance-time bug, and checked against EDGAR index pages (ADR-013). A company recorded for
 the first time gets every row's acceptance time from its EDGAR header, because SEC's JSON is
@@ -19,8 +23,10 @@ unreliable since 2026-10-06 (adapters/sec/acceptance.py). Delete a company's sub
 to record them again.
 """
 
+import io
 import json
 import time
+import xml.etree.ElementTree as ET
 from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
@@ -34,8 +40,14 @@ from autotrading.adapters.sec.company import (
     submissions_url,
 )
 from autotrading.adapters.sec.concepts import MAPPED_CONCEPTS, split_concept
+from autotrading.adapters.sec.instance import (
+    IDENTITY_CONCEPTS,
+    TAXONOMY_URI,
+    XBRLI,
+    instance_url,
+)
 from autotrading.adapters.sec.parsing import load_companyfacts, parse_company, select_values
-from autotrading.adapters.sec.refresh import universe_equities
+from autotrading.adapters.sec.refresh import INLINE_XBRL_SINCE, universe_equities
 from autotrading.adapters.sec.tickers import TICKERS_URL
 from autotrading.settings import get_settings
 
@@ -132,15 +144,77 @@ def main() -> None:
             for page, block in pages.items():
                 files[submissions_page_url(page)] = write(page, _dump(block))
 
+        instances = record_instances(client, files, trimmed)
+
     _check_restatement(load_companyfacts((HERE / f"companyfacts_CIK{APPLE}.json").read_bytes()))
     manifest = {
         "recorded_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "files": files,
         "trimmed": trimmed,
+        "instances": instances,
         "restatement_case": RESTATEMENT,
     }
     (HERE / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     print(f"recorded {len(files)} files into {HERE}")
+
+
+def record_instances(
+    client: SecClient, files: dict[str, str], trimmed: dict[str, str]
+) -> list[str]:
+    """Instances of the filings listed in the module docstring; returns their accessions."""
+    chosen: list[tuple[str, str, str]] = []  # (cik, accession, primary document)
+    for cik, first_too in ((APPLE, False), (META, True)):
+        rows = []
+        for url, name in files.items():
+            if f"CIK{cik}" in url and "/submissions/" in url:
+                data = json.loads((HERE / name).read_bytes())
+                block = data["filings"]["recent"] if "filings" in data else data
+                rows += [
+                    (block["filingDate"][i], block["form"][i], a, block["primaryDocument"][i])
+                    for i, a in enumerate(block["accessionNumber"])
+                    if block["form"][i] in ("10-K", "10-Q") and block["isInlineXBRL"][i]
+                ]
+        rows.sort(reverse=True)
+        picks = [next(r for r in rows if r[1] == form) for form in ("10-K", "10-Q")]
+        if first_too:
+            picks.append(min(r for r in rows if r[0] >= INLINE_XBRL_SINCE.isoformat()))
+        chosen += [(cik, accession, document) for _, _, accession, document in picks]
+    for cik, accession, document in chosen:
+        url = instance_url(cik, accession, document)
+        name = f"{accession}_instance.xml"
+        files[url] = write(name, _trimmed_instance(client.get(url, throttle).content))
+        trimmed[name] = (
+            "facts limited to mapped and identity concepts, with their contexts and units"
+        )
+    return [accession for _, accession, _ in chosen]
+
+
+def _trimmed_instance(content: bytes) -> bytes:
+    for _, (prefix, uri) in ET.iterparse(io.BytesIO(content), events=["start-ns"]):
+        if prefix:
+            ET.register_namespace(prefix, uri)
+    root = ET.fromstring(content)
+    keep = MAPPED_CONCEPTS | IDENTITY_CONCEPTS
+    contexts, units = set(), set()
+    for element in list(root):
+        if element.get("contextRef") is None:
+            continue
+        namespace, _, name = element.tag[1:].partition("}")
+        match = TAXONOMY_URI.match(namespace)
+        if match and f"{match.group(1) or match.group(2)}:{name}" in keep:
+            contexts.add(element.get("contextRef"))
+            if element.get("unitRef"):
+                units.add(element.get("unitRef"))
+        else:
+            root.remove(element)
+    for element in list(root):
+        if (
+            (element.tag == f"{XBRLI}context" and element.get("id") not in contexts)
+            or (element.tag == f"{XBRLI}unit" and element.get("id") not in units)
+            or element.tag.endswith("}footnoteLink")
+        ):
+            root.remove(element)
+    return ET.tostring(root, xml_declaration=True, encoding="utf-8")
 
 
 def _header_times(client: SecClient, cik: str, block: dict[str, list[Any]]) -> None:

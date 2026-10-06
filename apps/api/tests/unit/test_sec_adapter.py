@@ -33,6 +33,9 @@ FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "sec"
 UA = "Test Runner test@example.com"
 
 
+SUBMISSIONS = "https://data.sec.gov/submissions/CIK0000320193.json"
+
+
 def fixture(name: str) -> bytes:
     return (FIXTURES / name).read_bytes()
 
@@ -74,9 +77,9 @@ def test_every_attempt_takes_a_token_and_sends_the_user_agent() -> None:
         [httpx.Response(429, headers={"Retry-After": "3"}), httpx.Response(200, json={"ok": 1})]
     )
     tokens: list[None] = []
-    payload = client.get("https://data.sec.gov/x.json", lambda: tokens.append(None))
+    payload = client.get(SUBMISSIONS, lambda: tokens.append(None))
     assert json.loads(payload.content) == {"ok": 1}
-    assert payload.source_url == "https://data.sec.gov/x.json"
+    assert payload.source_url == SUBMISSIONS
     assert len(tokens) == 2
     assert sleeps == [3.0]  # Retry-After honoured
     assert all(r.headers["User-Agent"] == UA for r in requests)
@@ -85,16 +88,31 @@ def test_every_attempt_takes_a_token_and_sends_the_user_agent() -> None:
 def test_throttling_that_never_ends_fails_the_request() -> None:
     client, requests, sleeps = client_with([httpx.Response(403)] * MAX_ATTEMPTS)
     with pytest.raises(SecRequestError, match="HTTP 403"):
-        client.get("https://data.sec.gov/x.json", lambda: None)
+        client.get(SUBMISSIONS, lambda: None)
     assert len(requests) == MAX_ATTEMPTS
     assert sleeps == [2.0, 4.0, 8.0]  # exponential backoff between attempts
 
 
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://data.sec.gov/api/xbrl/frames/us-gaap/Revenues/USD/CY2024.json",
+        "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany",
+        "http://data.sec.gov/submissions/CIK0000320193.json",
+        "https://example.com/submissions/CIK0000320193.json",
+    ],
+)
+def test_only_the_endpoints_the_adapter_uses_are_requested(url: str) -> None:
+    client, _, _ = client_with([httpx.Response(200, content=b"{}")])
+    with pytest.raises(SecRequestError, match="refused"):
+        client.get(url, lambda: None)
+
+
 def test_not_found_is_an_error_unless_allowed() -> None:
     client, _, _ = client_with([httpx.Response(404), httpx.Response(404)])
-    assert client.get("https://data.sec.gov/x.json", lambda: None, allow_missing=True) is None
+    assert client.get(SUBMISSIONS, lambda: None, allow_missing=True) is None
     with pytest.raises(SecRequestError, match="HTTP 404"):
-        client.get("https://data.sec.gov/x.json", lambda: None)
+        client.get(SUBMISSIONS, lambda: None)
 
 
 # ---------- time rules (ADR-013) ----------

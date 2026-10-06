@@ -4,6 +4,9 @@ Every request carries SEC_USER_AGENT ("Name email@example.com") and takes a toke
 per-source rate limiter first (5 requests/second, config/sources.yaml). 403 and 429 are
 SEC's throttling answers and 5xx are transient: those are retried with exponential backoff,
 honouring Retry-After. Anything else fails the run, and the runner's own retries take over.
+
+Only the endpoints the adapter uses can be requested (M1.1): submissions and company facts on
+data.sec.gov; the ticker file and filing folders (headers, XBRL instances) on www.sec.gov.
 """
 
 import logging
@@ -11,6 +14,7 @@ import time
 from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import Literal, Self, overload
+from urllib.parse import urlsplit
 
 import httpx2 as httpx
 
@@ -24,6 +28,10 @@ MAX_ATTEMPTS = 4
 BASE_BACKOFF_SECONDS = 2.0
 MAX_BACKOFF_SECONDS = 60.0
 TIMEOUT_SECONDS = 60.0
+ALLOWED: dict[str, tuple[str, ...]] = {
+    "data.sec.gov": ("/submissions/", "/api/xbrl/companyfacts/"),
+    "www.sec.gov": ("/files/company_tickers_exchange.json", "/Archives/edgar/data/"),
+}
 
 
 class SecConfigError(RuntimeError):
@@ -90,6 +98,11 @@ class SecClient:
         self, url: str, acquire: Callable[[], None], *, allow_missing: bool = False
     ) -> FetchedPayload | None:
         """GET with retries. `allow_missing`: a 404 returns None (e.g. no XBRL filings yet)."""
+        parts = urlsplit(url)
+        if parts.scheme != "https" or not parts.path.startswith(
+            ALLOWED.get(parts.hostname or "", ())
+        ):
+            raise SecRequestError(f"refused: {url} is not an SEC endpoint this adapter uses")
         for attempt in range(1, MAX_ATTEMPTS + 1):
             acquire()
             try:

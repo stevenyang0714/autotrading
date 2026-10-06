@@ -9,7 +9,8 @@ Uses its own migrated database, so the ticker map does not collide with test_sec
 import json
 import os
 from collections.abc import Callable, Iterator
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
+from decimal import Decimal
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -22,9 +23,20 @@ from sqlalchemy.engine import URL
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
-from autotrading.adapters.sec.refresh import company_ciks, universe_predecessors
+from autotrading.adapters.sec.refresh import (
+    company_ciks,
+    filing_xbrl_candidates,
+    universe_predecessors,
+)
 from autotrading.config_sync import load_sources, sync_sources
-from autotrading.db.models import AuditLog, EntityRelationship, IngestionRun, Source
+from autotrading.db.models import (
+    AuditLog,
+    EntityRelationship,
+    Filing,
+    FinancialFact,
+    IngestionRun,
+    Source,
+)
 from autotrading.infra.object_store import make_s3_client
 from autotrading.infra.redis_client import make_redis
 from autotrading.ingestion.job import Window
@@ -34,7 +46,7 @@ from autotrading.ingestion.runner import IngestionRunner
 from autotrading.main import create_app
 from autotrading.settings import get_settings
 from tests.integration.conftest import alembic_config
-from tests.sec_replay import recorded_registry, replay
+from tests.sec_replay import RECORDED_INSTANCES, recorded_registry, replay
 
 pytestmark = pytest.mark.integration
 
@@ -125,7 +137,14 @@ def ends(table: dict[str, Any]) -> list[str]:
 def test_replay_ingests_both_xom_issuers(
     replayed: list[IngestionRun], sessions: sessionmaker[Session]
 ) -> None:
-    assert [r.status for r in replayed] == ["succeeded"] * 5  # tickers + 4 companies (META)
+    # tickers, 4 companies (META included), filing XBRL of Apple and Meta (ADR-021)
+    assert [(r.job, r.status) for r in replayed] == (
+        [("sec.tickers", "succeeded")]
+        + [("sec.company", "succeeded")] * 4
+        + [("sec.filing_xbrl", "succeeded")] * 2
+    )
+    read = [f["accession"] for r in replayed[5:] for f in r.params["filings"]]
+    assert sorted(read) == sorted(RECORDED_INSTANCES)
     with sessions() as session:
         assert company_ciks(session, ["XOM"]) == ["0000034088", "0002115436"]
         link = session.scalars(select(EntityRelationship)).one()
@@ -146,6 +165,35 @@ def test_a_company_cannot_succeed_itself(engine: Engine, replayed: list[Ingestio
         link.successor_entity_id = link.predecessor_entity_id
         with pytest.raises(IntegrityError, match="distinct_entities"):
             session.commit()
+
+
+# ---------- share counts tagged per class (ADR-021) ----------
+
+
+def test_meta_share_counts_are_added_from_its_own_filing_xbrl(
+    replayed: list[IngestionRun], sessions: sessionmaker[Session]
+) -> None:
+    meta_10k = "0001628280-26-003942"
+    with sessions() as session:
+        filing = session.scalars(select(Filing).where(Filing.accession_number == meta_10k)).one()
+        facts = {
+            (f.metric_id, f.period_end): f
+            for f in session.scalars(
+                select(FinancialFact).where(FinancialFact.accession_id == meta_10k)
+            )
+            if f.metric_id in ("shares_outstanding", "shares_outstanding_cover")
+        }
+        balance = facts[("shares_outstanding", date(2025, 12, 31))]
+        cover = facts[("shares_outstanding_cover", date(2026, 1, 23))]
+        assert (balance.value, cover.value) == (Decimal(2530000000), Decimal(2529555464))
+        assert balance.source_concept == "us-gaap:CommonStockSharesOutstanding (sum of classes)"
+        assert balance.published_at == filing.published_at  # the filing's stored acceptance
+        assert balance.source_url == filing.source_url
+        # Read once: a later refresh creates no run for the same filings.
+        assert all(
+            f.accession_number not in RECORDED_INSTANCES
+            for f in filing_xbrl_candidates(session, "0001326801")
+        )
 
 
 # ---------- API ----------
