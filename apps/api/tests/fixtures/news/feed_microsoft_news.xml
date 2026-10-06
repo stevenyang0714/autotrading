@@ -1,0 +1,155 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" version="2.0">
+
+<channel>
+	<title>Source</title>
+	<atom:link href="https://news.microsoft.com/source/feed/" rel="self" type="application/rss+xml" />
+	<link>https://news.microsoft.com/source/</link>
+	<description />
+	<lastBuildDate>Mon, 05 Oct 2026 17:41:58 +0000</lastBuildDate>
+	<language>en-US</language>
+	<sy:updatePeriod>
+	hourly	</sy:updatePeriod>
+	<sy:updateFrequency>
+	1	</sy:updateFrequency>
+	<generator>https://wordpress.org/?v=7.0.5</generator>
+
+<image>
+	<url>https://news.microsoft.com/source/wp-content/uploads/2022/10/cropped-Microsoft_logo.svg_-300x300-1-128x120.png</url>
+	<title>Source</title>
+	<link>https://news.microsoft.com/source/</link>
+	<width>32</width>
+	<height>32</height>
+</image> 
+	<item>
+		<title>Join us at 10 a.m. PT on Wednesday, Oct. 7, for the latest on Windows and Microsoft Surface</title>
+		<link>https://news.microsoft.com/windows-surface-october-2026-news/</link>
+		
+		<dc:creator>sbaynes</dc:creator>
+		<pubDate>Mon, 05 Oct 2026 17:38:17 +0000</pubDate>
+				<category>Company News</category>
+		<category>Events</category>
+		<category>Technology</category>
+		<guid isPermaLink="false">https://news.microsoft.com/source/?p=26004</guid>
+
+					<description />
+										</item>
+		<item>
+		<title>How Power Platform helps businesses build AI into existing apps</title>
+		<link>https://www.microsoft.com/en-us/power-platform/blog/power-apps/your-ai-transformation-starts-with-what-youve-already-built/</link>
+		
+		<dc:creator>sbaynes</dc:creator>
+		<pubDate>Mon, 05 Oct 2026 17:32:16 +0000</pubDate>
+				<category>Company News</category>
+		<category>AI</category>
+		<category>Events</category>
+		<guid isPermaLink="false">https://news.microsoft.com/source/?p=26002</guid>
+
+					<description />
+										</item>
+		<item>
+		<title>How Microsoft helped deliver clean water during Indonesia’s drought emergency</title>
+		<link>https://news.microsoft.com/source/asia/2026/09/29/supporting-communities-through-drought-providing-clean-water-in-karawang-and-bekasi/</link>
+		
+		<dc:creator>sbaynes</dc:creator>
+		<pubDate>Mon, 05 Oct 2026 17:25:16 +0000</pubDate>
+				<category>Company News</category>
+		<category>Community partnerships</category>
+		<category>Sustainability</category>
+		<guid isPermaLink="false">https://news.microsoft.com/source/?p=26000</guid>
+
+					<description />
+										</item>
+		<item>
+		<title>Microsoft Digital Defense Report: How AI is reshaping the cybersecurity landscape</title>
+		<link>https://www.microsoft.com/en-us/security/blog/2026/10/01/insights-from-the-2026-microsoft-digital-defense-report/</link>
+		
+		<dc:creator>sbaynes</dc:creator>
+		<pubDate>Fri, 02 Oct 2026 17:45:11 +0000</pubDate>
+				<category>Company News</category>
+		<category>AI</category>
+		<category>Security</category>
+		<guid isPermaLink="false">https://news.microsoft.com/source/?p=25997</guid>
+
+					<description />
+										</item>
+		<item>
+		<title>IKEA and XBOX collab on a new collection made for home gaming</title>
+		<link>https://news.xbox.com/en-us/2026/10/01/ikea-xbox-gaming-collection-yxstaby/</link>
+		
+		<dc:creator>sbaynes</dc:creator>
+		<pubDate>Thu, 01 Oct 2026 21:50:19 +0000</pubDate>
+				<category>Company News</category>
+		<category>Gaming</category>
+		<guid isPermaLink="false">https://news.microsoft.com/source/?p=25995</guid>
+
+					<description />
+										</item>
+		<item>
+		<title>New Microsoft AI models bring faster transcription and multilingual voices</title>
+		<link>https://microsoft.ai/news/our-first-streaming-transcription-model/</link>
+		
+		<dc:creator>sbaynes</dc:creator>
+		<pubDate>Thu, 01 Oct 2026 21:35:53 +0000</pubDate>
+				<category>Company News</category>
+		<category>AI</category>
+		<category>Product development</category>
+		<guid isPermaLink="false">https://news.microsoft.com/source/?p=25993</guid>
+
+					<description />
+										</item>
+		<item>
+		<title>Preparing governments for an era of interconnected cyber risk</title>
+		<link>https://blogs.microsoft.com/on-the-issues/2026/10/01/preparing-governments-for-an-era-of-interconnected-cyber-risk/</link>
+		
+		<dc:creator>sbaynes</dc:creator>
+		<pubDate>Thu, 01 Oct 2026 21:26:45 +0000</pubDate>
+				<category>Company News</category>
+		<category>On the issues</category>
+		<category>Security</category>
+		<guid isPermaLink="false">https://news.microsoft.com/source/?p=25991</guid>
+
+					<description />
+										</item>
+		<item>
+		<title>From reuse to recycling: How Microsoft manages old datacenter hardware</title>
+		<link>https://azure.microsoft.com/en-us/blog/responsible-infrastructure-at-hyperscale-managing-the-full-lifecycle-of-azure-hardware/</link>
+		
+		<dc:creator>sbaynes</dc:creator>
+		<pubDate>Thu, 01 Oct 2026 01:44:00 +0000</pubDate>
+				<category>Company News</category>
+		<category>Cloud</category>
+		<category>Sustainability</category>
+		<guid isPermaLink="false">https://news.microsoft.com/source/?p=25984</guid>
+
+					<description />
+										</item>
+		<item>
+		<title>Accelerating human capacity across healthcare with AI</title>
+		<link>https://www.microsoft.com/en-us/microsoft-cloud/blog/healthcare/2026/09/30/accelerating-human-capacity-across-healthcare-with-ai/</link>
+		
+		<dc:creator>sbaynes</dc:creator>
+		<pubDate>Wed, 30 Sep 2026 22:55:00 +0000</pubDate>
+				<category>Company News</category>
+		<category>AI</category>
+		<category>Customers</category>
+		<category>Health</category>
+		<guid isPermaLink="false">https://news.microsoft.com/source/?p=25982</guid>
+
+					<description />
+										</item>
+		<item>
+		<title>How AI could help scientists find viruses to fight drug-resistant infections</title>
+		<link>https://techcommunity.microsoft.com/blog/microsoft-discovery-blog/developing-bioinformatics-workflows-for-phage-therapy-with-inspectable-agents/4560876</link>
+		
+		<dc:creator>sbaynes</dc:creator>
+		<pubDate>Wed, 30 Sep 2026 20:01:56 +0000</pubDate>
+				<category>Company News</category>
+		<category>AI</category>
+		<category>Health</category>
+		<guid isPermaLink="false">https://news.microsoft.com/source/?p=25976</guid>
+
+					<description />
+										</item>
+	</channel>
+</rss>

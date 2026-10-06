@@ -1,0 +1,124 @@
+{
+  "recorded_at": "2026-10-06T07:36:54+00:00",
+  "gdelt_window": [
+    "2026-09-29T00:00:00+00:00",
+    "2026-10-02T12:00:00+00:00"
+  ],
+  "gdelt_not_recorded": [
+    "JPM",
+    "LOW",
+    "MSFT",
+    "ORLY"
+  ],
+  "stripped": "feeds are stored as the jobs store them: full text removed, summaries cut to 300 characters (adapters/news/rss.py strip_full_text)",
+  "runs": [
+    {
+      "job": "news.gdelt",
+      "params": {
+        "tickers": [
+          "AAPL",
+          "AZO",
+          "GOOGL",
+          "META",
+          "NVDA",
+          "XOM"
+        ],
+        "start": "20260929000000",
+        "end": "20261002120000",
+        "maxrecords": 250
+      }
+    },
+    {
+      "job": "news.rss.apple_newsroom",
+      "params": {}
+    },
+    {
+      "job": "news.rss.bea_releases",
+      "params": {}
+    },
+    {
+      "job": "news.rss.fed_press",
+      "params": {}
+    },
+    {
+      "job": "news.rss.google_blog",
+      "params": {}
+    },
+    {
+      "job": "news.rss.meta_newsroom",
+      "params": {}
+    },
+    {
+      "job": "news.rss.microsoft_news",
+      "params": {}
+    },
+    {
+      "job": "news.rss.nvidia_newsroom",
+      "params": {}
+    },
+    {
+      "job": "news.rss.sec_press",
+      "params": {}
+    },
+    {
+      "job": "news.rss.whitehouse_actions",
+      "params": {}
+    }
+  ],
+  "files": {
+    "https://api.gdeltproject.org/api/v2/doc/doc?query=%28Apple+OR+AAPL%29+sourcelang%3Aenglish&mode=artlist&format=json&maxrecords=250&sort=datedesc&startdatetime=20260929000000&enddatetime=20261002120000": "gdelt_AAPL.json",
+    "https://api.gdeltproject.org/api/v2/doc/doc?query=AutoZone+sourcelang%3Aenglish&mode=artlist&format=json&maxrecords=250&sort=datedesc&startdatetime=20260929000000&enddatetime=20261002120000": "gdelt_AZO.json",
+    "https://api.gdeltproject.org/api/v2/doc/doc?query=%28Alphabet+OR+Google+OR+GOOGL%29+sourcelang%3Aenglish&mode=artlist&format=json&maxrecords=250&sort=datedesc&startdatetime=20260929000000&enddatetime=20261002120000": "gdelt_GOOGL.json",
+    "https://api.gdeltproject.org/api/v2/doc/doc?query=%28%22Meta+Platforms%22+OR+Meta+OR+Facebook%29+sourcelang%3Aenglish&mode=artlist&format=json&maxrecords=250&sort=datedesc&startdatetime=20260929000000&enddatetime=20261002120000": "gdelt_META.json",
+    "https://api.gdeltproject.org/api/v2/doc/doc?query=%28Nvidia+OR+NVDA%29+sourcelang%3Aenglish&mode=artlist&format=json&maxrecords=250&sort=datedesc&startdatetime=20260929000000&enddatetime=20261002120000": "gdelt_NVDA.json",
+    "https://api.gdeltproject.org/api/v2/doc/doc?query=%28ExxonMobil+OR+Exxon%29+sourcelang%3Aenglish&mode=artlist&format=json&maxrecords=250&sort=datedesc&startdatetime=20260929000000&enddatetime=20261002120000": "gdelt_XOM.json",
+    "https://www.apple.com/newsroom/rss-feed.rss": "feed_apple_newsroom.xml",
+    "https://apps.bea.gov/rss/rss.xml": "feed_bea_releases.xml",
+    "https://www.federalreserve.gov/feeds/press_all.xml": "feed_fed_press.xml",
+    "https://blog.google/rss/": "feed_google_blog.xml",
+    "https://about.fb.com/news/feed/": "feed_meta_newsroom.xml",
+    "https://news.microsoft.com/source/feed/": "feed_microsoft_news.xml",
+    "https://nvidianews.nvidia.com/releases.xml": "feed_nvidia_newsroom.xml",
+    "https://www.sec.gov/news/pressreleases.rss": "feed_sec_press.xml",
+    "https://www.whitehouse.gov/presidential-actions/feed/": "feed_whitehouse_actions.xml"
+  },
+  "syndication_case": {
+    "title": "Nvidia unveils record $150 billion buyback increase",
+    "title_key": "nvidia unveils record 150 billion buyback increase",
+    "canonical_urls": [
+      "https://africaleader.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://argentinastar.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://asiabulletin.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://birminghamstar.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://californiatelegraph.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://coloradostar.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://floridastatesman.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://indiagazette.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://israelherald.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://jamaicantimes.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://massachusettssun.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://memphissun.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://newyorktelegraph.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://newzealandstar.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://ohiostandard.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://oklahomacitysun.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://oklahomastar.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://pakistantelegraph.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://parisguardian.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://philippinetimes.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://phoenixherald.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://pittsburghstar.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://russiaherald.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://saltlakecitysun.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://sanantoniopost.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://srilankasource.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://taiwansun.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://tennesseedaily.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://texasguardian.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://theusnews.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://torontotelegraph.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://utahindependent.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase",
+      "https://vietnamtribune.com/news/279338424/nvidia-unveils-record-usd150-billion-buyback-increase"
+    ]
+  }
+}
