@@ -1,0 +1,465 @@
+{
+  "recorded_at": "2026-10-07T17:14:15.586755+00:00",
+  "recorded_from": "recorded SEC fixtures replayed into the integration test database (tests/integration/test_instruments.py)",
+  "endpoint": "/instruments/AAPL/fair-value",
+  "params": {
+    "known_at": "2026-10-06T12:00:00Z",
+    "assumptions": "default"
+  },
+  "response": {
+    "ticker": "AAPL",
+    "known_at": "2026-10-06T12:00:00Z",
+    "label": "Model output, not fact",
+    "method": "Enterprise DCF of owner free cash flow (operating cash flow - capex - stock-based compensation, last four quarters): five years at the scenario growth, five years fading linearly to the terminal growth, then a terminal value; annual, discounted at year end at the 10-year Treasury yield + the equity risk premium; minus net debt, divided by shares outstanding. Relative: each multiple against its own month-end history since 2016, each month as known then.",
+    "assumptions": {
+      "version": null,
+      "parameters": {
+        "equity_risk_premium": "5",
+        "terminal_growth": "2.5",
+        "growth_bear": "0",
+        "growth_base": "5",
+        "growth_bull": "10",
+        "subtract_sbc": true
+      },
+      "reason": "Built-in default shared by every company; not reviewed",
+      "author": null,
+      "created_at": null
+    },
+    "dcf": {
+      "status": "ok",
+      "detail": null,
+      "discount_rate": {
+        "value": "10.24",
+        "risk_free": {
+          "series_id": "DGS10",
+          "value": "5.24",
+          "observation_date": "2026-10-01",
+          "published_at": "2026-10-03T03:59:59.999999Z",
+          "source_url": "https://fred.stlouisfed.org/series/DGS10"
+        },
+        "equity_risk_premium": "5"
+      },
+      "terminal_growth": "2.5",
+      "inputs": [
+        {
+          "name": "owner_fcf",
+          "value": "122977000000",
+          "period_start": "2025-06-29",
+          "period_end": "2026-06-27",
+          "note": "operating cash flow - capex - SBC, last four quarters",
+          "sources": [
+            {
+              "metric_id": "operating_cash_flow",
+              "source_concept": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+              "value": "111482000000",
+              "period_start": "2024-09-29",
+              "period_end": "2025-09-27",
+              "filing": {
+                "accession": "0000320193-25-000079",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
+                "published_at": "2025-10-31T10:01:26Z",
+                "published_at_precision": "exact"
+              }
+            },
+            {
+              "metric_id": "operating_cash_flow",
+              "source_concept": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+              "value": "81754000000",
+              "period_start": "2024-09-29",
+              "period_end": "2025-06-28",
+              "filing": {
+                "accession": "0000320193-25-000073",
+                "form": "10-Q",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000073/0000320193-25-000073-index.htm",
+                "published_at": "2025-08-01T10:00:42Z",
+                "published_at_precision": "exact"
+              }
+            },
+            {
+              "metric_id": "operating_cash_flow",
+              "source_concept": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+              "value": "53925000000",
+              "period_start": "2025-09-28",
+              "period_end": "2025-12-27",
+              "filing": {
+                "accession": "0000320193-26-000006",
+                "form": "10-Q",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000006/0000320193-26-000006-index.htm",
+                "published_at": "2026-01-30T11:01:32Z",
+                "published_at_precision": "exact"
+              }
+            },
+            {
+              "metric_id": "operating_cash_flow",
+              "source_concept": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+              "value": "82627000000",
+              "period_start": "2025-09-28",
+              "period_end": "2026-03-28",
+              "filing": {
+                "accession": "0000320193-26-000013",
+                "form": "10-Q",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000013/0000320193-26-000013-index.htm",
+                "published_at": "2026-05-01T10:01:00Z",
+                "published_at_precision": "exact"
+              }
+            },
+            {
+              "metric_id": "operating_cash_flow",
+              "source_concept": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+              "value": "116996000000",
+              "period_start": "2025-09-28",
+              "period_end": "2026-06-27",
+              "filing": {
+                "accession": "0000320193-26-000020",
+                "form": "10-Q",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/0000320193-26-000020-index.htm",
+                "published_at": "2026-07-31T10:01:02Z",
+                "published_at_precision": "exact"
+              }
+            },
+            {
+              "metric_id": "capex",
+              "source_concept": "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment",
+              "value": "12715000000",
+              "period_start": "2024-09-29",
+              "period_end": "2025-09-27",
+              "filing": {
+                "accession": "0000320193-25-000079",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
+                "published_at": "2025-10-31T10:01:26Z",
+                "published_at_precision": "exact"
+              }
+            },
+            {
+              "metric_id": "capex",
+              "source_concept": "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment",
+              "value": "9473000000",
+              "period_start": "2024-09-29",
+              "period_end": "2025-06-28",
+              "filing": {
+                "accession": "0000320193-25-000073",
+                "form": "10-Q",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000073/0000320193-25-000073-index.htm",
+                "published_at": "2025-08-01T10:00:42Z",
+                "published_at_precision": "exact"
+              }
+            },
+            {
+              "metric_id": "capex",
+              "source_concept": "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment",
+              "value": "2373000000",
+              "period_start": "2025-09-28",
+              "period_end": "2025-12-27",
+              "filing": {
+                "accession": "0000320193-26-000006",
+                "form": "10-Q",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000006/0000320193-26-000006-index.htm",
+                "published_at": "2026-01-30T11:01:32Z",
+                "published_at_precision": "exact"
+              }
+            },
+            {
+              "metric_id": "capex",
+              "source_concept": "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment",
+              "value": "4344000000",
+              "period_start": "2025-09-28",
+              "period_end": "2026-03-28",
+              "filing": {
+                "accession": "0000320193-26-000013",
+                "form": "10-Q",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000013/0000320193-26-000013-index.htm",
+                "published_at": "2026-05-01T10:01:00Z",
+                "published_at_precision": "exact"
+              }
+            },
+            {
+              "metric_id": "capex",
+              "source_concept": "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment",
+              "value": "6799000000",
+              "period_start": "2025-09-28",
+              "period_end": "2026-06-27",
+              "filing": {
+                "accession": "0000320193-26-000020",
+                "form": "10-Q",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/0000320193-26-000020-index.htm",
+                "published_at": "2026-07-31T10:01:02Z",
+                "published_at_precision": "exact"
+              }
+            },
+            {
+              "metric_id": "stock_based_compensation",
+              "source_concept": "us-gaap:ShareBasedCompensation",
+              "value": "12863000000",
+              "period_start": "2024-09-29",
+              "period_end": "2025-09-27",
+              "filing": {
+                "accession": "0000320193-25-000079",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
+                "published_at": "2025-10-31T10:01:26Z",
+                "published_at_precision": "exact"
+              }
+            },
+            {
+              "metric_id": "stock_based_compensation",
+              "source_concept": "us-gaap:ShareBasedCompensation",
+              "value": "9680000000",
+              "period_start": "2024-09-29",
+              "period_end": "2025-06-28",
+              "filing": {
+                "accession": "0000320193-25-000073",
+                "form": "10-Q",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000073/0000320193-25-000073-index.htm",
+                "published_at": "2025-08-01T10:00:42Z",
+                "published_at_precision": "exact"
+              }
+            },
+            {
+              "metric_id": "stock_based_compensation",
+              "source_concept": "us-gaap:ShareBasedCompensation",
+              "value": "3594000000",
+              "period_start": "2025-09-28",
+              "period_end": "2025-12-27",
+              "filing": {
+                "accession": "0000320193-26-000006",
+                "form": "10-Q",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000006/0000320193-26-000006-index.htm",
+                "published_at": "2026-01-30T11:01:32Z",
+                "published_at_precision": "exact"
+              }
+            },
+            {
+              "metric_id": "stock_based_compensation",
+              "source_concept": "us-gaap:ShareBasedCompensation",
+              "value": "7122000000",
+              "period_start": "2025-09-28",
+              "period_end": "2026-03-28",
+              "filing": {
+                "accession": "0000320193-26-000013",
+                "form": "10-Q",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000013/0000320193-26-000013-index.htm",
+                "published_at": "2026-05-01T10:01:00Z",
+                "published_at_precision": "exact"
+              }
+            },
+            {
+              "metric_id": "stock_based_compensation",
+              "source_concept": "us-gaap:ShareBasedCompensation",
+              "value": "10523000000",
+              "period_start": "2025-09-28",
+              "period_end": "2026-06-27",
+              "filing": {
+                "accession": "0000320193-26-000020",
+                "form": "10-Q",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/0000320193-26-000020-index.htm",
+                "published_at": "2026-07-31T10:01:02Z",
+                "published_at_precision": "exact"
+              }
+            }
+          ]
+        },
+        {
+          "name": "net_debt",
+          "value": "44800000000",
+          "period_start": null,
+          "period_end": "2026-06-27",
+          "note": null,
+          "sources": [
+            {
+              "metric_id": "long_term_debt_noncurrent",
+              "source_concept": "us-gaap:LongTermDebtNoncurrent",
+              "value": "71340000000",
+              "period_start": null,
+              "period_end": "2026-06-27",
+              "filing": {
+                "accession": "0000320193-26-000020",
+                "form": "10-Q",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/0000320193-26-000020-index.htm",
+                "published_at": "2026-07-31T10:01:02Z",
+                "published_at_precision": "exact"
+              }
+            },
+            {
+              "metric_id": "long_term_debt_current",
+              "source_concept": "us-gaap:LongTermDebtCurrent",
+              "value": "11007000000",
+              "period_start": null,
+              "period_end": "2026-06-27",
+              "filing": {
+                "accession": "0000320193-26-000020",
+                "form": "10-Q",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/0000320193-26-000020-index.htm",
+                "published_at": "2026-07-31T10:01:02Z",
+                "published_at_precision": "exact"
+              }
+            },
+            {
+              "metric_id": "commercial_paper",
+              "source_concept": "us-gaap:CommercialPaper",
+              "value": "1997000000",
+              "period_start": null,
+              "period_end": "2026-06-27",
+              "filing": {
+                "accession": "0000320193-26-000020",
+                "form": "10-Q",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/0000320193-26-000020-index.htm",
+                "published_at": "2026-07-31T10:01:02Z",
+                "published_at_precision": "exact"
+              }
+            },
+            {
+              "metric_id": "cash",
+              "source_concept": "us-gaap:CashAndCashEquivalentsAtCarryingValue",
+              "value": "39544000000",
+              "period_start": null,
+              "period_end": "2026-06-27",
+              "filing": {
+                "accession": "0000320193-26-000020",
+                "form": "10-Q",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/0000320193-26-000020-index.htm",
+                "published_at": "2026-07-31T10:01:02Z",
+                "published_at_precision": "exact"
+              }
+            }
+          ]
+        },
+        {
+          "name": "shares_outstanding_cover",
+          "value": "14594180000",
+          "period_start": null,
+          "period_end": "2026-07-17",
+          "note": null,
+          "sources": [
+            {
+              "metric_id": "shares_outstanding_cover",
+              "source_concept": "dei:EntityCommonStockSharesOutstanding",
+              "value": "14594180000",
+              "period_start": null,
+              "period_end": "2026-07-17",
+              "filing": {
+                "accession": "0000320193-26-000020",
+                "form": "10-Q",
+                "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/0000320193-26-000020-index.htm",
+                "published_at": "2026-07-31T10:01:02Z",
+                "published_at_precision": "exact"
+              }
+            }
+          ]
+        }
+      ],
+      "scenarios": [
+        {
+          "scenario": "bear",
+          "growth": "0",
+          "per_share": "94.15",
+          "enterprise_value": "1418825734991",
+          "explicit_value": "757078297375",
+          "terminal_value": "661747437616"
+        },
+        {
+          "scenario": "base",
+          "growth": "5",
+          "per_share": "124.94",
+          "enterprise_value": "1868158539066",
+          "explicit_value": "937024253197",
+          "terminal_value": "931134285869"
+        },
+        {
+          "scenario": "bull",
+          "growth": "10",
+          "per_share": "164.96",
+          "enterprise_value": "2452299407508",
+          "explicit_value": "1160481325045",
+          "terminal_value": "1291818082462"
+        }
+      ]
+    },
+    "comparison": {
+      "price": {
+        "status": "ok",
+        "detail": "end-of-day consolidated close",
+        "day": "2026-10-05",
+        "close": "332.89",
+        "feed_status": "end_of_day",
+        "published_at": "2026-10-06T03:59:59.999999Z",
+        "source_url": "https://data.alpaca.markets/v2/stocks/bars?symbols=AAPL%2CMSFT%2CGOOGL%2CMETA%2CNVDA%2CJPM%2CXOM%2CAZO%2CORLY%2CLOW%2CSPY%2CQQQ%2CIWM%2CTLT%2CIEF%2CGLD%2CXLE%2CXLK&timeframe=1Day&adjustment=raw&feed=sip&start=2025-10-05&limit=10000&end=2026-10-05"
+      },
+      "implied_upside": "-62.47",
+      "margin_of_safety": "-166.44",
+      "detail": null
+    },
+    "reverse_dcf": {
+      "growth": "23.11",
+      "detail": null
+    },
+    "relative": [
+      {
+        "metric_id": "pe_ratio_ttm",
+        "unit": "x",
+        "current": "38.18",
+        "median": "35.84",
+        "percentile": "92",
+        "observations": 12,
+        "since": "2025-10-31"
+      },
+      {
+        "metric_id": "ev_to_ebitda",
+        "unit": "x",
+        "current": "29.19",
+        "median": "27.46",
+        "percentile": "92",
+        "observations": 12,
+        "since": "2025-10-31"
+      },
+      {
+        "metric_id": "ev_to_sales",
+        "unit": "x",
+        "current": "10.50",
+        "median": "9.75",
+        "percentile": "92",
+        "observations": 12,
+        "since": "2025-10-31"
+      },
+      {
+        "metric_id": "price_to_book",
+        "unit": "x",
+        "current": "45.18",
+        "median": "43.59",
+        "percentile": "67",
+        "observations": 12,
+        "since": "2025-10-31"
+      },
+      {
+        "metric_id": "fcf_yield",
+        "unit": "percent",
+        "current": "2.81",
+        "median": "3.00",
+        "percentile": "33",
+        "observations": 12,
+        "since": "2025-10-31"
+      },
+      {
+        "metric_id": "earnings_yield",
+        "unit": "percent",
+        "current": "2.62",
+        "median": "2.79",
+        "percentile": "8",
+        "observations": 12,
+        "since": "2025-10-31"
+      }
+    ],
+    "data_as_of": {
+      "latest_filing": {
+        "accession": "0000320193-26-000020",
+        "form": "10-Q",
+        "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/0000320193-26-000020-index.htm",
+        "published_at": "2026-07-31T10:01:02Z",
+        "published_at_precision": "exact"
+      },
+      "price_day": "2026-10-05",
+      "risk_free_date": "2026-10-01"
+    }
+  }
+}

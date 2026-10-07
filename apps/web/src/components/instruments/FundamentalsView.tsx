@@ -43,6 +43,8 @@ interface Props {
   news?: ReactNode;
   /** Market cap, EV and multiples (M1.2), shown after the price block. */
   valuation?: ReactNode;
+  /** DCF, reverse DCF and relative valuation (M1.3a), shown after the valuation block. */
+  fairValue?: ReactNode;
 }
 
 /**
@@ -60,6 +62,7 @@ export function FundamentalsView({
   prices,
   news,
   valuation,
+  fairValue,
 }: Props) {
   const newest = [...data.annual.rows, ...data.balance_sheet.rows]
     .flatMap((row) => row.cells)
@@ -127,6 +130,8 @@ export function FundamentalsView({
       {prices}
 
       {valuation}
+
+      {fairValue}
 
       {news}
 

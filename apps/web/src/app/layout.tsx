@@ -17,7 +17,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <aside className="border-b border-neutral-200 md:w-64 md:shrink-0 md:border-r md:border-b-0 dark:border-neutral-800">
             <Nav />
           </aside>
-          <main className="flex-1 p-6">{children}</main>
+          <main className="min-w-0 flex-1 p-6">{children}</main>
         </div>
       </body>
     </html>

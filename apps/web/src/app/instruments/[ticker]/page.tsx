@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { saveAssumptionsAction } from "@/app/instruments/[ticker]/actions";
+import { FairValueView } from "@/components/instruments/FairValueView";
 import { FundamentalsView } from "@/components/instruments/FundamentalsView";
 import { InstrumentNews } from "@/components/news/InstrumentNews";
 import { DemoBanner } from "@/components/prices/DemoBanner";
 import { InstrumentPricePanel } from "@/components/prices/InstrumentPricePanel";
 import { ValuationView } from "@/components/instruments/ValuationView";
 import {
+  loadAssumptions,
+  loadFairValue,
   loadFundamentals,
   loadInstrumentPrices,
   loadNews,
@@ -33,16 +37,23 @@ export default async function InstrumentPage({
   const query = await searchParams;
   const knownOn = typeof query.known_on === "string" && query.known_on ? query.known_on : undefined;
   const knownAt = knownOn ? endOfDaySgt(knownOn) : null;
+  const version =
+    typeof query.assumptions === "string" && /^(default|[1-9][0-9]*)$/.test(query.assumptions)
+      ? query.assumptions
+      : undefined;
 
   const newsQuery = { ticker: ticker.toUpperCase(), knownAt: knownAt ?? undefined, limit: 6 };
-  const [result, prices, valuation, announcements, coverage, sources] = await Promise.all([
-    loadFundamentals(ticker, knownAt ?? undefined),
-    loadInstrumentPrices(ticker, knownAt ?? undefined),
-    loadValuation(ticker, knownAt ?? undefined),
-    loadNews({ ...newsQuery, kinds: ["press_release"] }),
-    loadNews({ ...newsQuery, kinds: ["article", "official"] }),
-    loadSourceHealth(),
-  ]);
+  const [result, prices, valuation, fairValue, assumptions, announcements, coverage, sources] =
+    await Promise.all([
+      loadFundamentals(ticker, knownAt ?? undefined),
+      loadInstrumentPrices(ticker, knownAt ?? undefined),
+      loadValuation(ticker, knownAt ?? undefined),
+      loadFairValue(ticker, knownAt ?? undefined, version),
+      loadAssumptions(ticker),
+      loadNews({ ...newsQuery, kinds: ["press_release"] }),
+      loadNews({ ...newsQuery, kinds: ["article", "official"] }),
+      loadSourceHealth(),
+    ]);
   if (result.status === "not_found") notFound();
   if (result.status === "unavailable") {
     return (
@@ -76,6 +87,15 @@ export default async function InstrumentPage({
         sources={sources}
         prices={prices.status === "not_found" ? undefined : <InstrumentPricePanel result={prices} />}
         valuation={valuation.status === "not_found" ? undefined : <ValuationView result={valuation} />}
+        fairValue={
+          <FairValueView
+            result={fairValue}
+            assumptions={assumptions}
+            ticker={ticker.toUpperCase()}
+            knownOn={knownAt ? knownOn : undefined}
+            action={saveAssumptionsAction}
+          />
+        }
         news={
           <InstrumentNews ticker={ticker.toUpperCase()} announcements={announcements} coverage={coverage} />
         }

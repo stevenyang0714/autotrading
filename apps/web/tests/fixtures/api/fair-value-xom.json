@@ -1,0 +1,193 @@
+{
+  "recorded_at": "2026-10-07T17:14:16.189568+00:00",
+  "recorded_from": "recorded SEC fixtures replayed into the integration test database (tests/integration/test_instruments.py)",
+  "endpoint": "/instruments/XOM/fair-value",
+  "params": {
+    "known_at": "2026-10-06T12:00:00Z",
+    "assumptions": "default"
+  },
+  "response": {
+    "ticker": "XOM",
+    "known_at": "2026-10-06T12:00:00Z",
+    "label": "Model output, not fact",
+    "method": "Enterprise DCF of owner free cash flow (operating cash flow - capex - stock-based compensation, last four quarters): five years at the scenario growth, five years fading linearly to the terminal growth, then a terminal value; annual, discounted at year end at the 10-year Treasury yield + the equity risk premium; minus net debt, divided by shares outstanding. Relative: each multiple against its own month-end history since 2016, each month as known then.",
+    "assumptions": {
+      "version": null,
+      "parameters": {
+        "equity_risk_premium": "5",
+        "terminal_growth": "2.5",
+        "growth_bear": "0",
+        "growth_base": "5",
+        "growth_bull": "10",
+        "subtract_sbc": true
+      },
+      "reason": "Built-in default shared by every company; not reviewed",
+      "author": null,
+      "created_at": null
+    },
+    "dcf": {
+      "status": "unavailable",
+      "detail": "owner free cash flow: not reported for the last four quarters: stock-based compensation (an assumption set can leave SBC out)",
+      "discount_rate": {
+        "value": null,
+        "risk_free": {
+          "series_id": "DGS10",
+          "value": "5.24",
+          "observation_date": "2026-10-01",
+          "published_at": "2026-10-03T03:59:59.999999Z",
+          "source_url": "https://fred.stlouisfed.org/series/DGS10"
+        },
+        "equity_risk_premium": "5"
+      },
+      "terminal_growth": "2.5",
+      "inputs": [
+        {
+          "name": "net_debt",
+          "value": "21641000000",
+          "period_start": null,
+          "period_end": "2026-06-30",
+          "note": "not reported, counted as 0: long_term_debt_current, commercial_paper",
+          "sources": [
+            {
+              "metric_id": "long_term_debt_noncurrent",
+              "source_concept": "us-gaap:LongTermDebtAndCapitalLeaseObligations",
+              "value": "32229000000",
+              "period_start": null,
+              "period_end": "2026-06-30",
+              "filing": {
+                "accession": "0000034088-26-000093",
+                "form": "10-Q",
+                "url": "https://www.sec.gov/Archives/edgar/data/2115436/000003408826000093/0000034088-26-000093-index.htm",
+                "published_at": "2026-08-03T18:55:38Z",
+                "published_at_precision": "exact"
+              }
+            },
+            {
+              "metric_id": "cash",
+              "source_concept": "us-gaap:CashAndCashEquivalentsAtCarryingValue",
+              "value": "10588000000",
+              "period_start": null,
+              "period_end": "2026-06-30",
+              "filing": {
+                "accession": "0000034088-26-000093",
+                "form": "10-Q",
+                "url": "https://www.sec.gov/Archives/edgar/data/2115436/000003408826000093/0000034088-26-000093-index.htm",
+                "published_at": "2026-08-03T18:55:38Z",
+                "published_at_precision": "exact"
+              }
+            }
+          ]
+        },
+        {
+          "name": "shares_outstanding_cover",
+          "value": "4111911960",
+          "period_start": null,
+          "period_end": "2026-06-30",
+          "note": null,
+          "sources": [
+            {
+              "metric_id": "shares_outstanding_cover",
+              "source_concept": "dei:EntityCommonStockSharesOutstanding",
+              "value": "4111911960",
+              "period_start": null,
+              "period_end": "2026-06-30",
+              "filing": {
+                "accession": "0000034088-26-000093",
+                "form": "10-Q",
+                "url": "https://www.sec.gov/Archives/edgar/data/2115436/000003408826000093/0000034088-26-000093-index.htm",
+                "published_at": "2026-08-03T18:55:38Z",
+                "published_at_precision": "exact"
+              }
+            }
+          ]
+        }
+      ],
+      "scenarios": []
+    },
+    "comparison": {
+      "price": {
+        "status": "ok",
+        "detail": "end-of-day consolidated close",
+        "day": "2026-10-05",
+        "close": "164",
+        "feed_status": "end_of_day",
+        "published_at": "2026-10-06T03:59:59.999999Z",
+        "source_url": "https://data.alpaca.markets/v2/stocks/bars?symbols=AAPL%2CMSFT%2CGOOGL%2CMETA%2CNVDA%2CJPM%2CXOM%2CAZO%2CORLY%2CLOW%2CSPY%2CQQQ%2CIWM%2CTLT%2CIEF%2CGLD%2CXLE%2CXLK&timeframe=1Day&adjustment=raw&feed=sip&start=2025-10-05&limit=10000&end=2026-10-05"
+      },
+      "implied_upside": null,
+      "margin_of_safety": null,
+      "detail": "no fair value: owner free cash flow: not reported for the last four quarters: stock-based compensation (an assumption set can leave SBC out)"
+    },
+    "reverse_dcf": {
+      "growth": null,
+      "detail": "owner free cash flow: not reported for the last four quarters: stock-based compensation (an assumption set can leave SBC out)"
+    },
+    "relative": [
+      {
+        "metric_id": "pe_ratio_ttm",
+        "unit": "x",
+        "current": "21.11",
+        "median": "21.86",
+        "percentile": "50",
+        "observations": 12,
+        "since": "2025-10-31"
+      },
+      {
+        "metric_id": "ev_to_ebitda",
+        "unit": "x",
+        "current": null,
+        "median": null,
+        "percentile": null,
+        "observations": 0,
+        "since": null
+      },
+      {
+        "metric_id": "ev_to_sales",
+        "unit": "x",
+        "current": "1.89",
+        "median": "1.86",
+        "percentile": "67",
+        "observations": 12,
+        "since": "2025-10-31"
+      },
+      {
+        "metric_id": "price_to_book",
+        "unit": "x",
+        "current": "2.60",
+        "median": "2.41",
+        "percentile": "92",
+        "observations": 12,
+        "since": "2025-10-31"
+      },
+      {
+        "metric_id": "fcf_yield",
+        "unit": "percent",
+        "current": "4.53",
+        "median": "3.86",
+        "percentile": "58",
+        "observations": 12,
+        "since": "2025-10-31"
+      },
+      {
+        "metric_id": "earnings_yield",
+        "unit": "percent",
+        "current": "4.74",
+        "median": "4.58",
+        "percentile": "50",
+        "observations": 12,
+        "since": "2025-10-31"
+      }
+    ],
+    "data_as_of": {
+      "latest_filing": {
+        "accession": "0000034088-26-000093",
+        "form": "10-Q",
+        "url": "https://www.sec.gov/Archives/edgar/data/2115436/000003408826000093/0000034088-26-000093-index.htm",
+        "published_at": "2026-08-03T18:55:38Z",
+        "published_at_precision": "exact"
+      },
+      "price_day": "2026-10-05",
+      "risk_free_date": "2026-10-01"
+    }
+  }
+}

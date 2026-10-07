@@ -898,6 +898,9 @@ def test_unknown_ticker_is_404(client: TestClient) -> None:
 )
 def test_record_web_fixtures(client: TestClient) -> None:
     target = Path(__file__).resolve().parents[3] / "web" / "tests" / "fixtures" / "api"
+    # One saved AAPL version for the version picker (the write tests above use META and XOM).
+    if not client.get("/instruments/AAPL/assumptions").json()["versions"]:
+        save(client, "AAPL", "Illustrative: services mix supports faster growth", growth_base="7")
     for name, path, params in (
         ("instruments", "/instruments", {}),
         ("fundamentals-aapl", "/instruments/AAPL/fundamentals", {}),
@@ -921,6 +924,27 @@ def test_record_web_fixtures(client: TestClient) -> None:
             "/instruments/AAPL/valuation",
             {"known_at": "2026-10-20T00:00:00Z"},
         ),
+        (
+            "fair-value-aapl",
+            "/instruments/AAPL/fair-value",
+            {"known_at": VALUED_AT, "assumptions": "default"},
+        ),
+        (
+            "fair-value-aapl-v1",
+            "/instruments/AAPL/fair-value",
+            {"known_at": VALUED_AT, "assumptions": "1"},
+        ),
+        (
+            "fair-value-aapl-stale",
+            "/instruments/AAPL/fair-value",
+            {"known_at": "2026-10-20T00:00:00Z", "assumptions": "default"},
+        ),
+        (
+            "fair-value-xom",
+            "/instruments/XOM/fair-value",
+            {"known_at": VALUED_AT, "assumptions": "default"},
+        ),
+        ("assumptions-aapl", "/instruments/AAPL/assumptions", {}),
     ):
         response = client.get(path, params=params)
         assert response.status_code == 200
