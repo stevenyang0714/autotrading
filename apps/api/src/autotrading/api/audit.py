@@ -2,7 +2,8 @@
 
 audit_log is written by database triggers on every audited table: inserts, updates and
 deletes of registry rows (sources, entities, instruments, identifiers, entity relationships,
-macro series, dead letters) and supersedes of fact rows. An update or supersede records each
+macro series, dead letters), supersedes of fact rows, and each valuation assumption version
+saved from the web app (M1.3a). An update or supersede records each
 changed field as {old, new}; a delete records the removed row. Objects are named where the
 row still exists (a source id, a ticker, a company or series name).
 """
@@ -30,6 +31,7 @@ from autotrading.db.models import (
     MacroSeries,
     PriceBar,
     Source,
+    ValuationAssumptionSet,
 )
 
 router = APIRouter(tags=["audit"])
@@ -140,6 +142,21 @@ def _labels(session: Session, table: str, ids: list[str]) -> dict[str, str]:
             (row.id, f"{row.metric_id} {row.period_end}")
             for row in session.scalars(
                 select(FinancialFact).where(FinancialFact.id.in_(_uuids(ids)))
+            )
+        ],
+        "valuation_assumptions": lambda: [
+            (row.id, f"{row.id_value} assumptions v{row.version}")
+            for row in session.execute(
+                select(
+                    ValuationAssumptionSet.id, ValuationAssumptionSet.version, Identifier.id_value
+                )
+                .join(Identifier, Identifier.instrument_id == ValuationAssumptionSet.instrument_id)
+                .where(
+                    ValuationAssumptionSet.id.in_(_uuids(ids)),
+                    Identifier.id_type == "ticker",
+                    Identifier.valid_to.is_(None),
+                )
+                .order_by(Identifier.id_namespace.desc())  # sec before alpaca
             )
         ],
     }

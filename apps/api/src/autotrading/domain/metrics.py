@@ -131,6 +131,15 @@ METRICS: tuple[MetricDefinition, ...] = (
             "price_to_book": "valuation.valuation",
             "fcf_yield": "valuation.valuation",
             "earnings_yield": "valuation.valuation",
+            # M1.3a (ADR-023): model output, from facts known at T and an assumption version.
+            "fair_value_dcf": "fair_value.fair_value",
+            "owner_fcf": "fair_value.owner_fcf",
+            "discount_rate": "fair_value.fair_value",
+            "scenario_range": "fair_value.fair_value",
+            "implied_upside": "fair_value.fair_value",
+            "margin_of_safety": "fair_value.fair_value",
+            "reverse_dcf_growth": "fair_value.reverse_growth",
+            "multiple_percentile": "fair_value.relative",
         }.items()
     ),
     MetricDefinition(

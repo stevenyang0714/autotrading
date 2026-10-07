@@ -157,6 +157,44 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/instruments/{ticker}/assumptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Assumptions */
+        get: operations["list_assumptions_instruments__ticker__assumptions_get"];
+        put?: never;
+        /**
+         * Save Assumptions
+         * @description A new version (the latest + 1); earlier versions are never changed.
+         */
+        post: operations["save_assumptions_instruments__ticker__assumptions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/instruments/{ticker}/fair-value": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Instrument Fair Value */
+        get: operations["instrument_fair_value_instruments__ticker__fair_value_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/instruments/{ticker}/fundamentals": {
         parameters: {
             query?: never;
@@ -348,6 +386,72 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AssumptionList */
+        AssumptionList: {
+            default: components["schemas"]["AssumptionVersion"];
+            /** Limits */
+            limits: {
+                [key: string]: components["schemas"]["Limit"];
+            };
+            /** Ticker */
+            ticker: string;
+            /** Versions */
+            versions: components["schemas"]["AssumptionVersion"][];
+        };
+        /** AssumptionVersion */
+        AssumptionVersion: {
+            /** Author */
+            author: string | null;
+            /** Created At */
+            created_at: string | null;
+            parameters: components["schemas"]["Assumptions-Output"];
+            /** Reason */
+            reason: string;
+            /** Version */
+            version: number | null;
+        };
+        /**
+         * Assumptions
+         * @description One assumption set; rates in percent (5 means 5%).
+         */
+        "Assumptions-Input": {
+            /** Equity Risk Premium */
+            equity_risk_premium: number | string;
+            /** Growth Base */
+            growth_base: number | string;
+            /** Growth Bear */
+            growth_bear: number | string;
+            /** Growth Bull */
+            growth_bull: number | string;
+            /**
+             * Subtract Sbc
+             * @default true
+             */
+            subtract_sbc: boolean;
+            /** Terminal Growth */
+            terminal_growth: number | string;
+        };
+        /**
+         * Assumptions
+         * @description One assumption set; rates in percent (5 means 5%).
+         */
+        "Assumptions-Output": {
+            /** Equity Risk Premium */
+            equity_risk_premium: string;
+            /** Growth Base */
+            growth_base: string;
+            /** Growth Bear */
+            growth_bear: string;
+            /** Growth Bull */
+            growth_bull: string;
+            /**
+             * Subtract Sbc
+             * @default true
+             */
+            subtract_sbc: boolean;
+            /** Terminal Growth */
+            terminal_growth: string;
+        };
         /** AuditEntry */
         AuditEntry: {
             /** Action */
@@ -465,6 +569,14 @@ export interface components {
              */
             status: "ok" | "down" | "stale";
         };
+        /** DataAsOf */
+        DataAsOf: {
+            latest_filing: components["schemas"]["FilingRef"] | null;
+            /** Price Day */
+            price_day: string | null;
+            /** Risk Free Date */
+            risk_free_date: string | null;
+        };
         /** DataHealthReport */
         DataHealthReport: {
             /**
@@ -474,6 +586,23 @@ export interface components {
             checked_at: string;
             /** Sources */
             sources: components["schemas"]["SourceHealth"][];
+        };
+        /** DcfOut */
+        DcfOut: {
+            /** Detail */
+            detail: string | null;
+            discount_rate: components["schemas"]["DiscountRate"];
+            /** Inputs */
+            inputs: components["schemas"]["InputOut"][];
+            /** Scenarios */
+            scenarios: components["schemas"]["ScenarioOut"][];
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ok" | "unavailable" | "not_meaningful";
+            /** Terminal Growth */
+            terminal_growth: string;
         };
         /** DeadLetterOut */
         DeadLetterOut: {
@@ -574,6 +703,14 @@ export interface components {
             /** Value */
             value: string | null;
         };
+        /** DiscountRate */
+        DiscountRate: {
+            /** Equity Risk Premium */
+            equity_risk_premium: string;
+            risk_free: components["schemas"]["RiskFreeOut"] | null;
+            /** Value */
+            value: string | null;
+        };
         /** EntityOut */
         EntityOut: {
             /** Cik */
@@ -645,6 +782,30 @@ export interface components {
             periods: components["schemas"]["PeriodColumn"][];
             /** Rows */
             rows: components["schemas"]["MetricRow"][];
+        };
+        /** FairValueOut */
+        FairValueOut: {
+            assumptions: components["schemas"]["AssumptionVersion"];
+            comparison: components["schemas"]["PriceComparison"];
+            data_as_of: components["schemas"]["DataAsOf"];
+            dcf: components["schemas"]["DcfOut"];
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /**
+             * Label
+             * @constant
+             */
+            label: "Model output, not fact";
+            /** Method */
+            method: string;
+            /** Relative */
+            relative: components["schemas"]["RelativeOut"][];
+            reverse_dcf: components["schemas"]["ReverseDcf"];
+            /** Ticker */
+            ticker: string;
         };
         /** FieldChange */
         FieldChange: {
@@ -961,6 +1122,13 @@ export interface components {
              */
             vintage: string;
         };
+        /** Limit */
+        Limit: {
+            /** Maximum */
+            maximum: string;
+            /** Minimum */
+            minimum: string;
+        };
         /** LogOut */
         LogOut: {
             /** Date */
@@ -1043,6 +1211,12 @@ export interface components {
             title: string;
             /** Total */
             total: number;
+        };
+        /** NewAssumptions */
+        NewAssumptions: {
+            parameters: components["schemas"]["Assumptions-Input"];
+            /** Reason */
+            reason: string;
         };
         /** NewsFeed */
         NewsFeed: {
@@ -1224,6 +1398,16 @@ export interface components {
             /** Value */
             value: string;
         };
+        /** PriceComparison */
+        PriceComparison: {
+            /** Detail */
+            detail: string | null;
+            /** Implied Upside */
+            implied_upside: string | null;
+            /** Margin Of Safety */
+            margin_of_safety: string | null;
+            price: components["schemas"]["PriceOut"];
+        };
         /** PriceOut */
         PriceOut: {
             /** Close */
@@ -1387,6 +1571,52 @@ export interface components {
             /** Ticker */
             ticker: string | null;
         };
+        /** RelativeOut */
+        RelativeOut: {
+            /** Current */
+            current: string | null;
+            /** Median */
+            median: string | null;
+            /** Metric Id */
+            metric_id: string;
+            /** Observations */
+            observations: number;
+            /** Percentile */
+            percentile: string | null;
+            /** Since */
+            since: string | null;
+            /**
+             * Unit
+             * @enum {string}
+             */
+            unit: "USD" | "USD/shares" | "x" | "percent";
+        };
+        /** ReverseDcf */
+        ReverseDcf: {
+            /** Detail */
+            detail: string | null;
+            /** Growth */
+            growth: string | null;
+        };
+        /** RiskFreeOut */
+        RiskFreeOut: {
+            /**
+             * Observation Date
+             * Format: date
+             */
+            observation_date: string;
+            /**
+             * Published At
+             * Format: date-time
+             */
+            published_at: string;
+            /** Series Id */
+            series_id: string;
+            /** Source Url */
+            source_url: string;
+            /** Value */
+            value: string;
+        };
         /** RunOut */
         RunOut: {
             /** Attempt */
@@ -1433,6 +1663,24 @@ export interface components {
             window_end: string | null;
             /** Window Start */
             window_start: string | null;
+        };
+        /** ScenarioOut */
+        ScenarioOut: {
+            /** Enterprise Value */
+            enterprise_value: string;
+            /** Explicit Value */
+            explicit_value: string;
+            /** Growth */
+            growth: string;
+            /** Per Share */
+            per_share: string;
+            /**
+             * Scenario
+             * @enum {string}
+             */
+            scenario: "bear" | "base" | "bull";
+            /** Terminal Value */
+            terminal_value: string;
         };
         /** SeriesObservations */
         SeriesObservations: {
@@ -1849,6 +2097,108 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["InstrumentList"];
+                };
+            };
+        };
+    };
+    list_assumptions_instruments__ticker__assumptions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticker: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssumptionList"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_assumptions_instruments__ticker__assumptions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticker: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewAssumptions"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssumptionVersion"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    instrument_fair_value_instruments__ticker__fair_value_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+                /** @description Assumption version, or 'default'; default: the latest saved by then */
+                assumptions?: string | null;
+            };
+            header?: never;
+            path: {
+                ticker: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FairValueOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

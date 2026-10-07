@@ -190,7 +190,8 @@ def ttm_flow[FactT: DatedFact](facts: Sequence[FactT], metric: str) -> Input[Fac
     )
 
 
-def _net_debt[FactT: DatedFact](facts: Sequence[FactT]) -> Input[FactT] | None:
+def latest_net_debt[FactT: DatedFact](facts: Sequence[FactT]) -> Input[FactT] | None:
+    """Net debt at the latest balance-sheet date with non-current debt (M1.2)."""
     index = {(f.metric_id, f.period_start, f.period_end): f for f in facts}
     ends = sorted(
         {
@@ -236,7 +237,7 @@ def valuation[FactT: DatedFact](
     shares = share_count(facts, basis, splits)
     eps = ttm_eps(facts, basis, splits)
     revenue = ttm_flow(facts, "revenue")
-    debt = _net_debt(facts)
+    debt = latest_net_debt(facts)
     equity = _latest_instant(facts, "stockholders_equity")
     ebitda = _combine(
         ttm_flow(facts, "operating_income"),

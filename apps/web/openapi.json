@@ -1,6 +1,228 @@
 {
   "components": {
     "schemas": {
+      "AssumptionList": {
+        "properties": {
+          "default": {
+            "$ref": "#/components/schemas/AssumptionVersion"
+          },
+          "limits": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Limit"
+            },
+            "title": "Limits",
+            "type": "object"
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/AssumptionVersion"
+            },
+            "title": "Versions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "ticker",
+          "default",
+          "versions",
+          "limits"
+        ],
+        "title": "AssumptionList",
+        "type": "object"
+      },
+      "AssumptionVersion": {
+        "properties": {
+          "author": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Author"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "parameters": {
+            "$ref": "#/components/schemas/Assumptions-Output"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          }
+        },
+        "required": [
+          "version",
+          "parameters",
+          "reason",
+          "author",
+          "created_at"
+        ],
+        "title": "AssumptionVersion",
+        "type": "object"
+      },
+      "Assumptions-Input": {
+        "additionalProperties": false,
+        "description": "One assumption set; rates in percent (5 means 5%).",
+        "properties": {
+          "equity_risk_premium": {
+            "anyOf": [
+              {
+                "maximum": 10.0,
+                "minimum": 2.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d{0,2}0*$",
+                "type": "string"
+              }
+            ],
+            "title": "Equity Risk Premium"
+          },
+          "growth_base": {
+            "anyOf": [
+              {
+                "maximum": 40.0,
+                "minimum": -20.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d{0,2}0*$",
+                "type": "string"
+              }
+            ],
+            "title": "Growth Base"
+          },
+          "growth_bear": {
+            "anyOf": [
+              {
+                "maximum": 40.0,
+                "minimum": -20.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d{0,2}0*$",
+                "type": "string"
+              }
+            ],
+            "title": "Growth Bear"
+          },
+          "growth_bull": {
+            "anyOf": [
+              {
+                "maximum": 40.0,
+                "minimum": -20.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d{0,2}0*$",
+                "type": "string"
+              }
+            ],
+            "title": "Growth Bull"
+          },
+          "subtract_sbc": {
+            "default": true,
+            "title": "Subtract Sbc",
+            "type": "boolean"
+          },
+          "terminal_growth": {
+            "anyOf": [
+              {
+                "maximum": 5.0,
+                "minimum": -2.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d{0,2}0*$",
+                "type": "string"
+              }
+            ],
+            "title": "Terminal Growth"
+          }
+        },
+        "required": [
+          "equity_risk_premium",
+          "terminal_growth",
+          "growth_bear",
+          "growth_base",
+          "growth_bull"
+        ],
+        "title": "Assumptions",
+        "type": "object"
+      },
+      "Assumptions-Output": {
+        "additionalProperties": false,
+        "description": "One assumption set; rates in percent (5 means 5%).",
+        "properties": {
+          "equity_risk_premium": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d{0,2}0*$",
+            "title": "Equity Risk Premium",
+            "type": "string"
+          },
+          "growth_base": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d{0,2}0*$",
+            "title": "Growth Base",
+            "type": "string"
+          },
+          "growth_bear": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d{0,2}0*$",
+            "title": "Growth Bear",
+            "type": "string"
+          },
+          "growth_bull": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d{0,2}0*$",
+            "title": "Growth Bull",
+            "type": "string"
+          },
+          "subtract_sbc": {
+            "default": true,
+            "title": "Subtract Sbc",
+            "type": "boolean"
+          },
+          "terminal_growth": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d{0,2}0*$",
+            "title": "Terminal Growth",
+            "type": "string"
+          }
+        },
+        "required": [
+          "equity_risk_premium",
+          "terminal_growth",
+          "growth_bear",
+          "growth_base",
+          "growth_bull"
+        ],
+        "title": "Assumptions",
+        "type": "object"
+      },
       "AuditEntry": {
         "properties": {
           "action": {
@@ -351,6 +573,51 @@
         "title": "ComponentHealth",
         "type": "object"
       },
+      "DataAsOf": {
+        "properties": {
+          "latest_filing": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FilingRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "price_day": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Day"
+          },
+          "risk_free_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Free Date"
+          }
+        },
+        "required": [
+          "latest_filing",
+          "price_day",
+          "risk_free_date"
+        ],
+        "title": "DataAsOf",
+        "type": "object"
+      },
       "DataHealthReport": {
         "properties": {
           "checked_at": {
@@ -371,6 +638,62 @@
           "sources"
         ],
         "title": "DataHealthReport",
+        "type": "object"
+      },
+      "DcfOut": {
+        "properties": {
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "discount_rate": {
+            "$ref": "#/components/schemas/DiscountRate"
+          },
+          "inputs": {
+            "items": {
+              "$ref": "#/components/schemas/InputOut"
+            },
+            "title": "Inputs",
+            "type": "array"
+          },
+          "scenarios": {
+            "items": {
+              "$ref": "#/components/schemas/ScenarioOut"
+            },
+            "title": "Scenarios",
+            "type": "array"
+          },
+          "status": {
+            "enum": [
+              "ok",
+              "unavailable",
+              "not_meaningful"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "terminal_growth": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Terminal Growth",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "detail",
+          "discount_rate",
+          "terminal_growth",
+          "inputs",
+          "scenarios"
+        ],
+        "title": "DcfOut",
         "type": "object"
       },
       "DeadLetterOut": {
@@ -639,6 +962,44 @@
         "title": "DerivedInput",
         "type": "object"
       },
+      "DiscountRate": {
+        "properties": {
+          "equity_risk_premium": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Equity Risk Premium",
+            "type": "string"
+          },
+          "risk_free": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RiskFreeOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "value",
+          "risk_free",
+          "equity_risk_premium"
+        ],
+        "title": "DiscountRate",
+        "type": "object"
+      },
       "EntityOut": {
         "properties": {
           "cik": {
@@ -869,6 +1230,64 @@
           "rows"
         ],
         "title": "FactTable",
+        "type": "object"
+      },
+      "FairValueOut": {
+        "properties": {
+          "assumptions": {
+            "$ref": "#/components/schemas/AssumptionVersion"
+          },
+          "comparison": {
+            "$ref": "#/components/schemas/PriceComparison"
+          },
+          "data_as_of": {
+            "$ref": "#/components/schemas/DataAsOf"
+          },
+          "dcf": {
+            "$ref": "#/components/schemas/DcfOut"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "label": {
+            "const": "Model output, not fact",
+            "title": "Label",
+            "type": "string"
+          },
+          "method": {
+            "title": "Method",
+            "type": "string"
+          },
+          "relative": {
+            "items": {
+              "$ref": "#/components/schemas/RelativeOut"
+            },
+            "title": "Relative",
+            "type": "array"
+          },
+          "reverse_dcf": {
+            "$ref": "#/components/schemas/ReverseDcf"
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticker",
+          "known_at",
+          "label",
+          "method",
+          "assumptions",
+          "dcf",
+          "comparison",
+          "reverse_dcf",
+          "relative",
+          "data_as_of"
+        ],
+        "title": "FairValueOut",
         "type": "object"
       },
       "FieldChange": {
@@ -1851,6 +2270,26 @@
         "title": "LatestValue",
         "type": "object"
       },
+      "Limit": {
+        "properties": {
+          "maximum": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Maximum",
+            "type": "string"
+          },
+          "minimum": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Minimum",
+            "type": "string"
+          }
+        },
+        "required": [
+          "minimum",
+          "maximum"
+        ],
+        "title": "Limit",
+        "type": "object"
+      },
       "LogOut": {
         "properties": {
           "date": {
@@ -2104,6 +2543,26 @@
           "status"
         ],
         "title": "MilestoneOut",
+        "type": "object"
+      },
+      "NewAssumptions": {
+        "additionalProperties": false,
+        "properties": {
+          "parameters": {
+            "$ref": "#/components/schemas/Assumptions-Input"
+          },
+          "reason": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "parameters",
+          "reason"
+        ],
+        "title": "NewAssumptions",
         "type": "object"
       },
       "NewsFeed": {
@@ -2611,6 +3070,56 @@
           "filing"
         ],
         "title": "PreviousVersion",
+        "type": "object"
+      },
+      "PriceComparison": {
+        "properties": {
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "implied_upside": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Implied Upside"
+          },
+          "margin_of_safety": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin Of Safety"
+          },
+          "price": {
+            "$ref": "#/components/schemas/PriceOut"
+          }
+        },
+        "required": [
+          "price",
+          "implied_upside",
+          "margin_of_safety",
+          "detail"
+        ],
+        "title": "PriceComparison",
         "type": "object"
       },
       "PriceOut": {
@@ -3177,6 +3686,156 @@
         "title": "ReconciliationOut",
         "type": "object"
       },
+      "RelativeOut": {
+        "properties": {
+          "current": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current"
+          },
+          "median": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median"
+          },
+          "metric_id": {
+            "title": "Metric Id",
+            "type": "string"
+          },
+          "observations": {
+            "title": "Observations",
+            "type": "integer"
+          },
+          "percentile": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Percentile"
+          },
+          "since": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Since"
+          },
+          "unit": {
+            "enum": [
+              "USD",
+              "USD/shares",
+              "x",
+              "percent"
+            ],
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "metric_id",
+          "unit",
+          "current",
+          "median",
+          "percentile",
+          "observations",
+          "since"
+        ],
+        "title": "RelativeOut",
+        "type": "object"
+      },
+      "ReverseDcf": {
+        "properties": {
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "growth": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Growth"
+          }
+        },
+        "required": [
+          "growth",
+          "detail"
+        ],
+        "title": "ReverseDcf",
+        "type": "object"
+      },
+      "RiskFreeOut": {
+        "properties": {
+          "observation_date": {
+            "format": "date",
+            "title": "Observation Date",
+            "type": "string"
+          },
+          "published_at": {
+            "format": "date-time",
+            "title": "Published At",
+            "type": "string"
+          },
+          "series_id": {
+            "title": "Series Id",
+            "type": "string"
+          },
+          "source_url": {
+            "title": "Source Url",
+            "type": "string"
+          },
+          "value": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "series_id",
+          "value",
+          "observation_date",
+          "published_at",
+          "source_url"
+        ],
+        "title": "RiskFreeOut",
+        "type": "object"
+      },
       "RunOut": {
         "properties": {
           "attempt": {
@@ -3328,6 +3987,54 @@
           "created_at"
         ],
         "title": "RunOut",
+        "type": "object"
+      },
+      "ScenarioOut": {
+        "properties": {
+          "enterprise_value": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Enterprise Value",
+            "type": "string"
+          },
+          "explicit_value": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Explicit Value",
+            "type": "string"
+          },
+          "growth": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Growth",
+            "type": "string"
+          },
+          "per_share": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Per Share",
+            "type": "string"
+          },
+          "scenario": {
+            "enum": [
+              "bear",
+              "base",
+              "bull"
+            ],
+            "title": "Scenario",
+            "type": "string"
+          },
+          "terminal_value": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Terminal Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "scenario",
+          "growth",
+          "per_share",
+          "enterprise_value",
+          "explicit_value",
+          "terminal_value"
+        ],
+        "title": "ScenarioOut",
         "type": "object"
       },
       "SeriesObservations": {
@@ -4357,6 +5064,179 @@
         "summary": "List Instruments",
         "tags": [
           "instruments"
+        ]
+      }
+    },
+    "/instruments/{ticker}/assumptions": {
+      "get": {
+        "operationId": "list_assumptions_instruments__ticker__assumptions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ticker",
+            "required": true,
+            "schema": {
+              "title": "Ticker",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssumptionList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Assumptions",
+        "tags": [
+          "fair-value"
+        ]
+      },
+      "post": {
+        "description": "A new version (the latest + 1); earlier versions are never changed.",
+        "operationId": "save_assumptions_instruments__ticker__assumptions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ticker",
+            "required": true,
+            "schema": {
+              "title": "Ticker",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewAssumptions"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssumptionVersion"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Save Assumptions",
+        "tags": [
+          "fair-value"
+        ]
+      }
+    },
+    "/instruments/{ticker}/fair-value": {
+      "get": {
+        "operationId": "instrument_fair_value_instruments__ticker__fair_value_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ticker",
+            "required": true,
+            "schema": {
+              "title": "Ticker",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          },
+          {
+            "description": "Assumption version, or 'default'; default: the latest saved by then",
+            "in": "query",
+            "name": "assumptions",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^(default|[1-9][0-9]*)$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Assumption version, or 'default'; default: the latest saved by then",
+              "title": "Assumptions"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FairValueOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Instrument Fair Value",
+        "tags": [
+          "fair-value"
         ]
       }
     },
