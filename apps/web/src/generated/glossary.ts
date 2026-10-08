@@ -39,6 +39,7 @@ export type CompleteTermId =
   | "depreciation_amortization"
   | "dev_log"
   | "diluted_shares"
+  | "discount_rate"
   | "dividends_paid"
   | "duplicate_group"
   | "earnings_yield"
@@ -46,8 +47,10 @@ export type CompleteTermId =
   | "enterprise_value"
   | "eps_diluted"
   | "eps_diluted_ttm"
+  | "equity_risk_premium"
   | "ev_to_ebitda"
   | "ev_to_sales"
+  | "fair_value_dcf"
   | "fcf_yield"
   | "feed_status"
   | "filing_date"
@@ -57,6 +60,7 @@ export type CompleteTermId =
   | "freshness_sla"
   | "gross_profit"
   | "hy_oas_percentile"
+  | "implied_upside"
   | "income_tax_expense"
   | "ingestion_note"
   | "ingestion_status"
@@ -76,9 +80,12 @@ export type CompleteTermId =
   | "macro_treasury_2y"
   | "macro_unemployment_rate"
   | "macro_vix"
+  | "margin_of_safety"
   | "market_cap"
   | "market_session"
   | "milestone_status"
+  | "model_output"
+  | "multiple_percentile"
   | "net_debt"
   | "net_income"
   | "news_time_basis"
@@ -87,6 +94,7 @@ export type CompleteTermId =
   | "open_decision"
   | "operating_cash_flow"
   | "operating_income"
+  | "owner_fcf"
   | "page_audit_log"
   | "page_data_health"
   | "page_instruments"
@@ -116,8 +124,10 @@ export type CompleteTermId =
   | "repurchase_remaining"
   | "restated_flag"
   | "revenue"
+  | "reverse_dcf_growth"
   | "rule_insight"
   | "sahm_rule_indicator"
+  | "scenario_range"
   | "share_repurchases"
   | "shares_outstanding"
   | "shares_outstanding_cover"
@@ -128,9 +138,11 @@ export type CompleteTermId =
   | "stock_based_compensation"
   | "stockholders_equity"
   | "story_count"
+  | "terminal_growth"
   | "total_debt"
   | "trailing_twelve_months"
   | "update_cadence"
+  | "valuation_assumptions"
   | "valuation_price"
   | "vintage"
   | "vix_percentile_1y"
@@ -1000,6 +1012,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "稀釋加權股數",
     "hint_zh": "期間內的加權平均股數，含潛在稀釋股份。"
   },
+  "discount_rate": {
+    "term_id": "discount_rate",
+    "display_name": "Discount Rate",
+    "category": "valuation",
+    "short_definition": "The yearly return the DCF requires: the 10-year Treasury yield known then plus the equity risk premium.",
+    "full_definition": "The latest 10-year constant-maturity Treasury yield (FRED DGS10) public at the As known on time, plus the equity risk premium of the assumption version. One rate for the whole company, not a weighted cost of capital (ADR-023).",
+    "formula": "DGS10 (latest observation known at T) + equity_risk_premium",
+    "unit": "percent",
+    "example": "2026-10-07: 5.31% (DGS10, 2026-10-05) + 5% = 10.31%.",
+    "direction": "Higher = lower fair value",
+    "interpretation": "A higher rate means future cash is worth less today; the DCF is most sensitive to it.",
+    "why_it_matters": "Ties the valuation to the interest rates of the day.",
+    "source": "FRED DGS10 (Board of Governors) and the assumption version",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/fair_value.py",
+    "as_of": "2026-10-08",
+    "update_cadence": "daily (Treasury yield)",
+    "caveats": "No company-specific beta or debt cost.",
+    "related_terms": [
+      "macro_treasury_10y",
+      "equity_risk_premium",
+      "fair_value_dcf"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "折現率",
+    "hint_zh": "當時已知的 10 年期美債殖利率 + 股權風險溢酬。"
+  },
   "dividends_paid": {
     "term_id": "dividends_paid",
     "display_name": "Dividends Paid",
@@ -1180,6 +1218,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "近四季稀釋 EPS",
     "hint_zh": "全年 EPS + 今年累計 − 去年同期累計，皆為申報值。"
   },
+  "equity_risk_premium": {
+    "term_id": "equity_risk_premium",
+    "display_name": "Equity Risk Premium",
+    "category": "valuation",
+    "short_definition": "The extra yearly return over Treasuries the DCF asks of a stock; an assumption, 2% to 10%.",
+    "full_definition": "Set in each assumption version (default 5%, not reviewed). Added to the 10-year Treasury yield to give the discount rate.",
+    "formula": "assumption; discount_rate = DGS10 + equity_risk_premium",
+    "unit": "percent",
+    "example": "Default: 5%.",
+    "direction": "Higher = lower fair value",
+    "interpretation": "How much compensation for risk you demand; one point changes most DCF values by a fifth or more.",
+    "why_it_matters": "The single most influential assumption next to growth.",
+    "source": "Assumption version (Steven's, or the built-in default)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/fair_value.py",
+    "as_of": "2026-10-08",
+    "update_cadence": "when the assumptions change",
+    "caveats": "A judgement, not a market observation.",
+    "related_terms": [
+      "discount_rate",
+      "valuation_assumptions"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "股權風險溢酬",
+    "hint_zh": "股票相對美債要求的額外年報酬；假設值，2–10%。"
+  },
   "ev_to_ebitda": {
     "term_id": "ev_to_ebitda",
     "display_name": "EV/EBITDA",
@@ -1229,6 +1292,35 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "EV/營收",
     "hint_zh": "企業價值 ÷ 近四季營收。"
+  },
+  "fair_value_dcf": {
+    "term_id": "fair_value_dcf",
+    "display_name": "DCF Fair Value per Share",
+    "category": "valuation",
+    "short_definition": "A model's value per share from discounting owner free cash flow: enterprise value minus net debt, divided by shares.",
+    "full_definition": "Enterprise DCF, two-stage, annual, discounted at year end. Owner free cash flow of the last four quarters grows at the scenario rate for five years, then the rate fades linearly to the terminal growth over years 6-10; the terminal value at year 10 is FCF10 x (1 + terminal growth) / (discount rate - terminal growth). The present values add up to an enterprise value; net debt (M1.2) is subtracted and the result divided by shares outstanding (M1.2). Every input is what was public at the As known on time, and the assumption version is named, so the same pair always gives the same value (ADR-023).",
+    "formula": "(sum of PV(FCF years 1-10) + PV(terminal value) - net_debt) / shares_outstanding",
+    "unit": "USD/share",
+    "example": "Apple on 2026-10-07, default assumptions: owner FCF $122.98 billion, discount rate 10.31%: bear $93.30, base $123.76, bull $163.35 a share.",
+    "direction": "N/A",
+    "interpretation": "What the cash flows are worth if the assumptions hold; compare the range with the price, and read the reverse DCF to see what the price assumes.",
+    "why_it_matters": "A price only means cheap or dear against an estimate of value; the model makes that estimate explicit and repeatable.",
+    "source": "Derived from SEC XBRL cash flows, debt, cash and shares, FRED DGS10 and the assumption version",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/fair_value.py",
+    "as_of": "2026-10-08",
+    "update_cadence": "per filing, daily (Treasury yield), and when the assumptions change",
+    "caveats": "Model output, not fact: small changes in the discount rate or terminal growth move it a lot. Not meaningful when owner free cash flow is not positive. Banks (JPMorgan) have no comparable capex or net debt, so it is unavailable for them. One discount rate, no mid-year convention.",
+    "related_terms": [
+      "owner_fcf",
+      "discount_rate",
+      "scenario_range",
+      "reverse_dcf_growth",
+      "valuation_assumptions",
+      "model_output"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "DCF 每股合理價值",
+    "hint_zh": "業主自由現金流折現得企業價值，減淨負債再除以股數；模型結果，不是事實。"
   },
   "fcf_yield": {
     "term_id": "fcf_yield",
@@ -1457,6 +1549,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "高收益債利差百分位",
     "hint_zh": "目前利差在可取得歷史中的排名（0–100）。"
+  },
+  "implied_upside": {
+    "term_id": "implied_upside",
+    "display_name": "Implied Upside",
+    "category": "valuation",
+    "short_definition": "How far the base DCF value is above (or below) the valuation price.",
+    "full_definition": "Base value per share divided by the valuation price, minus one. Unavailable when the price is a fixture, demo or stale close (errata E4), or when there is no DCF value.",
+    "formula": "(base value / valuation_price - 1) x 100",
+    "unit": "percent",
+    "example": "Apple on 2026-10-07: $123.76 / $333.04 - 1 = -62.84%.",
+    "direction": "Higher = cheaper against the model",
+    "interpretation": "Negative means the price is above the base value.",
+    "why_it_matters": "Puts the model and the market on one scale.",
+    "source": "Derived (fair_value_dcf, valuation_price)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/fair_value.py",
+    "as_of": "2026-10-08",
+    "update_cadence": "daily",
+    "caveats": "Only as good as the assumptions; read with the reverse DCF.",
+    "related_terms": [
+      "margin_of_safety",
+      "fair_value_dcf",
+      "valuation_price"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "隱含漲跌幅",
+    "hint_zh": "base 每股價值 ÷ 估值股價 − 1。"
   },
   "income_tax_expense": {
     "term_id": "income_tax_expense",
@@ -1933,6 +2051,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "VIX 恐慌指數",
     "hint_zh": "S&P 500 選擇權隱含的未來 30 天波動率。"
   },
+  "margin_of_safety": {
+    "term_id": "margin_of_safety",
+    "display_name": "Margin of Safety",
+    "category": "valuation",
+    "short_definition": "How far the price is below the base DCF value, as a share of that value.",
+    "full_definition": "(Base value - price) / base value. Positive: the price is below the value by that share; negative: above it. Unavailable without a usable valuation price or a positive base value.",
+    "formula": "(base value - valuation_price) / base value x 100",
+    "unit": "percent",
+    "example": "Apple on 2026-10-07: ($123.76 - $333.04) / $123.76 = -169.10%.",
+    "direction": "Higher = more room for error",
+    "interpretation": "Value investors look for a positive margin before buying; how much depends on how sure the value is.",
+    "why_it_matters": "A buffer against being wrong about the assumptions.",
+    "source": "Derived (fair_value_dcf, valuation_price)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/fair_value.py",
+    "as_of": "2026-10-08",
+    "update_cadence": "daily",
+    "caveats": "Measured against the base scenario only.",
+    "related_terms": [
+      "implied_upside",
+      "fair_value_dcf"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "安全邊際",
+    "hint_zh": "(base 每股價值 − 股價) ÷ base 每股價值；負值表示股價高於模型價值。"
+  },
   "market_cap": {
     "term_id": "market_cap",
     "display_name": "Market Capitalization",
@@ -2007,6 +2150,57 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.2.0",
     "name_zh": "里程碑狀態",
     "hint_zh": "驗收項目完成數，以及完成、進行中、未開始，或已提出待批准。"
+  },
+  "model_output": {
+    "term_id": "model_output",
+    "display_name": "Model Output, Not Fact",
+    "category": "valuation",
+    "short_definition": "A number computed from assumptions, not reported by a company or a market.",
+    "full_definition": "Fair values, scenario ranges, implied upside, margin of safety and reverse-DCF growth depend on the assumption version; they are labelled so they are never read as reported facts (02 §32.2). Each names its method, assumptions, model date and data date.",
+    "formula": "N/A",
+    "unit": "N/A",
+    "example": "\"DCF base $123.76\" is model output; \"revenue $416.16 billion\" is a reported fact.",
+    "direction": "N/A",
+    "interpretation": "Question the assumptions before the number.",
+    "why_it_matters": "Mixing estimates with facts is how analysis goes wrong unnoticed.",
+    "source": "Platform convention (02 §32.2)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/fair_value.py",
+    "as_of": "2026-10-08",
+    "update_cadence": "N/A",
+    "caveats": "N/A",
+    "related_terms": [
+      "valuation_assumptions",
+      "fair_value_dcf"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "模型結果，不是事實",
+    "hint_zh": "由假設算出的數字，不是公司申報或市場報價。"
+  },
+  "multiple_percentile": {
+    "term_id": "multiple_percentile",
+    "display_name": "Multiple Percentile (own history)",
+    "category": "valuation",
+    "short_definition": "Where today's multiple ranks in the company's own month-end history since 2016, each month as known then.",
+    "full_definition": "Each M1.2 multiple is recomputed at the end of every month since January 2016 from the facts, close and splits public then. The percentile is the share of those month ends at or below today's value; the median is that history's middle value. Months without a value (no close, unavailable or n/m) are left out.",
+    "formula": "count(history <= current) / count(history) x 100",
+    "unit": "percentile (0-100)",
+    "example": "Apple on 2026-10-07: P/E 38.19, median 26.67, 95th percentile of 129 month ends.",
+    "direction": "P/E, EV/EBITDA, EV/sales, P/B: higher = dearer than usual; FCF and earnings yield: higher = cheaper than usual",
+    "interpretation": "Relative to the company's own past, not to peers.",
+    "why_it_matters": "A multiple means little alone; against its history it shows whether the market is paying more than usual.",
+    "source": "Derived (M1.2 multiples at each month end)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/fair_value.py",
+    "as_of": "2026-10-08",
+    "update_cadence": "daily",
+    "caveats": "History starts when the inputs do: Alphabet's EPS before 2019 and some FCF quarters are not reported in a usable form, so fewer months count. Business changes make old multiples less comparable.",
+    "related_terms": [
+      "pe_ratio_ttm",
+      "ev_to_ebitda",
+      "fcf_yield"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "倍數歷史百分位",
+    "hint_zh": "目前倍數在 2016 年以來每個月底（當時已知資料）中的排名。"
   },
   "net_debt": {
     "term_id": "net_debt",
@@ -2206,6 +2400,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "營業利益",
     "hint_zh": "本業獲利，未計利息與稅。"
+  },
+  "owner_fcf": {
+    "term_id": "owner_fcf",
+    "display_name": "Owner Free Cash Flow",
+    "category": "valuation",
+    "short_definition": "Operating cash flow minus capital expenditure minus stock-based compensation, the last four quarters: the DCF's starting cash flow.",
+    "full_definition": "Free cash flow after treating stock-based compensation as a cost, since paying staff in shares dilutes owners as surely as paying cash. Each part is the sum of the last four quarters (quarters derived from year-to-date values, ADR-021), and all three must cover the same quarters. An assumption version can leave SBC in (ADR-023 F2).",
+    "formula": "operating_cash_flow_ttm - capex_ttm - stock_based_compensation_ttm",
+    "unit": "USD",
+    "example": "Apple, four quarters to 2026-06-27: $122.98 billion.",
+    "direction": "Higher = more cash for owners",
+    "interpretation": "The base the DCF grows; compare it with net income to see how much profit turns into cash.",
+    "why_it_matters": "A DCF is only as good as the cash flow it starts from.",
+    "source": "Derived from SEC XBRL cash flow statements",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/fair_value.py",
+    "as_of": "2026-10-08",
+    "update_cadence": "per filing",
+    "caveats": "ExxonMobil reports no separate SBC line, so with SBC subtracted it is unavailable; an assumption version for XOM can leave SBC out. One year of heavy capex (AI data centres in 2025-26) lowers it sharply.",
+    "related_terms": [
+      "free_cash_flow",
+      "stock_based_compensation",
+      "fair_value_dcf"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "業主自由現金流",
+    "hint_zh": "近四季營業現金流 − 資本支出 − 股票薪酬（SBC）。"
   },
   "page_audit_log": {
     "term_id": "page_audit_log",
@@ -2941,6 +3161,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "營收",
     "hint_zh": "公司在該期間報告的總銷售額，未扣除任何成本。"
   },
+  "reverse_dcf_growth": {
+    "term_id": "reverse_dcf_growth",
+    "display_name": "Reverse DCF Implied Growth",
+    "category": "valuation",
+    "short_definition": "The growth in years 1-5 that makes the base DCF value equal the price: what the market is assuming.",
+    "full_definition": "Everything else as in the base scenario (cash flow, discount rate, fade, terminal growth), solved by bisection between -50% and +100% a year. None when the price is outside that range or unusable.",
+    "formula": "g such that fair_value_dcf(g) = valuation_price",
+    "unit": "percent a year",
+    "example": "Apple on 2026-10-07: 23.32% a year for five years.",
+    "direction": "N/A",
+    "interpretation": "Compare it with the company's past growth: a price that needs far more growth than history is optimistic.",
+    "why_it_matters": "Turns a price into an assumption you can judge.",
+    "source": "Derived (fair_value_dcf, valuation_price)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/fair_value.py",
+    "as_of": "2026-10-08",
+    "update_cadence": "daily",
+    "caveats": "Depends on the discount rate and terminal growth of the version.",
+    "related_terms": [
+      "fair_value_dcf",
+      "scenario_range"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "反向 DCF 隱含成長率",
+    "hint_zh": "讓 base 價值等於股價所需的前 5 年年成長率，也就是市場在假設的成長。"
+  },
   "rule_insight": {
     "term_id": "rule_insight",
     "display_name": "Insight (rule-based)",
@@ -2989,6 +3234,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "薩姆規則指標",
     "hint_zh": "失業率 3 個月平均高於前 12 個月低點的幅度；≥ 0.50 個百分點視為觸發。"
+  },
+  "scenario_range": {
+    "term_id": "scenario_range",
+    "display_name": "Scenario Range",
+    "category": "valuation",
+    "short_definition": "The DCF value per share under bear, base and bull growth, which differ only in the growth of years 1-5.",
+    "full_definition": "Three DCFs with the same discount rate, terminal growth and cash flow; only the first five years' growth differs (default 0%, 5% and 10%). The spread shows how much the value depends on growth.",
+    "formula": "fair_value_dcf at growth_bear, growth_base, growth_bull",
+    "unit": "USD/share",
+    "example": "Apple on 2026-10-07: $93.30 to $163.35, base $123.76.",
+    "direction": "N/A",
+    "interpretation": "A price above the bull value needs more than the bull growth to be justified.",
+    "why_it_matters": "One number hides how uncertain it is; the range does not.",
+    "source": "Derived (fair_value_dcf)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/fair_value.py",
+    "as_of": "2026-10-08",
+    "update_cadence": "as fair_value_dcf",
+    "caveats": "Not probabilities: bear and bull are assumptions, not the worst and best cases.",
+    "related_terms": [
+      "fair_value_dcf",
+      "implied_upside"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "情境區間",
+    "hint_zh": "bear、base、bull 三種前 5 年成長率下的每股價值。"
   },
   "share_repurchases": {
     "term_id": "share_repurchases",
@@ -3239,6 +3509,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "報導數",
     "hint_zh": "不重複的新聞則數（以轉載群組計），不是文章數。"
   },
+  "terminal_growth": {
+    "term_id": "terminal_growth",
+    "display_name": "Terminal Growth",
+    "category": "valuation",
+    "short_definition": "The growth rate the DCF assumes forever after year 10; an assumption, -2% to 5%.",
+    "full_definition": "Years 6-10 fade linearly from the scenario growth to this rate; the terminal value grows at it forever. It must stay at least one point below the discount rate, or the DCF is unavailable.",
+    "formula": "terminal value = FCF10 x (1 + g) / (r - g)",
+    "unit": "percent",
+    "example": "Default: 2.5%.",
+    "direction": "Higher = higher fair value",
+    "interpretation": "Around long-run nominal GDP growth; much above it implies the company outgrows the economy forever.",
+    "why_it_matters": "The terminal value is usually more than half of a DCF.",
+    "source": "Assumption version",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/fair_value.py",
+    "as_of": "2026-10-08",
+    "update_cadence": "when the assumptions change",
+    "caveats": "Close to the discount rate it makes the value explode; hence the one-point rule.",
+    "related_terms": [
+      "fair_value_dcf",
+      "valuation_assumptions"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "永續成長率",
+    "hint_zh": "第 10 年後永遠的成長率；至少要比折現率低 1 個百分點。"
+  },
   "total_debt": {
     "term_id": "total_debt",
     "display_name": "Total Debt",
@@ -3314,6 +3609,33 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "更新頻率",
     "hint_zh": "來源多久發布一次新資料。"
+  },
+  "valuation_assumptions": {
+    "term_id": "valuation_assumptions",
+    "display_name": "Valuation Assumptions",
+    "category": "valuation",
+    "short_definition": "A numbered, append-only set of DCF assumptions per company: equity risk premium, terminal growth, bear/base/bull growth, SBC treatment.",
+    "full_definition": "Saved on the instrument page with a one-line reason; each save is a new version (never an edit) and is recorded in the Audit Log. A fair value names its version, so it can be recomputed exactly. Without a saved version the built-in default applies (5% premium, 2.5% terminal, 0/5/10% growth, SBC subtracted; not reviewed). By default a fair value uses the latest version saved by its As known on time (ADR-023 F4).",
+    "formula": "version n+1 = new parameters + reason",
+    "unit": "N/A",
+    "example": "Illustration: saving base growth 7% for AAPL with the reason \"services growth\" creates AAPL v1; earlier versions and the default stay selectable.",
+    "direction": "N/A",
+    "interpretation": "Read the reason and date with the result: a value is only as good as the assumptions behind it.",
+    "why_it_matters": "Makes judgement explicit and auditable instead of hidden in a spreadsheet.",
+    "source": "Steven, saved in the web app (localhost only)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/fair_value.py",
+    "as_of": "2026-10-08",
+    "update_cadence": "when Steven saves a version",
+    "caveats": "The default is a neutral starting point, not a recommendation.",
+    "related_terms": [
+      "fair_value_dcf",
+      "equity_risk_premium",
+      "terminal_growth",
+      "model_output"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "估值假設版本",
+    "hint_zh": "每家公司有編號、只能新增的 DCF 假設；每次儲存都是新版本並記入稽核紀錄。"
   },
   "valuation_price": {
     "term_id": "valuation_price",

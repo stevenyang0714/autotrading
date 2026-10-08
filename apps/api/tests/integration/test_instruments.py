@@ -19,11 +19,12 @@ from uuid import uuid4
 import pytest
 from alembic import command
 from fastapi.testclient import TestClient
-from sqlalchemy import Engine, create_engine, func, select
+from sqlalchemy import Engine, create_engine, func, select, update
 from sqlalchemy.engine import URL
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import DBAPIError, IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
+from autotrading.adapters.fred.series import FredSeriesJob
 from autotrading.adapters.sec import reconcile
 from autotrading.adapters.sec.instance import parse_instance
 from autotrading.adapters.sec.refresh import (
@@ -31,16 +32,19 @@ from autotrading.adapters.sec.refresh import (
     filing_xbrl_candidates,
     universe_predecessors,
 )
-from autotrading.config_sync import load_sources, sync_sources
+from autotrading.config_sync import load_macro_series, load_sources, sync_macro_series, sync_sources
 from autotrading.db.models import (
     AuditLog,
     EntityRelationship,
     Filing,
     FilingReconciliation,
     FinancialFact,
+    Identifier,
     IngestionRun,
+    Instrument,
     ReconciliationItem,
     Source,
+    ValuationAssumptionSet,
 )
 from autotrading.infra.object_store import make_s3_client
 from autotrading.infra.redis_client import make_redis
@@ -49,8 +53,10 @@ from autotrading.ingestion.rate_limit import TokenBucketLimiter
 from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.main import create_app
+from autotrading.repositories.facts import FinancialFactRepository
 from autotrading.settings import get_settings
-from tests import alpaca_replay
+from tests import alpaca_replay, fred_replay
+from tests.factories import financial_fact
 from tests.integration.conftest import alembic_config
 from tests.sec_replay import FIXTURES, RECORDED_INSTANCES, recorded_registry, replay
 
@@ -76,8 +82,10 @@ def engine(database_factory: Callable[[], URL]) -> Iterator[Engine]:
     url = database_factory()
     command.upgrade(alembic_config(url), "head")
     engine = create_engine(url)
+    config = get_settings().resolved_config_dir()
     with Session(engine) as session:
-        sync_sources(session, load_sources(get_settings().resolved_config_dir() / "sources.yaml"))
+        sync_sources(session, load_sources(config / "sources.yaml"))
+        sync_macro_series(session, load_macro_series(config / "macro_series.yaml"))
         session.commit()
     yield engine
     engine.dispose()
@@ -86,8 +94,9 @@ def engine(database_factory: Callable[[], URL]) -> Iterator[Engine]:
 @pytest.fixture(scope="module")
 def sessions(engine: Engine) -> sessionmaker[Session]:
     with Session(engine) as session:
-        source = session.get_one(Source, "sec_edgar")
-        source.rate_limit_per_second, source.rate_limit_burst = 100, 100  # type: ignore[assignment]
+        for source_id in ("sec_edgar", "fred"):
+            source = session.get_one(Source, source_id)
+            source.rate_limit_per_second, source.rate_limit_burst = 100, 100  # type: ignore[assignment]
         session.commit()
     return sessionmaker(engine)
 
@@ -102,7 +111,9 @@ def replayed(sessions: sessionmaker[Session]) -> Iterator[list[IngestionRun]]:
         sessions,
         RawPayloadStore(s3, bucket),
         TokenBucketLimiter(make_redis(settings), prefix=f"test-ratelimit-{uuid4().hex[:8]}"),
-        alpaca_replay.register_recorded(recorded_registry(), fixture=False),
+        alpaca_replay.register_recorded(
+            fred_replay.register_recorded(recorded_registry()), fixture=False
+        ),
     )
     # Splits (since 2016, and the reviewed earlier ones) before the filing XBRL, as production.
     run_ids = replay(
@@ -116,6 +127,13 @@ def replayed(sessions: sessionmaker[Session]) -> Iterator[list[IngestionRun]]:
         "alpaca.daily_bars", alpaca_replay.recorded_params("alpaca.daily_bars"), WINDOW
     )
     runner.execute(bars)
+    # The 10-year Treasury yield for the DCF discount rate (M1.3a).
+    treasury = runner.create_run(
+        FredSeriesJob.name,
+        {"series_id": "DGS10", "observation_start": fred_replay.RECORDED_SERIES["DGS10"]},
+        WINDOW,
+    )
+    runner.execute(treasury)
     with sessions() as session:
         yield [session.get_one(IngestionRun, run_id) for run_id in run_ids]
     for obj in s3.list_objects_v2(Bucket=bucket).get("Contents", []):
@@ -520,6 +538,263 @@ def test_no_multiple_from_a_stale_close(client: TestClient) -> None:
     assert all("older than five days" in m["detail"] for m in body["metrics"])
 
 
+# ---------- fair value (M1.3a, ADR-023) ----------
+
+DEFAULT_PARAMETERS = {
+    "equity_risk_premium": "5",
+    "terminal_growth": "2.5",
+    "growth_bear": "0",
+    "growth_base": "5",
+    "growth_bull": "10",
+    "subtract_sbc": True,
+}
+
+
+def fair_value(
+    client: TestClient, ticker: str, known_at: str, assumptions: str | None = None
+) -> dict[str, Any]:
+    params = {"known_at": known_at} | ({"assumptions": assumptions} if assumptions else {})
+    response = client.get(f"/instruments/{ticker}/fair-value", params=params)
+    assert response.status_code == 200, response.text
+    body: dict[str, Any] = response.json()
+    return body
+
+
+def test_fair_value_names_method_assumptions_range_price_and_dates(client: TestClient) -> None:
+    body = fair_value(client, "AAPL", VALUED_AT)
+    assert body["label"] == "Model output, not fact"
+    assert body["method"].startswith("Enterprise DCF of owner free cash flow")
+    assert body["known_at"] == "2026-10-06T12:00:00Z"  # the model date
+    assumptions = body["assumptions"]
+    assert assumptions["version"] is None and "not reviewed" in assumptions["reason"]
+    assert assumptions["parameters"] == DEFAULT_PARAMETERS
+
+    dcf = body["dcf"]
+    assert dcf["status"] == "ok", dcf["detail"]
+    rate = dcf["discount_rate"]
+    treasury = rate["risk_free"]
+    assert treasury["series_id"] == "DGS10" and treasury["observation_date"] <= "2026-10-05"
+    assert treasury["published_at"] <= "2026-10-06T12:00:00Z"
+    assert Decimal(rate["value"]) == Decimal(treasury["value"]) + 5
+    names = [i["name"] for i in dcf["inputs"]]
+    assert names == ["owner_fcf", "net_debt", "shares_outstanding_cover"]
+    owner = dcf["inputs"][0]
+    assert {s["metric_id"] for s in owner["sources"]} == {
+        "operating_cash_flow",
+        "capex",
+        "stock_based_compensation",
+    }
+    assert all(
+        s["filing"]["url"].startswith("https://www.sec.gov/")
+        for i in dcf["inputs"]
+        for s in i["sources"]
+    )
+    scenarios = dcf["scenarios"]
+    assert [s["scenario"] for s in scenarios] == ["bear", "base", "bull"]
+    bear, base, bull = (Decimal(s["per_share"]) for s in scenarios)
+    assert Decimal(0) < bear < base < bull
+
+    comparison = body["comparison"]
+    price = Decimal(comparison["price"]["close"])
+    assert comparison["price"]["day"] == "2026-10-05" and comparison["detail"] is None
+    assert Decimal(comparison["implied_upside"]) == ((base / price - 1) * 100).quantize(
+        Decimal("0.01")
+    )
+    assert Decimal(comparison["margin_of_safety"]) == ((base - price) / base * 100).quantize(
+        Decimal("0.01")
+    )
+    assert body["reverse_dcf"]["growth"] is not None
+
+    relative = {r["metric_id"]: r for r in body["relative"]}
+    assert list(relative) == [
+        "pe_ratio_ttm",
+        "ev_to_ebitda",
+        "ev_to_sales",
+        "price_to_book",
+        "fcf_yield",
+        "earnings_yield",
+    ]
+    shown = valuation(client, "AAPL", VALUED_AT)["metrics"]
+    multiples = {m["metric_id"]: m["value"] for m in shown}
+    pe = relative["pe_ratio_ttm"]
+    assert pe["current"] == multiples["pe_ratio_ttm"]  # as on the Valuation block
+    # One year of recorded closes: a dozen month ends, each valued as known then.
+    assert 10 <= pe["observations"] <= 13 and pe["since"] >= "2025-09-30"
+    assert pe["median"] is not None and 0 <= Decimal(pe["percentile"]) <= 100
+
+    as_of = body["data_as_of"]
+    assert as_of["latest_filing"]["form"] in ("10-Q", "10-K")
+    assert as_of["latest_filing"]["published_at"] <= "2026-10-06T12:00:00Z"
+    assert (as_of["price_day"], as_of["risk_free_date"]) == (
+        "2026-10-05",
+        treasury["observation_date"],
+    )
+
+
+def test_no_price_comparison_from_a_stale_close_but_the_dcf_stands(client: TestClient) -> None:
+    body = fair_value(client, "AAPL", "2026-10-20T00:00:00Z")
+    assert body["dcf"]["status"] == "ok" and len(body["dcf"]["scenarios"]) == 3
+    comparison = body["comparison"]
+    assert comparison["price"]["status"] == "stale"
+    assert (comparison["implied_upside"], comparison["margin_of_safety"]) == (None, None)
+    assert comparison["detail"].startswith("no valuation price")
+    assert body["reverse_dcf"] == {"growth": None, "detail": "no valuation price"}
+
+
+def restate_latest_operating_cash_flow(sessions: sessionmaker[Session], ticker: str) -> Decimal:
+    """A new version of the latest year-to-date operating cash flow, public only in 2030."""
+    with sessions() as session:
+        fact = fair_value_fact(session, ticker)
+        changed = fact.value + 1_000_000_000
+        FinancialFactRepository(session).insert(
+            financial_fact(
+                entity_id=fact.entity_id,
+                metric_id=fact.metric_id,
+                value=str(changed),
+                unit=fact.unit,
+                fiscal_period=fact.fiscal_period,
+                period_start=fact.period_start,
+                period_end=fact.period_end,
+                accession_id="0000000000-30-000001",
+                provenance_overrides={
+                    "source_id": "sec_edgar",
+                    "published_at": datetime(2030, 1, 2, tzinfo=UTC),
+                },
+            ),
+            actor="test:restatement",
+        )
+        session.commit()
+    return changed
+
+
+def fair_value_fact(session: Session, ticker: str) -> FinancialFact:
+    instrument = client_instrument(session, ticker)
+    assert instrument.entity_id is not None
+    return session.scalars(
+        select(FinancialFact)
+        .where(
+            FinancialFact.entity_id == instrument.entity_id,
+            FinancialFact.metric_id == "operating_cash_flow",
+            FinancialFact.period_start.is_not(None),
+            FinancialFact.superseded_at.is_(None),
+        )
+        .order_by(FinancialFact.period_end.desc(), FinancialFact.published_at.desc())
+        .limit(1)
+    ).one()
+
+
+def client_instrument(session: Session, ticker: str) -> Instrument:
+    return session.scalars(
+        select(Instrument)
+        .join(Identifier, Identifier.instrument_id == Instrument.id)
+        .where(Identifier.id_type == "ticker", Identifier.id_value == ticker)
+    ).first() or pytest.fail(f"no {ticker}")
+
+
+def save(client: TestClient, ticker: str, reason: str, **changes: object) -> dict[str, Any]:
+    response = client.post(
+        f"/instruments/{ticker}/assumptions",
+        json={"parameters": DEFAULT_PARAMETERS | changes, "reason": reason},
+    )
+    assert response.status_code == 201, response.text
+    body: dict[str, Any] = response.json()
+    return body
+
+
+def test_a_saved_version_reproduces_after_new_facts_and_versions(
+    client: TestClient, sessions: sessionmaker[Session]
+) -> None:
+    # META, so the AAPL web fixtures never see these versions or the 2030 restatement.
+    listed = client.get("/instruments/META/assumptions").json()
+    assert listed["versions"] == [] and listed["default"]["parameters"] == DEFAULT_PARAMETERS
+    assert listed["limits"]["equity_risk_premium"] == {"minimum": "2", "maximum": "10"}
+    default_at_t = fair_value(client, "META", VALUED_AT, "default")
+
+    v1 = save(client, "meta", "Ads growth above default", growth_base="7")
+    assert (v1["version"], v1["author"], v1["parameters"]["growth_base"]) == (1, "web", "7")
+    with_v1 = fair_value(client, "META", VALUED_AT, "1")
+    assert with_v1["assumptions"]["version"] == 1
+    base = {s["scenario"]: s["per_share"] for s in with_v1["dcf"]["scenarios"]}["base"]
+    assert Decimal(base) > Decimal(default_at_t["dcf"]["scenarios"][1]["per_share"])
+
+    # Later: a restated cash flow (public in 2030) and a second version.
+    restate_latest_operating_cash_flow(sessions, "META")
+    v2 = save(client, "META", "Capex cycle peaks", growth_base="8", subtract_sbc=False)
+    assert v2["version"] == 2
+
+    # The same version at the same time gives exactly the same result (acceptance 2, 3).
+    assert fair_value(client, "META", VALUED_AT, "1") == with_v1
+    assert fair_value(client, "META", VALUED_AT, "default") == default_at_t
+    # Without a version: the latest saved by then. Both were saved after T.
+    assert fair_value(client, "META", VALUED_AT) == default_at_t
+    later = fair_value(client, "META", "2030-06-01T00:00:00Z")
+    assert later["assumptions"]["version"] == 2
+    owner = {i["name"]: Decimal(i["value"]) for i in later["dcf"]["inputs"]}["owner_fcf"]
+    before = {i["name"]: Decimal(i["value"]) for i in with_v1["dcf"]["inputs"]}["owner_fcf"]
+    assert owner != before  # the restatement, and SBC left in
+    assert (
+        client.get(
+            "/instruments/META/fair-value", params={"known_at": VALUED_AT, "assumptions": "9"}
+        ).status_code
+        == 404
+    )
+
+    listed = client.get("/instruments/META/assumptions").json()
+    assert [v["version"] for v in listed["versions"]] == [2, 1]
+    assert listed["versions"][1]["reason"] == "Ads growth above default"
+
+    # Audited, and never changed in place.
+    audit = client.get("/audit-log", params={"table": "valuation_assumptions"}).json()
+    assert [(e["action"], e["actor"], e["object_label"]) for e in audit["entries"]] == [
+        ("insert", "web", "META assumptions v2"),
+        ("insert", "web", "META assumptions v1"),
+    ]
+    with sessions() as session, pytest.raises(DBAPIError, match="not allowed"):
+        session.execute(
+            update(ValuationAssumptionSet)
+            .where(ValuationAssumptionSet.version == 1)
+            .values(reason="rewritten")
+        )
+
+
+@pytest.mark.parametrize(
+    ("body", "message"),
+    [
+        (
+            {"parameters": DEFAULT_PARAMETERS | {"growth_bear": "12"}, "reason": "x"},
+            "bear <= base <= bull",
+        ),
+        (
+            {"parameters": DEFAULT_PARAMETERS | {"equity_risk_premium": "15"}, "reason": "x"},
+            "less than or equal to 10",
+        ),
+        ({"parameters": DEFAULT_PARAMETERS, "reason": "   "}, "at least 1 character"),
+        ({"parameters": DEFAULT_PARAMETERS | {"beta": "1.1"}, "reason": "x"}, "Extra inputs"),
+    ],
+)
+def test_invalid_assumptions_are_refused_with_the_reason(
+    client: TestClient, body: dict[str, Any], message: str
+) -> None:
+    before = client.get("/instruments/XOM/assumptions").json()["versions"]
+    response = client.post("/instruments/XOM/assumptions", json=body)
+    assert response.status_code == 422 and message in response.text
+    assert client.get("/instruments/XOM/assumptions").json()["versions"] == before
+
+
+def test_fair_value_for_unknown_tickers_and_versions(client: TestClient) -> None:
+    assert client.get("/instruments/NOPE/fair-value").status_code == 404
+    assert (
+        client.post(
+            "/instruments/NOPE/assumptions", json={"parameters": DEFAULT_PARAMETERS, "reason": "x"}
+        ).status_code
+        == 404
+    )
+    assert (
+        client.get("/instruments/AAPL/fair-value", params={"assumptions": "latest"}).status_code
+        == 422
+    )
+
+
 # ---------- API ----------
 
 
@@ -623,6 +898,9 @@ def test_unknown_ticker_is_404(client: TestClient) -> None:
 )
 def test_record_web_fixtures(client: TestClient) -> None:
     target = Path(__file__).resolve().parents[3] / "web" / "tests" / "fixtures" / "api"
+    # One saved AAPL version for the version picker (the write tests above use META and XOM).
+    if not client.get("/instruments/AAPL/assumptions").json()["versions"]:
+        save(client, "AAPL", "Illustrative: services mix supports faster growth", growth_base="7")
     for name, path, params in (
         ("instruments", "/instruments", {}),
         ("fundamentals-aapl", "/instruments/AAPL/fundamentals", {}),
@@ -646,6 +924,27 @@ def test_record_web_fixtures(client: TestClient) -> None:
             "/instruments/AAPL/valuation",
             {"known_at": "2026-10-20T00:00:00Z"},
         ),
+        (
+            "fair-value-aapl",
+            "/instruments/AAPL/fair-value",
+            {"known_at": VALUED_AT, "assumptions": "default"},
+        ),
+        (
+            "fair-value-aapl-v1",
+            "/instruments/AAPL/fair-value",
+            {"known_at": VALUED_AT, "assumptions": "1"},
+        ),
+        (
+            "fair-value-aapl-stale",
+            "/instruments/AAPL/fair-value",
+            {"known_at": "2026-10-20T00:00:00Z", "assumptions": "default"},
+        ),
+        (
+            "fair-value-xom",
+            "/instruments/XOM/fair-value",
+            {"known_at": VALUED_AT, "assumptions": "default"},
+        ),
+        ("assumptions-aapl", "/instruments/AAPL/assumptions", {}),
     ):
         response = client.get(path, params=params)
         assert response.status_code == 200

@@ -298,6 +298,102 @@ export async function loadValuation(ticker: string, knownAt?: string): Promise<V
   }
 }
 
+// ---------- fair value (M1.3a, ADR-023) ----------
+
+export type FairValue = components["schemas"]["FairValueOut"];
+export type FairValueScenario = components["schemas"]["ScenarioOut"];
+export type RelativeValuation = components["schemas"]["RelativeOut"];
+export type AssumptionVersion = components["schemas"]["AssumptionVersion"];
+export type AssumptionList = components["schemas"]["AssumptionList"];
+export type AssumptionParameters = components["schemas"]["Assumptions-Output"];
+export type AssumptionInput = components["schemas"]["Assumptions-Input"];
+
+export type FairValueResult =
+  | { status: "ok"; data: FairValue }
+  | { status: "not_found"; detail: string }
+  | { status: "unavailable" };
+
+/** DCF, reverse DCF and relative valuation as known at `knownAt` with one assumption version
+ * ("default", a version number, or the latest saved by then when omitted). */
+export async function loadFairValue(
+  ticker: string,
+  knownAt?: string,
+  assumptions?: string,
+): Promise<FairValueResult> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data, error, response } = await client.GET("/instruments/{ticker}/fair-value", {
+      params: {
+        path: { ticker },
+        query: { ...(knownAt ? { known_at: knownAt } : {}), ...(assumptions ? { assumptions } : {}) },
+      },
+      cache: "no-store",
+    });
+    if (data) return { status: "ok", data };
+    if (response.status === 404) {
+      const detail = (error as { detail?: unknown } | undefined)?.detail;
+      return { status: "not_found", detail: typeof detail === "string" ? detail : "not found" };
+    }
+    return { status: "unavailable" };
+  } catch {
+    return { status: "unavailable" };
+  }
+}
+
+/** The built-in default and every saved version, newest first; null when unreachable. */
+export async function loadAssumptions(ticker: string): Promise<AssumptionList | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/instruments/{ticker}/assumptions", {
+      params: { path: { ticker } },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export type SaveAssumptionsResult =
+  | { status: "ok"; data: AssumptionVersion }
+  | { status: "invalid"; errors: string[] }
+  | { status: "unavailable" };
+
+/** Save a new assumption version (append-only; the API validates and audits it). */
+export async function saveAssumptions(
+  ticker: string,
+  parameters: AssumptionInput,
+  reason: string,
+): Promise<SaveAssumptionsResult> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data, error, response } = await client.POST("/instruments/{ticker}/assumptions", {
+      params: { path: { ticker } },
+      body: { parameters, reason },
+      cache: "no-store",
+    });
+    if (data) return { status: "ok", data };
+    if (response.status === 422 || response.status === 409) {
+      return { status: "invalid", errors: validationMessages(error) };
+    }
+    return { status: "unavailable" };
+  } catch {
+    return { status: "unavailable" };
+  }
+}
+
+/** FastAPI's 422 body ({detail: [{loc, msg}]}) or a plain {detail} as readable lines. */
+export function validationMessages(error: unknown): string[] {
+  const detail = (error as { detail?: unknown } | undefined)?.detail;
+  if (typeof detail === "string") return [detail];
+  if (!Array.isArray(detail)) return ["The API refused the assumptions."];
+  return detail.map((item: { loc?: unknown[]; msg?: string }) => {
+    const field = (item.loc ?? []).filter((part) => part !== "body" && part !== "parameters").join(".");
+    const message = (item.msg ?? "invalid").replace(/^Value error, /, "");
+    return field ? `${field}: ${message}` : message;
+  });
+}
+
 // ---------- news (M0.8, ADR-018) ----------
 
 export type NewsFeed = components["schemas"]["NewsFeed"];

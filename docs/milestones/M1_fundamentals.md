@@ -93,6 +93,12 @@ Plan approved 2026-10-07 with decisions V1–V3 (ADR-022).
 - [x] No multiple is computed from an intraday, fixture, demo or stale price (test). (Unit and integration tests; e2e in CI, where closes are fixtures.)
 
 ## M1.3 Valuation models and the Research Record
+Plan approved 2026-10-07 with decisions F1–F4 (ADR-023). The milestone has two PRs:
+- **M1.3a, fair value: done (PR pending).** DCF, reverse DCF, relative valuation, assumption versions, and the instrument page's Fair value block.
+- **M1.3b, Fundamental Research dashboard:** next, with its own plan.
+
+The acceptance boxes are ticked when M1.3b is done.
+
 **Build**
 - **DCF,** FCF-based. Inputs:
   - base FCF and a growth path;
@@ -110,9 +116,9 @@ Plan approved 2026-10-07 with decisions V1–V3 (ADR-022).
 - **Fundamental Research dashboard** (the Research Record per company): economics, quality, valuation, capital allocation.
 
 **Acceptance**
-- [ ] Every fair value shows method, assumptions, scenario range, current price, implied upside/downside, margin of safety, model date and source as-of.
-- [ ] Re-running a valuation as known on a past date with the same assumption version reproduces the same output.
-- [ ] Changing an assumption creates a new version; the earlier output stays reproducible.
+- [ ] Every fair value shows method, assumptions, scenario range, current price, implied upside/downside, margin of safety, model date and source as-of. (Met in M1.3a: API contract and the Fair value block; integration test over Apple.)
+- [ ] Re-running a valuation as known on a past date with the same assumption version reproduces the same output. (Met in M1.3a: identical after a later restatement and a later version; integration test.)
+- [ ] Changing an assumption creates a new version; the earlier output stays reproducible. (Met in M1.3a: POST creates v2 and v1 is unchanged; audited; e2e saves a version and switches back.)
 
 ## M1.4 Buyback engine
 **Build**

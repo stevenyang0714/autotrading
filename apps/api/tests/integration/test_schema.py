@@ -56,6 +56,7 @@ APP_TABLES = {
     "split_events",
     "filing_reconciliations",
     "reconciliation_items",
+    "valuation_assumptions",
 }
 FEB = datetime(2025, 2, 1, 21, 5, tzinfo=UTC)
 AUG = datetime(2025, 8, 1, 20, 30, tzinfo=UTC)
@@ -175,6 +176,9 @@ def test_guardrails_exist(engine: Engine) -> None:
         "filing_reconciliations_no_truncate",
         "reconciliation_items_append_only",
         "reconciliation_items_no_truncate",
+        "valuation_assumptions_append_only",
+        "valuation_assumptions_no_truncate",
+        "valuation_assumptions_audit",
     } <= triggers
     assert exclusions == {"ex_identifiers_value_period", "ex_identifiers_subject_period"}
 

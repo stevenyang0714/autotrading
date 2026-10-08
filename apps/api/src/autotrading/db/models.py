@@ -824,6 +824,35 @@ class SplitEvent(ProvenanceMixin, Base):
     )
 
 
+# ---------- valuation assumptions (M1.3a) ----------
+
+
+class ValuationAssumptionSet(Base):
+    """One version of a company's fair-value assumptions (ADR-023), saved by Steven on the
+    instrument page. Append-only (a trigger rejects UPDATE and DELETE) and audited: a change is
+    a new version, so every earlier valuation stays reproducible."""
+
+    __tablename__ = "valuation_assumptions"
+    __table_args__ = (
+        CheckConstraint("version >= 1", name="version_positive"),
+        CheckConstraint("length(reason) BETWEEN 1 AND 500", name="reason_length"),
+        UniqueConstraint(
+            "instrument_id", "version", name="uq_valuation_assumptions_instrument_id_version"
+        ),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    instrument_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("instruments.id"))
+    version: Mapped[int] = mapped_column(Integer)
+    parameters: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    reason: Mapped[str] = mapped_column(Text)
+    author: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
 # ---------- filing reconciliation (M1.1) ----------
 
 RECONCILIATION_CHECKS = ("fact", "identity", "quarter", "split")

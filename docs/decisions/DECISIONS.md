@@ -477,6 +477,38 @@ M1.2. Code: `domain/valuation.py`, `api/valuation.py` (`GET /instruments/{ticker
   - TTM EPS non-additivity.
   - Multiples history (e.g. P/E percentile) is M1.3.
 
+## ADR-023 Fair value models and assumption versions — Accepted (2026-10-07, approved by Steven with the M1.3 plan)
+M1.3a. Code: `domain/fair_value.py`, `api/fair_value.py`, migration 0014. Model output, not fact (02 §32.2): every result is labelled so, and names its method, assumption version, model date and data dates.
+- **Decisions (Steven, 2026-10-07):**
+  - F1 Enterprise DCF: discount free cash flow to an enterprise value, subtract net debt (ADR-022), divide by shares outstanding (ADR-022 V2, on the valuation price's split basis).
+  - F2 Owner free cash flow subtracts SBC: operating cash flow − capex − stock-based compensation, the last four quarters (ADR-021). An assumption version can leave SBC in.
+  - F3 One neutral default for all ten companies, labelled "not reviewed": growth bear 0%, base 5%, bull 10% for years 1–5; years 6–10 fade linearly to a terminal growth of 2.5%; equity risk premium 5%. It lives in code (version `default`), not in the database.
+  - F4 Assumptions are edited in a form on the instrument page. Each save is a new version with a one-line reason. This is the platform's first write: localhost only (the ports are bound to 127.0.0.1), append-only, audited.
+- **DCF:**
+  - Discount rate r = the latest 10-year Treasury yield (FRED DGS10) public at T + the equity risk premium.
+  - Two stages, annual, discounted at year end: years 1–5 grow at the scenario rate g; years 6–10 fade linearly from g to the terminal rate gT; terminal value at year 10 = FCF10 × (1 + gT) / (r − gT).
+  - Bear, base and bull differ only in g. Not meaningful when owner FCF ≤ 0. Unavailable when an input is missing (the missing part is named) or when gT is less than one point below r.
+  - Exact decimal arithmetic (precision 40); values per share rounded to cents.
+- **Against the price:** implied upside = base / price − 1; margin of safety = (base − price) / base. The price is the M1.2 valuation price; with a fixture, demo, stale or no close both are Data unavailable, and the DCF still shows.
+- **Reverse DCF:** the g that makes the base value equal the price, all else unchanged; bisection between −50% and +100% a year, to 0.01 point.
+- **Relative valuation:** the six M1.2 multiples at the end of every month since January 2016, each from the fact versions, closes and splits public at that month end (all versions loaded once and replayed in memory). Shows the current value (as on the Valuation block), the history's median, the current value's percentile (share of month ends at or below it) and the number of month ends.
+- **Assumption versions:**
+  - Table `valuation_assumptions`: instrument, version (from 1 per company), parameters (JSON), reason, author, created_at; unique (instrument, version); append-only and truncate-proof triggers; audited on insert (actor `web`).
+  - Parameters are validated: premium 2–10%, terminal growth −2–5%, growth −20–40%, bear ≤ base ≤ bull, at most two decimals, no other fields. Invalid input returns 422 with the rule.
+  - `GET /instruments/{ticker}/fair-value?known_at=&assumptions=` (a version number or `default`). Without `assumptions`, it uses the latest version saved by T, so a past date shows what the model said then.
+  - `GET`/`POST /instruments/{ticker}/assumptions`: list the versions; save a new one.
+- **Reproducibility:** the output depends only on what was public at T and on the version, so the same pair gives the same numbers (integration test: identical after a later restatement and a later version).
+- **Live check 2026-10-07 (default assumptions):**
+  - Discount rate 10.31% (DGS10 5.31% on 2026-10-05 + 5%).
+  - Apple: bear $93.30, base $123.76, bull $163.35 vs $333.04; reverse DCF 23.32% a year; P/E 38.19 at the 95th percentile of 129 month ends.
+  - Eight of ten have a DCF. JPMorgan has none (no capex, no net debt). ExxonMobil has none with SBC subtracted, because it reports no separate SBC line; an XOM version can leave SBC out.
+- **Known limits:**
+  - One discount rate, no WACC, no mid-year convention.
+  - Banks are not valued by DCF.
+  - Relative valuation compares with the company's own history only, not with peers.
+  - History starts when the inputs do (Alphabet's EPS from 2019, Apple's FCF from 2018).
+  - The default is not a recommendation.
+
 ---
 
 ## Open decisions (owner: Steven)

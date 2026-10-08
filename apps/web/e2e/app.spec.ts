@@ -206,6 +206,66 @@ test("AAPL valuation uses only an end-of-day close (M1.2)", async ({ page }) => 
   }
 });
 
+test("AAPL fair value: model output with its assumptions, range and dates (M1.3a)", async ({ page }) => {
+  await page.goto("/instruments/AAPL");
+  const block = page.locator("#fair-value");
+  await expect(block.locator("[data-model-output]")).toContainText("Model output, not fact");
+  await expect(block.locator("[data-assumptions]")).toBeVisible();
+  await expect(block.locator("[data-discount-rate]")).toContainText(/= 10-year Treasury \d+(\.\d+)?%/);
+  // CI replays real filings and the 10-year yield, so the DCF stands either way.
+  await expect(block.locator("[data-dcf-status]")).toHaveAttribute("data-dcf-status", "ok");
+  for (const name of ["bear", "base", "bull"]) {
+    await expect(block.locator(`[data-scenario="${name}"]`)).toContainText(/\$[\d,]+\.\d{2}/);
+  }
+  const comparison = block.getByRole("list", { name: "Price comparison" });
+  if ((await comparison.getAttribute("data-comparison-price")) === "ok") {
+    await expect(block.locator('[data-comparison="implied_upside"]')).toContainText(/-?\d+\.\d{2}%/);
+    await expect(block.locator('[data-comparison="margin_of_safety"]')).toContainText(/-?\d+\.\d{2}%/);
+  } else {
+    // CI: fixture closes are never a valuation price (errata E4).
+    for (const name of ["implied_upside", "margin_of_safety", "reverse_dcf_growth"]) {
+      await expect(block.locator(`[data-comparison="${name}"]`)).toContainText("Data unavailable");
+    }
+  }
+  await expect(block.getByRole("table", { name: "Relative valuation" }).locator("[data-relative]")).toHaveCount(6);
+  await expect(block.locator("[data-model-dates]")).toContainText(/latest filing 10-[QK]/);
+  await block.locator("[data-edit-assumptions] summary").click();
+  await expect(block.getByRole("form", { name: "Edit assumptions" })).toBeVisible();
+});
+
+test("Saving assumptions adds a version; switching back reproduces the result (M1.3a)", async ({
+  page,
+  isMobile,
+}) => {
+  // Versions are append-only, so this writes only to CI's throwaway database, and once.
+  test.skip(!process.env.CI, "saves a permanent assumption version; CI database only");
+  test.skip(isMobile, "one writer, so version numbers do not race");
+  await page.goto("/instruments/AAPL");
+  const block = page.locator("#fair-value");
+  const before = (await block.locator("[data-assumptions]").getAttribute("data-assumptions")) ?? "";
+  const baseBefore = await block.locator('[data-scenario="base"] .text-xl').textContent();
+
+  await block.locator("[data-edit-assumptions] summary").click();
+  const growth = block.getByLabel(/Base growth/);
+  const next = (await growth.inputValue()) === "6" ? "7" : "6";
+  await growth.fill(next);
+  await block.getByLabel(/Reason/).fill("e2e: base growth changed");
+  await block.getByRole("button", { name: "Save as a new version" }).click();
+
+  await expect(page).toHaveURL(/assumptions=\d+/);
+  const saved = block.locator("[data-assumptions]");
+  await expect(saved).not.toHaveAttribute("data-assumptions", before);
+  await expect(saved).toContainText("e2e: base growth changed");
+  await expect(block.locator('[data-scenario="base"]')).toContainText(`Base: ${next}% a year`);
+  await expect(block.locator('[data-scenario="base"] .text-xl')).not.toHaveText(baseBefore ?? "");
+
+  // The earlier version still gives exactly the earlier result.
+  await block.getByLabel("Version", { exact: true }).selectOption(before === "default" ? "default" : before.slice(1));
+  await block.getByRole("button", { name: "Use" }).click();
+  await expect(block.locator("[data-assumptions]")).toHaveAttribute("data-assumptions", before);
+  await expect(block.locator('[data-scenario="base"] .text-xl')).toHaveText(baseBefore ?? "");
+});
+
 test("Reconciliation lists Apple's 10-K as pass and opens its items (M1.1)", async ({ page }) => {
   await page.goto("/system/reconciliation");
   const apple = page.locator("[data-filing]:visible", { hasText: "0000320193-25-000079" });

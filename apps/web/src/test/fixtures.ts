@@ -13,6 +13,11 @@ import fundamentalsXom from "../../tests/fixtures/api/fundamentals-xom.json";
 import reconciliationAaplTenK from "../../tests/fixtures/api/reconciliation-aapl-10k.json";
 import reconciliationList from "../../tests/fixtures/api/reconciliation.json";
 import valuationAapl from "../../tests/fixtures/api/valuation-aapl.json";
+import assumptionsAapl from "../../tests/fixtures/api/assumptions-aapl.json";
+import fairValueAaplStale from "../../tests/fixtures/api/fair-value-aapl-stale.json";
+import fairValueAaplV1 from "../../tests/fixtures/api/fair-value-aapl-v1.json";
+import fairValueAapl from "../../tests/fixtures/api/fair-value-aapl.json";
+import fairValueXom from "../../tests/fixtures/api/fair-value-xom.json";
 import valuationAaplStale from "../../tests/fixtures/api/valuation-aapl-stale.json";
 import ingestionRuns from "../../tests/fixtures/api/ingestion-runs.json";
 import instrumentPricesAaplNoKey from "../../tests/fixtures/api/instrument-prices-aapl-no-key.json";
@@ -34,10 +39,12 @@ import pricesLatest from "../../tests/fixtures/api/prices-latest.json";
 import progress from "../../tests/fixtures/api/progress.json";
 
 import type {
+  AssumptionList,
   AuditLogPage,
   DataHealthData,
   DataHealthReport,
   DeadLetter,
+  FairValue,
   Fundamentals,
   IngestionRun,
   InstrumentList,
@@ -76,6 +83,17 @@ export const recordedValuation = {
   aapl: valuationAapl.response as Valuation,
   stale: valuationAaplStale.response as Valuation,
 };
+
+/** Fair value as known on 2026-10-06 (M1.3a): AAPL with the default and a saved v1, AAPL
+ * after its last close went stale, and XOM (no separate SBC line, so no DCF). */
+export const recordedFairValue = {
+  aapl: fairValueAapl.response as FairValue,
+  aaplV1: fairValueAaplV1.response as FairValue,
+  stale: fairValueAaplStale.response as FairValue,
+  xom: fairValueXom.response as FairValue,
+};
+
+export const recordedAssumptions = assumptionsAapl.response as AssumptionList;
 
 /** Each issuer's latest 10-K and 10-Q reconciled (M1.1), and Apple's 10-K items. */
 export const recordedReconciliation = {

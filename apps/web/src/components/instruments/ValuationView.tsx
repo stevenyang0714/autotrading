@@ -29,7 +29,8 @@ function InputLabel({ name }: { name: string }) {
   return <span>{name}</span>;
 }
 
-function Input({ input }: { input: ValuationInput }) {
+/** One input of a value: its amount and period, how it was built, and the filings behind it. */
+export function ValuationInputItem({ input }: { input: ValuationInput }) {
   const unit = inputUnit(input.name);
   return (
     <li className="space-y-0.5">
@@ -151,7 +152,7 @@ export function ValuationView({ result }: { result: ValuationResult }) {
                       <summary className="cursor-pointer select-none">Inputs</summary>
                       <ul className="mt-1 space-y-1.5">
                         {metric.inputs.map((input) => (
-                          <Input key={input.name} input={input} />
+                          <ValuationInputItem key={input.name} input={input} />
                         ))}
                       </ul>
                     </details>

@@ -127,6 +127,20 @@ terms:
   fcf_yield: {name: 自由現金流殖利率, hint: 近四季自由現金流 ÷ 市值。}
   earnings_yield: {name: 盈餘殖利率, hint: 近四季 EPS ÷ 股價，本益比的倒數。}
 
+  # fair value (M1.3a)
+  fair_value_dcf: {name: DCF 每股合理價值, hint: 業主自由現金流折現得企業價值，減淨負債再除以股數；模型結果，不是事實。}
+  owner_fcf: {name: 業主自由現金流, hint: 近四季營業現金流 − 資本支出 − 股票薪酬（SBC）。}
+  discount_rate: {name: 折現率, hint: 當時已知的 10 年期美債殖利率 + 股權風險溢酬。}
+  equity_risk_premium: {name: 股權風險溢酬, hint: 股票相對美債要求的額外年報酬；假設值，2–10%。}
+  terminal_growth: {name: 永續成長率, hint: 第 10 年後永遠的成長率；至少要比折現率低 1 個百分點。}
+  scenario_range: {name: 情境區間, hint: bear、base、bull 三種前 5 年成長率下的每股價值。}
+  implied_upside: {name: 隱含漲跌幅, hint: base 每股價值 ÷ 估值股價 − 1。}
+  margin_of_safety: {name: 安全邊際, hint: (base 每股價值 − 股價) ÷ base 每股價值；負值表示股價高於模型價值。}
+  reverse_dcf_growth: {name: 反向 DCF 隱含成長率, hint: 讓 base 價值等於股價所需的前 5 年年成長率，也就是市場在假設的成長。}
+  multiple_percentile: {name: 倍數歷史百分位, hint: 目前倍數在 2016 年以來每個月底（當時已知資料）中的排名。}
+  valuation_assumptions: {name: 估值假設版本, hint: 每家公司有編號、只能新增的 DCF 假設；每次儲存都是新版本並記入稽核紀錄。}
+  model_output: {name: 模型結果，不是事實, hint: 由假設算出的數字，不是公司申報或市場報價。}
+
   # macro series
   observation_date: {name: 觀測日期, hint: FRED 標示數值的日期，為期間的第一天；不是公布日。}
   macro_cpi: {name: 消費者物價指數（CPI）, hint: 美國都市消費者整體物價指數，季調後。}
