@@ -15,6 +15,8 @@ export type CompleteTermId =
   | "bid"
   | "capex"
   | "cash"
+  | "cash_returned"
+  | "cash_returned_to_fcf"
   | "commercial_paper"
   | "core_pce_inflation_yoy"
   | "cpi_inflation_yoy"
@@ -39,11 +41,13 @@ export type CompleteTermId =
   | "depreciation_amortization"
   | "dev_log"
   | "diluted_shares"
+  | "diluted_shares_change"
   | "discount_rate"
   | "dividends_paid"
   | "duplicate_group"
   | "earnings_yield"
   | "ebitda_ttm"
+  | "effective_tax_rate"
   | "enterprise_value"
   | "eps_diluted"
   | "eps_diluted_ttm"
@@ -51,6 +55,7 @@ export type CompleteTermId =
   | "ev_to_ebitda"
   | "ev_to_sales"
   | "fair_value_dcf"
+  | "fcf_conversion"
   | "fcf_yield"
   | "feed_status"
   | "filing_date"
@@ -58,6 +63,7 @@ export type CompleteTermId =
   | "first_release_overlay"
   | "free_cash_flow"
   | "freshness_sla"
+  | "gross_margin"
   | "gross_profit"
   | "hy_oas_percentile"
   | "implied_upside"
@@ -65,6 +71,7 @@ export type CompleteTermId =
   | "ingestion_note"
   | "ingestion_status"
   | "interest_expense"
+  | "invested_capital"
   | "last_price"
   | "license_status"
   | "long_term_debt_current"
@@ -87,13 +94,17 @@ export type CompleteTermId =
   | "model_output"
   | "multiple_percentile"
   | "net_debt"
+  | "net_debt_to_ebitda"
   | "net_income"
+  | "net_margin"
   | "news_time_basis"
   | "next_refresh"
+  | "nopat"
   | "observation_date"
   | "open_decision"
   | "operating_cash_flow"
   | "operating_income"
+  | "operating_margin"
   | "owner_fcf"
   | "page_audit_log"
   | "page_data_health"
@@ -122,9 +133,13 @@ export type CompleteTermId =
   | "reporting_period"
   | "repurchase_authorized"
   | "repurchase_remaining"
+  | "research_record"
   | "restated_flag"
   | "revenue"
+  | "revenue_growth"
   | "reverse_dcf_growth"
+  | "roe"
+  | "roic"
   | "rule_insight"
   | "sahm_rule_indicator"
   | "scenario_range"
@@ -424,6 +439,57 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "現金及約當現金",
     "hint_zh": "期末的現金與極短期、高流動性投資。"
   },
+  "cash_returned": {
+    "term_id": "cash_returned",
+    "display_name": "Cash Returned to Shareholders",
+    "category": "fundamentals",
+    "short_definition": "Share repurchases plus dividends paid in the period.",
+    "full_definition": "Share repurchases plus dividends paid (ADR-024 R3). Dividends of a period with no dividend figure at all count as 0 and are named (AutoZone and O'Reilly pay none); a period with some dividend figures but not the whole period is unavailable. Per fiscal year as reported in the 10-K, and for the last four quarters (TTM) from year-to-date 10-Q values (ADR-021), each with the facts known at the As known on time.",
+    "formula": "share_repurchases + dividends_paid",
+    "unit": "USD",
+    "example": "Apple FY2025: $90.711B + $15.421B = $106.132B.",
+    "direction": "N/A",
+    "interpretation": "How much cash went back to owners.",
+    "why_it_matters": "Shows the capital allocation choice between reinvesting and returning cash.",
+    "source": "Derived from SEC XBRL filings (domain/research.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/research.py",
+    "as_of": "2026-10-09",
+    "update_cadence": "per filing",
+    "caveats": "JPMorgan's dividend figure may include preferred dividends. Buyback mechanics (intensity, net share reduction) are M1.4.",
+    "related_terms": [
+      "share_repurchases",
+      "dividends_paid",
+      "cash_returned_to_fcf"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "回饋股東金額",
+    "hint_zh": "庫藏股 + 股利；沒申報股利的期間以 0 計並標示。"
+  },
+  "cash_returned_to_fcf": {
+    "term_id": "cash_returned_to_fcf",
+    "display_name": "Cash Returned / FCF",
+    "category": "fundamentals",
+    "short_definition": "Buybacks plus dividends as a share of free cash flow.",
+    "full_definition": "Cash returned to shareholders divided by free cash flow (ADR-024 R3). Above 100% means returns exceed the cash the business generated, funded from cash or debt. Per fiscal year as reported in the 10-K, and for the last four quarters (TTM) from year-to-date 10-Q values (ADR-021), each with the facts known at the As known on time. Not meaningful when free cash flow is not positive.",
+    "formula": "cash_returned / free_cash_flow",
+    "unit": "percent",
+    "example": "Apple FY2025: $106.132B / $98.767B = 107.46%.",
+    "direction": "N/A",
+    "interpretation": "Whether returns are paid from the business's own cash generation.",
+    "why_it_matters": "Persistent returns above free cash flow need debt or cash on hand.",
+    "source": "Derived from SEC XBRL filings (domain/research.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/research.py",
+    "as_of": "2026-10-09",
+    "update_cadence": "per filing",
+    "caveats": "One year of heavy capex or a large acquisition makes it jump; read several years.",
+    "related_terms": [
+      "cash_returned",
+      "free_cash_flow"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "回饋股東 / FCF",
+    "hint_zh": "回饋股東金額 ÷ 自由現金流；超過 100% 代表動用現金或借錢。"
+  },
   "commercial_paper": {
     "term_id": "commercial_paper",
     "display_name": "Commercial Paper",
@@ -649,24 +715,27 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "Fundamental Research",
     "category": "navigation",
     "short_definition": "Company economics: financials, valuation, quality and capital allocation.",
-    "full_definition": "The persistent research record per company: income statement, balance sheet, cash flow, per-share data, quality, valuation with visible assumptions, and expectations (02 §3).",
-    "formula": "not a calculation; dashboard defined in build spec 02 §21",
+    "full_definition": "One table of every universe equity as known at the chosen date (M1.3b, ADR-024 R1): revenue growth and margins, ROIC, ROE, FCF conversion, net debt / EBITDA, cash returned / FCF, diluted share change, P/E, EV/EBITDA, FCF yield, and the DCF base value, implied upside and reverse-DCF growth with each company's latest assumption version. Sortable; each company opens its Research Record on the instrument page.",
+    "formula": "not a calculation; reads GET /research",
     "unit": "page",
-    "example": "Revenue, free cash flow and a DCF range with its assumptions for one company.",
+    "example": "Sort by ROIC to see Apple and NVIDIA first; open AutoZone to see why its ROE is n/m.",
     "direction": "N/A",
-    "interpretation": "Planned for Phase 1; until then the page shows no data, live or simulated.",
+    "interpretation": "Compare companies on one date; open a company for the five-year record and the sources.",
     "why_it_matters": "Every event, policy or social signal is interpreted through company economics.",
-    "source": "Build spec 02 §21; research report 01 §21; ROADMAP dashboard map",
+    "source": "Build spec 02 §3 and §21; ADR-024",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/spec/02_master_build_prompt_v2.md",
-    "as_of": "2026-10-05",
-    "update_cadence": "per release",
-    "caveats": "Contents arrive with Phase 1; scope can change through a roadmap update.",
+    "as_of": "2026-10-09",
+    "update_cadence": "live (each page load); SEC data daily, prices daily",
+    "caveats": "Values are each company's latest four quarters, which end on different dates. The DCF columns are model output, not fact. Saved views, export and watchlist filters come later.",
     "related_terms": [
-      "planned_phase"
+      "research_record",
+      "roic",
+      "fair_value_dcf",
+      "model_output"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "基本面研究",
-    "hint_zh": "財報、估值與買回分析（Phase 1）。"
+    "hint_zh": "10 家公司一張表：成長、利潤率、ROIC、資本配置與估值，點公司看研究紀錄。"
   },
   "dashboard_global_monitor": {
     "term_id": "dashboard_global_monitor",
@@ -1012,6 +1081,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "稀釋加權股數",
     "hint_zh": "期間內的加權平均股數，含潛在稀釋股份。"
   },
+  "diluted_shares_change": {
+    "term_id": "diluted_shares_change",
+    "display_name": "Diluted Share Change",
+    "category": "fundamentals",
+    "short_definition": "Change in weighted diluted shares against a year earlier.",
+    "full_definition": "Weighted average diluted shares of the period divided by those of the period a year earlier, minus one, both moved to the split basis of the As known on time (ADR-021). For TTM: the latest reported quarter against the same quarter a year earlier. Per fiscal year as reported in the 10-K, and for the last four quarters (TTM) from year-to-date 10-Q values (ADR-021), each with the facts known at the As known on time.",
+    "formula": "diluted_shares / diluted_shares a year earlier - 1 (split-adjusted)",
+    "unit": "percent",
+    "example": "Apple FY2025: 15.005B / 15.408B - 1 = -2.62%.",
+    "direction": "Lower = shareholders own more of the company",
+    "interpretation": "Negative means buybacks outran dilution from stock compensation.",
+    "why_it_matters": "Per-share value grows faster than the business when the share count falls.",
+    "source": "Derived from SEC XBRL filings (domain/research.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/research.py",
+    "as_of": "2026-10-09",
+    "update_cadence": "per filing",
+    "caveats": "Not net share reduction (M1.4); ExxonMobil reports no diluted shares after 2013.",
+    "related_terms": [
+      "diluted_shares",
+      "share_repurchases",
+      "stock_based_compensation"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "稀釋股數年增減",
+    "hint_zh": "稀釋加權股數 ÷ 一年前 − 1，換算到同一分割基準。"
+  },
   "discount_rate": {
     "term_id": "discount_rate",
     "display_name": "Discount Rate",
@@ -1138,6 +1233,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "近四季 EBITDA",
     "hint_zh": "近四季營業利益加折舊攤銷。"
+  },
+  "effective_tax_rate": {
+    "term_id": "effective_tax_rate",
+    "display_name": "Effective Tax Rate",
+    "category": "fundamentals",
+    "short_definition": "Income tax expense as a share of pretax income.",
+    "full_definition": "Income tax expense divided by pretax income for the same period. Per fiscal year as reported in the 10-K, and for the last four quarters (TTM) from year-to-date 10-Q values (ADR-021), each with the facts known at the As known on time. Not meaningful when pretax income is not positive. A tax benefit with positive pretax income gives a negative rate, kept as reported and noted.",
+    "formula": "income_tax_expense / pretax_income",
+    "unit": "percent",
+    "example": "Apple FY2025: $20.719B / $132.729B = 15.61%.",
+    "direction": "N/A",
+    "interpretation": "The share of profit paid in tax; it sets NOPAT for ROIC.",
+    "why_it_matters": "Tax changes move earnings without any change in the business.",
+    "source": "Derived from SEC XBRL filings (domain/research.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/research.py",
+    "as_of": "2026-10-09",
+    "update_cadence": "per filing",
+    "caveats": "Includes deferred tax, so it is not cash tax; one-off items (repatriation, settlements) can make one year unusual.",
+    "related_terms": [
+      "income_tax_expense",
+      "pretax_income",
+      "nopat"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "有效稅率",
+    "hint_zh": "所得稅 ÷ 稅前盈餘；稅前為負時無意義。"
   },
   "enterprise_value": {
     "term_id": "enterprise_value",
@@ -1322,6 +1443,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "DCF 每股合理價值",
     "hint_zh": "業主自由現金流折現得企業價值，減淨負債再除以股數；模型結果，不是事實。"
   },
+  "fcf_conversion": {
+    "term_id": "fcf_conversion",
+    "display_name": "FCF Conversion",
+    "category": "fundamentals",
+    "short_definition": "Free cash flow as a share of net income.",
+    "full_definition": "Free cash flow (operating cash flow - capex) divided by net income. Per fiscal year as reported in the 10-K, and for the last four quarters (TTM) from year-to-date 10-Q values (ADR-021), each with the facts known at the As known on time. Not meaningful when net income is not positive.",
+    "formula": "free_cash_flow / net_income",
+    "unit": "percent",
+    "example": "Apple FY2025: $98.767B / $112.010B = 88.18%.",
+    "direction": "Higher = earnings backed by cash",
+    "interpretation": "Around or above 100% means reported profit turns into cash.",
+    "why_it_matters": "Low conversion can flag aggressive accounting or heavy investment.",
+    "source": "Derived from SEC XBRL filings (domain/research.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/research.py",
+    "as_of": "2026-10-09",
+    "update_cadence": "per filing",
+    "caveats": "Heavy capex years (data centres) lower it without any accounting issue; JPMorgan reports no capex.",
+    "related_terms": [
+      "free_cash_flow",
+      "net_income",
+      "owner_fcf"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "FCF 轉換率",
+    "hint_zh": "自由現金流 ÷ 淨利，看獲利有沒有變成現金。"
+  },
   "fcf_yield": {
     "term_id": "fcf_yield",
     "display_name": "Free Cash Flow Yield",
@@ -1500,6 +1647,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "新鮮度標準",
     "hint_zh": "該來源可接受的最長未更新時間，超過即視為過期。"
   },
+  "gross_margin": {
+    "term_id": "gross_margin",
+    "display_name": "Gross Margin",
+    "category": "fundamentals",
+    "short_definition": "Gross profit as a share of revenue.",
+    "full_definition": "Gross profit divided by revenue for the same period. Per fiscal year as reported in the 10-K, and for the last four quarters (TTM) from year-to-date 10-Q values (ADR-021), each with the facts known at the As known on time.",
+    "formula": "gross_profit / revenue",
+    "unit": "percent",
+    "example": "Apple FY2025: $195.201B / $416.161B = 46.91%.",
+    "direction": "Higher = more pricing power per sale",
+    "interpretation": "What is left of each dollar of sales after the direct cost of the goods or services.",
+    "why_it_matters": "A durable high gross margin is a common sign of a competitive advantage.",
+    "source": "Derived from SEC XBRL filings (domain/research.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/research.py",
+    "as_of": "2026-10-09",
+    "update_cadence": "per filing",
+    "caveats": "Alphabet, Meta and JPMorgan report no gross profit, so it is Data unavailable for them; companies classify costs differently.",
+    "related_terms": [
+      "gross_profit",
+      "revenue",
+      "operating_margin"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "毛利率",
+    "hint_zh": "毛利 ÷ 營收。"
+  },
   "gross_profit": {
     "term_id": "gross_profit",
     "display_name": "Gross Profit",
@@ -1675,6 +1848,33 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "利息費用",
     "hint_zh": "借款在期間內認列的利息成本。"
+  },
+  "invested_capital": {
+    "term_id": "invested_capital",
+    "display_name": "Invested Capital",
+    "category": "fundamentals",
+    "short_definition": "Stockholders' equity plus total debt minus cash on a balance-sheet date.",
+    "full_definition": "The capital tied up in operations: stockholders' equity + total debt - cash and cash equivalents (ADR-024 R2). Debt components a balance sheet does not report count as 0 and are named (D4). ROIC uses the average of the opening and closing values.",
+    "formula": "stockholders_equity + total_debt - cash",
+    "unit": "USD",
+    "example": "Apple: $133.636B on 2024-09-28 and $136.456B on 2025-09-27.",
+    "direction": "N/A",
+    "interpretation": "How much capital the business uses; the denominator of ROIC.",
+    "why_it_matters": "Return on capital only means something against the capital employed.",
+    "source": "Derived from SEC XBRL filings (domain/research.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/research.py",
+    "as_of": "2026-10-09",
+    "update_cadence": "per filing",
+    "caveats": "Cash excludes marketable securities, so cash-rich companies (Apple, Alphabet) show more invested capital than an analyst netting all investments would. Banks have no comparable debt figure.",
+    "related_terms": [
+      "roic",
+      "total_debt",
+      "net_debt",
+      "stockholders_equity"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "投入資本",
+    "hint_zh": "股東權益 + 總負債 − 現金。"
   },
   "last_price": {
     "term_id": "last_price",
@@ -2227,6 +2427,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "淨負債",
     "hint_zh": "總負債減現金；負值代表現金多於負債。"
   },
+  "net_debt_to_ebitda": {
+    "term_id": "net_debt_to_ebitda",
+    "display_name": "Net Debt / EBITDA",
+    "category": "fundamentals",
+    "short_definition": "Net debt at the period end divided by the period's EBITDA.",
+    "full_definition": "Net debt (total debt - cash) on the period's last balance-sheet date divided by EBITDA (operating income + D&A) of the period. Per fiscal year as reported in the 10-K, and for the last four quarters (TTM) from year-to-date 10-Q values (ADR-021), each with the facts known at the As known on time. Negative means net cash. Not meaningful when EBITDA is not positive.",
+    "formula": "net_debt / (operating_income + depreciation_amortization)",
+    "unit": "x",
+    "example": "Apple FY2025: $62.723B / $144.748B = 0.43x.",
+    "direction": "Lower = stronger balance sheet",
+    "interpretation": "Years of operating earnings needed to pay off net debt.",
+    "why_it_matters": "The most common measure of balance-sheet strength.",
+    "source": "Derived from SEC XBRL filings (domain/research.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/research.py",
+    "as_of": "2026-10-09",
+    "update_cadence": "per filing",
+    "caveats": "Unavailable without D&A (Microsoft, Alphabet) or operating income (JPMorgan, ExxonMobil); cash excludes marketable securities.",
+    "related_terms": [
+      "net_debt",
+      "ebitda_ttm",
+      "enterprise_value"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "淨負債 / EBITDA",
+    "hint_zh": "期末淨負債 ÷ EBITDA；負值代表淨現金。"
+  },
   "net_income": {
     "term_id": "net_income",
     "display_name": "Net Income",
@@ -2251,6 +2477,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "淨利",
     "hint_zh": "歸屬於母公司股東的稅後淨利。"
+  },
+  "net_margin": {
+    "term_id": "net_margin",
+    "display_name": "Net Margin",
+    "category": "fundamentals",
+    "short_definition": "Net income as a share of revenue.",
+    "full_definition": "Net income divided by revenue for the same period. Per fiscal year as reported in the 10-K, and for the last four quarters (TTM) from year-to-date 10-Q values (ADR-021), each with the facts known at the As known on time.",
+    "formula": "net_income / revenue",
+    "unit": "percent",
+    "example": "Apple FY2025: $112.010B / $416.161B = 26.92%.",
+    "direction": "Higher = more profit per sale",
+    "interpretation": "What reaches shareholders from each dollar of sales, after interest and tax.",
+    "why_it_matters": "Links revenue to earnings per share.",
+    "source": "Derived from SEC XBRL filings (domain/research.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/research.py",
+    "as_of": "2026-10-09",
+    "update_cadence": "per filing",
+    "caveats": "One-off gains, losses and tax items move it; compare with the operating margin.",
+    "related_terms": [
+      "net_income",
+      "revenue",
+      "operating_margin"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "淨利率",
+    "hint_zh": "淨利 ÷ 營收。"
   },
   "news_time_basis": {
     "term_id": "news_time_basis",
@@ -2301,6 +2553,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "下次更新",
     "hint_zh": "平台下一次依排程抓取這個來源的時間。"
+  },
+  "nopat": {
+    "term_id": "nopat",
+    "display_name": "NOPAT",
+    "category": "fundamentals",
+    "short_definition": "Net operating profit after tax: operating income taxed at the effective tax rate.",
+    "full_definition": "Operating income multiplied by one minus the effective tax rate of the same period (ADR-024 R2). The profit the business earns for all its capital providers, before interest.",
+    "formula": "operating_income x (1 - income_tax_expense / pretax_income)",
+    "unit": "USD",
+    "example": "Apple FY2025: $133.050B x (1 - 15.61%) = $112.281B.",
+    "direction": "Higher = more after-tax operating profit",
+    "interpretation": "The numerator of ROIC.",
+    "why_it_matters": "Comparable across companies with different debt levels.",
+    "source": "Derived from SEC XBRL filings (domain/research.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/research.py",
+    "as_of": "2026-10-09",
+    "update_cadence": "per filing",
+    "caveats": "Uses the period's effective rate, including one-off tax items; unavailable without operating income (JPMorgan, ExxonMobil).",
+    "related_terms": [
+      "roic",
+      "operating_income",
+      "effective_tax_rate"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "稅後營業利益（NOPAT）",
+    "hint_zh": "營業利益 ×（1 − 有效稅率）。"
   },
   "observation_date": {
     "term_id": "observation_date",
@@ -2401,6 +2679,33 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "營業利益",
     "hint_zh": "本業獲利，未計利息與稅。"
   },
+  "operating_margin": {
+    "term_id": "operating_margin",
+    "display_name": "Operating Margin",
+    "category": "fundamentals",
+    "short_definition": "Operating income as a share of revenue.",
+    "full_definition": "Operating income divided by revenue for the same period. Per fiscal year as reported in the 10-K, and for the last four quarters (TTM) from year-to-date 10-Q values (ADR-021), each with the facts known at the As known on time.",
+    "formula": "operating_income / revenue",
+    "unit": "percent",
+    "example": "Apple FY2025: $133.050B / $416.161B = 31.97%.",
+    "direction": "Higher = more profitable operations",
+    "interpretation": "Profit from the business itself, before interest and tax, per dollar of sales.",
+    "why_it_matters": "Shows operating leverage and cost discipline over time.",
+    "source": "Derived from SEC XBRL filings (domain/research.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/research.py",
+    "as_of": "2026-10-09",
+    "update_cadence": "per filing",
+    "caveats": "JPMorgan and ExxonMobil report no operating income, so it is Data unavailable for them.",
+    "related_terms": [
+      "operating_income",
+      "revenue",
+      "gross_margin",
+      "net_margin"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "營業利益率",
+    "hint_zh": "營業利益 ÷ 營收。"
+  },
   "owner_fcf": {
     "term_id": "owner_fcf",
     "display_name": "Owner Free Cash Flow",
@@ -2484,7 +2789,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "Instruments",
     "category": "navigation",
     "short_definition": "Universe stocks with their prices, SEC-reported fundamentals and news as known at a chosen date.",
-    "full_definition": "System page listing the equities in config/universe.yaml. Each stock page shows its latest price with feed status and one year of daily closes (M0.7), the last three fiscal years and recent balance sheets from SEC XBRL filings, every value linked to its filing, and recent news stories (M0.8), with an As known on date to see what was public at that time. Pulled forward from M0.9 to M0.5b.",
+    "full_definition": "System page listing the equities in config/universe.yaml. Each stock page shows its latest price with feed status and one year of daily closes (M0.7), valuation and fair value (M1.2, M1.3a), the Research Record (M1.3b), the last three fiscal years, quarters and recent balance sheets from SEC XBRL filings, every value linked to its filing, and recent news stories (M0.8), with an As known on date to see what was public at that time.",
     "formula": "not a calculation; reads GET /instruments, /instruments/{ticker}/fundamentals, /instruments/{ticker}/prices and /news",
     "unit": "page",
     "example": "Choosing As known on 2010-01-25 on AAPL shows FY2008 net income before Apple's 2010 restatement.",
@@ -2495,15 +2800,16 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M0_foundation.md",
     "as_of": "2026-10-06",
     "update_cadence": "live (each page load); SEC data refreshed daily at 10:00 SGT",
-    "caveats": "No valuation yet (Phase 1); quarterly tables come later. Prices are IEX single-venue quotes on the free plan.",
+    "caveats": "Valuation (M1.2), fair value (M1.3a) and the Research Record (M1.3b) are shown from filings and end-of-day closes; live quotes are IEX single-venue on the free plan.",
     "related_terms": [
       "point_in_time",
       "restated_flag",
-      "accession_number"
+      "accession_number",
+      "research_record"
     ],
-    "methodology_version": "0.2.0",
+    "methodology_version": "0.3.0",
     "name_zh": "個股",
-    "hint_zh": "投資範圍內股票的 SEC 財報數字，可切換「當時已知」的版本。"
+    "hint_zh": "投資範圍內股票的財報、估值、合理價值與研究紀錄，可切換「當時已知」的版本。"
   },
   "page_macro": {
     "term_id": "page_macro",
@@ -3109,6 +3415,33 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "剩餘買回額度",
     "hint_zh": "已授權但尚未用掉的買回金額，不代表一定會買。"
   },
+  "research_record": {
+    "term_id": "research_record",
+    "display_name": "Research Record",
+    "category": "fundamentals",
+    "short_definition": "A company's economics, quality and capital allocation for the last four quarters and five fiscal years.",
+    "full_definition": "The per-company record of 02 §3 on the instrument page (M1.3b, ADR-024): revenue growth and margins; ROIC, ROE, effective tax rate, FCF conversion and net debt / EBITDA; free cash flow and where it went (buybacks, dividends, SBC, cash returned / FCF) and the change in diluted shares. Every value shows its inputs and the filings behind them, as known at the As known on time.",
+    "formula": "not a single calculation; reads GET /instruments/{ticker}/research",
+    "unit": "N/A",
+    "example": "Apple FY2025: operating margin 31.97%, ROIC 83.14%, cash returned 107.46% of free cash flow.",
+    "direction": "N/A",
+    "interpretation": "Read the trend over five years, then the latest four quarters.",
+    "why_it_matters": "Valuation only means something against the economics of the business.",
+    "source": "Derived from SEC XBRL filings (domain/research.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/research.py",
+    "as_of": "2026-10-09",
+    "update_cadence": "per filing",
+    "caveats": "A missing input leaves a value unavailable with the input named; nothing is estimated. Banks lack most of these measures.",
+    "related_terms": [
+      "roic",
+      "roe",
+      "operating_margin",
+      "cash_returned"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "研究紀錄",
+    "hint_zh": "一家公司近四季與五個財年的成長、品質與資本配置，每個數字附來源申報。"
+  },
   "restated_flag": {
     "term_id": "restated_flag",
     "display_name": "Restated",
@@ -3161,6 +3494,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "營收",
     "hint_zh": "公司在該期間報告的總銷售額，未扣除任何成本。"
   },
+  "revenue_growth": {
+    "term_id": "revenue_growth",
+    "display_name": "Revenue Growth",
+    "category": "fundamentals",
+    "short_definition": "Revenue against the same length of period a year earlier.",
+    "full_definition": "Revenue of the period divided by revenue of the period a year earlier, minus one. Per fiscal year as reported in the 10-K, and for the last four quarters (TTM) from year-to-date 10-Q values (ADR-021), each with the facts known at the As known on time. TTM growth compares the last four quarters with the four before them.",
+    "formula": "revenue / revenue a year earlier - 1",
+    "unit": "percent",
+    "example": "Apple FY2025: $416.161B / $391.035B - 1 = 6.43%.",
+    "direction": "Higher = growing faster",
+    "interpretation": "How fast the business is getting bigger.",
+    "why_it_matters": "Growth drives most of a company's value; the DCF's growth assumptions should be read against it.",
+    "source": "Derived from SEC XBRL filings (domain/research.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/research.py",
+    "as_of": "2026-10-09",
+    "update_cadence": "per filing",
+    "caveats": "Acquisitions, divestitures and 53-week years distort it; unavailable without the earlier period.",
+    "related_terms": [
+      "revenue",
+      "trailing_twelve_months"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "營收成長率",
+    "hint_zh": "本期營收 ÷ 一年前同長度期間的營收 − 1。"
+  },
   "reverse_dcf_growth": {
     "term_id": "reverse_dcf_growth",
     "display_name": "Reverse DCF Implied Growth",
@@ -3185,6 +3543,58 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "反向 DCF 隱含成長率",
     "hint_zh": "讓 base 價值等於股價所需的前 5 年年成長率，也就是市場在假設的成長。"
+  },
+  "roe": {
+    "term_id": "roe",
+    "display_name": "Return on Equity (ROE)",
+    "category": "fundamentals",
+    "short_definition": "Net income as a share of average stockholders' equity.",
+    "full_definition": "Net income divided by the average of opening and closing stockholders' equity. Per fiscal year as reported in the 10-K, and for the last four quarters (TTM) from year-to-date 10-Q values (ADR-021), each with the facts known at the As known on time. Not meaningful when either equity is not positive (AutoZone, O'Reilly and Lowe's have negative equity after years of buybacks).",
+    "formula": "net_income / ((stockholders_equity_open + stockholders_equity_close) / 2)",
+    "unit": "percent",
+    "example": "Apple FY2025: $112.010B / average($56.950B, $73.733B) = 171.42%.",
+    "direction": "Higher = more profit per dollar of equity",
+    "interpretation": "Return to shareholders' book capital; leverage raises it.",
+    "why_it_matters": "Read with ROIC: a high ROE from debt is not the same as a high ROE from the business.",
+    "source": "Derived from SEC XBRL filings (domain/research.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/research.py",
+    "as_of": "2026-10-09",
+    "update_cadence": "per filing",
+    "caveats": "Buybacks shrink equity and inflate ROE; n/m with negative equity.",
+    "related_terms": [
+      "roic",
+      "net_income",
+      "stockholders_equity"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "股東權益報酬率（ROE）",
+    "hint_zh": "淨利 ÷ 平均股東權益；權益為負時無意義。"
+  },
+  "roic": {
+    "term_id": "roic",
+    "display_name": "Return on Invested Capital (ROIC)",
+    "category": "fundamentals",
+    "short_definition": "NOPAT as a share of average invested capital.",
+    "full_definition": "NOPAT divided by the average of opening and closing invested capital (ADR-024 R2). The opening balance is that of the day before the period starts: the prior fiscal year end, or for TTM the quarter end a year earlier. Per fiscal year as reported in the 10-K, and for the last four quarters (TTM) from year-to-date 10-Q values (ADR-021), each with the facts known at the As known on time. Not meaningful when pretax income or either invested capital is not positive.",
+    "formula": "nopat / ((invested_capital_open + invested_capital_close) / 2)",
+    "unit": "percent",
+    "example": "Apple FY2025: $112.281B / average($133.636B, $136.456B) = 83.14%.",
+    "direction": "Higher = more profit per dollar of capital",
+    "interpretation": "Above the cost of capital, growth creates value; below it, growth destroys value.",
+    "why_it_matters": "The single best summary of business quality and capital allocation.",
+    "source": "Derived from SEC XBRL filings (domain/research.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/research.py",
+    "as_of": "2026-10-09",
+    "update_cadence": "per filing",
+    "caveats": "Very high for companies with little invested capital (Apple, AutoZone); unavailable without operating income (JPMorgan, ExxonMobil).",
+    "related_terms": [
+      "nopat",
+      "invested_capital",
+      "roe"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "投入資本報酬率（ROIC）",
+    "hint_zh": "NOPAT ÷ 平均投入資本（期初與期末）。"
   },
   "rule_insight": {
     "term_id": "rule_insight",

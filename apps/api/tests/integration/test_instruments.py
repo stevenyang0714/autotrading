@@ -8,6 +8,7 @@ Uses its own migrated database, so the ticker map does not collide with test_sec
 
 import json
 import os
+import time
 from collections.abc import Callable, Iterator
 from datetime import UTC, date, datetime
 from decimal import Decimal
@@ -795,6 +796,119 @@ def test_fair_value_for_unknown_tickers_and_versions(client: TestClient) -> None
     )
 
 
+# ---------- research record (M1.3b, ADR-024) ----------
+
+AAPL_10K = "0000320193-25-000079"
+
+
+def research(client: TestClient, ticker: str, known_at: str) -> dict[str, Any]:
+    response = client.get(f"/instruments/{ticker}/research", params={"known_at": known_at})
+    assert response.status_code == 200, response.text
+    body: dict[str, Any] = response.json()
+    return body
+
+
+def cells(body: dict[str, Any], end: str) -> dict[str, dict[str, Any]]:
+    index = [p["period_end"] for p in body["periods"]].index(end)
+    return {row["metric_id"]: row["cells"][index] for row in body["rows"]}
+
+
+def test_research_record_recomputes_from_the_reported_facts(client: TestClient) -> None:
+    body = research(client, "AAPL", VALUED_AT)
+    periods = [(p["kind"], p["period_start"], p["period_end"]) for p in body["periods"]]
+    assert periods[:3] == [
+        ("ttm", "2025-06-29", "2026-06-27"),
+        ("fiscal_year", "2024-09-29", "2025-09-27"),
+        ("fiscal_year", "2023-10-01", "2024-09-28"),
+    ]
+    assert len(periods) == 6  # TTM and five fiscal years
+    assert {row["section"] for row in body["rows"]} == {
+        "economics",
+        "quality",
+        "capital_allocation",
+    }
+    fy = cells(body, "2025-09-27")
+    gross = fy["gross_margin"]
+    parts = {i["name"]: Decimal(i["value"]) for i in gross["inputs"]}
+    assert Decimal(gross["value"]) == (parts["gross_profit"] / parts["revenue"] * 100).quantize(
+        Decimal("0.01")
+    )
+    assert {s["filing"]["accession"] for i in gross["inputs"] for s in i["sources"]} == {AAPL_10K}
+    expected = {
+        "gross_margin": "46.91",
+        "roic": "83.14",
+        "roe": "171.42",
+        "fcf_conversion": "88.18",
+        "net_debt_to_ebitda": "0.43",
+        "cash_returned": "106132000000",
+        "cash_returned_to_fcf": "107.46",
+        "diluted_shares_change": "-2.62",
+    }
+    assert {m: fy[m]["value"] for m in expected} == expected
+    nopat, opening, closing = fy["roic"]["inputs"]
+    assert (nopat["name"], opening["period_end"], closing["period_end"]) == (
+        "nopat",
+        "2024-09-28",
+        "2025-09-27",
+    )
+
+
+def test_research_record_names_what_is_missing(client: TestClient) -> None:
+    xom = cells(research(client, "XOM", VALUED_AT), "2025-12-31")
+    assert xom["roic"]["detail"] == "not reported: operating income"
+    assert xom["stock_based_compensation"]["detail"] == "not reported: stock-based compensation"
+    assert xom["diluted_shares_change"]["reason"] == "unavailable"
+    assert xom["net_margin"]["value"] is not None  # the rest still stands
+    meta = cells(research(client, "META", VALUED_AT), "2025-12-31")
+    assert meta["gross_margin"]["detail"] == "not reported: gross profit"
+
+
+def test_research_record_on_a_past_date_uses_only_filings_public_then(
+    client: TestClient,
+) -> None:
+    body = research(client, "AAPL", "2026-04-15T00:00:00Z")
+    assert body["periods"][0]["period_end"] == "2025-12-27"  # Q1 FY2026 10-Q, late January
+    published = [
+        s["filing"]["published_at"]
+        for row in body["rows"]
+        for cell in row["cells"]
+        for i in cell["inputs"]
+        for s in i["sources"]
+    ]
+    assert published and max(published) <= "2026-04-15T00:00:00Z"
+
+
+def test_research_dashboard_matches_valuation_and_fair_value(client: TestClient) -> None:
+    started = time.monotonic()
+    response = client.get("/research", params={"known_at": VALUED_AT})
+    elapsed = time.monotonic() - started
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert elapsed < 3, elapsed
+    assert body["label"] == "Model output, not fact"
+    rows = {r["ticker"]: r for r in body["rows"]}
+    assert list(rows) == ["AAPL", "META", "XOM"]
+    apple = rows["AAPL"]
+    values = {v["metric_id"]: v for v in apple["values"]}
+    assert apple["period"]["period_end"] == "2026-06-27"
+    record = cells(research(client, "AAPL", VALUED_AT), "2026-06-27")
+    assert values["roic"]["value"] == record["roic"]["value"]
+    shown = valuation(client, "AAPL", VALUED_AT)["metrics"]
+    multiples = {m["metric_id"]: m["value"] for m in shown}
+    assert values["pe_ratio_ttm"]["value"] == multiples["pe_ratio_ttm"]
+    fair = fair_value(client, "AAPL", VALUED_AT)
+    base = next(s for s in fair["dcf"]["scenarios"] if s["scenario"] == "base")
+    assert apple["fair_value"]["base_per_share"] == base["per_share"]
+    assert apple["fair_value"]["implied_upside"] == fair["comparison"]["implied_upside"]
+    assert apple["fair_value"]["assumptions_version"] == fair["assumptions"]["version"]
+    assert rows["XOM"]["fair_value"]["status"] == "unavailable"  # no SBC line
+    stale = client.get("/research", params={"known_at": "2026-10-20T00:00:00Z"}).json()
+    apple_stale = next(r for r in stale["rows"] if r["ticker"] == "AAPL")
+    assert apple_stale["price"]["status"] == "stale"
+    assert apple_stale["fair_value"]["implied_upside"] is None
+    assert apple_stale["fair_value"]["comparison_detail"].startswith("no valuation price")
+
+
 # ---------- API ----------
 
 
@@ -945,6 +1059,10 @@ def test_record_web_fixtures(client: TestClient) -> None:
             {"known_at": VALUED_AT, "assumptions": "default"},
         ),
         ("assumptions-aapl", "/instruments/AAPL/assumptions", {}),
+        ("research-aapl", "/instruments/AAPL/research", {"known_at": VALUED_AT}),
+        ("research-xom", "/instruments/XOM/research", {"known_at": VALUED_AT}),
+        ("research-dashboard", "/research", {"known_at": VALUED_AT}),
+        ("research-dashboard-stale", "/research", {"known_at": "2026-10-20T00:00:00Z"}),
     ):
         response = client.get(path, params=params)
         assert response.status_code == 200

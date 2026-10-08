@@ -14,6 +14,7 @@ splits, the 10-year Treasury yield) and the assumption version, so the same pair
 the same numbers.
 """
 
+from dataclasses import dataclass
 from datetime import UTC, date, datetime, time
 from decimal import Decimal
 from typing import Annotated, Literal
@@ -31,25 +32,23 @@ from autotrading.api.valuation import (
     PRICE_LOOKBACK,
     VALUATION_METRICS,
     InputOut,
+    MarketView,
     PriceOut,
     filing_forms,
     input_out,
-    price_out,
+    known_at_or_now,
+    market_view,
     source_out,
     universe_equity,
 )
-from autotrading.db.models import (
-    FinancialFact,
-    MacroObservation,
-    SplitEvent,
-    ValuationAssumptionSet,
-)
+from autotrading.db.models import FinancialFact, MacroObservation, ValuationAssumptionSet
 from autotrading.domain.fair_value import (
     DEFAULT_ASSUMPTIONS,
     HISTORY_SINCE,
     RELATIVE_METRICS,
     SCENARIOS,
     Assumptions,
+    FairValue,
     RiskFree,
     Scenario,
     fair_value,
@@ -59,19 +58,16 @@ from autotrading.domain.fair_value import (
     snapshots,
 )
 from autotrading.domain.fundamentals import merge_by_precedence
-from autotrading.domain.splits import Split
 from autotrading.domain.valuation import (
     METRICS,
-    Close,
+    Input,
     close_basis,
     latest_net_debt,
-    select_price,
     share_count,
     valuation,
 )
 from autotrading.repositories.audit import set_actor
 from autotrading.repositories.facts import as_of_query, row_key
-from autotrading.repositories.prices import daily_bars
 
 router = APIRouter(tags=["fair-value"])
 
@@ -276,7 +272,7 @@ class FairValueOut(BaseModel):
     data_as_of: DataAsOf
 
 
-def _chosen(
+def chosen_version(
     session: Session, instrument_id: object, requested: str | None, at: datetime
 ) -> AssumptionVersion:
     if requested == "default":
@@ -291,7 +287,8 @@ def _chosen(
     return _version_out(row)
 
 
-def _risk_free(session: Session, at: datetime) -> RiskFreeOut | None:
+def risk_free_at(session: Session, at: datetime) -> RiskFreeOut | None:
+    """The latest 10-year Treasury yield observation public at `at`."""
     known = as_of_query(MacroObservation, known_at=at).where(
         MacroObservation.series_id == RISK_FREE_SERIES
     )
@@ -306,6 +303,45 @@ def _risk_free(session: Session, at: datetime) -> RiskFreeOut | None:
         published_at=row.published_at,
         source_url=row.source_url,
     )
+
+
+@dataclass(frozen=True)
+class DcfSnapshot:
+    """The DCF, reverse DCF and price comparison of one equity at T with one version."""
+
+    result: FairValue[FactView]
+    inputs: list[Input[FactView]]  # owner free cash flow, net debt, shares outstanding
+    comparison_detail: str | None  # why upside and margin of safety are unavailable
+
+
+def dcf_snapshot(
+    view: MarketView, params: Assumptions, risk_free: RiskFreeOut | None, at: datetime
+) -> DcfSnapshot:
+    price = view.price
+    usable = price.status == "ok" and price.close is not None
+    basis = close_basis(price.close) if usable and price.close else at
+    net_debt = latest_net_debt(view.facts)
+    shares = share_count(view.facts, basis, view.splits)
+    result = fair_value(
+        view.facts,
+        params,
+        RiskFree(risk_free.value, risk_free.observation_date, risk_free.published_at)
+        if risk_free
+        else None,
+        net_debt,
+        shares,
+        price.close.close if usable and price.close else None,
+    )
+    if result.status != "ok":
+        detail: str | None = f"no fair value: {result.detail}"
+    elif not usable:
+        detail = f"no valuation price: {price.detail}"
+    elif result.margin_of_safety is None:
+        detail = "the base value is not positive"
+    else:
+        detail = None
+    inputs = [i for i in (result.base_fcf, net_debt, shares) if i is not None]
+    return DcfSnapshot(result, inputs, detail)
 
 
 @router.get("/instruments/{ticker}/fair-value")
@@ -325,63 +361,24 @@ def instrument_fair_value(
 ) -> FairValueOut:
     instrument = universe_equity(session, ticker)
     assert instrument.entity_id is not None
-    at: datetime = known_at or session.execute(select(func.now())).scalar_one()
-    chosen = _chosen(session, instrument.id, assumptions, at)
+    at = known_at_or_now(session, known_at)
+    chosen = chosen_version(session, instrument.id, assumptions, at)
     params = chosen.parameters
     chain = issuer_chain(session, instrument.entity_id)
 
-    # Facts, closes and splits known at T (as /valuation shows them).
-    rows = session.scalars(
-        as_of_query(FinancialFact, known_at=at).where(
-            FinancialFact.entity_id.in_(chain.order),
-            FinancialFact.metric_id.in_(FAIR_VALUE_METRICS),
-        )
-    ).all()
-    facts = [FactView(f) for f in merge_by_precedence(rows, chain.order)]
-    split_rows = session.scalars(
-        select(SplitEvent).where(
-            SplitEvent.instrument_id == instrument.id, SplitEvent.published_at <= at
-        )
-    ).all()
-    dated_splits = [(s.published_at, Split(s.ex_date, s.old_rate, s.new_rate)) for s in split_rows]
-    splits = [split for _, split in dated_splits]
+    # Facts, closes and splits known at T (as /valuation shows them); closes since 2016 for
+    # the relative history.
     since = datetime.combine(HISTORY_SINCE, time(), tzinfo=UTC) - PRICE_LOOKBACK
-    bars = daily_bars(session, instrument.id, "raw", since=since, until=at, known_at=at)
-    closes = [Close(b.bar_date, b.close, b.feed_status, b.published_at) for b in bars]
-    recent = [c for b, c in zip(bars, closes, strict=True) if b.bar_time >= at - PRICE_LOOKBACK]
-    price = select_price(recent, at)
-    usable = price.status == "ok" and price.close is not None
-
-    # DCF and reverse DCF.
-    basis = close_basis(price.close) if usable and price.close else at
-    net_debt = latest_net_debt(facts)
-    shares = share_count(facts, basis, splits)
-    risk_free = _risk_free(session, at)
-    result = fair_value(
-        facts,
-        params,
-        RiskFree(risk_free.value, risk_free.observation_date, risk_free.published_at)
-        if risk_free
-        else None,
-        net_debt,
-        shares,
-        price.close.close if usable and price.close else None,
-    )
-    dcf_inputs = [i for i in (result.base_fcf, net_debt, shares) if i is not None]
-    forms = filing_forms(session, (f for i in dcf_inputs for f in i.sources))
+    view = market_view(session, instrument, chain.order, at, FAIR_VALUE_METRICS, bars_since=since)
+    risk_free = risk_free_at(session, at)
+    snapshot = dcf_snapshot(view, params, risk_free, at)
+    result, price = snapshot.result, view.price
+    forms = filing_forms(session, (f for i in snapshot.inputs for f in i.sources))
     growth = {"bear": params.growth_bear, "base": params.growth_base, "bull": params.growth_bull}
-    if result.status != "ok":
-        comparison_detail: str | None = f"no fair value: {result.detail}"
-    elif not usable:
-        comparison_detail = f"no valuation price: {price.detail}"
-    elif result.margin_of_safety is None:
-        comparison_detail = "the base value is not positive"
-    else:
-        comparison_detail = None
 
     # Relative valuation: the current multiples (as on the Valuation block) against their
     # month-end history, each month from the fact versions public by then.
-    current = {v.metric_id: v.value for v in valuation(facts, price, splits)}
+    current = {v.metric_id: v.value for v in valuation(view.facts, price, view.splits)}
     versions = session.scalars(
         select(FinancialFact).where(
             FinancialFact.entity_id.in_(chain.order),
@@ -400,9 +397,9 @@ def instrument_fair_value(
             lambda f: f.recorded_at,
         )
     )
-    history = multiple_history(points, closes, dated_splits)
+    history = multiple_history(points, view.closes, view.dated_splits)
 
-    sources = [f for i in dcf_inputs for f in i.sources]
+    sources = [f for i in snapshot.inputs for f in i.sources]
     latest = max(sources, key=lambda f: f.reported_at) if sources else None
     return FairValueOut(
         ticker=ticker.upper(),
@@ -419,7 +416,7 @@ def instrument_fair_value(
                 equity_risk_premium=params.equity_risk_premium,
             ),
             terminal_growth=params.terminal_growth,
-            inputs=[input_out(i, forms) for i in dcf_inputs],
+            inputs=[input_out(i, forms) for i in snapshot.inputs],
             scenarios=[
                 ScenarioOut(
                     scenario=name,
@@ -434,10 +431,10 @@ def instrument_fair_value(
             ],
         ),
         comparison=PriceComparison(
-            price=price_out(price, {b.bar_date: b.source_url for b in bars}),
+            price=view.price_out(),
             implied_upside=result.implied_upside,
             margin_of_safety=result.margin_of_safety,
-            detail=comparison_detail,
+            detail=snapshot.comparison_detail,
         ),
         reverse_dcf=ReverseDcf(growth=result.reverse_growth, detail=result.reverse_detail),
         relative=[

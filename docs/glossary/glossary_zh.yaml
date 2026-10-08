@@ -34,7 +34,7 @@ terms:
 
   # pages and navigation
   page_data_health: {name: 資料健康度, hint: 所有資料來源的狀態、最近擷取紀錄與失敗項目。}
-  page_instruments: {name: 個股, hint: 投資範圍內股票的 SEC 財報數字，可切換「當時已知」的版本。}
+  page_instruments: {name: 個股, hint: 投資範圍內股票的財報、估值、合理價值與研究紀錄，可切換「當時已知」的版本。}
   page_macro: {name: 總經, hint: 美國主要總經序列及其每次修正，可切換「當時已知」的版本。}
   page_overview: {name: 總覽, hint: 首頁總經儀表板：六大區塊、圖表與規則式重點。}
   page_progress: {name: 開發進度, hint: 即時讀取專案文件的里程碑、驗收項目與待決事項。}
@@ -46,7 +46,7 @@ terms:
   dashboard_global_monitor: {name: 全球監控, hint: 全球事件、實體與政策的總覽（Phase 3）。}
   dashboard_market_regime: {name: 市場環境, hint: 總經與市場所處的狀態判斷（Phase 2）。}
   dashboard_opportunity_radar: {name: 機會雷達, hint: 依訊號篩選出的研究候選標的（Phase 2）。}
-  dashboard_fundamental_research: {name: 基本面研究, hint: 財報、估值與買回分析（Phase 1）。}
+  dashboard_fundamental_research: {name: 基本面研究, hint: 10 家公司一張表：成長、利潤率、ROIC、資本配置與估值，點公司看研究紀錄。}
   dashboard_corporate_actions: {name: 公司行動, hint: 買回、股利、分割等公司行動（Phase 1）。}
   dashboard_event_transmission: {name: 事件傳導, hint: 事件如何經由產業鏈影響資產（Phase 3）。}
   dashboard_earnings: {name: 財報季, hint: 實際財報與前期比較、財測與市場反應（Phase 1）。}
@@ -126,6 +126,23 @@ terms:
   price_to_book: {name: 股價淨值比, hint: 市值 ÷ 股東權益；權益為負時無意義。}
   fcf_yield: {name: 自由現金流殖利率, hint: 近四季自由現金流 ÷ 市值。}
   earnings_yield: {name: 盈餘殖利率, hint: 近四季 EPS ÷ 股價，本益比的倒數。}
+
+  # research record (M1.3b)
+  revenue_growth: {name: 營收成長率, hint: 本期營收 ÷ 一年前同長度期間的營收 − 1。}
+  gross_margin: {name: 毛利率, hint: 毛利 ÷ 營收。}
+  operating_margin: {name: 營業利益率, hint: 營業利益 ÷ 營收。}
+  net_margin: {name: 淨利率, hint: 淨利 ÷ 營收。}
+  effective_tax_rate: {name: 有效稅率, hint: 所得稅 ÷ 稅前盈餘；稅前為負時無意義。}
+  nopat: {name: 稅後營業利益（NOPAT）, hint: 營業利益 ×（1 − 有效稅率）。}
+  invested_capital: {name: 投入資本, hint: 股東權益 + 總負債 − 現金。}
+  roic: {name: 投入資本報酬率（ROIC）, hint: NOPAT ÷ 平均投入資本（期初與期末）。}
+  roe: {name: 股東權益報酬率（ROE）, hint: 淨利 ÷ 平均股東權益；權益為負時無意義。}
+  fcf_conversion: {name: FCF 轉換率, hint: 自由現金流 ÷ 淨利，看獲利有沒有變成現金。}
+  net_debt_to_ebitda: {name: 淨負債 / EBITDA, hint: 期末淨負債 ÷ EBITDA；負值代表淨現金。}
+  cash_returned: {name: 回饋股東金額, hint: 庫藏股 + 股利；沒申報股利的期間以 0 計並標示。}
+  cash_returned_to_fcf: {name: 回饋股東 / FCF, hint: 回饋股東金額 ÷ 自由現金流；超過 100% 代表動用現金或借錢。}
+  diluted_shares_change: {name: 稀釋股數年增減, hint: 稀釋加權股數 ÷ 一年前 − 1，換算到同一分割基準。}
+  research_record: {name: 研究紀錄, hint: 一家公司近四季與五個財年的成長、品質與資本配置，每個數字附來源申報。}
 
   # fair value (M1.3a)
   fair_value_dcf: {name: DCF 每股合理價值, hint: 業主自由現金流折現得企業價值，減淨負債再除以股數；模型結果，不是事實。}

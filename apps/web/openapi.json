@@ -3767,6 +3767,343 @@
         "title": "RelativeOut",
         "type": "object"
       },
+      "ResearchDashboard": {
+        "properties": {
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "label": {
+            "const": "Model output, not fact",
+            "title": "Label",
+            "type": "string"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/ResearchSummaryRow"
+            },
+            "title": "Rows",
+            "type": "array"
+          }
+        },
+        "required": [
+          "known_at",
+          "label",
+          "rows"
+        ],
+        "title": "ResearchDashboard",
+        "type": "object"
+      },
+      "ResearchFairValue": {
+        "properties": {
+          "assumptions_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assumptions Version"
+          },
+          "base_per_share": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Per Share"
+          },
+          "comparison_detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparison Detail"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "implied_upside": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Implied Upside"
+          },
+          "reverse_dcf_growth": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reverse Dcf Growth"
+          },
+          "status": {
+            "enum": [
+              "ok",
+              "unavailable",
+              "not_meaningful"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "detail",
+          "assumptions_version",
+          "base_per_share",
+          "implied_upside",
+          "reverse_dcf_growth",
+          "comparison_detail"
+        ],
+        "title": "ResearchFairValue",
+        "type": "object"
+      },
+      "ResearchPeriod": {
+        "properties": {
+          "kind": {
+            "enum": [
+              "ttm",
+              "fiscal_year"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "period_end": {
+            "format": "date",
+            "title": "Period End",
+            "type": "string"
+          },
+          "period_start": {
+            "format": "date",
+            "title": "Period Start",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "period_start",
+          "period_end"
+        ],
+        "title": "ResearchPeriod",
+        "type": "object"
+      },
+      "ResearchRecordOut": {
+        "properties": {
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "periods": {
+            "items": {
+              "$ref": "#/components/schemas/ResearchPeriod"
+            },
+            "title": "Periods",
+            "type": "array"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/ResearchRow"
+            },
+            "title": "Rows",
+            "type": "array"
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticker",
+          "known_at",
+          "periods",
+          "rows"
+        ],
+        "title": "ResearchRecordOut",
+        "type": "object"
+      },
+      "ResearchRow": {
+        "properties": {
+          "cells": {
+            "items": {
+              "$ref": "#/components/schemas/MetricOut"
+            },
+            "title": "Cells",
+            "type": "array"
+          },
+          "metric_id": {
+            "title": "Metric Id",
+            "type": "string"
+          },
+          "section": {
+            "enum": [
+              "economics",
+              "quality",
+              "capital_allocation"
+            ],
+            "title": "Section",
+            "type": "string"
+          },
+          "unit": {
+            "enum": [
+              "USD",
+              "USD/shares",
+              "x",
+              "percent"
+            ],
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "metric_id",
+          "section",
+          "unit",
+          "cells"
+        ],
+        "title": "ResearchRow",
+        "type": "object"
+      },
+      "ResearchSummaryRow": {
+        "properties": {
+          "fair_value": {
+            "$ref": "#/components/schemas/ResearchFairValue"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "period": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResearchPeriod"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "price": {
+            "$ref": "#/components/schemas/PriceOut"
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          },
+          "values": {
+            "items": {
+              "$ref": "#/components/schemas/ResearchValue"
+            },
+            "title": "Values",
+            "type": "array"
+          }
+        },
+        "required": [
+          "ticker",
+          "name",
+          "period",
+          "price",
+          "values",
+          "fair_value"
+        ],
+        "title": "ResearchSummaryRow",
+        "type": "object"
+      },
+      "ResearchValue": {
+        "properties": {
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "metric_id": {
+            "title": "Metric Id",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "enum": [
+                  "unavailable",
+                  "not_meaningful"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "unit": {
+            "enum": [
+              "USD",
+              "USD/shares",
+              "x",
+              "percent"
+            ],
+            "title": "Unit",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "metric_id",
+          "unit",
+          "value",
+          "reason",
+          "detail"
+        ],
+        "title": "ResearchValue",
+        "type": "object"
+      },
       "ReverseDcf": {
         "properties": {
           "detail": {
@@ -5362,6 +5699,67 @@
         ]
       }
     },
+    "/instruments/{ticker}/research": {
+      "get": {
+        "operationId": "instrument_research_instruments__ticker__research_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ticker",
+            "required": true,
+            "schema": {
+              "title": "Ticker",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchRecordOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Instrument Research",
+        "tags": [
+          "research"
+        ]
+      }
+    },
     "/instruments/{ticker}/valuation": {
       "get": {
         "operationId": "instrument_valuation_instruments__ticker__valuation_get",
@@ -5912,6 +6310,58 @@
         "summary": "Reconciliation",
         "tags": [
           "reconciliation"
+        ]
+      }
+    },
+    "/research": {
+      "get": {
+        "operationId": "research_dashboard_research_get",
+        "parameters": [
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchDashboard"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Research Dashboard",
+        "tags": [
+          "research"
         ]
       }
     }
