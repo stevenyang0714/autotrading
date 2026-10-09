@@ -1,0 +1,500 @@
+{
+  "recorded_at": "2026-10-08T18:26:48.853204+00:00",
+  "recorded_from": "recorded SEC fixtures replayed into the integration test database (tests/integration/test_instruments.py)",
+  "endpoint": "/research",
+  "params": {
+    "known_at": "2026-10-06T12:00:00Z"
+  },
+  "response": {
+    "known_at": "2026-10-06T12:00:00Z",
+    "label": "Model output, not fact",
+    "rows": [
+      {
+        "ticker": "AAPL",
+        "name": "Apple Inc.",
+        "period": {
+          "kind": "ttm",
+          "period_start": "2025-06-29",
+          "period_end": "2026-06-27"
+        },
+        "price": {
+          "status": "ok",
+          "detail": "end-of-day consolidated close",
+          "day": "2026-10-05",
+          "close": "332.89",
+          "feed_status": "end_of_day",
+          "published_at": "2026-10-06T03:59:59.999999Z",
+          "source_url": "https://data.alpaca.markets/v2/stocks/bars?symbols=AAPL%2CMSFT%2CGOOGL%2CMETA%2CNVDA%2CJPM%2CXOM%2CAZO%2CORLY%2CLOW%2CSPY%2CQQQ%2CIWM%2CTLT%2CIEF%2CGLD%2CXLE%2CXLK&timeframe=1Day&adjustment=raw&feed=sip&start=2025-10-05&limit=10000&end=2026-10-05"
+        },
+        "values": [
+          {
+            "metric_id": "revenue_growth",
+            "unit": "percent",
+            "value": "14.24",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "gross_margin",
+            "unit": "percent",
+            "value": "48.65",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "operating_margin",
+            "unit": "percent",
+            "value": "33.17",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "net_margin",
+            "unit": "percent",
+            "value": "27.62",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "roic",
+            "unit": "percent",
+            "value": "90.32",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "roe",
+            "unit": "percent",
+            "value": "148.75",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "effective_tax_rate",
+            "unit": "percent",
+            "value": "17.30",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "fcf_conversion",
+            "unit": "percent",
+            "value": "106.01",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "net_debt_to_ebitda",
+            "unit": "x",
+            "value": "0.27",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "free_cash_flow",
+            "unit": "USD",
+            "value": "136683000000",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "share_repurchases",
+            "unit": "USD",
+            "value": "82226000000",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "dividends_paid",
+            "unit": "USD",
+            "value": "15640000000",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "stock_based_compensation",
+            "unit": "USD",
+            "value": "13706000000",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "cash_returned",
+            "unit": "USD",
+            "value": "97866000000",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "cash_returned_to_fcf",
+            "unit": "percent",
+            "value": "71.60",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "diluted_shares_change",
+            "unit": "percent",
+            "value": "-1.56",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "pe_ratio_ttm",
+            "unit": "x",
+            "value": "38.18",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "ev_to_ebitda",
+            "unit": "x",
+            "value": "29.19",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "fcf_yield",
+            "unit": "percent",
+            "value": "2.81",
+            "reason": null,
+            "detail": null
+          }
+        ],
+        "fair_value": {
+          "status": "ok",
+          "detail": null,
+          "assumptions_version": null,
+          "base_per_share": "124.94",
+          "implied_upside": "-62.47",
+          "reverse_dcf_growth": "23.11",
+          "comparison_detail": null
+        }
+      },
+      {
+        "ticker": "META",
+        "name": "Meta Platforms, Inc.",
+        "period": {
+          "kind": "ttm",
+          "period_start": "2025-07-01",
+          "period_end": "2026-06-30"
+        },
+        "price": {
+          "status": "ok",
+          "detail": "end-of-day consolidated close",
+          "day": "2026-10-05",
+          "close": "741.9",
+          "feed_status": "end_of_day",
+          "published_at": "2026-10-06T03:59:59.999999Z",
+          "source_url": "https://data.alpaca.markets/v2/stocks/bars?symbols=AAPL%2CMSFT%2CGOOGL%2CMETA%2CNVDA%2CJPM%2CXOM%2CAZO%2CORLY%2CLOW%2CSPY%2CQQQ%2CIWM%2CTLT%2CIEF%2CGLD%2CXLE%2CXLK&timeframe=1Day&adjustment=raw&feed=sip&start=2025-10-05&limit=10000&end=2026-10-05"
+        },
+        "values": [
+          {
+            "metric_id": "revenue_growth",
+            "unit": "percent",
+            "value": "27.65",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "gross_margin",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "detail": "not reported: gross profit"
+          },
+          {
+            "metric_id": "operating_margin",
+            "unit": "percent",
+            "value": "38.08",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "net_margin",
+            "unit": "percent",
+            "value": "29.84",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "roic",
+            "unit": "percent",
+            "value": "24.99",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "roe",
+            "unit": "percent",
+            "value": "29.85",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "effective_tax_rate",
+            "unit": "percent",
+            "value": "22.20",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "fcf_conversion",
+            "unit": "percent",
+            "value": "60.17",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "net_debt_to_ebitda",
+            "unit": "x",
+            "value": "0.62",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "free_cash_flow",
+            "unit": "USD",
+            "value": "40976000000",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "share_repurchases",
+            "unit": "USD",
+            "value": "3327000000",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "dividends_paid",
+            "unit": "USD",
+            "value": "5367000000",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "stock_based_compensation",
+            "unit": "USD",
+            "value": "25136000000",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "cash_returned",
+            "unit": "USD",
+            "value": "8694000000",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "cash_returned_to_fcf",
+            "unit": "percent",
+            "value": "21.22",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "diluted_shares_change",
+            "unit": "percent",
+            "value": "-0.16",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "pe_ratio_ttm",
+            "unit": "x",
+            "value": "27.94",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "ev_to_ebitda",
+            "unit": "x",
+            "value": "17.86",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "fcf_yield",
+            "unit": "percent",
+            "value": "2.17",
+            "reason": null,
+            "detail": null
+          }
+        ],
+        "fair_value": {
+          "status": "ok",
+          "detail": null,
+          "assumptions_version": null,
+          "base_per_share": "67.68",
+          "implied_upside": "-90.88",
+          "reverse_dcf_growth": "46.20",
+          "comparison_detail": null
+        }
+      },
+      {
+        "ticker": "XOM",
+        "name": "ExxonMobil Holdings Corp",
+        "period": {
+          "kind": "ttm",
+          "period_start": "2025-07-01",
+          "period_end": "2026-06-30"
+        },
+        "price": {
+          "status": "ok",
+          "detail": "end-of-day consolidated close",
+          "day": "2026-10-05",
+          "close": "164",
+          "feed_status": "end_of_day",
+          "published_at": "2026-10-06T03:59:59.999999Z",
+          "source_url": "https://data.alpaca.markets/v2/stocks/bars?symbols=AAPL%2CMSFT%2CGOOGL%2CMETA%2CNVDA%2CJPM%2CXOM%2CAZO%2CORLY%2CLOW%2CSPY%2CQQQ%2CIWM%2CTLT%2CIEF%2CGLD%2CXLE%2CXLK&timeframe=1Day&adjustment=raw&feed=sip&start=2025-10-05&limit=10000&end=2026-10-05"
+        },
+        "values": [
+          {
+            "metric_id": "revenue_growth",
+            "unit": "percent",
+            "value": "9.07",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "gross_margin",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "detail": "not reported: gross profit"
+          },
+          {
+            "metric_id": "operating_margin",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "detail": "not reported: operating income"
+          },
+          {
+            "metric_id": "net_margin",
+            "unit": "percent",
+            "value": "8.88",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "roic",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "detail": "not reported: operating income"
+          },
+          {
+            "metric_id": "roe",
+            "unit": "percent",
+            "value": "12.55",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "effective_tax_rate",
+            "unit": "percent",
+            "value": "25.63",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "fcf_conversion",
+            "unit": "percent",
+            "value": "93.27",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "net_debt_to_ebitda",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "detail": "not reported: operating income"
+          },
+          {
+            "metric_id": "free_cash_flow",
+            "unit": "USD",
+            "value": "30553000000",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "share_repurchases",
+            "unit": "USD",
+            "value": "20512000000",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "dividends_paid",
+            "unit": "USD",
+            "value": "17241000000",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "stock_based_compensation",
+            "unit": "USD",
+            "value": null,
+            "reason": "unavailable",
+            "detail": "not reported: stock-based compensation"
+          },
+          {
+            "metric_id": "cash_returned",
+            "unit": "USD",
+            "value": "37753000000",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "cash_returned_to_fcf",
+            "unit": "percent",
+            "value": "123.57",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "diluted_shares_change",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "detail": "not reported: diluted shares, diluted shares a year earlier"
+          },
+          {
+            "metric_id": "pe_ratio_ttm",
+            "unit": "x",
+            "value": "21.11",
+            "reason": null,
+            "detail": null
+          },
+          {
+            "metric_id": "ev_to_ebitda",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "detail": "not reported: TTM EBITDA (operating income + D&A)"
+          },
+          {
+            "metric_id": "fcf_yield",
+            "unit": "percent",
+            "value": "4.53",
+            "reason": null,
+            "detail": null
+          }
+        ],
+        "fair_value": {
+          "status": "unavailable",
+          "detail": "owner free cash flow: not reported for the last four quarters: stock-based compensation (an assumption set can leave SBC out)",
+          "assumptions_version": null,
+          "base_per_share": null,
+          "implied_upside": null,
+          "reverse_dcf_growth": null,
+          "comparison_detail": "no fair value: owner free cash flow: not reported for the last four quarters: stock-based compensation (an assumption set can leave SBC out)"
+        }
+      }
+    ]
+  }
+}

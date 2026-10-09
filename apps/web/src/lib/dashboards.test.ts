@@ -1,3 +1,6 @@
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import { DASHBOARDS, plannedLabel } from "./dashboards";
@@ -56,6 +59,14 @@ describe("dashboard glossary terms (errata E13)", () => {
     for (const dashboard of DASHBOARDS) {
       expect(dashboard.termId).toBe(`dashboard_${dashboard.id}`);
       expect(GLOSSARY[dashboard.termId].display_name).toBe(dashboard.label);
+    }
+  });
+
+  it("serves each live dashboard from its own route (Fundamental Research, M1.3b)", () => {
+    const live = DASHBOARDS.filter((dashboard) => dashboard.live);
+    expect(live.map((dashboard) => dashboard.slug)).toEqual(["fundamental-research"]);
+    for (const dashboard of live) {
+      expect(existsSync(resolve(__dirname, "../app/dashboards", dashboard.slug, "page.tsx"))).toBe(true);
     }
   });
 });

@@ -6,8 +6,11 @@ import { DASHBOARDS, findDashboard } from "@/lib/dashboards";
 
 export const dynamicParams = false;
 
+// Live dashboards have their own route; this one serves the planned ones.
 export function generateStaticParams() {
-  return DASHBOARDS.map((dashboard) => ({ slug: dashboard.slug }));
+  return DASHBOARDS.filter((dashboard) => !dashboard.live).map((dashboard) => ({
+    slug: dashboard.slug,
+  }));
 }
 
 export async function generateMetadata({
@@ -20,6 +23,6 @@ export async function generateMetadata({
 export default async function DashboardPage({ params }: PageProps<"/dashboards/[slug]">) {
   const { slug } = await params;
   const dashboard = findDashboard(slug);
-  if (!dashboard) notFound();
+  if (!dashboard || dashboard.live) notFound();
   return <PlannedPanel dashboard={dashboard} />;
 }

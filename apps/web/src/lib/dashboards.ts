@@ -4,6 +4,7 @@
  * plannedPhase = first phase in which the dashboard shows real content
  * (mapping approved with the M0.1 plan; see docs/milestones/ROADMAP.md).
  * Until then the page renders "Planned — Phase N" and never placeholder numbers.
+ * A built dashboard is marked `live` and has its own route (app/dashboards/<slug>/page.tsx).
  */
 
 import type { CompleteTermId } from "@/generated/glossary";
@@ -22,6 +23,8 @@ export interface DashboardDef {
   purpose: string;
   plannedPhase: PlannedPhase;
   group: NavGroup;
+  /** Built: served by its own route instead of the Planned panel. */
+  live?: true;
 }
 
 export const DASHBOARDS: readonly DashboardDef[] = [
@@ -60,6 +63,7 @@ export const DASHBOARDS: readonly DashboardDef[] = [
     purpose: "Company economics: financials, valuation, quality and capital allocation.",
     plannedPhase: 1,
     group: "dashboards",
+    live: true,
   },
   {
     id: "corporate_actions",

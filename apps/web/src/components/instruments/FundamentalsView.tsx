@@ -45,6 +45,8 @@ interface Props {
   valuation?: ReactNode;
   /** DCF, reverse DCF and relative valuation (M1.3a), shown after the valuation block. */
   fairValue?: ReactNode;
+  /** Economics, quality and capital allocation by period (M1.3b), after the fair value. */
+  research?: ReactNode;
 }
 
 /**
@@ -63,6 +65,7 @@ export function FundamentalsView({
   news,
   valuation,
   fairValue,
+  research,
 }: Props) {
   const newest = [...data.annual.rows, ...data.balance_sheet.rows]
     .flatMap((row) => row.cells)
@@ -132,6 +135,8 @@ export function FundamentalsView({
       {valuation}
 
       {fairValue}
+
+      {research}
 
       {news}
 

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { saveAssumptionsAction } from "@/app/instruments/[ticker]/actions";
 import { FairValueView } from "@/components/instruments/FairValueView";
 import { FundamentalsView } from "@/components/instruments/FundamentalsView";
+import { ResearchRecordView } from "@/components/instruments/ResearchRecordView";
 import { InstrumentNews } from "@/components/news/InstrumentNews";
 import { DemoBanner } from "@/components/prices/DemoBanner";
 import { InstrumentPricePanel } from "@/components/prices/InstrumentPricePanel";
@@ -14,6 +15,7 @@ import {
   loadFundamentals,
   loadInstrumentPrices,
   loadNews,
+  loadResearch,
   loadSourceHealth,
   loadValuation,
 } from "@/lib/api";
@@ -43,13 +45,14 @@ export default async function InstrumentPage({
       : undefined;
 
   const newsQuery = { ticker: ticker.toUpperCase(), knownAt: knownAt ?? undefined, limit: 6 };
-  const [result, prices, valuation, fairValue, assumptions, announcements, coverage, sources] =
+  const [result, prices, valuation, fairValue, assumptions, research, announcements, coverage, sources] =
     await Promise.all([
       loadFundamentals(ticker, knownAt ?? undefined),
       loadInstrumentPrices(ticker, knownAt ?? undefined),
       loadValuation(ticker, knownAt ?? undefined),
       loadFairValue(ticker, knownAt ?? undefined, version),
       loadAssumptions(ticker),
+      loadResearch(ticker, knownAt ?? undefined),
       loadNews({ ...newsQuery, kinds: ["press_release"] }),
       loadNews({ ...newsQuery, kinds: ["article", "official"] }),
       loadSourceHealth(),
@@ -96,6 +99,7 @@ export default async function InstrumentPage({
             action={saveAssumptionsAction}
           />
         }
+        research={research.status === "not_found" ? undefined : <ResearchRecordView result={research} />}
         news={
           <InstrumentNews ticker={ticker.toUpperCase()} announcements={announcements} coverage={coverage} />
         }
