@@ -394,6 +394,49 @@ export function validationMessages(error: unknown): string[] {
   });
 }
 
+// ---------- research record (M1.3b, ADR-024) ----------
+
+export type ResearchRecord = components["schemas"]["ResearchRecordOut"];
+export type ResearchRow = components["schemas"]["ResearchRow"];
+export type ResearchPeriod = components["schemas"]["ResearchPeriod"];
+export type ResearchDashboard = components["schemas"]["ResearchDashboard"];
+export type ResearchSummaryRow = components["schemas"]["ResearchSummaryRow"];
+export type ResearchValue = components["schemas"]["ResearchValue"];
+
+export type ResearchResult =
+  | { status: "ok"; data: ResearchRecord }
+  | { status: "not_found" }
+  | { status: "unavailable" };
+
+/** A company's Research Record as known at `knownAt` (ISO timestamp; default now). */
+export async function loadResearch(ticker: string, knownAt?: string): Promise<ResearchResult> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data, response } = await client.GET("/instruments/{ticker}/research", {
+      params: { path: { ticker }, query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    if (data) return { status: "ok", data };
+    return response.status === 404 ? { status: "not_found" } : { status: "unavailable" };
+  } catch {
+    return { status: "unavailable" };
+  }
+}
+
+/** One row per universe equity for the Fundamental Research dashboard; null when unreachable. */
+export async function loadResearchDashboard(knownAt?: string): Promise<ResearchDashboard | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/research", {
+      params: { query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
 // ---------- news (M0.8, ADR-018) ----------
 
 export type NewsFeed = components["schemas"]["NewsFeed"];

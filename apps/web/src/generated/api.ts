@@ -229,6 +229,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/instruments/{ticker}/research": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Instrument Research */
+        get: operations["instrument_research_instruments__ticker__research_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/instruments/{ticker}/valuation": {
         parameters: {
             query?: never;
@@ -374,6 +391,23 @@ export interface paths {
         };
         /** Reconciliation */
         get: operations["reconciliation_reconciliation__accession__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/research": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Research Dashboard */
+        get: operations["research_dashboard_research_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1591,6 +1625,118 @@ export interface components {
              */
             unit: "USD" | "USD/shares" | "x" | "percent";
         };
+        /** ResearchDashboard */
+        ResearchDashboard: {
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /**
+             * Label
+             * @constant
+             */
+            label: "Model output, not fact";
+            /** Rows */
+            rows: components["schemas"]["ResearchSummaryRow"][];
+        };
+        /** ResearchFairValue */
+        ResearchFairValue: {
+            /** Assumptions Version */
+            assumptions_version: number | null;
+            /** Base Per Share */
+            base_per_share: string | null;
+            /** Comparison Detail */
+            comparison_detail: string | null;
+            /** Detail */
+            detail: string | null;
+            /** Implied Upside */
+            implied_upside: string | null;
+            /** Reverse Dcf Growth */
+            reverse_dcf_growth: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ok" | "unavailable" | "not_meaningful";
+        };
+        /** ResearchPeriod */
+        ResearchPeriod: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "ttm" | "fiscal_year";
+            /**
+             * Period End
+             * Format: date
+             */
+            period_end: string;
+            /**
+             * Period Start
+             * Format: date
+             */
+            period_start: string;
+        };
+        /** ResearchRecordOut */
+        ResearchRecordOut: {
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Periods */
+            periods: components["schemas"]["ResearchPeriod"][];
+            /** Rows */
+            rows: components["schemas"]["ResearchRow"][];
+            /** Ticker */
+            ticker: string;
+        };
+        /** ResearchRow */
+        ResearchRow: {
+            /** Cells */
+            cells: components["schemas"]["MetricOut"][];
+            /** Metric Id */
+            metric_id: string;
+            /**
+             * Section
+             * @enum {string}
+             */
+            section: "economics" | "quality" | "capital_allocation";
+            /**
+             * Unit
+             * @enum {string}
+             */
+            unit: "USD" | "USD/shares" | "x" | "percent";
+        };
+        /** ResearchSummaryRow */
+        ResearchSummaryRow: {
+            fair_value: components["schemas"]["ResearchFairValue"];
+            /** Name */
+            name: string;
+            period: components["schemas"]["ResearchPeriod"] | null;
+            price: components["schemas"]["PriceOut"];
+            /** Ticker */
+            ticker: string;
+            /** Values */
+            values: components["schemas"]["ResearchValue"][];
+        };
+        /** ResearchValue */
+        ResearchValue: {
+            /** Detail */
+            detail: string | null;
+            /** Metric Id */
+            metric_id: string;
+            /** Reason */
+            reason: ("unavailable" | "not_meaningful") | null;
+            /**
+             * Unit
+             * @enum {string}
+             */
+            unit: "USD" | "USD/shares" | "x" | "percent";
+            /** Value */
+            value: string | null;
+        };
         /** ReverseDcf */
         ReverseDcf: {
             /** Detail */
@@ -2271,6 +2417,40 @@ export interface operations {
             };
         };
     };
+    instrument_research_instruments__ticker__research_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+            };
+            header?: never;
+            path: {
+                ticker: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResearchRecordOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     instrument_valuation_instruments__ticker__valuation_get: {
         parameters: {
             query?: {
@@ -2537,6 +2717,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReconciliationDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    research_dashboard_research_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResearchDashboard"];
                 };
             };
             /** @description Validation Error */

@@ -6,10 +6,12 @@ the price is the last daily raw close known then (domain/valuation.py decides wh
 valuation may use it).
 """
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
+from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from typing import Annotated, Literal
+from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import AwareDatetime, BaseModel
@@ -19,10 +21,24 @@ from sqlalchemy.orm import Session
 
 from autotrading.api.data_health import SessionDep
 from autotrading.api.instruments import FactView, FilingRef, issuer_chain, open_sec
-from autotrading.db.models import Filing, FinancialFact, Identifier, Instrument, SplitEvent
+from autotrading.db.models import (
+    Filing,
+    FinancialFact,
+    Identifier,
+    Instrument,
+    PriceBar,
+    SplitEvent,
+)
 from autotrading.domain.fundamentals import merge_by_precedence
 from autotrading.domain.splits import Split
-from autotrading.domain.valuation import Close, Input, PriceInput, select_price, valuation
+from autotrading.domain.valuation import (
+    Close,
+    Input,
+    PriceInput,
+    Valued,
+    select_price,
+    valuation,
+)
 from autotrading.repositories.facts import as_of_query
 from autotrading.repositories.prices import daily_bars
 
@@ -157,6 +173,75 @@ def price_out(price: PriceInput, urls: dict[date, str]) -> PriceOut:
     )
 
 
+@dataclass(frozen=True)
+class MarketView:
+    """What a valuation of one equity may use at T: the facts, splits and closes known then,
+    and the valuation price chosen from the closes of the last PRICE_LOOKBACK."""
+
+    facts: list[FactView]
+    dated_splits: list[tuple[datetime, Split]]  # (published_at, split), published by T
+    bars: list[PriceBar]  # raw daily bars as known at T, oldest first
+    price: PriceInput
+
+    @property
+    def splits(self) -> list[Split]:
+        return [split for _, split in self.dated_splits]
+
+    @property
+    def closes(self) -> list[Close]:
+        return [Close(b.bar_date, b.close, b.feed_status, b.published_at) for b in self.bars]
+
+    def price_out(self) -> PriceOut:
+        return price_out(self.price, {b.bar_date: b.source_url for b in self.bars})
+
+
+def market_view(
+    session: Session,
+    instrument: Instrument,
+    chain: Sequence[UUID],
+    at: datetime,
+    metrics: Sequence[str],
+    *,
+    bars_since: datetime | None = None,
+) -> MarketView:
+    """Facts of `metrics` from the issuer chain, splits and raw daily bars known at `at`.
+    Bars from `bars_since` (default: PRICE_LOOKBACK before `at`) for histories; the price
+    always comes from the last PRICE_LOOKBACK."""
+    rows = session.scalars(
+        as_of_query(FinancialFact, known_at=at).where(
+            FinancialFact.entity_id.in_(chain),
+            FinancialFact.metric_id.in_(metrics),
+        )
+    ).all()
+    dated_splits = [
+        (s.published_at, Split(s.ex_date, s.old_rate, s.new_rate))
+        for s in session.scalars(
+            select(SplitEvent).where(
+                SplitEvent.instrument_id == instrument.id, SplitEvent.published_at <= at
+            )
+        )
+    ]
+    recent = at - PRICE_LOOKBACK
+    bars = daily_bars(
+        session, instrument.id, "raw", since=bars_since or recent, until=at, known_at=at
+    )
+    price = select_price(
+        [
+            Close(b.bar_date, b.close, b.feed_status, b.published_at)
+            for b in bars
+            if b.bar_time >= recent
+        ],
+        at,
+    )
+    return MarketView(
+        [FactView(f) for f in merge_by_precedence(rows, chain)], dated_splits, bars, price
+    )
+
+
+def known_at_or_now(session: Session, known_at: datetime | None) -> datetime:
+    return known_at or session.execute(select(func.now())).scalar_one()
+
+
 @router.get("/instruments/{ticker}/valuation")
 def instrument_valuation(
     ticker: str,
@@ -167,44 +252,30 @@ def instrument_valuation(
 ) -> Valuation:
     instrument = universe_equity(session, ticker)
     assert instrument.entity_id is not None
-    at: datetime = known_at or session.execute(select(func.now())).scalar_one()
+    at = known_at_or_now(session, known_at)
     chain = issuer_chain(session, instrument.entity_id)
-    rows = session.scalars(
-        as_of_query(FinancialFact, known_at=at).where(
-            FinancialFact.entity_id.in_(chain.order),
-            FinancialFact.metric_id.in_(VALUATION_METRICS),
-        )
-    ).all()
-    facts = [FactView(f) for f in merge_by_precedence(rows, chain.order)]
-    splits = [
-        Split(s.ex_date, s.old_rate, s.new_rate)
-        for s in session.scalars(
-            select(SplitEvent).where(
-                SplitEvent.instrument_id == instrument.id, SplitEvent.published_at <= at
-            )
-        )
-    ]
-    bars = daily_bars(
-        session, instrument.id, "raw", since=at - PRICE_LOOKBACK, until=at, known_at=at
-    )
-    price = select_price(
-        [Close(b.bar_date, b.close, b.feed_status, b.published_at) for b in bars], at
-    )
-    results = valuation(facts, price, splits)
-    forms = filing_forms(session, (f for v in results for i in v.inputs for f in i.sources))
+    view = market_view(session, instrument, chain.order, at, VALUATION_METRICS)
+    results = valuation(view.facts, view.price, view.splits)
     return Valuation(
         ticker=ticker.upper(),
         known_at=at,
-        price=price_out(price, {bar.bar_date: bar.source_url for bar in bars}),
-        metrics=[
-            MetricOut(
-                metric_id=v.metric_id,
-                unit=v.unit,
-                value=v.value,
-                reason=v.reason,
-                detail=v.detail,
-                inputs=[input_out(i, forms) for i in v.inputs],
-            )
-            for v in results
-        ],
+        price=view.price_out(),
+        metrics=metrics_out(session, results),
     )
+
+
+def metric_out(value: Valued[FactView], forms: dict[str, str]) -> MetricOut:
+    return MetricOut(
+        metric_id=value.metric_id,
+        unit=value.unit,
+        value=value.value,
+        reason=value.reason,
+        detail=value.detail,
+        inputs=[input_out(i, forms) for i in value.inputs],
+    )
+
+
+def metrics_out(session: Session, results: Sequence[Valued[FactView]]) -> list[MetricOut]:
+    """Values with their inputs and the filings behind them (one query for the forms)."""
+    forms = filing_forms(session, (f for v in results for i in v.inputs for f in i.sources))
+    return [metric_out(v, forms) for v in results]

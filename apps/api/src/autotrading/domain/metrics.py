@@ -140,6 +140,26 @@ METRICS: tuple[MetricDefinition, ...] = (
             "margin_of_safety": "fair_value.fair_value",
             "reverse_dcf_growth": "fair_value.reverse_growth",
             "multiple_percentile": "fair_value.relative",
+            # M1.3b (ADR-024): the Research Record, from facts known at T.
+            **{
+                term_id: "research.research_record"
+                for term_id in (
+                    "revenue_growth",
+                    "gross_margin",
+                    "operating_margin",
+                    "net_margin",
+                    "effective_tax_rate",
+                    "nopat",
+                    "invested_capital",
+                    "roic",
+                    "roe",
+                    "fcf_conversion",
+                    "net_debt_to_ebitda",
+                    "cash_returned",
+                    "cash_returned_to_fcf",
+                    "diluted_shares_change",
+                )
+            },
         }.items()
     ),
     MetricDefinition(

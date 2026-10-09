@@ -10,12 +10,27 @@ function term(id: string): CompleteTermId | null {
 /** An input's own unit: the price and EPS per share, share counts in shares, the rest USD. */
 function inputUnit(name: string): string {
   if (name === "price" || name.startsWith("eps_")) return "USD/shares";
-  if (name.startsWith("shares_")) return "shares";
+  if (name.startsWith("shares_") || name === "diluted_shares") return "shares";
   return "USD";
+}
+
+/** The glossary term explaining an input: its own, the reported metric of a TTM sum, or the
+ * term of the value it feeds. */
+function inputTerm(name: string, fallback: CompleteTermId): CompleteTermId {
+  if (name === "price") return "valuation_price";
+  if (name === "ebitda") return "ebitda_ttm";
+  return term(name) ?? (name.endsWith("_ttm") ? term(name.slice(0, -4)) : null) ?? fallback;
 }
 
 function InputLabel({ name }: { name: string }) {
   if (name === "price") return <Metric termId="valuation_price" icon={false} />;
+  if (name === "ebitda") {
+    return (
+      <Metric termId="ebitda_ttm" icon={false}>
+        EBITDA, fiscal year
+      </Metric>
+    );
+  }
   const own = term(name);
   if (own) return <Metric termId={own} icon={false} />;
   const base = name.endsWith("_ttm") ? term(name.slice(0, -4)) : null;
@@ -29,15 +44,23 @@ function InputLabel({ name }: { name: string }) {
   return <span>{name}</span>;
 }
 
-/** One input of a value: its amount and period, how it was built, and the filings behind it. */
-export function ValuationInputItem({ input }: { input: ValuationInput }) {
+/** One input of a value: its amount and period, how it was built, and the filings behind it.
+ * `fallback` explains an input without a term of its own (the value it feeds). */
+export function ValuationInputItem({
+  input,
+  fallback = "valuation_price",
+}: {
+  input: ValuationInput;
+  fallback?: CompleteTermId;
+}) {
   const unit = inputUnit(input.name);
+  const termId = inputTerm(input.name, fallback);
   return (
     <li className="space-y-0.5">
       <span className="flex flex-wrap gap-x-2">
         <InputLabel name={input.name} />
         {input.value !== null ? (
-          <Metric termId={term(input.name) ?? "valuation_price"} icon={false}>
+          <Metric termId={termId} icon={false}>
             <span className="tabular-nums" title={exactReported(input.value, unit)}>
               {formatReported(input.value, unit)}
             </span>{" "}
@@ -49,26 +72,29 @@ export function ValuationInputItem({ input }: { input: ValuationInput }) {
       </span>
       {input.note ? (
         <span className="block text-neutral-500">
-          <Metric termId={term(input.name) ?? "valuation_price"} icon={false}>
+          <Metric termId={termId} icon={false}>
             {input.note}
           </Metric>
         </span>
       ) : null}
       {input.sources.length > 0 ? (
         <span className="flex flex-wrap gap-x-2">
-          {input.sources.map((source) => (
-            <a
-              key={`${source.metric_id}-${source.period_end}-${source.filing.accession}`}
-              href={source.filing.url}
-              target="_blank"
-              rel="noreferrer"
-              data-identifier=""
-              className="whitespace-nowrap underline-offset-2 hover:underline"
-            >
-              {source.filing.form ? `${source.filing.form} ` : ""}
-              {source.filing.accession}
-            </a>
-          ))}
+          {/* One link per filing: several facts often come from the same one. */}
+          {input.sources
+            .filter((source, i, all) => all.findIndex((s) => s.filing.accession === source.filing.accession) === i)
+            .map((source) => (
+              <a
+                key={source.filing.accession}
+                href={source.filing.url}
+                target="_blank"
+                rel="noreferrer"
+                data-identifier=""
+                className="whitespace-nowrap underline-offset-2 hover:underline"
+              >
+                {source.filing.form ? `${source.filing.form} ` : ""}
+                {source.filing.accession}
+              </a>
+            ))}
         </span>
       ) : null}
     </li>

@@ -53,17 +53,22 @@ ANNUAL_COLUMNS = 3
 BALANCE_SHEET_COLUMNS = 3
 
 
-class PeriodFact(Protocol):
-    @property
-    def entity_id(self) -> UUID: ...
+class MetricPeriod(Protocol):
+    """A value's metric and period: all `annual_periods` and `is_fiscal_year` look at."""
+
     @property
     def metric_id(self) -> str: ...
-    @property
-    def unit(self) -> str: ...
     @property
     def period_start(self) -> date | None: ...
     @property
     def period_end(self) -> date: ...
+
+
+class PeriodFact(MetricPeriod, Protocol):
+    @property
+    def entity_id(self) -> UUID: ...
+    @property
+    def unit(self) -> str: ...
 
 
 @dataclass(frozen=True, order=True)
@@ -89,13 +94,13 @@ def merge_by_precedence[FactT: PeriodFact](
     return list(best.values())
 
 
-def is_fiscal_year(fact: PeriodFact) -> bool:
+def is_fiscal_year(fact: MetricPeriod) -> bool:
     return fact.period_start is not None and (
         (fact.period_end - fact.period_start).days in FISCAL_YEAR_DAYS
     )
 
 
-def annual_periods(facts: Iterable[PeriodFact], count: int = ANNUAL_COLUMNS) -> list[Period]:
+def annual_periods(facts: Iterable[MetricPeriod], count: int = ANNUAL_COLUMNS) -> list[Period]:
     """The latest `count` fiscal years, newest first. If two year-long periods end on the same
     day (e.g. a restated start date), the one more metrics use wins."""
     starts: dict[date, Counter[date]] = defaultdict(Counter)

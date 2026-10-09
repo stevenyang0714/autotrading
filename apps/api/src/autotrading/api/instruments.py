@@ -217,17 +217,24 @@ class Fundamentals(BaseModel):
 # ---------- endpoints ----------
 
 
+def universe_equities(session: Session) -> list[tuple[str, Instrument, Entity]]:
+    """(ticker, instrument, issuer) of every equity with an open SEC ticker, by ticker."""
+    return [
+        (ticker, instrument, entity)
+        for ticker, instrument, entity in session.execute(
+            select(Identifier.id_value, Instrument, Entity)
+            .join(Instrument, Instrument.id == Identifier.instrument_id)
+            .join(Entity, Entity.id == Instrument.entity_id)
+            .where(open_sec("ticker"))
+            .order_by(Identifier.id_value)
+        ).all()
+    ]
+
+
 @router.get("/instruments")
 def list_instruments(session: SessionDep) -> InstrumentList:
-    rows = session.execute(
-        select(Identifier.id_value, Instrument, Entity)
-        .join(Instrument, Instrument.id == Identifier.instrument_id)
-        .join(Entity, Entity.id == Instrument.entity_id)
-        .where(open_sec("ticker"))
-        .order_by(Identifier.id_value)
-    ).all()
     summaries = []
-    for ticker, instrument, entity in rows:
+    for ticker, instrument, entity in universe_equities(session):
         chain = issuer_chain(session, entity.id)
         summaries.append(
             InstrumentSummary(

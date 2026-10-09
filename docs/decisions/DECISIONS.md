@@ -509,6 +509,41 @@ M1.3a. Code: `domain/fair_value.py`, `api/fair_value.py`, migration 0014. Model 
   - History starts when the inputs do (Alphabet's EPS from 2019, Apple's FCF from 2018).
   - The default is not a recommendation.
 
+## ADR-024 Research Record and the Fundamental Research dashboard — Accepted (2026-10-09, approved by Steven with the M1.3b plan)
+M1.3b. Code: `domain/research.py`, `api/research.py`; web `/dashboards/fundamental-research` and the instrument page's Research Record. The spec (02 §3, §21) names the modules but gives no formulas; these are ours.
+- **Decisions (Steven, 2026-10-09):**
+  - R1 Form: one sortable table of every universe equity (the dashboard); each company opens its Research Record on the instrument page (TTM + five fiscal years, every value with its inputs and filings).
+  - R2 ROIC = NOPAT / average(stockholders' equity + total debt − cash); NOPAT = operating income × (1 − income tax / pretax income).
+  - R3 Capital allocation: where free cash flow went (buybacks, dividends, SBC, cash returned / FCF) and the change in diluted shares. Dividends of a period with no dividend figure at all count as 0 and are named, as D4 does for short-term debt. Buyback intensity, net share reduction and funding are M1.4.
+  - R4 Dashboard valuation: P/E, EV/EBITDA, FCF yield and the DCF (base, implied upside, reverse growth) with each company's latest assumption version saved by T; no month-end history (that stays on the instrument page).
+- **Periods:** the last five fiscal years and the last four quarters (TTM) when they end after the last fiscal year. Opening balances are those of the day before a period starts (the prior fiscal year end; for TTM the quarter end a year earlier, always a reported balance date). Averages are (opening + closing) / 2. Every TTM input must cover the same four quarters.
+- **Formulas:**
+  | Value | Formula | Not meaningful when |
+  |---|---|---|
+  | Revenue growth | revenue / revenue a year earlier − 1 | earlier revenue ≤ 0 |
+  | Gross, operating, net margin | each / revenue | revenue ≤ 0 |
+  | Effective tax rate | income tax / pretax income (a benefit is kept as reported and noted) | pretax ≤ 0 |
+  | ROIC | NOPAT / average invested capital | pretax ≤ 0, or either invested capital ≤ 0 |
+  | ROE | net income / average equity | either equity ≤ 0 |
+  | FCF conversion | (OCF − capex) / net income | net income ≤ 0 |
+  | Net debt / EBITDA | net debt at the period end / (operating income + D&A) | EBITDA ≤ 0 (net cash gives a negative ratio) |
+  | Cash returned; / FCF | buybacks + dividends; ÷ FCF | FCF ≤ 0 |
+  | Diluted share change | diluted shares / a year earlier − 1, both on T's split basis (TTM: latest quarter against the same quarter a year earlier) | — |
+- **Missing data (ADR-013):** a missing input leaves the value unavailable with the input named; a missing derived input is explained by its missing part ("not reported: capex", not "free cash flow"). Some dividend figures without the whole period make dividends unavailable, never 0.
+- **Dashboard rows** use each company's latest period, so dates differ (shown per row). Sorting is server-side (`?sort=&dir=`); rows without a value sort last.
+- **Shared code:** `market_view()` (facts, splits, closes and valuation price at T) and `dcf_snapshot()` now serve `/valuation`, `/fair-value` and `/research`; their outputs did not change (recorded fixtures identical apart from timestamps).
+- **Live check 2026-10-09:**
+  - AAPL record 0.15 s; dashboard for ten equities 0.94 s.
+  - Apple FY2025: gross margin 46.91%, operating margin 31.97%, ROIC 83.14%, ROE 171.42%, FCF conversion 88.18%, net debt / EBITDA 0.43x, cash returned $106.1B = 107.46% of FCF, diluted shares −2.62%.
+  - Highest TTM ROIC: NVIDIA 98.5%, Apple 90.3%. AutoZone, O'Reilly and Lowe's: ROE n/m (negative equity), ROIC 54–61%, 34%.
+- **Known gaps:**
+  - Cash excludes marketable securities, so Apple's and Alphabet's net debt and invested capital are higher than with all investments netted.
+  - JPMorgan lacks operating income, capex and total debt, so most quality measures are unavailable.
+  - Microsoft and Alphabet report no D&A, so net debt / EBITDA is unavailable (V3).
+  - ExxonMobil reports no diluted shares after 2013 (concept mapping is M1.4).
+  - Alphabet's Q2 2026 10-Q has no dividend figure, so its TTM dividends are unavailable.
+  - Saved views, export and watchlist filters (02 §21) come later.
+
 ---
 
 ## Open decisions (owner: Steven)

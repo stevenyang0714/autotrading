@@ -93,11 +93,9 @@ Plan approved 2026-10-07 with decisions V1–V3 (ADR-022).
 - [x] No multiple is computed from an intraday, fixture, demo or stale price (test). (Unit and integration tests; e2e in CI, where closes are fixtures.)
 
 ## M1.3 Valuation models and the Research Record
-Plan approved 2026-10-07 with decisions F1–F4 (ADR-023). The milestone has two PRs:
-- **M1.3a, fair value: done (PR pending).** DCF, reverse DCF, relative valuation, assumption versions, and the instrument page's Fair value block.
-- **M1.3b, Fundamental Research dashboard:** next, with its own plan.
-
-The acceptance boxes are ticked when M1.3b is done.
+Plans approved 2026-10-07 (F1–F4, ADR-023) and 2026-10-09 (R1–R4, ADR-024). Two PRs:
+- **M1.3a, fair value (#18, merged):** DCF, reverse DCF, relative valuation, assumption versions, and the instrument page's Fair value block.
+- **M1.3b, Research Record and Fundamental Research dashboard:** quality, economics and capital allocation per period; the first live dashboard.
 
 **Build**
 - **DCF,** FCF-based. Inputs:
@@ -116,9 +114,16 @@ The acceptance boxes are ticked when M1.3b is done.
 - **Fundamental Research dashboard** (the Research Record per company): economics, quality, valuation, capital allocation.
 
 **Acceptance**
-- [ ] Every fair value shows method, assumptions, scenario range, current price, implied upside/downside, margin of safety, model date and source as-of. (Met in M1.3a: API contract and the Fair value block; integration test over Apple.)
-- [ ] Re-running a valuation as known on a past date with the same assumption version reproduces the same output. (Met in M1.3a: identical after a later restatement and a later version; integration test.)
-- [ ] Changing an assumption creates a new version; the earlier output stays reproducible. (Met in M1.3a: POST creates v2 and v1 is unchanged; audited; e2e saves a version and switches back.)
+- [x] Every fair value shows method, assumptions, scenario range, current price, implied upside/downside, margin of safety, model date and source as-of. (M1.3a: API contract and the Fair value block; integration test over Apple.)
+- [x] Re-running a valuation as known on a past date with the same assumption version reproduces the same output. (M1.3a: identical after a later restatement and a later version; integration test.)
+- [x] Changing an assumption creates a new version; the earlier output stays reproducible. (M1.3a: POST creates v2 and v1 is unchanged; audited; e2e saves a version and switches back in CI.)
+
+Added for M1.3b (the spec has no dashboard criteria):
+- [x] The dashboard lists every universe equity with economics, quality, capital allocation and valuation as known on the chosen date; each row opens that company's Research Record. (Integration: 3 rows in the test database, values equal to /valuation and /fair-value; e2e: sort by ROIC, open AAPL's record.)
+- [x] Every Research Record value shows its inputs, their periods and the filings behind them; a missing input is named; a non-positive denominator is n/m with the reason; nothing is approximated. (Apple FY2025 recomputed from the 10-K's facts; XOM and META gaps named; unit tests for every n/m rule.)
+- [x] On a past date, only filings, closes and assumption versions public or saved by then are used. (Apple as known 2026-04-15: every source accepted by then; the latest period is Q1 FY2026.)
+- [x] The DCF columns are labelled "model output, not fact" and equal the Fair value block for the same date and version. (Integration test.)
+- [x] The dashboard responds in ≤ 3 s for ten equities. (Live 2026-10-09: 0.94 s.)
 
 ## M1.4 Buyback engine
 **Build**

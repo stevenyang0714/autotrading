@@ -117,6 +117,8 @@ for (const path of [
   "/system/reconciliation/0000320193-25-000079",
   "/instruments/META",
   "/system/progress",
+  "/dashboards/fundamental-research",
+  "/dashboards/fundamental-research?sort=roic&dir=desc",
 ]) {
   test(`numbers on ${path} are all explained`, async ({ page }) => {
     await page.goto(path);
@@ -264,6 +266,36 @@ test("Saving assumptions adds a version; switching back reproduces the result (M
   await block.getByRole("button", { name: "Use" }).click();
   await expect(block.locator("[data-assumptions]")).toHaveAttribute("data-assumptions", before);
   await expect(block.locator('[data-scenario="base"] .text-xl')).toHaveText(baseBefore ?? "");
+});
+
+test("Fundamental Research sorts companies and opens a Research Record (M1.3b)", async ({ page }) => {
+  await page.goto("/dashboards/fundamental-research");
+  const rows = page.locator("tbody tr[data-ticker]");
+  expect(await rows.count()).toBeGreaterThanOrEqual(3);
+  await expect(page.locator('[data-group="model"]')).toContainText("model output, not fact");
+
+  // Both pages compute every company or the whole record on load: allow for a busy stack.
+  await page.getByRole("link", { name: "Sort by ROIC" }).click();
+  await expect(page).toHaveURL(/sort=roic&dir=desc/, { timeout: 15_000 });
+  const roic = await page.locator('tbody td[data-column="roic"]').allTextContents();
+  const values = roic.filter((text) => text.endsWith("%")).map((text) => Number(text.slice(0, -1)));
+  expect(values.length).toBeGreaterThan(0);
+  expect(values).toEqual([...values].sort((a, b) => b - a));
+  expect(roic.slice(0, values.length).every((text) => text.endsWith("%"))).toBe(true); // n/m, n/a last
+
+  await page.locator('tr[data-ticker="AAPL"]').getByRole("link", { name: "AAPL" }).click();
+  await expect(page).toHaveURL(/\/instruments\/AAPL#research-record$/, { timeout: 15_000 });
+  await expect(page.getByRole("table", { name: "Research Record" })).toBeVisible();
+});
+
+test("Research Record shows a value's inputs and the 10-K behind it (M1.3b)", async ({ page }) => {
+  await page.goto("/instruments/AAPL");
+  const record = page.getByRole("table", { name: "Research Record" });
+  await expect(record.locator("thead th[data-period]")).toHaveCount(6);
+  const fy2025 = record.locator('tr[data-row="roic"] td').nth(1);
+  await expect(fy2025).toContainText(/\d+\.\d{2}%/);
+  await fy2025.getByText("inputs").click();
+  await expect(fy2025.getByRole("link", { name: "10-K 0000320193-25-000079" }).first()).toBeVisible();
 });
 
 test("Reconciliation lists Apple's 10-K as pass and opens its items (M1.1)", async ({ page }) => {

@@ -14,6 +14,10 @@ import reconciliationAaplTenK from "../../tests/fixtures/api/reconciliation-aapl
 import reconciliationList from "../../tests/fixtures/api/reconciliation.json";
 import valuationAapl from "../../tests/fixtures/api/valuation-aapl.json";
 import assumptionsAapl from "../../tests/fixtures/api/assumptions-aapl.json";
+import researchAapl from "../../tests/fixtures/api/research-aapl.json";
+import researchDashboardStale from "../../tests/fixtures/api/research-dashboard-stale.json";
+import researchDashboard from "../../tests/fixtures/api/research-dashboard.json";
+import researchXom from "../../tests/fixtures/api/research-xom.json";
 import fairValueAaplStale from "../../tests/fixtures/api/fair-value-aapl-stale.json";
 import fairValueAaplV1 from "../../tests/fixtures/api/fair-value-aapl-v1.json";
 import fairValueAapl from "../../tests/fixtures/api/fair-value-aapl.json";
@@ -56,6 +60,8 @@ import type {
   Progress,
   ReconciliationDetail,
   ReconciliationList,
+  ResearchDashboard,
+  ResearchRecord,
   SeriesObservations,
   SourceHealth,
   Valuation,
@@ -94,6 +100,19 @@ export const recordedFairValue = {
 };
 
 export const recordedAssumptions = assumptionsAapl.response as AssumptionList;
+
+/** Research Record and dashboard as known on 2026-10-06 (M1.3b): AAPL, XOM (no operating
+ * income, SBC or recent diluted shares), and the dashboard then and after the closes went
+ * stale. */
+export const recordedResearch = {
+  aapl: researchAapl.response as ResearchRecord,
+  xom: researchXom.response as ResearchRecord,
+};
+
+export const recordedResearchDashboard = {
+  current: researchDashboard.response as ResearchDashboard,
+  stale: researchDashboardStale.response as ResearchDashboard,
+};
 
 /** Each issuer's latest 10-K and 10-Q reconciled (M1.1), and Apple's 10-K items. */
 export const recordedReconciliation = {
