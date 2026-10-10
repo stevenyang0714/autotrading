@@ -14,6 +14,8 @@ import reconciliationAaplTenK from "../../tests/fixtures/api/reconciliation-aapl
 import reconciliationList from "../../tests/fixtures/api/reconciliation.json";
 import valuationAapl from "../../tests/fixtures/api/valuation-aapl.json";
 import assumptionsAapl from "../../tests/fixtures/api/assumptions-aapl.json";
+import buybacksAapl from "../../tests/fixtures/api/buybacks-aapl.json";
+import buybacksXom from "../../tests/fixtures/api/buybacks-xom.json";
 import researchAapl from "../../tests/fixtures/api/research-aapl.json";
 import researchDashboardStale from "../../tests/fixtures/api/research-dashboard-stale.json";
 import researchDashboard from "../../tests/fixtures/api/research-dashboard.json";
@@ -45,6 +47,7 @@ import progress from "../../tests/fixtures/api/progress.json";
 import type {
   AssumptionList,
   AuditLogPage,
+  Buybacks,
   DataHealthData,
   DataHealthReport,
   DeadLetter,
@@ -167,4 +170,11 @@ export const recordedAudit = {
   all: auditLog.response as AuditLogPage,
   sourceUpdates: auditSourceUpdates.response as AuditLogPage,
   deletes: auditDeletes.response as AuditLogPage,
+};
+
+/** Buybacks as known on 2026-10-06 (M1.4a): Apple (two recorded 8-K authorizations, the 2021
+ * XBRL tag) and ExxonMobil (a yearly plan, no XBRL authorization). */
+export const recordedBuybacks = {
+  aapl: buybacksAapl.response as Buybacks,
+  xom: buybacksXom.response as Buybacks,
 };

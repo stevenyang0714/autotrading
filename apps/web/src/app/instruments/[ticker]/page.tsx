@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { saveAssumptionsAction } from "@/app/instruments/[ticker]/actions";
+import { BuybacksView } from "@/components/instruments/BuybacksView";
 import { FairValueView } from "@/components/instruments/FairValueView";
 import { FundamentalsView } from "@/components/instruments/FundamentalsView";
 import { ResearchRecordView } from "@/components/instruments/ResearchRecordView";
@@ -11,6 +12,7 @@ import { InstrumentPricePanel } from "@/components/prices/InstrumentPricePanel";
 import { ValuationView } from "@/components/instruments/ValuationView";
 import {
   loadAssumptions,
+  loadBuybacks,
   loadFairValue,
   loadFundamentals,
   loadInstrumentPrices,
@@ -45,14 +47,25 @@ export default async function InstrumentPage({
       : undefined;
 
   const newsQuery = { ticker: ticker.toUpperCase(), knownAt: knownAt ?? undefined, limit: 6 };
-  const [result, prices, valuation, fairValue, assumptions, research, announcements, coverage, sources] =
-    await Promise.all([
+  const [
+    result,
+    prices,
+    valuation,
+    fairValue,
+    assumptions,
+    research,
+    buybacks,
+    announcements,
+    coverage,
+    sources,
+  ] = await Promise.all([
       loadFundamentals(ticker, knownAt ?? undefined),
       loadInstrumentPrices(ticker, knownAt ?? undefined),
       loadValuation(ticker, knownAt ?? undefined),
       loadFairValue(ticker, knownAt ?? undefined, version),
       loadAssumptions(ticker),
       loadResearch(ticker, knownAt ?? undefined),
+      loadBuybacks(ticker, knownAt ?? undefined),
       loadNews({ ...newsQuery, kinds: ["press_release"] }),
       loadNews({ ...newsQuery, kinds: ["article", "official"] }),
       loadSourceHealth(),
@@ -100,6 +113,7 @@ export default async function InstrumentPage({
           />
         }
         research={research.status === "not_found" ? undefined : <ResearchRecordView result={research} />}
+        buybacks={buybacks.status === "not_found" ? undefined : <BuybacksView result={buybacks} />}
         news={
           <InstrumentNews ticker={ticker.toUpperCase()} announcements={announcements} coverage={coverage} />
         }

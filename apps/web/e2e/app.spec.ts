@@ -298,6 +298,22 @@ test("Research Record shows a value's inputs and the 10-K behind it (M1.3b)", as
   await expect(fy2025.getByRole("link", { name: "10-K 0000320193-25-000079" }).first()).toBeVisible();
 });
 
+test("AAPL buybacks keep authorization, repurchase and net share reduction apart (M1.4a)", async ({
+  page,
+}) => {
+  await page.goto("/instruments/AAPL");
+  const section = page.locator("#buybacks");
+  for (const block of ["authorization", "repurchase", "net-share-reduction"]) {
+    await expect(section.locator(`[data-block="${block}"]`)).toBeVisible();
+  }
+  const latest = section.getByRole("list", { name: "Announcements" }).locator("li[data-event-kind]").first();
+  await expect(latest).toContainText(/Authorization increase \$\d+ billion/);
+  await expect(latest.locator("q[data-quoted]").first()).toContainText(/authorized/);
+  await expect(latest.getByRole("link").first()).toHaveAttribute("href", /^https:\/\/www\.sec\.gov\//);
+  await expect(section.getByRole("table", { name: "Actual repurchase" }).locator('tr[data-row="share_repurchases"]')).toContainText(/\$\d+\.\d{3}B/);
+  await expect(section.getByRole("table", { name: "Net share reduction" }).locator('tr[data-row="net_share_reduction"]')).toContainText(/shares/);
+});
+
 test("Reconciliation lists Apple's 10-K as pass and opens its items (M1.1)", async ({ page }) => {
   await page.goto("/system/reconciliation");
   const apple = page.locator("[data-filing]:visible", { hasText: "0000320193-25-000079" });
