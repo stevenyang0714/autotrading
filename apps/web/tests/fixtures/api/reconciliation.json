@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-06T16:40:01.974539+00:00",
+  "recorded_at": "2026-10-10T04:53:21.177471+00:00",
   "recorded_from": "recorded SEC fixtures replayed into the integration test database (tests/integration/test_instruments.py)",
   "endpoint": "/reconciliation",
   "params": {},
@@ -15,8 +15,8 @@
         "filing_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
         "instance_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/aapl-20250927_htm.xml",
         "status": "pass",
-        "checked": 58,
-        "matched": 58,
+        "checked": 64,
+        "matched": 64,
         "mismatched": 0,
         "missing": 0,
         "extra": 0,
@@ -24,7 +24,7 @@
         "checks_failed": 0,
         "checks_flagged": 0,
         "methodology_version": "0.1.1",
-        "recorded_at": "2026-10-06T16:39:37.296283Z"
+        "recorded_at": "2026-10-10T04:53:01.899360Z"
       },
       {
         "ticker": "AAPL",
@@ -35,8 +35,8 @@
         "filing_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/0000320193-26-000020-index.htm",
         "instance_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/aapl-20260627_htm.xml",
         "status": "pass",
-        "checked": 64,
-        "matched": 64,
+        "checked": 72,
+        "matched": 72,
         "mismatched": 0,
         "missing": 0,
         "extra": 0,
@@ -44,7 +44,7 @@
         "checks_failed": 0,
         "checks_flagged": 0,
         "methodology_version": "0.1.1",
-        "recorded_at": "2026-10-06T16:39:37.296283Z"
+        "recorded_at": "2026-10-10T04:53:01.899360Z"
       },
       {
         "ticker": "META",
@@ -55,8 +55,8 @@
         "filing_url": "https://www.sec.gov/Archives/edgar/data/1326801/000162828026003942/0001628280-26-003942-index.htm",
         "instance_url": "https://www.sec.gov/Archives/edgar/data/1326801/000162828026003942/meta-20251231_htm.xml",
         "status": "pass",
-        "checked": 64,
-        "matched": 62,
+        "checked": 70,
+        "matched": 68,
         "mismatched": 0,
         "missing": 0,
         "extra": 0,
@@ -64,7 +64,7 @@
         "checks_failed": 0,
         "checks_flagged": 0,
         "methodology_version": "0.1.1",
-        "recorded_at": "2026-10-06T16:39:37.630023Z"
+        "recorded_at": "2026-10-10T04:53:02.235438Z"
       },
       {
         "ticker": "META",
@@ -75,8 +75,8 @@
         "filing_url": "https://www.sec.gov/Archives/edgar/data/1326801/000162828026050705/0001628280-26-050705-index.htm",
         "instance_url": "https://www.sec.gov/Archives/edgar/data/1326801/000162828026050705/meta-20260630_htm.xml",
         "status": "pass",
-        "checked": 62,
-        "matched": 62,
+        "checked": 70,
+        "matched": 70,
         "mismatched": 0,
         "missing": 0,
         "extra": 0,
@@ -84,7 +84,7 @@
         "checks_failed": 0,
         "checks_flagged": 0,
         "methodology_version": "0.1.1",
-        "recorded_at": "2026-10-06T16:39:37.630023Z"
+        "recorded_at": "2026-10-10T04:53:02.235438Z"
       }
     ]
   }

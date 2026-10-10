@@ -73,6 +73,7 @@ export const DASHBOARDS: readonly DashboardDef[] = [
     purpose: "Buybacks, dividends, M&A, equity issuance, convertibles and insider activity.",
     plannedPhase: 1,
     group: "dashboards",
+    live: true,
   },
   {
     id: "event_transmission",
