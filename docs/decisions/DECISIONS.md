@@ -545,7 +545,7 @@ M1.3b. Code: `domain/research.py`, `api/research.py`; web `/dashboards/fundament
   - Saved views, export and watchlist filters (02 §21) come later.
 
 ## ADR-025 Buyback engine — Accepted (2026-10-10, approved by Steven with the M1.4 plan)
-M1.4. Two PRs: M1.4a (data: announcements, buyback record, the instrument page's Buybacks section) and M1.4b (states, score, daily evaluation, Corporate Actions dashboard). This entry records the decisions and M1.4a; M1.4b completes it.
+M1.4. Two PRs: M1.4a (data: announcements, buyback record, the instrument page's Buybacks section; #20) and M1.4b (states, score, daily evaluation, Corporate Actions dashboard).
 - **Decisions (Steven, 2026-10-10):**
   - B1 Announcement sources: 8-K documents and EX-99 exhibits, issuer press releases (title and snippet), and XBRL authorizations from 10-Q/10-K as corroboration only. Only the matched sentence (at most 300 characters) and its link are kept.
   - B2 8-Ks from 2021-01-01, then every day's new ones.
@@ -557,6 +557,7 @@ M1.4. Two PRs: M1.4a (data: announcements, buyback record, the instrument page's
   - B8 The score is unavailable when any component is missing; components are still shown.
   - B9 "Plans to repurchase $X" counts as an announcement for WATCH.
   - B10 Undervaluation = FCF yield / its 5-year month-end median.
+  - B11 (during M1.4b) A company that tags no weighted diluted share count uses its basic count where the same period's diluted EPS equals its basic EPS (nothing dilutes), labelled, with both EPS facts as sources. Applies to ExxonMobil since 2014 (basic = diluted EPS in all 85 periods since 2019). `eps_basic` and `basic_shares` are mapped; `diluted_shares_change` is 0.2.0.
 - **Technical defaults (M1.4a):**
   - 8-Ks with items 2.02, 7.01 or 8.01 only; at most 50 per run, oldest first.
   - Document types from `{accession}-index-headers.html` (index.json lists names only).
@@ -575,11 +576,35 @@ M1.4. Two PRs: M1.4a (data: announcements, buyback record, the instrument page's
   - 541 8-Ks read; every universe company has authorization events except gaps below.
   - Apple: a $90B, $90B, $90B, $110B, $100B, $100B increase each spring 2021–2026; FY2025 $90.7B repurchased (2.40% of market cap, 91.8% of FCF), 343.5M fewer shares (2.27%).
   - NVIDIA: increases of $25B (2023) to $150B (2026-09-28, press release, $235B remaining).
-- **Known gaps:**
-  - ExxonMobil tags only basic weighted shares after 2013; diluted shares stay unavailable (a fallback to basic shares would be an estimate, ADR-013), so its diluted share change is unavailable.
+- **Known gaps (M1.4a):**
+  - ExxonMobil tags only basic weighted shares after 2013: resolved by B11.
   - Microsoft's September 2024 $60B program was announced without an 8-K; its newsroom feed starts in October 2026.
   - JPMorgan's April 2021 supplement restates its January program in new words and shows as a second event.
   - Issuer press releases exist for five companies only, from October 2026.
+
+### M1.4b: states, score and the Corporate Actions dashboard
+- **Rule file** `config/buyback_rules.yaml`, rule_version 0.1.0 (B3, B4):
+  - the state thresholds of the M1 table, the score's components, weights and 0/100 points;
+  - `make migrate` registers each version in `buyback_rule_sets` (migration 0016, append-only, audited) with the sha256 of its content and refuses changed content under a released version; a unit test pins the hash, so CI catches it too. `status` (active / retired) is not content.
+- **Conditions** (`domain/buyback_states.py`), each pass, fail or unavailable with what is missing; missing never passes. WATCH and the valuation context pass on any condition, the other levels need all:
+  - WATCH: an announcement of kind new / increase / plan within 365 days (B9), or a remaining amount stated in an announcement within 365 days ≥ 2% of market cap at T. Before 2022 a missing announcement is unavailable (8-Ks from 2021-01-01, B2). XBRL-tagged amounts never qualify (B1).
+  - ACTIVE: the latest reported quarter's repurchases (differenced from year-to-date filings) ≥ 0.5% of market cap at the quarter end, the quarter ended ≤ 200 days before T, and a quarter without repurchases fails outright; diluted share change of the latest period ≤ −1%.
+  - HIGH-CONVICTION: TTM repurchases ≤ 1.2 × TTM FCF (with FCF ≤ 0 only without repurchases); net debt change ≤ 10% of |net debt a year earlier| (B7; with 0 a year earlier, only without a rise); and FCF yield ≥ 1.0 × its median over the month ends of the last five years (B10, at least 36 month ends, each as known then) or a margin of safety ≥ 15% to the base DCF with the assumption version saved by T.
+  - TRADE-READY: market confirmation (close above its 50-session average, or a 21-session return above SPY's, split-adjusted end-of-day closes) is computed and shown; the risk check is always unavailable (P1-4). The code refuses the state and the table's CHECK constraint excludes it.
+- **Score** (B3, B8, B10): undervaluation 30 (FCF yield / median, 0.8x→0, 1.2x→100), intensity 20 (TTM repurchases / market cap, 0→4%), FCF quality 15 (FCF / net income, 50→100%), balance sheet 10 (net debt / TTM FCF, 4x→0x; FCF instead of EBITDA because four companies lack D&A or operating income), discipline 10 (share of the last five fiscal years, at least three known, with repurchases ≤ FCF and fewer shares outstanding), net share count 10 (net share reduction %, 0→3%). Weighted mean over 95; unavailable when any component is.
+- **Reproducibility (acceptance 1):**
+  - every read takes the system time S: facts and price bars by recorded/superseded time (ADR-012), splits, 8-K statements, press releases and their mentions by recorded_at, assumption versions saved by min(T, S); the defaults are unchanged (web fixtures identical apart from B11);
+  - `buyback_state_assignments` (append-only) stores per company, T and rule version: S, the extractor version, the state, the score and the whole assessment (each condition's value, threshold, detail, inputs with their filings, the announcement events, the DCF's assumption version, the issuer chain read);
+  - recomputing with the stored T, S, rule version and extractor version gives the same document (integration test after a late 8-K statement, a correction and a later restatement; `make buyback-verify` on live data);
+  - limits: press-release sentences are re-extracted from the stored titles and snippets with the current extractor, and the issuer chain is read as it is now; both are stored, so a difference after an extractor or chain change is visible.
+- **Schedule:** daily at 11:00 SGT after the SEC and FRED refreshes (T = S = now); `make buyback-evaluate`, `make buyback-backfill` (every month end since 2021 with one S, marked backfilled, B6) and `make buyback-verify`. The CI replay stores states now and at month ends since 2025.
+- **API and web:** `GET /buybacks` (the dashboard: per company the latest assignment at or before T, its history and announcements; the active rule set), `GET /buybacks/rules`; `GET /instruments/{ticker}/buybacks` adds the state and its history. The instrument page shows a state card; `/dashboards/corporate-actions` is live (threshold review, levels and reasons, monthly history, timeline).
+- **Live check 2026-10-10** (rule 0.1.0, after an SEC refresh): now: Apple, O'Reilly and ExxonMobil ACTIVE; AutoZone, JPMorgan and NVIDIA WATCH; Alphabet, Lowe's, Meta and Microsoft none. No company is a HIGH-CONVICTION candidate today: Apple's FCF yield is 0.84x its median and its price is above the base DCF; O'Reilly's repurchases are 1.56x FCF; ExxonMobil's net debt rose 12.61%. Backfill: 700 month-end assignments in about four minutes (0.4 s a company); 44 of them HIGH-CONVICTION (ExxonMobil from late 2022 to mid-2024, O'Reilly in 2021–2022, Apple in some months of 2022–2024). 60 recomputed assignments (the latest 20 and a random 40) are identical.
+- **Known gaps (M1.4b):**
+  - AutoZone (since 2019), NVIDIA and JPMorgan tag shares outstanding only at fiscal year ends, so market cap at a quarter end, and with it ACTIVE's quarter test and the intensity component, is unavailable in most quarters (JPMorgan turns ACTIVE only while its latest quarter is the year end). Using the latest dated count, cover page or balance sheet, on or before the quarter end (V2 applied at the quarter end) would close it; it changes the M1.4a intensity definition, so it is left for Steven's decision.
+  - Cash excludes marketable securities (ADR-021), so net debt of net-cash companies is small and its percent change swings (NVIDIA +444%).
+  - Microsoft never reaches WATCH: its programs were not announced in 8-Ks.
+  - Thresholds are defaults (OD-7, P1-9); the threshold review is for Steven to confirm or tune with a new rule version.
 
 ---
 

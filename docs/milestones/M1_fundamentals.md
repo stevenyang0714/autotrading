@@ -126,11 +126,9 @@ Added for M1.3b (the spec has no dashboard criteria):
 - [x] The dashboard responds in ≤ 3 s for ten equities. (Live 2026-10-09: 0.94 s.)
 
 ## M1.4 Buyback engine
-Plan approved 2026-10-10 with decisions B1–B10 (ADR-025). Two PRs:
-- **M1.4a, data: done (PR pending).** Announcements from 8-Ks and press releases, the buyback record (authorization, actual repurchase, net share reduction per period), the instrument page's Buybacks section. Meets the third acceptance box.
-- **M1.4b, states:** rule file, states and score, daily evaluation and backfill, Corporate Actions dashboard and threshold review. Next.
-
-The acceptance boxes are ticked when M1.4b is done.
+Plan approved 2026-10-10 with decisions B1–B10, and B11 during M1.4b (ADR-025). Two PRs:
+- **M1.4a, data (#20, merged).** Announcements from 8-Ks and press releases, the buyback record (authorization, actual repurchase, net share reduction per period), the instrument page's Buybacks section.
+- **M1.4b, states (PR pending).** Rule file 0.1.0, states and score, stored assignments with daily evaluation and month-end backfill, the instrument page's state card, the Corporate Actions dashboard and threshold review.
 
 **Build**
 - **Per company and period:**
@@ -164,9 +162,9 @@ The acceptance boxes are ticked when M1.4b is done.
 - **Corporate Actions dashboard:** each company's buyback timeline and its state history.
 
 **Acceptance**
-- [ ] Each state assignment stores its rule version, inputs, thresholds and evidence; recomputing as known on a past date reproduces it.
-- [ ] A real announcement with no executed repurchase never goes beyond WATCH (test).
-- [ ] Authorization, actual repurchase and net share reduction are shown separately for every universe company.
+- [x] Each state assignment stores its rule version, inputs, thresholds and evidence; recomputing as known on a past date reproduces it. (`buyback_state_assignments` keeps T, the system time, rule and extractor versions and the whole assessment; integration test: every assignment recomputes identically after a late 8-K, a correction and a later restatement; live: 60 of 60 recomputed assignments identical.)
+- [x] A real announcement with no executed repurchase never goes beyond WATCH (test). (NVIDIA's 2026-09-28 release with no repurchase data: WATCH, ACTIVE unavailable "not reported: share repurchases"; Meta's quarter without repurchases fails ACTIVE; unit tests over announcement-only evidence.)
+- [x] Authorization, actual repurchase and net share reduction are shown separately for every universe company. (M1.4a: the Buybacks section's three blocks; integration test over Apple, ExxonMobil and Meta.)
 
 ## M1.5 Earnings events
 **Build**
