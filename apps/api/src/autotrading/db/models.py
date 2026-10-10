@@ -824,6 +824,57 @@ class SplitEvent(ProvenanceMixin, Base):
     )
 
 
+# ---------- buyback announcements (M1.4a) ----------
+
+BUYBACK_STATEMENT_KINDS = ("new", "increase", "plan", "remaining")
+
+
+class FilingBuybackStatement(ProvenanceMixin, Base):
+    """A repurchase authorization, plan or remaining amount stated in an 8-K document (ADR-025
+    B1): the sentence (at most 300 characters, never the document), its amount and kind, read by
+    `sec.eight_k` with one extractor version. Append-only: a trigger rejects UPDATE and DELETE.
+    published_at is the filing's EDGAR acceptance time; source_url the document."""
+
+    __tablename__ = "filing_buyback_statements"
+    __table_args__ = (
+        *provenance_constraints(),
+        CheckConstraint(r"accession_number ~ '^\d{10}-\d{2}-\d{6}$'", name="accession_format"),
+        CheckConstraint(sql_in("kind", BUYBACK_STATEMENT_KINDS), name="kind"),
+        CheckConstraint("amount > 0", name="amount_positive"),
+        CheckConstraint(
+            "remaining_amount IS NULL OR remaining_amount > 0", name="remaining_positive"
+        ),
+        CheckConstraint("length(sentence) BETWEEN 1 AND 300", name="sentence_length"),
+        UniqueConstraint(
+            "entity_id",
+            "source_url",
+            "sentence",
+            "extractor_version",
+            name="uq_filing_buyback_statements_source_sentence",
+        ),
+        Index("ix_filing_buyback_statements_entity_id_published_at", "entity_id", "published_at"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    entity_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("entities.id"))
+    accession_number: Mapped[str] = mapped_column(Text)
+    document: Mapped[str] = mapped_column(Text)  # file name in the filing folder
+    document_type: Mapped[str] = mapped_column(Text)  # 8-K, EX-99.1, ...
+    kind: Mapped[str] = mapped_column(Text)
+    amount: Mapped[Decimal] = mapped_column(Numeric)  # USD
+    remaining_amount: Mapped[Decimal | None] = mapped_column(Numeric)
+    stated_date: Mapped[date | None] = mapped_column(Date)
+    sentence: Mapped[str] = mapped_column(Text)
+    rule: Mapped[str] = mapped_column(Text)
+    extractor_version: Mapped[str] = mapped_column(Text)
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
 # ---------- valuation assumptions (M1.3a) ----------
 
 

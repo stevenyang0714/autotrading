@@ -544,6 +544,43 @@ M1.3b. Code: `domain/research.py`, `api/research.py`; web `/dashboards/fundament
   - Alphabet's Q2 2026 10-Q has no dividend figure, so its TTM dividends are unavailable.
   - Saved views, export and watchlist filters (02 §21) come later.
 
+## ADR-025 Buyback engine — Accepted (2026-10-10, approved by Steven with the M1.4 plan)
+M1.4. Two PRs: M1.4a (data: announcements, buyback record, the instrument page's Buybacks section) and M1.4b (states, score, daily evaluation, Corporate Actions dashboard). This entry records the decisions and M1.4a; M1.4b completes it.
+- **Decisions (Steven, 2026-10-10):**
+  - B1 Announcement sources: 8-K documents and EX-99 exhibits, issuer press releases (title and snippet), and XBRL authorizations from 10-Q/10-K as corroboration only. Only the matched sentence (at most 300 characters) and its link are kept.
+  - B2 8-Ks from 2021-01-01, then every day's new ones.
+  - B3 Score components map to 0–100 by two fixed thresholds each, linearly; 02 §5 weights without the 5% insider part, divided by 95; labelled "default weights, unvalidated".
+  - B4 Thresholds and weights live in a versioned rule file (a content change needs a new rule_version, guarded like the glossary); changes go through a PR after Steven's review.
+  - B5 Net share reduction = shares outstanding a year earlier − now, on one split basis; shown beside gross shares repurchased and the diluted share change.
+  - B6 States are evaluated daily after the SEC refresh and stored (append-only); month-ends since 2021 are backfilled with the same rules and marked.
+  - B7 "Net debt not up more than 10%" is measured against |net debt a year earlier|, also for net-cash companies.
+  - B8 The score is unavailable when any component is missing; components are still shown.
+  - B9 "Plans to repurchase $X" counts as an announcement for WATCH.
+  - B10 Undervaluation = FCF yield / its 5-year month-end median.
+- **Technical defaults (M1.4a):**
+  - 8-Ks with items 2.02, 7.01 or 8.01 only; at most 50 per run, oldest first.
+  - Document types from `{accession}-index-headers.html` (index.json lists names only).
+  - Events: the same kind and amount within 30 days, or the same sentence restated within 120 days, is one event, dated by its stated or first publication date.
+- **Extractor 0.1.3 rules** (`domain/buyback_announcements.py`):
+  - A dollar amount counts only when tied to an authorization ("authorized / approved [an additional] $X"), an increase announcement ("announced an increase of $X", "$X increase in our authorization"), a plan, or a remaining amount ("$X remaining / available under").
+  - Executed repurchases, debt and tender offers never count. Recaps ("previously authorized", "since inception", cumulative totals), status lines ("is / was authorized to", "had authorized") and supplement footnotes never give a new or increased authorization.
+  - Calibrated on the live 8-Ks of all ten companies in four rounds; each round is a new extractor version, and stored statements are per version.
+- **Buyback record** (`domain/buyback.py`, `GET /instruments/{ticker}/buybacks`), TTM and five fiscal years, each value with its inputs:
+  - repurchases ($ and shares, shares on T's split basis);
+  - intensity = repurchases / market cap at the period end (last end-of-day close by then × shares outstanding then);
+  - repurchases / FCF; SBC offset = SBC / repurchases; debt-funded flag (net debt up while repurchases exceed FCF);
+  - net share reduction (B5) and its percent; diluted share change.
+- **Storage:** `filing_buyback_statements` (migration 0015, append-only) holds the 8-K sentences per extractor version; press-release sentences are read on request from the stored news items.
+- **Live check 2026-10-10:**
+  - 541 8-Ks read; every universe company has authorization events except gaps below.
+  - Apple: a $90B, $90B, $90B, $110B, $100B, $100B increase each spring 2021–2026; FY2025 $90.7B repurchased (2.40% of market cap, 91.8% of FCF), 343.5M fewer shares (2.27%).
+  - NVIDIA: increases of $25B (2023) to $150B (2026-09-28, press release, $235B remaining).
+- **Known gaps:**
+  - ExxonMobil tags only basic weighted shares after 2013; diluted shares stay unavailable (a fallback to basic shares would be an estimate, ADR-013), so its diluted share change is unavailable.
+  - Microsoft's September 2024 $60B program was announced without an 8-K; its newsroom feed starts in October 2026.
+  - JPMorgan's April 2021 supplement restates its January program in new words and shows as a second event.
+  - Issuer press releases exist for five companies only, from October 2026.
+
 ---
 
 ## Open decisions (owner: Steven)

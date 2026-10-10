@@ -36,7 +36,7 @@ SHARE_METRICS = ("shares_outstanding_cover", "shares_outstanding")
 
 PriceStatus = Literal["ok", "fixture", "demo", "stale", "none"]
 Reason = Literal["unavailable", "not_meaningful"]
-Unit = Literal["USD", "USD/shares", "x", "percent"]
+Unit = Literal["USD", "USD/shares", "x", "percent", "shares", "flag"]  # flag: 1 yes, 0 no
 
 
 class DatedFact(ValueFact, Protocol):

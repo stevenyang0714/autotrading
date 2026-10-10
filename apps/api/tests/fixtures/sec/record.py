@@ -1,6 +1,6 @@
 """Re-record the SEC fixtures from the live API (opt-in, needs SEC_USER_AGENT in .env).
 
-    cd apps/api && uv run python -m tests.fixtures.sec.record
+    cd apps/api && uv run python -m tests.fixtures.sec.record [--eight-ks]
 
 Writes real responses, trimmed only where noted in manifest.json:
 - tickers: company_tickers_exchange.json, rows of the universe equities only;
@@ -16,6 +16,10 @@ Filing XBRL instances (ADR-021): Apple's latest 10-K and 10-Q, and Meta's latest
 10-Q plus its first inline XBRL 10-Q, trimmed to the mapped and identity concepts with the
 contexts and units they use.
 
+8-Ks for buyback announcements (M1.4a, ADR-025): the index-headers page, the 8-K and its EX-99
+exhibits of the filings in EIGHT_KS, unchanged. `--eight-ks` records only these and keeps the
+rest of the manifest as it is.
+
 Submissions already recorded are kept: they were recorded on 2026-10-05, before SEC's
 acceptance-time bug, and checked against EDGAR index pages (ADR-013). A company recorded for
 the first time gets every row's acceptance time from its EDGAR header, because SEC's JSON is
@@ -25,6 +29,7 @@ to record them again.
 
 import io
 import json
+import sys
 import time
 import xml.etree.ElementTree as ET
 from datetime import UTC, datetime
@@ -40,6 +45,7 @@ from autotrading.adapters.sec.company import (
     submissions_url,
 )
 from autotrading.adapters.sec.concepts import MAPPED_CONCEPTS, split_concept
+from autotrading.adapters.sec.eight_k import INDEX_SUFFIX, folder_url, read_documents
 from autotrading.adapters.sec.instance import (
     IDENTITY_CONCEPTS,
     TAXONOMY_URI,
@@ -67,6 +73,13 @@ KEPT: dict[str, frozenset[str]] = {}  # taxonomy -> concept names kept in compan
 for _concept in MAPPED_CONCEPTS:
     _taxonomy, _name = split_concept(_concept)
     KEPT[_taxonomy] = KEPT.get(_taxonomy, frozenset()) | {_name}
+# 8-Ks read for buyback announcements: authorization increases (Apple 2024 and 2026, Meta 2024
+# with a remaining amount), a yearly plan (Exxon Mobil Corp, B9), and an 8.01 notice without one.
+EIGHT_KS: dict[str, tuple[str, ...]] = {
+    APPLE: ("0000320193-24-000067", "0001140361-25-018400", "0000320193-26-000011"),
+    META: ("0001326801-24-000010",),
+    EXXON_MOBIL: ("0000034088-25-000059",),
+}
 # Apple FY2008 net income: 10-K (Oct 2009) vs 10-K/A (Jan 2010) after the revenue
 # recognition change for iPhone and Apple TV.
 RESTATEMENT = {
@@ -145,6 +158,7 @@ def main() -> None:
                 files[submissions_page_url(page)] = write(page, _dump(block))
 
         instances = record_instances(client, files, trimmed)
+        eight_ks = record_eight_ks(client, files)
 
     _check_restatement(load_companyfacts((HERE / f"companyfacts_CIK{APPLE}.json").read_bytes()))
     manifest = {
@@ -152,10 +166,35 @@ def main() -> None:
         "files": files,
         "trimmed": trimmed,
         "instances": instances,
+        "eight_ks": eight_ks,
         "restatement_case": RESTATEMENT,
     }
     (HERE / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     print(f"recorded {len(files)} files into {HERE}")
+
+
+def record_eight_ks(client: SecClient, files: dict[str, str]) -> list[str]:
+    """The index page, 8-K and EX-99 exhibits of every filing in EIGHT_KS; returns their
+    accessions."""
+    for cik, accessions in EIGHT_KS.items():
+        for accession in accessions:
+            folder = folder_url(cik, accession)
+            index = client.get(f"{folder}/{accession}{INDEX_SUFFIX}", throttle)
+            files[index.source_url] = write(f"{accession}{INDEX_SUFFIX}", index.content)
+            for _, name in read_documents(index.content):
+                document = client.get(f"{folder}/{name}", throttle)
+                files[document.source_url] = write(f"{accession}_{name}", document.content)
+    return [a for accessions in EIGHT_KS.values() for a in accessions]
+
+
+def main_eight_ks() -> None:
+    """Record only the 8-Ks; every other file of the manifest stays as recorded."""
+    manifest: dict[str, Any] = json.loads((HERE / "manifest.json").read_text(encoding="utf-8"))
+    with SecClient.from_settings(get_settings()) as client:
+        manifest["eight_ks"] = record_eight_ks(client, manifest["files"])
+    manifest["eight_ks_recorded_at"] = datetime.now(UTC).isoformat(timespec="seconds")
+    (HERE / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    print(f"recorded {len(manifest['eight_ks'])} 8-Ks into {HERE}")
 
 
 def record_instances(
@@ -265,4 +304,4 @@ def _check_restatement(companyfacts: dict[str, Any]) -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main_eight_ks() if "--eight-ks" in sys.argv else main()

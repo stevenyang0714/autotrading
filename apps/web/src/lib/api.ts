@@ -437,6 +437,32 @@ export async function loadResearchDashboard(knownAt?: string): Promise<ResearchD
   }
 }
 
+// ---------- buybacks (M1.4a, ADR-025) ----------
+
+export type Buybacks = components["schemas"]["BuybacksOut"];
+export type AnnouncementEvent = components["schemas"]["AnnouncementEvent"];
+export type AnnouncementSource = components["schemas"]["AnnouncementSourceOut"];
+
+export type BuybacksResult =
+  | { status: "ok"; data: Buybacks }
+  | { status: "not_found" }
+  | { status: "unavailable" };
+
+/** Authorizations, actual repurchases and net share reduction as known at `knownAt`. */
+export async function loadBuybacks(ticker: string, knownAt?: string): Promise<BuybacksResult> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data, response } = await client.GET("/instruments/{ticker}/buybacks", {
+      params: { path: { ticker }, query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    if (data) return { status: "ok", data };
+    return response.status === 404 ? { status: "not_found" } : { status: "unavailable" };
+  } catch {
+    return { status: "unavailable" };
+  }
+}
+
 // ---------- news (M0.8, ADR-018) ----------
 
 export type NewsFeed = components["schemas"]["NewsFeed"];

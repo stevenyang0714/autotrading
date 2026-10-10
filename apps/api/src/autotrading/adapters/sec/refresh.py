@@ -1,15 +1,20 @@
-"""SEC refresh orchestration (M0.5, M1.1): which runs to create, without touching the broker.
+"""SEC refresh orchestration (M0.5, M1.1, M1.4a): which runs to create, without touching the
+broker.
 
 A refresh is one `sec.tickers` run followed, once it succeeds, by one `sec.company` run per
 universe equity and per linked predecessor issuer (ADR-014). All runs share one refresh window
 (ingestion/schedule.py); the schedule runs daily at 10:00 SGT.
 
-Each `sec.company` run is followed by a `sec.filing_xbrl` run (ADR-021) for filings not read yet
-at the current methodology version: the latest 10-K and 10-Q (reconciliation), and every
-inline XBRL 10-K/10-Q since mid-2019 that left a share count unstored (class sums). A filing
-another issuer co-filed and holds the XBRL of (ExxonMobil Holdings' 10-Q also listed under
-Exxon Mobil Corp) is not this issuer's to read. When class sums are due, the latest 10-K joins
-the run so its balance sheet can confirm the share classes.
+Each `sec.company` run is followed by:
+- a `sec.filing_xbrl` run (ADR-021) for filings not read yet at the current methodology
+  version: the latest 10-K and 10-Q (reconciliation), and every inline XBRL 10-K/10-Q since
+  mid-2019 that left a share count unstored (class sums). A filing another issuer co-filed and
+  holds the XBRL of (ExxonMobil Holdings' 10-Q also listed under Exxon Mobil Corp) is not this
+  issuer's to read. When class sums are due, the latest 10-K joins the run so its balance
+  sheet can confirm the share classes;
+- a `sec.eight_k` run (M1.4a, ADR-025) for 8-Ks since 2021 with item 2.02, 7.01 or 8.01 not
+  read yet at the current extractor version: at most EIGHT_K_PER_RUN, oldest first, so the
+  first backfill spreads over a few refreshes.
 """
 
 from datetime import date, datetime
@@ -22,6 +27,7 @@ from sqlalchemy import exists, or_, select
 from sqlalchemy.orm import Session
 
 from autotrading.adapters.sec.company import SecCompanyJob
+from autotrading.adapters.sec.eight_k import SecEightKJob
 from autotrading.adapters.sec.filing_xbrl import METHODOLOGY_VERSION, SecFilingXbrlJob
 from autotrading.adapters.sec.tickers import NAMESPACE, SOURCE_ID, Predecessor, SecTickersJob
 from autotrading.db.models import (
@@ -33,6 +39,7 @@ from autotrading.db.models import (
     Instrument,
     Source,
 )
+from autotrading.domain.buyback_announcements import EXTRACTOR_VERSION
 from autotrading.ingestion.job import Window
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.ingestion.schedule import refresh_window
@@ -222,3 +229,75 @@ def create_filing_xbrl_run(
         }
         window = Window(start=candidates[0].published_at, end=candidates[-1].published_at)
     return runner.create_run(SecFilingXbrlJob.name, params, window)
+
+
+# ---------- 8-Ks for buyback announcements (M1.4a, ADR-025 B1, B2) ----------
+
+EIGHT_K_SINCE = date(2021, 1, 1)
+EIGHT_K_FORMS = ("8-K", "8-K/A")
+# Results (earnings releases), Regulation FD and other events: where buybacks are announced.
+EIGHT_K_ITEMS = frozenset({"2.02", "7.01", "8.01"})
+EIGHT_K_PER_RUN = 50
+
+
+def read_eight_k_accessions(session: Session, cik: str) -> set[str]:
+    """8-Ks of `cik` already read by a successful `sec.eight_k` run at this extractor version."""
+    runs = session.scalars(
+        select(IngestionRun.params).where(
+            IngestionRun.job == SecEightKJob.name,
+            IngestionRun.status == "succeeded",
+            IngestionRun.params["cik"].astext == cik,
+            IngestionRun.params["extractor"].astext == EXTRACTOR_VERSION,
+        )
+    )
+    return {f["accession"] for params in runs for f in params["filings"]}
+
+
+def eight_k_candidates(session: Session, cik: str) -> list[Filing]:
+    """8-Ks of `cik` to read, oldest first (see the module docstring)."""
+    read = read_eight_k_accessions(session, cik)
+    filings = session.scalars(
+        select(Filing)
+        .where(
+            Filing.cik == cik,
+            Filing.form.in_(EIGHT_K_FORMS),
+            Filing.filing_date >= EIGHT_K_SINCE,
+        )
+        .order_by(Filing.filing_date, Filing.accession_number)
+    )
+    return [
+        f
+        for f in filings
+        if f.accession_number not in read and EIGHT_K_ITEMS & set((f.items or "").split(","))
+    ]
+
+
+def create_eight_k_run(
+    runner: IngestionRunner, company_run_id: UUID, only: set[str] | frozenset[str] | None = None
+) -> UUID | None:
+    """One `sec.eight_k` run for the company run's CIK (see eight_k_run)."""
+    with runner.sessions() as session:
+        cik = str(session.get_one(IngestionRun, company_run_id).params["cik"])
+    return eight_k_run(runner, cik, only)
+
+
+def eight_k_run(
+    runner: IngestionRunner, cik: str, only: set[str] | frozenset[str] | None = None
+) -> UUID | None:
+    """One `sec.eight_k` run for up to EIGHT_K_PER_RUN unread 8-Ks of `cik` (None if there are
+    none); `only` limits the accessions (recorded replays)."""
+    with runner.sessions() as session:
+        candidates = [
+            f
+            for f in eight_k_candidates(session, cik)
+            if only is None or f.accession_number in only
+        ][:EIGHT_K_PER_RUN]
+        if not candidates:
+            return None
+        params = {
+            "cik": cik,
+            "filings": [{"accession": f.accession_number} for f in candidates],
+            "extractor": EXTRACTOR_VERSION,
+        }
+        window = Window(start=candidates[0].published_at, end=candidates[-1].published_at)
+    return runner.create_run(SecEightKJob.name, params, window)

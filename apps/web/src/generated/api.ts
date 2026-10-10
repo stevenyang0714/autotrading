@@ -178,6 +178,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/instruments/{ticker}/buybacks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Instrument Buybacks */
+        get: operations["instrument_buybacks_instruments__ticker__buybacks_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/instruments/{ticker}/fair-value": {
         parameters: {
             query?: never;
@@ -420,6 +437,55 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AnnouncementEvent */
+        AnnouncementEvent: {
+            /** Amount */
+            amount: string;
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /**
+             * First Published At
+             * Format: date-time
+             */
+            first_published_at: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "new" | "increase" | "plan" | "remaining";
+            /** Remaining Amount */
+            remaining_amount: string | null;
+            /** Sources */
+            sources: components["schemas"]["AnnouncementSourceOut"][];
+        };
+        /** AnnouncementSourceOut */
+        AnnouncementSourceOut: {
+            /** Accession */
+            accession: string | null;
+            /**
+             * Channel
+             * @enum {string}
+             */
+            channel: "sec_8k" | "press_release";
+            /** Document Type */
+            document_type: string | null;
+            /**
+             * Published At
+             * Format: date-time
+             */
+            published_at: string;
+            /** Sentence */
+            sentence: string;
+            /** Stated Date */
+            stated_date: string | null;
+            /** Title */
+            title: string | null;
+            /** Url */
+            url: string;
+        };
         /** AssumptionList */
         AssumptionList: {
             default: components["schemas"]["AssumptionVersion"];
@@ -556,6 +622,43 @@ export interface components {
             prices: components["schemas"]["PriceTile"][];
             /** Title */
             title: string;
+        };
+        /** BuybackRow */
+        BuybackRow: {
+            /** Cells */
+            cells: components["schemas"]["MetricOut"][];
+            /** Metric Id */
+            metric_id: string;
+            /**
+             * Section
+             * @enum {string}
+             */
+            section: "repurchase" | "shares";
+            /**
+             * Unit
+             * @enum {string}
+             */
+            unit: "USD" | "USD/shares" | "x" | "percent" | "shares" | "flag";
+        };
+        /** BuybacksOut */
+        BuybacksOut: {
+            /** Announcements */
+            announcements: components["schemas"]["AnnouncementEvent"][];
+            /** Extractor Version */
+            extractor_version: string;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Periods */
+            periods: components["schemas"]["ResearchPeriod"][];
+            /** Rows */
+            rows: components["schemas"]["BuybackRow"][];
+            tagged_authorized: components["schemas"]["InputOut"] | null;
+            tagged_remaining: components["schemas"]["InputOut"] | null;
+            /** Ticker */
+            ticker: string;
         };
         /** Chart */
         Chart: {
@@ -1222,7 +1325,7 @@ export interface components {
              * Unit
              * @enum {string}
              */
-            unit: "USD" | "USD/shares" | "x" | "percent";
+            unit: "USD" | "USD/shares" | "x" | "percent" | "shares" | "flag";
             /** Value */
             value: string | null;
         };
@@ -1623,7 +1726,7 @@ export interface components {
              * Unit
              * @enum {string}
              */
-            unit: "USD" | "USD/shares" | "x" | "percent";
+            unit: "USD" | "USD/shares" | "x" | "percent" | "shares" | "flag";
         };
         /** ResearchDashboard */
         ResearchDashboard: {
@@ -1707,7 +1810,7 @@ export interface components {
              * Unit
              * @enum {string}
              */
-            unit: "USD" | "USD/shares" | "x" | "percent";
+            unit: "USD" | "USD/shares" | "x" | "percent" | "shares" | "flag";
         };
         /** ResearchSummaryRow */
         ResearchSummaryRow: {
@@ -1733,7 +1836,7 @@ export interface components {
              * Unit
              * @enum {string}
              */
-            unit: "USD" | "USD/shares" | "x" | "percent";
+            unit: "USD" | "USD/shares" | "x" | "percent" | "shares" | "flag";
             /** Value */
             value: string | null;
         };
@@ -2300,6 +2403,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AssumptionVersion"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    instrument_buybacks_instruments__ticker__buybacks_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+            };
+            header?: never;
+            path: {
+                ticker: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BuybacksOut"];
                 };
             };
             /** @description Validation Error */

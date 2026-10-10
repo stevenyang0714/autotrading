@@ -14,8 +14,13 @@ import httpx2 as httpx
 
 from autotrading.adapters.sec.client import SecClient
 from autotrading.adapters.sec.company import SecCompanyJob
+from autotrading.adapters.sec.eight_k import SecEightKJob
 from autotrading.adapters.sec.filing_xbrl import SecFilingXbrlJob
-from autotrading.adapters.sec.refresh import create_company_runs, create_filing_xbrl_run
+from autotrading.adapters.sec.refresh import (
+    create_company_runs,
+    create_eight_k_run,
+    create_filing_xbrl_run,
+)
 from autotrading.adapters.sec.tickers import SecTickersJob
 from autotrading.ingestion.job import JobRegistry, Window, register_job
 from autotrading.ingestion.runner import IngestionRunner
@@ -29,6 +34,8 @@ RECORDED_TICKERS = ("AAPL", "XOM", "META")
 
 # Filings whose own XBRL instance is recorded (ADR-021).
 RECORDED_INSTANCES = frozenset(MANIFEST.get("instances", []))
+# 8-Ks whose documents are recorded (M1.4a, ADR-025).
+RECORDED_EIGHT_KS = frozenset(MANIFEST.get("eight_ks", []))
 
 # Mutations of the recorded data for single tests, keyed by URL.
 OVERRIDES: dict[str, bytes] = {}
@@ -67,6 +74,11 @@ class RecordedFilingXbrl(SecFilingXbrlJob):
         return recorded_client()
 
 
+class RecordedEightK(SecEightKJob):
+    def client(self) -> SecClient:
+        return recorded_client()
+
+
 class VerifyingCompany(SecCompanyJob):
     """Replays like production: new filings are timed from their EDGAR headers."""
 
@@ -79,6 +91,7 @@ def recorded_registry() -> JobRegistry:
     register_job(RecordedTickers, registry)
     register_job(RecordedCompany, registry)
     register_job(RecordedFilingXbrl, registry)
+    register_job(RecordedEightK, registry)
     return registry
 
 
@@ -90,7 +103,7 @@ def replay(
     before_instances: Callable[[], list[UUID]] | None = None,
 ) -> list[UUID]:
     """The tickers run, one company run per CIK, then the filing XBRL runs of the recorded
-    instances, as a refresh would; returns run ids."""
+    instances and the 8-K runs of the recorded 8-Ks, as a refresh would; returns run ids."""
     tickers_run = runner.create_run(
         SecTickersJob.name, {"tickers": list(tickers), "predecessors": predecessors}, window
     )
@@ -107,4 +120,11 @@ def replay(
     ]
     for run_id in instance_runs:
         runner.execute(run_id)
-    return [tickers_run, *company_runs, *between, *instance_runs]
+    eight_k_runs = [
+        run
+        for company_run in company_runs
+        if (run := create_eight_k_run(runner, company_run, only=RECORDED_EIGHT_KS))
+    ]
+    for run_id in eight_k_runs:
+        runner.execute(run_id)
+    return [tickers_run, *company_runs, *between, *instance_runs, *eight_k_runs]

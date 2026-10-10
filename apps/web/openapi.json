@@ -1,6 +1,146 @@
 {
   "components": {
     "schemas": {
+      "AnnouncementEvent": {
+        "properties": {
+          "amount": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Amount",
+            "type": "string"
+          },
+          "day": {
+            "format": "date",
+            "title": "Day",
+            "type": "string"
+          },
+          "first_published_at": {
+            "format": "date-time",
+            "title": "First Published At",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "new",
+              "increase",
+              "plan",
+              "remaining"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "remaining_amount": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remaining Amount"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/AnnouncementSourceOut"
+            },
+            "title": "Sources",
+            "type": "array"
+          }
+        },
+        "required": [
+          "kind",
+          "amount",
+          "remaining_amount",
+          "day",
+          "first_published_at",
+          "sources"
+        ],
+        "title": "AnnouncementEvent",
+        "type": "object"
+      },
+      "AnnouncementSourceOut": {
+        "properties": {
+          "accession": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accession"
+          },
+          "channel": {
+            "enum": [
+              "sec_8k",
+              "press_release"
+            ],
+            "title": "Channel",
+            "type": "string"
+          },
+          "document_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Type"
+          },
+          "published_at": {
+            "format": "date-time",
+            "title": "Published At",
+            "type": "string"
+          },
+          "sentence": {
+            "title": "Sentence",
+            "type": "string"
+          },
+          "stated_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stated Date"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "channel",
+          "sentence",
+          "url",
+          "published_at",
+          "stated_date",
+          "accession",
+          "document_type",
+          "title"
+        ],
+        "title": "AnnouncementSourceOut",
+        "type": "object"
+      },
       "AssumptionList": {
         "properties": {
           "default": {
@@ -456,6 +596,119 @@
           "insight"
         ],
         "title": "Block",
+        "type": "object"
+      },
+      "BuybackRow": {
+        "properties": {
+          "cells": {
+            "items": {
+              "$ref": "#/components/schemas/MetricOut"
+            },
+            "title": "Cells",
+            "type": "array"
+          },
+          "metric_id": {
+            "title": "Metric Id",
+            "type": "string"
+          },
+          "section": {
+            "enum": [
+              "repurchase",
+              "shares"
+            ],
+            "title": "Section",
+            "type": "string"
+          },
+          "unit": {
+            "enum": [
+              "USD",
+              "USD/shares",
+              "x",
+              "percent",
+              "shares",
+              "flag"
+            ],
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "metric_id",
+          "section",
+          "unit",
+          "cells"
+        ],
+        "title": "BuybackRow",
+        "type": "object"
+      },
+      "BuybacksOut": {
+        "properties": {
+          "announcements": {
+            "items": {
+              "$ref": "#/components/schemas/AnnouncementEvent"
+            },
+            "title": "Announcements",
+            "type": "array"
+          },
+          "extractor_version": {
+            "title": "Extractor Version",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "periods": {
+            "items": {
+              "$ref": "#/components/schemas/ResearchPeriod"
+            },
+            "title": "Periods",
+            "type": "array"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/BuybackRow"
+            },
+            "title": "Rows",
+            "type": "array"
+          },
+          "tagged_authorized": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InputOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tagged_remaining": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InputOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticker",
+          "known_at",
+          "extractor_version",
+          "announcements",
+          "tagged_authorized",
+          "tagged_remaining",
+          "periods",
+          "rows"
+        ],
+        "title": "BuybacksOut",
         "type": "object"
       },
       "Chart": {
@@ -2441,7 +2694,9 @@
               "USD",
               "USD/shares",
               "x",
-              "percent"
+              "percent",
+              "shares",
+              "flag"
             ],
             "title": "Unit",
             "type": "string"
@@ -3749,7 +4004,9 @@
               "USD",
               "USD/shares",
               "x",
-              "percent"
+              "percent",
+              "shares",
+              "flag"
             ],
             "title": "Unit",
             "type": "string"
@@ -3979,7 +4236,9 @@
               "USD",
               "USD/shares",
               "x",
-              "percent"
+              "percent",
+              "shares",
+              "flag"
             ],
             "title": "Unit",
             "type": "string"
@@ -4076,7 +4335,9 @@
               "USD",
               "USD/shares",
               "x",
-              "percent"
+              "percent",
+              "shares",
+              "flag"
             ],
             "title": "Unit",
             "type": "string"
@@ -5494,6 +5755,67 @@
         "summary": "Save Assumptions",
         "tags": [
           "fair-value"
+        ]
+      }
+    },
+    "/instruments/{ticker}/buybacks": {
+      "get": {
+        "operationId": "instrument_buybacks_instruments__ticker__buybacks_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ticker",
+            "required": true,
+            "schema": {
+              "title": "Ticker",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuybacksOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Instrument Buybacks",
+        "tags": [
+          "buybacks"
         ]
       }
     },

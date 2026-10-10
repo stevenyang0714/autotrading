@@ -144,6 +144,16 @@ terms:
   diluted_shares_change: {name: 稀釋股數年增減, hint: 稀釋加權股數 ÷ 一年前 − 1，換算到同一分割基準。}
   research_record: {name: 研究紀錄, hint: 一家公司近四季與五個財年的成長、品質與資本配置，每個數字附來源申報。}
 
+  # buybacks (M1.4a)
+  buyback_record: {name: 回購紀錄, hint: 授權、實際買回、淨減少股數分開看：董事會准了多少、實際花了多少、股東實際多拿到多少。}
+  repurchase_announcement: {name: 回購公告, hint: 8-K 或公司新聞稿中的新授權、授權增加、每年計畫或剩餘額；只是允許，不代表已買。}
+  buyback_intensity: {name: 回購強度, hint: 買回金額 ÷ 期末市值。}
+  repurchase_to_fcf: {name: 買回 ÷ FCF, hint: 買回金額 ÷ 自由現金流；超過 100% 代表動用現金或借錢。}
+  sbc_offset: {name: SBC 抵銷, hint: 股票薪酬 ÷ 買回金額：有多少買回只是在補發給員工的股票。}
+  debt_funded_buyback: {name: 借錢買回, hint: 期間內淨負債上升且買回超過自由現金流。}
+  net_share_reduction: {name: 淨減少股數, hint: 一年前流通股數 − 現在流通股數（同一分割基準），已扣掉所有發行。}
+  net_share_reduction_pct: {name: 淨減少股數 %, hint: 淨減少股數 ÷ 一年前流通股數。}
+
   # fair value (M1.3a)
   fair_value_dcf: {name: DCF 每股合理價值, hint: 業主自由現金流折現得企業價值，減淨負債再除以股數；模型結果，不是事實。}
   owner_fcf: {name: 業主自由現金流, hint: 近四季營業現金流 − 資本支出 − 股票薪酬（SBC）。}
