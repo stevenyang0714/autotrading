@@ -21,7 +21,7 @@ from itertools import pairwise
 from zoneinfo import ZoneInfo
 
 NEW_YORK = ZoneInfo("America/New_York")
-PER_SHARE_METRICS = frozenset({"eps_diluted", "eps_basic"})
+PER_SHARE_METRICS = frozenset({"eps_diluted", "eps_basic", "close"})  # close: a daily close
 SHARE_COUNT_METRICS = frozenset(
     {
         "diluted_shares",

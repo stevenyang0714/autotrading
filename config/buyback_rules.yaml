@@ -1,0 +1,94 @@
+# Buyback state rules and Buyback Quality Score (M1.4b, ADR-025 B3/B4, errata E7, P1-9).
+#
+# Each rule set is deterministic and versioned. A released rule_version is immutable: changing
+# anything but `status` needs a new rule_version (`make migrate` refuses changed content under an
+# existing version, and a unit test pins each version's sha256). Every state assignment stores
+# the rule_version it used.
+#
+# The thresholds and weights are defaults, not validated (OD-7). No state triggers a trade
+# (02 §5), and an announcement alone never goes past WATCH (E7).
+#
+# Units: percent values are percentage points (2 = 2%); ratios are multiples (1.2 = 1.2x).
+version: 0.1.0
+rule_sets:
+  - rule_version: 0.1.0
+    status: active  # active: evaluated daily; retired: kept for the stored assignments
+    approved: "2026-10-10"
+    note: Defaults from the M1.4 plan (P1-9), for Steven to confirm or tune with the threshold review.
+    states:
+      watch:
+        # A new or increased authorization or a yearly plan (B9) announced within this window ...
+        announcement_days: 365
+        announcement_kinds: [new, increase, plan]
+        # ... or a remaining authorization stated within it, at least this share of market cap.
+        remaining_to_market_cap_min: 2
+      active:
+        # Repurchases in the latest reported quarter / market cap at the quarter end.
+        quarter_repurchase_to_market_cap_min: 0.5
+        quarter_max_age_days: 200
+        # Diluted shares of the latest period against a year earlier (negative = fewer).
+        diluted_shares_change_max: -1
+      high_conviction:
+        # Funded by FCF: TTM repurchases / TTM free cash flow ...
+        repurchase_to_fcf_max: 1.2
+        # ... and net debt up by at most this share of |net debt a year earlier| (B7).
+        net_debt_increase_max: 10
+        # Valuation context: FCF yield / its month-end median over the years before T ...
+        fcf_yield_to_median_min: 1.0
+        fcf_yield_history_years: 5
+        fcf_yield_history_min_months: 36
+        # ... or the price at least this far below the base DCF value (margin of safety).
+        dcf_discount_min: 15
+      trade_ready:
+        # Market confirmation: the close above its moving average, or the return over the
+        # last sessions above the benchmark's. Shown, but the risk check arrives in Phase 2,
+        # so TRADE-READY is unreachable in Phase 1 (P1-4).
+        moving_average_sessions: 50
+        relative_return_sessions: 21
+        benchmark: SPY
+        reachable: false
+    score:
+      label: default weights, unvalidated
+      # 02 §5 weights without management/insider alignment (5, no data), rescaled by 1/95 (B3).
+      # Each component maps one measure linearly from `zero` (score 0) to `full` (score 100),
+      # clamped. Any component unavailable makes the total unavailable (B8).
+      excluded:
+        - component: insider_alignment
+          weight: 5
+          reason: no insider data in Phase 1
+      components:
+        - component: undervaluation
+          weight: 30
+          measure: fcf_yield_to_median  # x (B10)
+          zero: 0.8
+          full: 1.2
+        - component: intensity
+          weight: 20
+          measure: buyback_intensity  # percent, latest period
+          zero: 0
+          full: 4
+        - component: fcf_quality
+          weight: 15
+          measure: fcf_conversion  # percent, latest period
+          zero: 50
+          full: 100
+        - component: balance_sheet
+          weight: 10
+          measure: net_debt_to_fcf  # x, latest period
+          zero: 4
+          full: 0
+        - component: discipline
+          weight: 10
+          measure: disciplined_years  # percent of fiscal years
+          zero: 0
+          full: 100
+        - component: share_count
+          weight: 10
+          measure: net_share_reduction_pct  # percent, latest period
+          zero: 0
+          full: 3
+      discipline:
+        # Fiscal years in which repurchases stayed within free cash flow and shares
+        # outstanding fell, among the last `years` with both known; at least `min_years`.
+        years: 5
+        min_years: 3
