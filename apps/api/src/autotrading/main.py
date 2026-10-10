@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from sqlalchemy.orm import Session, sessionmaker
 
 from autotrading.api.audit import router as audit_router
+from autotrading.api.buyback_states import router as buyback_states_router
 from autotrading.api.buybacks import router as buybacks_router
 from autotrading.api.data_health import router as data_health_router
 from autotrading.api.fair_value import router as fair_value_router
@@ -75,6 +76,7 @@ def create_app(
     app.include_router(fair_value_router)
     app.include_router(research_router)
     app.include_router(buybacks_router)
+    app.include_router(buyback_states_router)
     return app
 
 

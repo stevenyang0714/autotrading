@@ -15,9 +15,9 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import AwareDatetime, BaseModel
-from sqlalchemy import func, select
+from sqlalchemy import ColumnElement, func, select, true
 from sqlalchemy.dialects.postgresql import distinct_on
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import InstrumentedAttribute, Session
 
 from autotrading.api.data_health import SessionDep
 from autotrading.api.instruments import FactView, FilingRef, issuer_chain, open_sec
@@ -204,12 +204,14 @@ def market_view(
     metrics: Sequence[str],
     *,
     bars_since: datetime | None = None,
+    system_time: datetime | None = None,
 ) -> MarketView:
-    """Facts of `metrics` from the issuer chain, splits and raw daily bars known at `at`.
-    Bars from `bars_since` (default: PRICE_LOOKBACK before `at`) for histories; the price
-    always comes from the last PRICE_LOOKBACK."""
+    """Facts of `metrics` from the issuer chain, splits and raw daily bars known at `at`, as
+    this database held them at `system_time` (default: now; ADR-012), so a stored evaluation
+    can be recomputed exactly. Bars from `bars_since` (default: PRICE_LOOKBACK before `at`)
+    for histories; the price always comes from the last PRICE_LOOKBACK."""
     rows = session.scalars(
-        as_of_query(FinancialFact, known_at=at).where(
+        as_of_query(FinancialFact, known_at=at, system_time=system_time).where(
             FinancialFact.entity_id.in_(chain),
             FinancialFact.metric_id.in_(metrics),
         )
@@ -218,13 +220,21 @@ def market_view(
         (s.published_at, Split(s.ex_date, s.old_rate, s.new_rate))
         for s in session.scalars(
             select(SplitEvent).where(
-                SplitEvent.instrument_id == instrument.id, SplitEvent.published_at <= at
+                SplitEvent.instrument_id == instrument.id,
+                SplitEvent.published_at <= at,
+                recorded_by(SplitEvent.recorded_at, system_time),
             )
         )
     ]
     recent = at - PRICE_LOOKBACK
     bars = daily_bars(
-        session, instrument.id, "raw", since=bars_since or recent, until=at, known_at=at
+        session,
+        instrument.id,
+        "raw",
+        since=bars_since or recent,
+        until=at,
+        known_at=at,
+        system_time=system_time,
     )
     price = select_price(
         [
@@ -237,6 +247,13 @@ def market_view(
     return MarketView(
         [FactView(f) for f in merge_by_precedence(rows, chain)], dated_splits, bars, price
     )
+
+
+def recorded_by(
+    column: InstrumentedAttribute[datetime], system_time: datetime | None
+) -> ColumnElement[bool]:
+    """An append-only row's recorded_at against a system time (None: every row)."""
+    return true() if system_time is None else column <= system_time
 
 
 def known_at_or_now(session: Session, known_at: datetime | None) -> datetime:

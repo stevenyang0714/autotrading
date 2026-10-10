@@ -6,6 +6,8 @@
 - config/macro_series.yaml -> macro_series (M0.6); titles and units come from FRED later.
 - docs/glossary/glossary_seed.yaml -> glossary_terms (M0.4). Registers new versions of
   complete terms; refuses changed content under an existing methodology_version.
+- config/buyback_rules.yaml -> buyback_rule_sets (M1.4b, ADR-025 B4). Registers new rule
+  versions; refuses changed content under a released rule_version.
 """
 
 from dataclasses import dataclass, field
@@ -18,7 +20,8 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from autotrading.db.models import GlossaryTermRow, MacroSeries, Source
+from autotrading.db.models import BuybackRuleSet, GlossaryTermRow, MacroSeries, Source
+from autotrading.domain.buyback_states import RulesFile
 from autotrading.domain.glossary import GlossaryFile
 from autotrading.domain.provenance import LicenseStatus
 from autotrading.infra.db import make_engine
@@ -183,6 +186,45 @@ def sync_glossary(session: Session, glossary: GlossaryFile) -> GlossarySyncResul
     return result
 
 
+class BuybackRulesVersionError(ValueError):
+    """A released rule set's content changed without a new rule_version."""
+
+
+def load_buyback_rules(path: Path) -> RulesFile:
+    return RulesFile.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
+
+
+def sync_buyback_rules(session: Session, rules: RulesFile) -> GlossarySyncResult:
+    """Register each rule_version once; the same version with other content is refused."""
+    set_actor(session, "config:buyback_rules.yaml")
+    result = GlossarySyncResult()
+    for entry in rules.rule_sets:
+        rule_set = entry.rule_set()
+        sha = rule_set.content_sha256()
+        existing = session.scalars(
+            select(BuybackRuleSet).where(BuybackRuleSet.rule_version == rule_set.rule_version)
+        ).first()
+        if existing is not None:
+            if existing.content_sha256 != sha:
+                raise BuybackRulesVersionError(
+                    f"buyback rule set {rule_set.rule_version} changed but its rule_version "
+                    "was not bumped"
+                )
+            result.unchanged.append(rule_set.rule_version)
+            continue
+        session.add(
+            BuybackRuleSet(
+                rule_version=rule_set.rule_version,
+                content=rule_set.content(),
+                content_sha256=sha,
+                approved=rule_set.approved,
+            )
+        )
+        result.created.append(rule_set.rule_version)
+    session.flush()
+    return result
+
+
 def main() -> None:
     settings = get_settings()
     sources_path = settings.resolved_config_dir() / "sources.yaml"
@@ -194,6 +236,9 @@ def main() -> None:
             sources = sync_sources(session, load_sources(sources_path))
             macro = sync_macro_series(session, load_macro_series(macro_path))
             glossary = sync_glossary(session, load_glossary(glossary_path))
+            rules = sync_buyback_rules(
+                session, load_buyback_rules(settings.resolved_config_dir() / "buyback_rules.yaml")
+            )
             session.commit()
     finally:
         engine.dispose()
@@ -209,6 +254,7 @@ def main() -> None:
         f"glossary synced: new term versions={len(glossary.created)} "
         f"unchanged={len(glossary.unchanged)}"
     )
+    print(f"buyback_rules.yaml synced: new rule versions={rules.created}")
 
 
 if __name__ == "__main__":

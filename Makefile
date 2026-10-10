@@ -15,7 +15,7 @@ export NEXT_TELEMETRY_DISABLED := 1
 export COREPACK_ENABLE_DOWNLOAD_PROMPT := 0
 
 .DEFAULT_GOAL := help
-.PHONY: help setup up down ps logs migrate sec-refresh fred-refresh prices-refresh prices-backfill news-refresh news-backfill replay-fixtures gen test test-unit test-integration e2e lint lint-api lint-web fmt dev-web
+.PHONY: help setup up down ps logs migrate sec-refresh fred-refresh prices-refresh prices-backfill news-refresh news-backfill buyback-evaluate buyback-backfill buyback-verify replay-fixtures gen test test-unit test-integration e2e lint lint-api lint-web fmt dev-web
 
 help: ## Show available targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  %-18s %s\n", $$1, $$2}'
@@ -57,6 +57,15 @@ news-refresh: ## Queue GDELT (last 24 hours) and every enabled official feed now
 
 news-backfill: ## Queue GDELT news runs for each of the last 14 days (run once)
 	$(COMPOSE) exec -T api python -m autotrading.jobs.news_refresh --backfill
+
+buyback-evaluate: ## Queue a buyback state evaluation of every universe equity now (M1.4b)
+	$(COMPOSE) exec -T api python -m autotrading.jobs.buyback_evaluate
+
+buyback-backfill: ## Queue buyback state evaluations at every month end since 2021, marked backfilled (run once)
+	$(COMPOSE) exec -T api python -m autotrading.jobs.buyback_evaluate --backfill
+
+buyback-verify: ## Recompute the latest 20 stored buyback state assignments and report any that differ
+	$(COMPOSE) exec -T api python -m autotrading.jobs.buyback_evaluate --verify 20
 
 replay-fixtures: ## CI only: load the recorded SEC, FRED, Alpaca and news fixtures into the stack database
 	cd $(API) && uv run python -m tests.replay

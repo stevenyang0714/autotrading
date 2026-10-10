@@ -904,6 +904,77 @@ class ValuationAssumptionSet(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
+# ---------- buyback states (M1.4b) ----------
+
+BUYBACK_STATES = ("none", "watch", "active", "high_conviction")  # TRADE-READY: Phase 2 (P1-4)
+EVALUATION_TRIGGERS = ("schedule", "manual", "backfill", "replay")
+
+
+class BuybackRuleSet(Base):
+    """One released rule_version of config/buyback_rules.yaml (ADR-025 B4), loaded by `make
+    migrate` with the sha256 of its content. Append-only and audited: a released version never
+    changes, so every stored state assignment can be recomputed with the rules it used."""
+
+    __tablename__ = "buyback_rule_sets"
+    __table_args__ = (
+        CheckConstraint(r"rule_version ~ '^\d+\.\d+\.\d+$'", name="rule_version_format"),
+        CheckConstraint("content_sha256 ~ '^[0-9a-f]{64}$'", name="content_sha256_format"),
+        UniqueConstraint("rule_version", name="uq_buyback_rule_sets_rule_version"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    rule_version: Mapped[str] = mapped_column(Text)
+    content: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    content_sha256: Mapped[str] = mapped_column(Text)
+    approved: Mapped[date] = mapped_column(Date)
+    loaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class BuybackStateAssignment(Base):
+    """One evaluation of a company's buyback state (ADR-025, errata E7): at known_at (T), as the
+    database held it at system_time, under one rule version. `assessment` keeps every
+    condition's value, threshold, inputs and evidence, and the score with its components, so
+    recomputing with the same T, system_time and rule version gives the same row. Backfilled
+    rows were computed later than T (month ends since 2021, B6). Append-only."""
+
+    __tablename__ = "buyback_state_assignments"
+    __table_args__ = (
+        CheckConstraint(sql_in("state", BUYBACK_STATES), name="state"),
+        CheckConstraint(sql_in("trigger", EVALUATION_TRIGGERS), name="trigger"),
+        CheckConstraint("score IS NULL OR (score >= 0 AND score <= 100)", name="score_range"),
+        CheckConstraint("system_time >= known_at", name="system_time_after_known_at"),
+        UniqueConstraint(
+            "instrument_id",
+            "known_at",
+            "rule_version",
+            name="uq_buyback_state_assignments_instrument_known_at_rule",
+        ),
+        Index("ix_buyback_state_assignments_rule_version_known_at", "rule_version", "known_at"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    instrument_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("instruments.id"))
+    ticker: Mapped[str] = mapped_column(Text)
+    known_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    system_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    rule_version: Mapped[str] = mapped_column(Text, ForeignKey("buyback_rule_sets.rule_version"))
+    extractor_version: Mapped[str] = mapped_column(Text)
+    state: Mapped[str] = mapped_column(Text)
+    score: Mapped[Decimal | None] = mapped_column(Numeric)
+    assessment: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    backfilled: Mapped[bool] = mapped_column(Boolean)
+    trigger: Mapped[str] = mapped_column(Text)
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
 # ---------- filing reconciliation (M1.1) ----------
 
 RECONCILIATION_CHECKS = ("fact", "identity", "quarter", "split")

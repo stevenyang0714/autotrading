@@ -71,6 +71,8 @@ SCHEDULES: dict[str, DailySchedule | IntervalSchedule] = {
     "fred": FRED,
     "gdelt": GDELT,
 }
+# Buyback states (M1.4b): evaluated after the SEC and FRED refreshes of the day.
+BUYBACK_STATES = DailySchedule(11, 0)
 # Official RSS feeds (M0.8): every 30 minutes at :05 and :35, one run per feed.
 NEWS_FEEDS = IntervalSchedule(30, 5)
 

@@ -1145,8 +1145,7 @@ def test_record_web_fixtures(client: TestClient) -> None:
         ("research-xom", "/instruments/XOM/research", {"known_at": VALUED_AT}),
         ("research-dashboard", "/research", {"known_at": VALUED_AT}),
         ("research-dashboard-stale", "/research", {"known_at": "2026-10-20T00:00:00Z"}),
-        ("buybacks-aapl", "/instruments/AAPL/buybacks", {"known_at": VALUED_AT}),
-        ("buybacks-xom", "/instruments/XOM/buybacks", {"known_at": VALUED_AT}),
+        # buybacks-*: recorded with their states by test_buyback_states.py (M1.4b)
     ):
         response = client.get(path, params=params)
         assert response.status_code == 200

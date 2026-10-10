@@ -181,6 +181,34 @@ METRICS: tuple[MetricDefinition, ...] = (
                 )
             },
             "repurchase_announcement": "buyback_announcements.statement",
+            # M1.4b (ADR-025): states and score under a rule version, from evidence known at T.
+            **{
+                term_id: "buyback_states.assess"
+                for term_id in (
+                    "buyback_state",
+                    "buyback_state_watch",
+                    "buyback_state_active",
+                    "buyback_state_high_conviction",
+                    "buyback_state_trade_ready",
+                    "remaining_to_market_cap",
+                    "quarter_repurchase_to_market_cap",
+                    "fcf_funding",
+                    "net_debt_change_yoy",
+                    "fcf_yield_to_median",
+                    "close_vs_moving_average",
+                    "relative_return_1m",
+                    "market_confirmation",
+                    "buyback_quality_score",
+                    "buyback_score_undervaluation",
+                    "buyback_score_intensity",
+                    "buyback_score_fcf_quality",
+                    "buyback_score_balance_sheet",
+                    "buyback_score_discipline",
+                    "buyback_score_share_count",
+                    "net_debt_to_fcf",
+                    "disciplined_years",
+                )
+            },
         }.items()
     ),
     MetricDefinition(
