@@ -79,12 +79,17 @@ def enqueue_sec_companies(message_data: dict[str, Any], result: str) -> None:
 
 @dramatiq.actor(queue_name=INGESTION_QUEUE, max_retries=3, broker=broker)
 def enqueue_sec_filing_xbrl(message_data: dict[str, Any], result: str) -> None:
-    """on_success callback of a `sec.company` run: read new filings' own XBRL (M1.1)."""
+    """on_success callback of a `sec.company` run: read new filings' own XBRL (M1.1) and new
+    8-Ks for buyback announcements (M1.4a)."""
     company_run = UUID(message_data["args"][0])
-    run_id = sec_refresh.create_filing_xbrl_run(ingestion_runner(), company_run)
-    if run_id is not None:
-        run_ingestion.send(str(run_id))
-        logger.info("SEC refresh: filing XBRL run %s queued after %s", run_id, result)
+    runner = ingestion_runner()
+    for kind, run_id in (
+        ("filing XBRL", sec_refresh.create_filing_xbrl_run(runner, company_run)),
+        ("8-K", sec_refresh.create_eight_k_run(runner, company_run)),
+    ):
+        if run_id is not None:
+            run_ingestion.send(str(run_id))
+            logger.info("SEC refresh: %s run %s queued after %s", kind, run_id, result)
 
 
 def start_sec_refresh(*, manual: bool) -> UUID | None:

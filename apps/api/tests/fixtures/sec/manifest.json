@@ -19,7 +19,22 @@
     "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/aapl-20260627_htm.xml": "0000320193-26-000020_instance.xml",
     "https://www.sec.gov/Archives/edgar/data/1326801/000162828026003942/meta-20251231_htm.xml": "0001628280-26-003942_instance.xml",
     "https://www.sec.gov/Archives/edgar/data/1326801/000162828026050705/meta-20260630_htm.xml": "0001628280-26-050705_instance.xml",
-    "https://www.sec.gov/Archives/edgar/data/1326801/000132680119000055/fb-06302019x10q_htm.xml": "0001326801-19-000055_instance.xml"
+    "https://www.sec.gov/Archives/edgar/data/1326801/000132680119000055/fb-06302019x10q_htm.xml": "0001326801-19-000055_instance.xml",
+    "https://www.sec.gov/Archives/edgar/data/320193/000032019324000067/0000320193-24-000067-index-headers.html": "0000320193-24-000067-index-headers.html",
+    "https://www.sec.gov/Archives/edgar/data/320193/000032019324000067/aapl-20240502.htm": "0000320193-24-000067_aapl-20240502.htm",
+    "https://www.sec.gov/Archives/edgar/data/320193/000032019324000067/a8-kex991q2202403302024.htm": "0000320193-24-000067_a8-kex991q2202403302024.htm",
+    "https://www.sec.gov/Archives/edgar/data/320193/000114036125018400/0001140361-25-018400-index-headers.html": "0001140361-25-018400-index-headers.html",
+    "https://www.sec.gov/Archives/edgar/data/320193/000114036125018400/ef20048691_8k.htm": "0001140361-25-018400_ef20048691_8k.htm",
+    "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/0000320193-26-000011-index-headers.html": "0000320193-26-000011-index-headers.html",
+    "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/aapl-20260430.htm": "0000320193-26-000011_aapl-20260430.htm",
+    "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm": "0000320193-26-000011_a8-kex991q2202603282026.htm",
+    "https://www.sec.gov/Archives/edgar/data/1326801/000132680124000010/0001326801-24-000010-index-headers.html": "0001326801-24-000010-index-headers.html",
+    "https://www.sec.gov/Archives/edgar/data/1326801/000132680124000010/meta-20240201.htm": "0001326801-24-000010_meta-20240201.htm",
+    "https://www.sec.gov/Archives/edgar/data/1326801/000132680124000010/meta-12312023xexhibit991.htm": "0001326801-24-000010_meta-12312023xexhibit991.htm",
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408825000059/0000034088-25-000059-index-headers.html": "0000034088-25-000059-index-headers.html",
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408825000059/xom-20251031.htm": "0000034088-25-000059_xom-20251031.htm",
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408825000059/livef8k3q25991.htm": "0000034088-25-000059_livef8k3q25991.htm",
+    "https://www.sec.gov/Archives/edgar/data/34088/000003408825000059/livef8k3q25992.htm": "0000034088-25-000059_livef8k3q25992.htm"
   },
   "trimmed": {
     "company_tickers_exchange.json": "data rows limited to config/universe.yaml equities",
@@ -60,5 +75,13 @@
       "accession": "0001193125-10-012091",
       "value": "6119000000"
     }
-  }
+  },
+  "eight_ks": [
+    "0000320193-24-000067",
+    "0001140361-25-018400",
+    "0000320193-26-000011",
+    "0001326801-24-000010",
+    "0000034088-25-000059"
+  ],
+  "eight_ks_recorded_at": "2026-10-10T02:49:38+00:00"
 }
