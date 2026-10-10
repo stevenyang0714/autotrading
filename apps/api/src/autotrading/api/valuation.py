@@ -35,6 +35,7 @@ from autotrading.domain.valuation import (
     Close,
     Input,
     PriceInput,
+    Unit,
     Valued,
     select_price,
     valuation,
@@ -82,7 +83,7 @@ class InputOut(BaseModel):
 
 class MetricOut(BaseModel):
     metric_id: str
-    unit: Literal["USD", "USD/shares", "x", "percent"]
+    unit: Unit
     value: Decimal | None
     reason: Literal["unavailable", "not_meaningful"] | None
     detail: str | None

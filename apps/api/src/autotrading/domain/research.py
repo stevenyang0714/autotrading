@@ -119,15 +119,15 @@ class Record[FactT: DatedFact]:
     rows: list[tuple[Section, str, Unit, list[Valued[FactT]]]]  # one value per period
 
 
-def _percent(numerator: Decimal, denominator: Decimal) -> Decimal:
+def percent(numerator: Decimal, denominator: Decimal) -> Decimal:
     return (numerator / denominator * 100).quantize(RATIO)
 
 
-def _growth(now: Decimal, before: Decimal) -> Decimal:
+def growth(now: Decimal, before: Decimal) -> Decimal:
     return ((now / before - 1) * 100).quantize(RATIO)
 
 
-class _Book[FactT: DatedFact]:
+class Book[FactT: DatedFact]:
     """The facts known at T, indexed, with quarter series computed once per metric."""
 
     def __init__(self, facts: Sequence[FactT], at: datetime, splits: Sequence[Split]) -> None:
@@ -289,7 +289,7 @@ class _Book[FactT: DatedFact]:
         return Input("diluted_shares", value, fact.period_start, fact.period_end, (fact,), note)
 
 
-def _valued[FactT: DatedFact](
+def valued[FactT: DatedFact](
     metric: str,
     unit: Unit,
     needed: Sequence[tuple[str, Input[FactT] | None]],
@@ -314,15 +314,13 @@ def _valued[FactT: DatedFact](
     return Valued(metric, unit, compute(values), inputs=inputs)
 
 
-def _with_detail[FactT: DatedFact](value: Valued[FactT], detail: str | None) -> Valued[FactT]:
+def with_detail[FactT: DatedFact](value: Valued[FactT], detail: str | None) -> Valued[FactT]:
     if detail is None or value.value is None:
         return value
     return Valued(value.metric_id, value.unit, value.value, None, detail, value.inputs)
 
 
-def _period_values[FactT: DatedFact](
-    book: _Book[FactT], window: Window
-) -> dict[str, Valued[FactT]]:
+def _period_values[FactT: DatedFact](book: Book[FactT], window: Window) -> dict[str, Valued[FactT]]:
     """Every row's value for one period; the period a year earlier ends at its opening."""
     prior_end = window.opening
     flow: dict[str, Input[FactT] | None] = {
@@ -347,11 +345,11 @@ def _period_values[FactT: DatedFact](
     revenue: tuple[str, Input[FactT] | None] = ("revenue", flow["revenue"])
     out: dict[str, Valued[FactT]] = {}
 
-    out["revenue_growth"] = _valued(
+    out["revenue_growth"] = valued(
         "revenue_growth",
         "percent",
         [revenue, ("revenue a year earlier", prior_revenue)],
-        lambda v: _growth(v[0], v[1]),
+        lambda v: growth(v[0], v[1]),
         [(1, "revenue a year earlier")],
     )
     for metric, part in (
@@ -359,11 +357,11 @@ def _period_values[FactT: DatedFact](
         ("operating_margin", "operating_income"),
         ("net_margin", "net_income"),
     ):
-        out[metric] = _valued(
+        out[metric] = valued(
             metric,
             "percent",
             [(LABELS[part], flow[part]), revenue],
-            lambda v: _percent(v[0], v[1]),
+            lambda v: percent(v[0], v[1]),
             [(1, "revenue")],
         )
 
@@ -373,12 +371,12 @@ def _period_values[FactT: DatedFact](
         if tax is not None and tax.value is not None and tax.value < 0
         else None
     )
-    out["effective_tax_rate"] = _with_detail(
-        _valued(
+    out["effective_tax_rate"] = with_detail(
+        valued(
             "effective_tax_rate",
             "percent",
             [("income tax expense", tax), ("pretax income", pretax)],
-            lambda v: _percent(v[0], v[1]),
+            lambda v: percent(v[0], v[1]),
             [(1, "pretax income")],
         ),
         benefit,
@@ -424,10 +422,10 @@ def _period_values[FactT: DatedFact](
                 operating.period_start,
                 operating.period_end,
                 operating.sources + tax.sources + pretax.sources,
-                f"operating income x (1 - tax rate {_percent(tax.value, pretax.value)}%)",
+                f"operating income x (1 - tax rate {percent(tax.value, pretax.value)}%)",
             )
-            out["roic"] = _with_detail(
-                _valued(
+            out["roic"] = with_detail(
+                valued(
                     "roic",
                     "percent",
                     [
@@ -435,7 +433,7 @@ def _period_values[FactT: DatedFact](
                         (f"invested capital on {window.opening}", ic_open),
                         (f"invested capital on {window.end}", ic_close),
                     ],
-                    lambda v: _percent(v[0], (v[1] + v[2]) / 2),
+                    lambda v: percent(v[0], (v[1] + v[2]) / 2),
                     [
                         (1, f"invested capital on {window.opening}"),
                         (2, f"invested capital on {window.end}"),
@@ -446,7 +444,7 @@ def _period_values[FactT: DatedFact](
 
     equity_open = book.instant("stockholders_equity", window.opening)
     equity_close = book.instant("stockholders_equity", window.end)
-    out["roe"] = _valued(
+    out["roe"] = valued(
         "roe",
         "percent",
         [
@@ -454,7 +452,7 @@ def _period_values[FactT: DatedFact](
             (f"stockholders' equity on {window.opening}", equity_open),
             (f"stockholders' equity on {window.end}", equity_close),
         ],
-        lambda v: _percent(v[0], (v[1] + v[2]) / 2),
+        lambda v: percent(v[0], (v[1] + v[2]) / 2),
         [
             (1, f"stockholders' equity on {window.opening}"),
             (2, f"stockholders' equity on {window.end}"),
@@ -462,11 +460,11 @@ def _period_values[FactT: DatedFact](
     )
 
     fcf, fcf_missing = book.free_cash_flow(window)
-    out["fcf_conversion"] = _valued(
+    out["fcf_conversion"] = valued(
         "fcf_conversion",
         "percent",
         [("free cash flow", fcf), ("net income", flow["net_income"])],
-        lambda v: _percent(v[0], v[1]),
+        lambda v: percent(v[0], v[1]),
         [(1, "net income")],
         {"free cash flow": fcf_missing},
     )
@@ -493,7 +491,7 @@ def _period_values[FactT: DatedFact](
         if v is None
     ]
     debt = book.net_debt(window.end)
-    out["net_debt_to_ebitda"] = _valued(
+    out["net_debt_to_ebitda"] = valued(
         "net_debt_to_ebitda",
         "x",
         [(f"net debt on {window.end}", debt), ("EBITDA", ebitda)],
@@ -503,7 +501,7 @@ def _period_values[FactT: DatedFact](
     )
 
     # Capital allocation.
-    out["free_cash_flow"] = _valued(
+    out["free_cash_flow"] = valued(
         "free_cash_flow",
         "USD",
         [("free cash flow", fcf)],
@@ -511,10 +509,10 @@ def _period_values[FactT: DatedFact](
         explain={"free cash flow": fcf_missing},
     )
     for metric in ("share_repurchases", "dividends_paid", "stock_based_compensation"):
-        out[metric] = _valued(metric, "USD", [(LABELS[metric], flow[metric])], lambda v: v[0])
+        out[metric] = valued(metric, "USD", [(LABELS[metric], flow[metric])], lambda v: v[0])
     dividends = flow["dividends_paid"]
     zero_note = dividends.note if dividends is not None and not dividends.sources else None
-    out["dividends_paid"] = _with_detail(out["dividends_paid"], zero_note)
+    out["dividends_paid"] = with_detail(out["dividends_paid"], zero_note)
     buybacks = flow["share_repurchases"]
     returned = (
         Input(
@@ -532,8 +530,8 @@ def _period_values[FactT: DatedFact](
         and dividends.value is not None
         else None
     )
-    out["cash_returned"] = _with_detail(
-        _valued(
+    out["cash_returned"] = with_detail(
+        valued(
             "cash_returned",
             "USD",
             [("share repurchases", buybacks), ("dividends paid", dividends)],
@@ -541,11 +539,11 @@ def _period_values[FactT: DatedFact](
         ),
         f"dividends {zero_note}" if zero_note else None,
     )
-    out["cash_returned_to_fcf"] = _valued(
+    out["cash_returned_to_fcf"] = valued(
         "cash_returned_to_fcf",
         "percent",
         [("cash returned", returned), ("free cash flow", fcf)],
-        lambda v: _percent(v[0], v[1]),
+        lambda v: percent(v[0], v[1]),
         [(1, "free cash flow")],
         {
             "cash returned": [
@@ -559,17 +557,17 @@ def _period_values[FactT: DatedFact](
 
     shares_now = book.diluted_shares(window, window.end)
     shares_before = book.diluted_shares(window, prior_end)
-    out["diluted_shares_change"] = _valued(
+    out["diluted_shares_change"] = valued(
         "diluted_shares_change",
         "percent",
         [("diluted shares", shares_now), ("diluted shares a year earlier", shares_before)],
-        lambda v: _growth(v[0], v[1]),
+        lambda v: growth(v[0], v[1]),
         [(1, "diluted shares a year earlier")],
     )
     return out
 
 
-def periods[FactT: DatedFact](book: _Book[FactT]) -> list[Window]:
+def periods[FactT: DatedFact](book: Book[FactT]) -> list[Window]:
     """TTM (when it ends after the last fiscal year), then the last five fiscal years."""
     years = [
         Window("fiscal_year", p.start, p.end)
@@ -591,7 +589,7 @@ def research_record[FactT: DatedFact](
     facts: Sequence[FactT], at: datetime, splits: Sequence[Split]
 ) -> Record[FactT]:
     """Every row for every period, as known at `at` (facts already filtered to it)."""
-    book = _Book(facts, at, splits)
+    book = Book(facts, at, splits)
     shown = periods(book)
     by_period = [_period_values(book, w) for w in shown]
     return Record(

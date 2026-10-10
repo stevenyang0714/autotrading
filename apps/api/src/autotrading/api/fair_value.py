@@ -61,6 +61,7 @@ from autotrading.domain.fundamentals import merge_by_precedence
 from autotrading.domain.valuation import (
     METRICS,
     Input,
+    Unit,
     close_basis,
     latest_net_debt,
     share_count,
@@ -245,7 +246,7 @@ class ReverseDcf(BaseModel):
 
 class RelativeOut(BaseModel):
     metric_id: str
-    unit: Literal["USD", "USD/shares", "x", "percent"]
+    unit: Unit
     current: Decimal | None  # as on the Valuation block
     median: Decimal | None
     percentile: Decimal | None  # share of month ends at or below the current value

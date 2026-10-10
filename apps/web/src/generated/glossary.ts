@@ -13,6 +13,8 @@ export type CompleteTermId =
   | "audit_actor"
   | "balance_identity"
   | "bid"
+  | "buyback_intensity"
+  | "buyback_record"
   | "capex"
   | "cash"
   | "cash_returned"
@@ -38,6 +40,7 @@ export type CompleteTermId =
   | "data_age"
   | "data_freshness"
   | "dead_letter"
+  | "debt_funded_buyback"
   | "depreciation_amortization"
   | "dev_log"
   | "diluted_shares"
@@ -97,6 +100,8 @@ export type CompleteTermId =
   | "net_debt_to_ebitda"
   | "net_income"
   | "net_margin"
+  | "net_share_reduction"
+  | "net_share_reduction_pct"
   | "news_time_basis"
   | "next_refresh"
   | "nopat"
@@ -131,8 +136,10 @@ export type CompleteTermId =
   | "real_gdp_growth_annualized"
   | "reconciliation_status"
   | "reporting_period"
+  | "repurchase_announcement"
   | "repurchase_authorized"
   | "repurchase_remaining"
+  | "repurchase_to_fcf"
   | "research_record"
   | "restated_flag"
   | "revenue"
@@ -142,6 +149,7 @@ export type CompleteTermId =
   | "roic"
   | "rule_insight"
   | "sahm_rule_indicator"
+  | "sbc_offset"
   | "scenario_range"
   | "share_repurchases"
   | "shares_outstanding"
@@ -389,6 +397,59 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "買價",
     "hint_zh": "目前買方出的最高價（此交易所內）。"
+  },
+  "buyback_intensity": {
+    "term_id": "buyback_intensity",
+    "display_name": "Buyback Intensity",
+    "category": "corporate_action",
+    "short_definition": "Actual repurchases relative to market cap.",
+    "full_definition": "Dollars paid for share repurchases divided by market capitalization at the period end: the last end-of-day close on or before the end times balance-sheet shares outstanding then, on the close's split basis. Per fiscal year as reported, and for the last four quarters (TTM) from year-to-date 10-Q values, as known at the As known on time. Unavailable without an end-of-day close (fixture prices) or a share count.",
+    "formula": "share_repurchases / (close at period end x shares_outstanding at period end)",
+    "unit": "percent",
+    "example": "Apple FY2025: $90.711B / $3.774T (close 2025-09-26 x 14.773B shares) = 2.40%.",
+    "direction": "Higher = more intensive, not automatically better",
+    "interpretation": "Scale of capital returned through repurchases.",
+    "why_it_matters": "Separates real buyback activity from announcements.",
+    "source": "Derived from SEC XBRL filings and daily closes (domain/buyback.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "per filing",
+    "caveats": "Does not by itself imply undervaluation or future outperformance; repurchases / FCF shows the funding side.",
+    "related_terms": [
+      "net_share_reduction",
+      "repurchase_to_fcf",
+      "market_cap"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "回購強度",
+    "hint_zh": "買回金額 ÷ 期末市值。"
+  },
+  "buyback_record": {
+    "term_id": "buyback_record",
+    "display_name": "Buyback Record",
+    "category": "corporate_action",
+    "short_definition": "A company's buyback authorizations, actual repurchases and net share reduction, kept apart.",
+    "full_definition": "The instrument page section of M1.4a (ADR-025): announcements of new or increased authorizations, plans and remaining amounts from 8-Ks and press releases; the authorization the 10-Q or 10-K tags; and per period the dollars and shares repurchased, intensity, funding, SBC offset, debt-funded flag, net share reduction and diluted share change. An announcement is not a repurchase, and a repurchase is not a share-count reduction (02 §5).",
+    "formula": "not a single calculation; reads GET /instruments/{ticker}/buybacks",
+    "unit": "N/A",
+    "example": "Apple: a $100 billion authorization increase on 2026-04-30; $90.711 billion repurchased in FY2025; 343.5 million fewer shares outstanding.",
+    "direction": "N/A",
+    "interpretation": "Read the three parts together: what the board allowed, what was spent, and what shareholders actually gained.",
+    "why_it_matters": "Buybacks are often announced loudly and executed quietly, or offset by stock compensation.",
+    "source": "SEC 8-K documents, issuer press releases and XBRL filings (ADR-025)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "per filing",
+    "caveats": "8-Ks are read from 2021 on; press releases only for the five issuers with a newsroom feed.",
+    "related_terms": [
+      "repurchase_announcement",
+      "share_repurchases",
+      "net_share_reduction",
+      "buyback_intensity"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "回購紀錄",
+    "hint_zh": "授權、實際買回、淨減少股數分開看：董事會准了多少、實際花了多少、股東實際多拿到多少。"
   },
   "capex": {
     "term_id": "capex",
@@ -1005,6 +1066,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "失敗佇列",
     "hint_zh": "重試多次仍失敗的擷取工作，需要人工處理。"
+  },
+  "debt_funded_buyback": {
+    "term_id": "debt_funded_buyback",
+    "display_name": "Debt-Funded Buyback",
+    "category": "corporate_action",
+    "short_definition": "Whether net debt rose over the period while repurchases exceeded free cash flow.",
+    "full_definition": "Yes when net debt at the period end is above net debt at its start and dollars repurchased exceed free cash flow; no otherwise. Unavailable when any of the four inputs is not reported (banks have no comparable net debt). Per fiscal year as reported, and for the last four quarters (TTM) from year-to-date 10-Q values, as known at the As known on time.",
+    "formula": "net_debt_end > net_debt_start AND share_repurchases > free_cash_flow",
+    "unit": "yes / no",
+    "example": "Apple FY2025: no (repurchases $90.711B within free cash flow $98.767B).",
+    "direction": "Yes = a warning sign",
+    "interpretation": "Borrowing to buy back stock raises risk and can flatter per-share figures.",
+    "why_it_matters": "02 §5 asks to tell debt-funded buybacks apart.",
+    "source": "Derived from SEC XBRL filings and daily closes (domain/buyback.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "per filing",
+    "caveats": "Net debt can rise for other reasons (an acquisition); read with the cash flow statement.",
+    "related_terms": [
+      "net_debt",
+      "repurchase_to_fcf"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "借錢買回",
+    "hint_zh": "期間內淨負債上升且買回超過自由現金流。"
   },
   "depreciation_amortization": {
     "term_id": "depreciation_amortization",
@@ -2504,6 +2590,57 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "淨利率",
     "hint_zh": "淨利 ÷ 營收。"
   },
+  "net_share_reduction": {
+    "term_id": "net_share_reduction",
+    "display_name": "Net Share Reduction",
+    "category": "corporate_action",
+    "short_definition": "How many fewer shares are outstanding than a year earlier, after all issuance.",
+    "full_definition": "Shares outstanding a year earlier minus shares outstanding now (balance-sheet counts, both moved to the split basis of the As known on time; ADR-025 B5). It nets every repurchase against every issuance (stock compensation, option exercises, acquisitions), so it is what the buyback left for shareholders. Shown beside gross shares repurchased and the diluted share change. Per fiscal year as reported, and for the last four quarters (TTM) from year-to-date 10-Q values, as known at the As known on time.",
+    "formula": "shares_outstanding_open - shares_outstanding_close (split-adjusted)",
+    "unit": "shares",
+    "example": "Apple FY2025: 15,116,786,000 - 14,773,260,000 = 343,526,000 shares.",
+    "direction": "Higher = greater per-share benefit",
+    "interpretation": "The buyback effect that actually reaches shareholders.",
+    "why_it_matters": "Gross buybacks can hide heavy SBC dilution.",
+    "source": "Derived from SEC XBRL filings and daily closes (domain/buyback.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "per filing",
+    "caveats": "Period-end counts; multi-class issuers are summed across classes (ADR-021).",
+    "related_terms": [
+      "net_share_reduction_pct",
+      "shares_repurchased",
+      "diluted_shares_change"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "淨減少股數",
+    "hint_zh": "一年前流通股數 − 現在流通股數（同一分割基準），已扣掉所有發行。"
+  },
+  "net_share_reduction_pct": {
+    "term_id": "net_share_reduction_pct",
+    "display_name": "Net Share Reduction %",
+    "category": "corporate_action",
+    "short_definition": "Net share reduction as a share of the shares outstanding a year earlier.",
+    "full_definition": "Shares outstanding a year earlier minus shares outstanding now, divided by the count a year earlier, both on the split basis of the As known on time (ADR-025 B5). Per fiscal year as reported, and for the last four quarters (TTM) from year-to-date 10-Q values, as known at the As known on time.",
+    "formula": "(shares_outstanding_open - shares_outstanding_close) / shares_outstanding_open",
+    "unit": "percent",
+    "example": "Apple FY2025: 343,526,000 / 15,116,786,000 = 2.27%.",
+    "direction": "Higher = each share owns more of the company",
+    "interpretation": "The per-share gain from buybacks after all issuance.",
+    "why_it_matters": "The number that reaches shareholders, unlike gross repurchases (01 §4).",
+    "source": "Derived from SEC XBRL filings and daily closes (domain/buyback.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "per filing",
+    "caveats": "Balance-sheet counts at period ends; acquisitions paid in stock reduce it.",
+    "related_terms": [
+      "net_share_reduction",
+      "diluted_shares_change"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "淨減少股數 %",
+    "hint_zh": "淨減少股數 ÷ 一年前流通股數。"
+  },
   "news_time_basis": {
     "term_id": "news_time_basis",
     "display_name": "News Time",
@@ -2789,7 +2926,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "Instruments",
     "category": "navigation",
     "short_definition": "Universe stocks with their prices, SEC-reported fundamentals and news as known at a chosen date.",
-    "full_definition": "System page listing the equities in config/universe.yaml. Each stock page shows its latest price with feed status and one year of daily closes (M0.7), valuation and fair value (M1.2, M1.3a), the Research Record (M1.3b), the last three fiscal years, quarters and recent balance sheets from SEC XBRL filings, every value linked to its filing, and recent news stories (M0.8), with an As known on date to see what was public at that time.",
+    "full_definition": "System page listing the equities in config/universe.yaml. Each stock page shows its latest price with feed status and one year of daily closes (M0.7), valuation and fair value (M1.2, M1.3a), the Research Record (M1.3b), buybacks (M1.4a), the last three fiscal years, quarters and recent balance sheets from SEC XBRL filings, every value linked to its filing, and recent news stories (M0.8), with an As known on date to see what was public at that time.",
     "formula": "not a calculation; reads GET /instruments, /instruments/{ticker}/fundamentals, /instruments/{ticker}/prices and /news",
     "unit": "page",
     "example": "Choosing As known on 2010-01-25 on AAPL shows FY2008 net income before Apple's 2010 restatement.",
@@ -2807,7 +2944,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "accession_number",
       "research_record"
     ],
-    "methodology_version": "0.3.0",
+    "methodology_version": "0.4.0",
     "name_zh": "個股",
     "hint_zh": "投資範圍內股票的財報、估值、合理價值與研究紀錄，可切換「當時已知」的版本。"
   },
@@ -3365,6 +3502,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "報告期間",
     "hint_zh": "數值所描述的期間，以期末日標示；不是公布日。"
   },
+  "repurchase_announcement": {
+    "term_id": "repurchase_announcement",
+    "display_name": "Repurchase Announcement",
+    "category": "corporate_action",
+    "short_definition": "A new or increased buyback authorization, a buyback plan, or a remaining amount, as an issuer states it.",
+    "full_definition": "A sentence of an 8-K (body or EX-99 exhibit) or an issuer press release whose dollar amount is tied to an authorization ('authorized / approved [an additional] $X ... repurchase'), a plan ('plans to repurchase $X', which counts as an announcement, B9) or a remaining amount ('$X remaining under the authorization'). Repurchases already made, debt and tender offers never count. The same kind and amount within 30 days is one event (an 8-K and its press release, or a later filing repeating the stated date), dated by the stated or earliest publication date; every source is kept as evidence. Only the sentence (at most 300 characters) and the link are stored.",
+    "formula": "rule-based sentence match (extractor 0.1.0)",
+    "unit": "USD",
+    "example": "Apple 8-K, 2024-05-02: 'our Board has authorized an additional $110 billion for share repurchases' (increase, $110 billion).",
+    "direction": "N/A",
+    "interpretation": "Evidence that the board allowed buybacks; not evidence that any were made.",
+    "why_it_matters": "The WATCH state needs one (M1.4b), and an announcement alone never goes further (errata E7).",
+    "source": "SEC 8-K documents and issuer press releases (sec.eight_k, news)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_announcements.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "daily",
+    "caveats": "Rule-based: unusual wording can be missed, and a recap without a stated date can repeat an event. 8-Ks from 2021 on; press releases for five issuers.",
+    "related_terms": [
+      "buyback_record",
+      "repurchase_authorized",
+      "repurchase_remaining"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "回購公告",
+    "hint_zh": "8-K 或公司新聞稿中的新授權、授權增加、每年計畫或剩餘額；只是允許，不代表已買。"
+  },
   "repurchase_authorized": {
     "term_id": "repurchase_authorized",
     "display_name": "Buyback Authorization",
@@ -3381,12 +3544,12 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
     "as_of": "2026-10-06",
     "update_cadence": "per filing (10-Q, 10-K)",
-    "caveats": "Apple, Microsoft and Alphabet do not tag a current total authorization; it stays unavailable for them. 8-K announcements are read in M1.4.",
+    "caveats": "Apple, Microsoft and Alphabet do not tag a current total authorization; Apple's tag is a cumulative total last tagged in 2021. It only corroborates the announcements read from 8-Ks and press releases (M1.4a), which are known when made rather than at the next 10-Q.",
     "related_terms": [
       "repurchase_remaining",
       "share_repurchases"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "買回授權額度",
     "hint_zh": "董事會批准可用於買回的金額；授權不等於實際買回。"
   },
@@ -3414,6 +3577,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "剩餘買回額度",
     "hint_zh": "已授權但尚未用掉的買回金額，不代表一定會買。"
+  },
+  "repurchase_to_fcf": {
+    "term_id": "repurchase_to_fcf",
+    "display_name": "Repurchases / FCF",
+    "category": "corporate_action",
+    "short_definition": "Share repurchases as a share of free cash flow.",
+    "full_definition": "Dollars paid for share repurchases divided by free cash flow (operating cash flow - capex) of the same period. Per fiscal year as reported, and for the last four quarters (TTM) from year-to-date 10-Q values, as known at the As known on time. Not meaningful when free cash flow is not positive.",
+    "formula": "share_repurchases / free_cash_flow",
+    "unit": "percent",
+    "example": "Apple FY2025: $90.711B / $98.767B = 91.84%.",
+    "direction": "N/A",
+    "interpretation": "Up to 100% the buyback is paid from what the business generated; above it, from cash or debt.",
+    "why_it_matters": "Buybacks funded by borrowing can create a false signal (01 §4).",
+    "source": "Derived from SEC XBRL filings and daily closes (domain/buyback.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "per filing",
+    "caveats": "One heavy capex year raises it without any change in buyback policy.",
+    "related_terms": [
+      "free_cash_flow",
+      "share_repurchases",
+      "debt_funded_buyback"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "買回 ÷ FCF",
+    "hint_zh": "買回金額 ÷ 自由現金流；超過 100% 代表動用現金或借錢。"
   },
   "research_record": {
     "term_id": "research_record",
@@ -3644,6 +3833,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "薩姆規則指標",
     "hint_zh": "失業率 3 個月平均高於前 12 個月低點的幅度；≥ 0.50 個百分點視為觸發。"
+  },
+  "sbc_offset": {
+    "term_id": "sbc_offset",
+    "display_name": "SBC Offset",
+    "category": "corporate_action",
+    "short_definition": "Stock-based compensation as a share of share repurchases.",
+    "full_definition": "Stock-based compensation expense divided by dollars paid for share repurchases. Per fiscal year as reported, and for the last four quarters (TTM) from year-to-date 10-Q values, as known at the As known on time. Not meaningful when there were no repurchases.",
+    "formula": "stock_based_compensation / share_repurchases",
+    "unit": "percent",
+    "example": "Apple FY2025: $12.863B / $90.711B = 14.18%.",
+    "direction": "Lower = more of the buyback reaches shareholders",
+    "interpretation": "How much of the buyback only replaces shares handed to employees.",
+    "why_it_matters": "Gross buybacks can hide heavy dilution from stock compensation.",
+    "source": "Derived from SEC XBRL filings and daily closes (domain/buyback.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "per filing",
+    "caveats": "SBC is an expense, not the shares issued; net share reduction measures the result.",
+    "related_terms": [
+      "stock_based_compensation",
+      "net_share_reduction"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "SBC 抵銷",
+    "hint_zh": "股票薪酬 ÷ 買回金額：有多少買回只是在補發給員工的股票。"
   },
   "scenario_range": {
     "term_id": "scenario_range",

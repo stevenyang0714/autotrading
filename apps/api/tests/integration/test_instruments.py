@@ -59,7 +59,13 @@ from autotrading.settings import get_settings
 from tests import alpaca_replay, fred_replay
 from tests.factories import financial_fact
 from tests.integration.conftest import alembic_config
-from tests.sec_replay import FIXTURES, RECORDED_INSTANCES, recorded_registry, replay
+from tests.sec_replay import (
+    FIXTURES,
+    RECORDED_EIGHT_KS,
+    RECORDED_INSTANCES,
+    recorded_registry,
+    replay,
+)
 
 pytestmark = pytest.mark.integration
 
@@ -173,15 +179,19 @@ def ends(table: dict[str, Any]) -> list[str]:
 def test_replay_ingests_both_xom_issuers(
     replayed: list[IngestionRun], sessions: sessionmaker[Session]
 ) -> None:
-    # tickers, 4 companies (META included), splits, filing XBRL of Apple and Meta (ADR-021)
+    # tickers, 4 companies (META included), splits, filing XBRL of Apple and Meta (ADR-021),
+    # 8-Ks of Apple, Exxon Mobil Corp and Meta (M1.4a)
     assert [(r.job, r.status) for r in replayed] == (
         [("sec.tickers", "succeeded")]
         + [("sec.company", "succeeded")] * 4
         + [("alpaca.splits", "succeeded")]
         + [("sec.filing_xbrl", "succeeded")] * 2
+        + [("sec.eight_k", "succeeded")] * 3
     )
-    read = [f["accession"] for r in replayed[6:] for f in r.params["filings"]]
+    read = [f["accession"] for r in replayed[6:8] for f in r.params["filings"]]
     assert sorted(read) == sorted(RECORDED_INSTANCES)
+    eight_ks = [f["accession"] for r in replayed[8:] for f in r.params["filings"]]
+    assert sorted(eight_ks) == sorted(RECORDED_EIGHT_KS)
     with sessions() as session:
         assert company_ciks(session, ["XOM"]) == ["0000034088", "0002115436"]
         link = session.scalars(select(EntityRelationship)).one()
@@ -909,6 +919,73 @@ def test_research_dashboard_matches_valuation_and_fair_value(client: TestClient)
     assert apple_stale["fair_value"]["comparison_detail"].startswith("no valuation price")
 
 
+# ---------- buybacks (M1.4a, ADR-025) ----------
+
+
+def buybacks(client: TestClient, ticker: str, known_at: str) -> dict[str, Any]:
+    response = client.get(f"/instruments/{ticker}/buybacks", params={"known_at": known_at})
+    assert response.status_code == 200, response.text
+    body: dict[str, Any] = response.json()
+    return body
+
+
+def by_period(body: dict[str, Any], end: str) -> dict[str, dict[str, Any]]:
+    index = [p["period_end"] for p in body["periods"]].index(end)
+    return {row["metric_id"]: row["cells"][index] for row in body["rows"]}
+
+
+def test_authorization_repurchase_and_net_reduction_are_shown_apart(client: TestClient) -> None:
+    body = buybacks(client, "AAPL", VALUED_AT)
+    # Authorization: the 8-Ks' own sentences, at their acceptance times.
+    events = [(e["day"], e["kind"], e["amount"]) for e in body["announcements"]]
+    assert events == [
+        ("2026-04-30", "increase", "100000000000"),
+        ("2024-05-02", "increase", "110000000000"),
+    ]
+    latest = body["announcements"][0]
+    assert {s["accession"] for s in latest["sources"]} == {"0000320193-26-000011"}
+    assert all(s["published_at"] == latest["first_published_at"] for s in latest["sources"])
+    assert all(
+        len(s["sentence"]) <= 300 and s["url"].startswith("https://www.sec.gov/")
+        for s in latest["sources"]
+    )
+    tagged = body["tagged_authorized"]
+    assert (tagged["value"], tagged["period_end"]) == ("315000000000", "2021-12-25")
+    # Actual repurchase and net share reduction, each with its inputs.
+    fy = by_period(body, "2025-09-27")
+    assert (fy["share_repurchases"]["value"], fy["net_share_reduction"]["value"]) == (
+        "90711000000",
+        "343526000",
+    )
+    assert fy["debt_funded_buyback"]["value"] == "0"
+    # Intensity needs a close at the period end: the recorded closes start in October 2025.
+    ttm = by_period(body, "2026-06-27")
+    cap = next(i for i in ttm["buyback_intensity"]["inputs"] if i["name"] == "market_cap")
+    assert Decimal(ttm["buyback_intensity"]["value"]) > 0 and cap["period_end"] == "2026-06-27"
+    assert fy["buyback_intensity"]["detail"] == "not reported: end-of-day close by 2025-09-27"
+
+
+def test_every_recorded_company_has_the_three_parts(client: TestClient) -> None:
+    for ticker in ("AAPL", "META", "XOM"):
+        body = buybacks(client, ticker, VALUED_AT)
+        assert isinstance(body["announcements"], list), ticker
+        metrics = {row["metric_id"] for row in body["rows"]}
+        assert {"share_repurchases", "net_share_reduction"} <= metrics, ticker
+    meta = buybacks(client, "META", VALUED_AT)["announcements"]
+    assert ("2024-02-01", "increase", "50000000000") in [
+        (e["day"], e["kind"], e["amount"]) for e in meta
+    ]
+    assert any(e["kind"] == "remaining" and e["amount"] == "30930000000" for e in meta)
+    xom = buybacks(client, "XOM", VALUED_AT)["announcements"]
+    assert [(e["kind"], e["amount"]) for e in xom] == [("plan", "20000000000")]
+
+
+def test_buybacks_on_a_past_date_use_only_8ks_public_then(client: TestClient) -> None:
+    body = buybacks(client, "AAPL", "2026-04-15T00:00:00Z")
+    assert [e["day"] for e in body["announcements"]] == ["2024-05-02"]
+    assert body["periods"][0]["period_end"] == "2025-12-27"
+
+
 # ---------- API ----------
 
 
@@ -1063,6 +1140,8 @@ def test_record_web_fixtures(client: TestClient) -> None:
         ("research-xom", "/instruments/XOM/research", {"known_at": VALUED_AT}),
         ("research-dashboard", "/research", {"known_at": VALUED_AT}),
         ("research-dashboard-stale", "/research", {"known_at": "2026-10-20T00:00:00Z"}),
+        ("buybacks-aapl", "/instruments/AAPL/buybacks", {"known_at": VALUED_AT}),
+        ("buybacks-xom", "/instruments/XOM/buybacks", {"known_at": VALUED_AT}),
     ):
         response = client.get(path, params=params)
         assert response.status_code == 200

@@ -45,6 +45,10 @@ SEC_XBRL_METRICS = (
     "pretax_income",
 )
 
+# Reported metrics whose definition changed since 0.1.0: repurchase_authorized only corroborates
+# the 8-K announcements since M1.4a (ADR-025).
+XBRL_METHODOLOGY = {"repurchase_authorized": "0.2.0"}
+
 # FRED series shown on the Macro page (M0.6): reported values with vintages, one term per
 # series in config/macro_series.yaml (a test keeps the two in step).
 MACRO_SERIES_TERMS = (
@@ -84,7 +88,7 @@ METRICS: tuple[MetricDefinition, ...] = (
     *(
         MetricDefinition(
             term_id=metric_id,
-            methodology_version="0.1.0",
+            methodology_version=XBRL_METHODOLOGY.get(metric_id, "0.1.0"),
             computed_by="autotrading.adapters.sec.concepts.METRIC_MAPPINGS",
         )
         for metric_id in SEC_XBRL_METRICS
@@ -160,6 +164,19 @@ METRICS: tuple[MetricDefinition, ...] = (
                     "diluted_shares_change",
                 )
             },
+            # M1.4a (ADR-025): buybacks, from facts, closes and 8-K statements known at T.
+            **{
+                term_id: "buyback.buyback_record"
+                for term_id in (
+                    "buyback_intensity",
+                    "repurchase_to_fcf",
+                    "sbc_offset",
+                    "debt_funded_buyback",
+                    "net_share_reduction",
+                    "net_share_reduction_pct",
+                )
+            },
+            "repurchase_announcement": "buyback_announcements.statement",
         }.items()
     ),
     MetricDefinition(
