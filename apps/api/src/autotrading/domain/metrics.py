@@ -43,11 +43,15 @@ SEC_XBRL_METRICS = (
     "interest_expense",
     "income_tax_expense",
     "pretax_income",
+    # M1.4b (ADR-025 B11)
+    "eps_basic",
+    "basic_shares",
 )
 
-# Reported metrics whose definition changed since 0.1.0: repurchase_authorized only corroborates
-# the 8-K announcements since M1.4a (ADR-025).
-XBRL_METHODOLOGY = {"repurchase_authorized": "0.2.0"}
+# Metrics whose definition changed since 0.1.0 (ADR-025): repurchase_authorized only corroborates
+# the 8-K announcements since M1.4a; diluted_shares_change falls back to basic shares where
+# nothing dilutes (B11).
+METHODOLOGY = {"repurchase_authorized": "0.2.0", "diluted_shares_change": "0.2.0"}
 
 # FRED series shown on the Macro page (M0.6): reported values with vintages, one term per
 # series in config/macro_series.yaml (a test keeps the two in step).
@@ -88,7 +92,7 @@ METRICS: tuple[MetricDefinition, ...] = (
     *(
         MetricDefinition(
             term_id=metric_id,
-            methodology_version=XBRL_METHODOLOGY.get(metric_id, "0.1.0"),
+            methodology_version=METHODOLOGY.get(metric_id, "0.1.0"),
             computed_by="autotrading.adapters.sec.concepts.METRIC_MAPPINGS",
         )
         for metric_id in SEC_XBRL_METRICS
@@ -113,7 +117,7 @@ METRICS: tuple[MetricDefinition, ...] = (
     *(
         MetricDefinition(
             term_id=term_id,
-            methodology_version="0.1.0",
+            methodology_version=METHODOLOGY.get(term_id, "0.1.0"),
             computed_by=f"autotrading.domain.{function}",
         )
         for term_id, function in {

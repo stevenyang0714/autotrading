@@ -89,6 +89,8 @@ terms:
   net_income: {name: 淨利, hint: 歸屬於母公司股東的稅後淨利。}
   eps_diluted: {name: 稀釋每股盈餘, hint: 考慮選擇權與可轉債潛在稀釋後的每股獲利。}
   diluted_shares: {name: 稀釋加權股數, hint: 期間內的加權平均股數，含潛在稀釋股份。}
+  eps_basic: {name: 基本每股盈餘, hint: 只用流通在外股數計算的每股獲利；等於稀釋 EPS 代表沒有稀釋。}
+  basic_shares: {name: 基本加權股數, hint: 期間內的加權平均流通股數，不含潛在稀釋股份。}
   cash: {name: 現金及約當現金, hint: 期末的現金與極短期、高流動性投資。}
   long_term_debt_noncurrent: {name: 長期負債（非流動）, hint: 一年後才到期的借款。}
   long_term_debt_current: {name: 一年內到期長期負債, hint: 長期借款中一年內到期的部分。}
@@ -141,7 +143,7 @@ terms:
   net_debt_to_ebitda: {name: 淨負債 / EBITDA, hint: 期末淨負債 ÷ EBITDA；負值代表淨現金。}
   cash_returned: {name: 回饋股東金額, hint: 庫藏股 + 股利；沒申報股利的期間以 0 計並標示。}
   cash_returned_to_fcf: {name: 回饋股東 / FCF, hint: 回饋股東金額 ÷ 自由現金流；超過 100% 代表動用現金或借錢。}
-  diluted_shares_change: {name: 稀釋股數年增減, hint: 稀釋加權股數 ÷ 一年前 − 1，換算到同一分割基準。}
+  diluted_shares_change: {name: 稀釋股數年增減, hint: 稀釋加權股數 ÷ 一年前 − 1，換算到同一分割基準；沒標稀釋股數且稀釋 EPS = 基本 EPS 時用基本股數。}
   research_record: {name: 研究紀錄, hint: 一家公司近四季與五個財年的成長、品質與資本配置，每個數字附來源申報。}
 
   # buybacks (M1.4a)

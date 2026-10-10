@@ -169,6 +169,15 @@ METRIC_MAPPINGS: tuple[MetricMapping, ...] = (
         "USD",
         "duration",
     ),
+    # M1.4b (ADR-025 B11): basic values, used for diluted shares only where a company reports
+    # diluted EPS equal to basic EPS and tags no diluted share count (ExxonMobil since 2014).
+    MetricMapping("eps_basic", gaap("EarningsPerShareBasic"), "USD/shares", "duration"),
+    MetricMapping(
+        "basic_shares",
+        gaap("WeightedAverageNumberOfSharesOutstandingBasic"),
+        "shares",
+        "duration",
+    ),
 )
 
 MAPPINGS_BY_METRIC = {mapping.metric_id: mapping for mapping in METRIC_MAPPINGS}

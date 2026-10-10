@@ -867,8 +867,13 @@ def test_research_record_names_what_is_missing(client: TestClient) -> None:
     xom = cells(research(client, "XOM", VALUED_AT), "2025-12-31")
     assert xom["roic"]["detail"] == "not reported: operating income"
     assert xom["stock_based_compensation"]["detail"] == "not reported: stock-based compensation"
-    assert xom["diluted_shares_change"]["reason"] == "unavailable"
     assert xom["net_margin"]["value"] is not None  # the rest still stands
+    # No diluted share count after 2013, but diluted EPS equals basic EPS (ADR-025 B11).
+    change = xom["diluted_shares_change"]
+    assert change["value"] == "0.16"  # 4,305M / 4,298M basic shares - 1
+    now = change["inputs"][0]
+    assert now["note"] == "basic weighted shares: diluted EPS equals basic EPS for the period"
+    assert [s["metric_id"] for s in now["sources"]] == ["basic_shares", "eps_diluted", "eps_basic"]
     meta = cells(research(client, "META", VALUED_AT), "2025-12-31")
     assert meta["gross_margin"]["detail"] == "not reported: gross profit"
 

@@ -1,6 +1,6 @@
 """Re-record the SEC fixtures from the live API (opt-in, needs SEC_USER_AGENT in .env).
 
-    cd apps/api && uv run python -m tests.fixtures.sec.record [--eight-ks]
+    cd apps/api && uv run python -m tests.fixtures.sec.record [--eight-ks | --concepts]
 
 Writes real responses, trimmed only where noted in manifest.json:
 - tickers: company_tickers_exchange.json, rows of the universe equities only;
@@ -19,6 +19,10 @@ contexts and units they use.
 8-Ks for buyback announcements (M1.4a, ADR-025): the index-headers page, the 8-K and its EX-99
 exhibits of the filings in EIGHT_KS, unchanged. `--eight-ks` records only these and keeps the
 rest of the manifest as it is.
+
+Concepts mapped after a recording (M1.4b, ADR-025 B11): `--concepts` adds them to the recorded
+company facts, keeping only facts filed by the recording date, and re-trims the recorded
+instances; every other file and fact stays as recorded.
 
 Submissions already recorded are kept: they were recorded on 2026-10-05, before SEC's
 acceptance-time bug, and checked against EDGAR index pages (ADR-013). A company recorded for
@@ -197,6 +201,42 @@ def main_eight_ks() -> None:
     print(f"recorded {len(manifest['eight_ks'])} 8-Ks into {HERE}")
 
 
+def main_concepts() -> None:
+    """Add the concepts mapped since the recording; see the module docstring."""
+    manifest: dict[str, Any] = json.loads((HERE / "manifest.json").read_text(encoding="utf-8"))
+    cutoff = manifest["recorded_at"][:10]
+    added: dict[str, list[str]] = {}
+    with SecClient.from_settings(get_settings()) as client:
+        for cik in COMPANIES:
+            name = f"companyfacts_CIK{cik}.json"
+            recorded = load_companyfacts((HERE / name).read_bytes())
+            live = load_companyfacts(client.get(companyfacts_url(cik), throttle).content)
+            for taxonomy, names in KEPT.items():
+                kept = recorded["facts"].setdefault(taxonomy, {})
+                for concept in sorted(names - set(kept)):
+                    block = live["facts"].get(taxonomy, {}).get(concept)
+                    units = {
+                        unit: [row for row in rows if row["filed"] <= cutoff]
+                        for unit, rows in (block or {}).get("units", {}).items()
+                    }
+                    if block is None or not any(units.values()):
+                        continue
+                    kept[concept] = {**block, "units": {u: r for u, r in units.items() if r}}
+                    added.setdefault(name, []).append(f"{taxonomy}:{concept}")
+            write(name, _dump(recorded))
+        for url, name in manifest["files"].items():
+            if name.endswith("_instance.xml"):
+                kept = _concepts((HERE / name).read_bytes())  # the recording's, as recorded
+                write(name, _trimmed_instance(client.get(url, throttle).content, kept))
+    for name, concepts in added.items():
+        manifest["trimmed"][name] = (
+            "concepts limited to adapters/sec/concepts.py; "
+            f"{', '.join(concepts)} added on {datetime.now(UTC).date()}, facts filed by {cutoff}"
+        )
+    (HERE / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    print(f"added {sum(len(c) for c in added.values())} concept blocks into {HERE}")
+
+
 def record_instances(
     client: SecClient, files: dict[str, str], trimmed: dict[str, str]
 ) -> list[str]:
@@ -228,12 +268,23 @@ def record_instances(
     return [accession for _, accession, _ in chosen]
 
 
-def _trimmed_instance(content: bytes) -> bytes:
+def _concepts(content: bytes) -> frozenset[str]:
+    """The qualified concepts of an instance's facts."""
+    found = set()
+    for element in ET.fromstring(content):
+        namespace, _, name = element.tag[1:].partition("}")
+        match = TAXONOMY_URI.match(namespace)
+        if element.get("contextRef") is not None and match:
+            found.add(f"{match.group(1) or match.group(2)}:{name}")
+    return frozenset(found)
+
+
+def _trimmed_instance(content: bytes, also: frozenset[str] = frozenset()) -> bytes:
     for _, (prefix, uri) in ET.iterparse(io.BytesIO(content), events=["start-ns"]):
         if prefix:
             ET.register_namespace(prefix, uri)
     root = ET.fromstring(content)
-    keep = MAPPED_CONCEPTS | IDENTITY_CONCEPTS
+    keep = MAPPED_CONCEPTS | IDENTITY_CONCEPTS | also
     contexts, units = set(), set()
     for element in list(root):
         if element.get("contextRef") is None:
@@ -304,4 +355,9 @@ def _check_restatement(companyfacts: dict[str, Any]) -> None:
 
 
 if __name__ == "__main__":
-    main_eight_ks() if "--eight-ks" in sys.argv else main()
+    if "--eight-ks" in sys.argv:
+        main_eight_ks()
+    elif "--concepts" in sys.argv:
+        main_concepts()
+    else:
+        main()

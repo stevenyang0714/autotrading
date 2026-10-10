@@ -12,6 +12,7 @@ export type CompleteTermId =
   | "audit_action"
   | "audit_actor"
   | "balance_identity"
+  | "basic_shares"
   | "bid"
   | "buyback_intensity"
   | "buyback_record"
@@ -52,6 +53,7 @@ export type CompleteTermId =
   | "ebitda_ttm"
   | "effective_tax_rate"
   | "enterprise_value"
+  | "eps_basic"
   | "eps_diluted"
   | "eps_diluted_ttm"
   | "equity_risk_premium"
@@ -371,6 +373,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "資產負債恆等式",
     "hint_zh": "資產總額 = 負債加股東權益；不成立代表讀取或申報有問題。"
+  },
+  "basic_shares": {
+    "term_id": "basic_shares",
+    "display_name": "Basic Shares",
+    "category": "fundamentals",
+    "short_definition": "Average number of shares outstanding in the period, without potential dilution.",
+    "full_definition": "Read from us-gaap WeightedAverageNumberOfSharesOutstandingBasic. A weighted average over the period, not the count on the last day. Used as the diluted count only where the company tags no diluted count and its diluted EPS equals its basic EPS for the same period (ADR-025 B11).",
+    "formula": "reported us-gaap:WeightedAverageNumberOfSharesOutstandingBasic",
+    "unit": "shares",
+    "example": "ExxonMobil reports 4,298,000,000 basic weighted average shares for 2024.",
+    "direction": "Lower over time = more per-share value for holders",
+    "interpretation": "Below the diluted count by the shares options and convertibles could add.",
+    "why_it_matters": "The only weighted share count ExxonMobil tags after 2013.",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), us-gaap:WeightedAverageNumberOfSharesOutstandingBasic",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "Stock splits change past counts in later filings; companies with several share classes may tag only some periods.",
+    "related_terms": [
+      "diluted_shares",
+      "eps_basic"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "基本加權股數",
+    "hint_zh": "期間內的加權平均流通股數，不含潛在稀釋股份。"
   },
   "bid": {
     "term_id": "bid",
@@ -1172,7 +1199,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "Diluted Share Change",
     "category": "fundamentals",
     "short_definition": "Change in weighted diluted shares against a year earlier.",
-    "full_definition": "Weighted average diluted shares of the period divided by those of the period a year earlier, minus one, both moved to the split basis of the As known on time (ADR-021). For TTM: the latest reported quarter against the same quarter a year earlier. Per fiscal year as reported in the 10-K, and for the last four quarters (TTM) from year-to-date 10-Q values (ADR-021), each with the facts known at the As known on time.",
+    "full_definition": "Weighted average diluted shares of the period divided by those of the period a year earlier, minus one, both moved to the split basis of the As known on time (ADR-021). For TTM: the latest reported quarter against the same quarter a year earlier. A company that tags no diluted count but reports diluted EPS equal to basic EPS for the period uses its basic weighted shares, labelled (ADR-025 B11; ExxonMobil since 2014). Per fiscal year as reported in the 10-K, and for the last four quarters (TTM) from year-to-date 10-Q values (ADR-021), each with the facts known at the As known on time.",
     "formula": "diluted_shares / diluted_shares a year earlier - 1 (split-adjusted)",
     "unit": "percent",
     "example": "Apple FY2025: 15.005B / 15.408B - 1 = -2.62%.",
@@ -1181,17 +1208,18 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "why_it_matters": "Per-share value grows faster than the business when the share count falls.",
     "source": "Derived from SEC XBRL filings (domain/research.py)",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/research.py",
-    "as_of": "2026-10-09",
+    "as_of": "2026-10-10",
     "update_cadence": "per filing",
-    "caveats": "Not net share reduction (M1.4); ExxonMobil reports no diluted shares after 2013.",
+    "caveats": "Not net share reduction (M1.4). A weighted average over the period, so a buyback late in the year shows fully only in the next one.",
     "related_terms": [
       "diluted_shares",
+      "basic_shares",
       "share_repurchases",
       "stock_based_compensation"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "稀釋股數年增減",
-    "hint_zh": "稀釋加權股數 ÷ 一年前 − 1，換算到同一分割基準。"
+    "hint_zh": "稀釋加權股數 ÷ 一年前 − 1，換算到同一分割基準；沒標稀釋股數且稀釋 EPS = 基本 EPS 時用基本股數。"
   },
   "discount_rate": {
     "term_id": "discount_rate",
@@ -1372,6 +1400,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "企業價值（EV）",
     "hint_zh": "市值加淨負債，包含債權人的部分。"
+  },
+  "eps_basic": {
+    "term_id": "eps_basic",
+    "display_name": "Basic EPS",
+    "category": "fundamentals",
+    "short_definition": "Net income per share, counting only shares outstanding.",
+    "full_definition": "Read from us-gaap EarningsPerShareBasic in USD per share as reported. Values tagged with another unit are ignored. Used to tell whether anything dilutes: where diluted EPS equals basic EPS for a period, the basic share count stands in for a diluted count the company does not tag (ADR-025 B11).",
+    "formula": "reported us-gaap:EarningsPerShareBasic (net income / basic weighted average shares)",
+    "unit": "USD per share",
+    "example": "ExxonMobil's FY2025 10-K reports basic and diluted EPS of $6.70.",
+    "direction": "Higher = more profit per share",
+    "interpretation": "Equal to diluted EPS when options and convertibles add no shares.",
+    "why_it_matters": "The gap to diluted EPS shows how much potential dilution there is.",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), us-gaap:EarningsPerShareBasic",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "Stock splits change past EPS in later filings; such changes are stored as new versions and adjusted to the As known on basis where compared.",
+    "related_terms": [
+      "eps_diluted",
+      "basic_shares"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "基本每股盈餘",
+    "hint_zh": "只用流通在外股數計算的每股獲利；等於稀釋 EPS 代表沒有稀釋。"
   },
   "eps_diluted": {
     "term_id": "eps_diluted",
