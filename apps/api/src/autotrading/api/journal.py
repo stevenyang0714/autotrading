@@ -249,7 +249,7 @@ class PerformanceOut(BaseModel):
     max_loss_breached: bool | None
 
 
-class DecisionOut(BaseModel):
+class JournalDecisionOut(BaseModel):
     id: UUID
     thesis_card_id: UUID
     card_version: int
@@ -301,7 +301,7 @@ class JournalCardOut(BaseModel):
     known_at: datetime  # the viewing time
     card: CardOut  # the requested version, or the latest known at the viewing time
     versions: list[VersionOut]
-    decisions: list[DecisionOut]
+    decisions: list[JournalDecisionOut]
     detail: str = PAPER_ONLY
 
 
@@ -312,8 +312,8 @@ class JournalRow(BaseModel):
     thesis: str
     known_at: datetime  # of the first version
     signal_ids: list[str]
-    decision: DecisionOut | None  # the first decision
-    exit: DecisionOut | None
+    decision: JournalDecisionOut | None  # the first decision
+    exit: JournalDecisionOut | None
 
 
 class JournalOut(BaseModel):
@@ -1117,7 +1117,7 @@ class Performance:
 
 def decisions_out(
     session: Session, rows: Iterable[TradeDecision], at: datetime
-) -> list[DecisionOut]:
+) -> list[JournalDecisionOut]:
     rows = list(rows)
     versions = dict(
         session.execute(
@@ -1129,7 +1129,7 @@ def decisions_out(
     exits = {r.exits_decision_id: r for r in rows if r.exits_decision_id is not None}
     performance = Performance(session, at)
     return [
-        DecisionOut(
+        JournalDecisionOut(
             id=r.id,
             thesis_card_id=r.thesis_card_id,
             card_version=versions[r.thesis_card_id],
@@ -1284,7 +1284,7 @@ def replay(
     decisions = [
         _item(
             "decision_closes",
-            f"{row.decision.replace('_', ' ').upper()} closes at {row.known_at.isoformat()}",
+            f"{row.decision.replace('_', ' ').upper()} closes at {row.known_at:%Y-%m-%d %H:%M} UTC",
             row.entry_close or {},
             closes_at(session, who, row.known_at, row.system_time).model_dump(mode="json")
             if row.entry_close

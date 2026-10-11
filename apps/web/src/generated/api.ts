@@ -1244,6 +1244,17 @@ export interface components {
             /** Source Id */
             source_id: string;
         };
+        /** DecisionOut */
+        DecisionOut: {
+            /** Decision */
+            decision: string;
+            /** Default */
+            default: string;
+            /** Id */
+            id: string;
+            /** Needed By */
+            needed_by: string;
+        };
         /**
          * DerivedCell
          * @description A value computed at read time from inputs known at known_at (ADR-021).
@@ -1887,7 +1898,7 @@ export interface components {
         JournalCardOut: {
             card: components["schemas"]["CardOut"];
             /** Decisions */
-            decisions: components["schemas"]["autotrading__api__journal__DecisionOut"][];
+            decisions: components["schemas"]["JournalDecisionOut"][];
             /**
              * Detail
              * @default Paper journal: decisions are records, never orders. Returns use end-of-day closes only (no costs, slippage, dividends or fills).
@@ -1900,6 +1911,67 @@ export interface components {
             known_at: string;
             /** Versions */
             versions: components["schemas"]["VersionOut"][];
+        };
+        /** JournalDecisionOut */
+        JournalDecisionOut: {
+            /** Approval State */
+            approval_state: string;
+            /** Card Version */
+            card_version: number;
+            closes: components["schemas"]["Closes"] | null;
+            /**
+             * Decision
+             * @enum {string}
+             */
+            decision: "trade" | "no_trade";
+            /** Exited By */
+            exited_by: string | null;
+            /** Exits Decision Id */
+            exits_decision_id: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Limit Price */
+            limit_price: string | null;
+            /** Max Loss */
+            max_loss: string | null;
+            /**
+             * Mode
+             * @constant
+             */
+            mode: "paper";
+            /** No Trade Reason */
+            no_trade_reason: ("priced_in" | "insufficient_evidence" | "excessive_risk" | "other") | null;
+            /** Note */
+            note: string | null;
+            /** Order Type */
+            order_type: string | null;
+            performance: components["schemas"]["PerformanceOut"] | null;
+            /** Quantity */
+            quantity: string | null;
+            /** Side */
+            side: ("buy" | "sell") | null;
+            /** Signal Ids */
+            signal_ids: string[];
+            /** Strategy Id */
+            strategy_id: string | null;
+            /**
+             * System Time
+             * Format: date-time
+             */
+            system_time: string;
+            /**
+             * Thesis Card Id
+             * Format: uuid
+             */
+            thesis_card_id: string;
         };
         /** JournalOut */
         JournalOut: {
@@ -1923,8 +1995,8 @@ export interface components {
              * Format: uuid
              */
             card_id: string;
-            decision: components["schemas"]["autotrading__api__journal__DecisionOut"] | null;
-            exit: components["schemas"]["autotrading__api__journal__DecisionOut"] | null;
+            decision: components["schemas"]["JournalDecisionOut"] | null;
+            exit: components["schemas"]["JournalDecisionOut"] | null;
             /**
              * Known At
              * Format: date-time
@@ -2396,7 +2468,7 @@ export interface components {
             /** Milestones */
             milestones: components["schemas"]["MilestoneOut"][];
             /** Open Decisions */
-            open_decisions: components["schemas"]["autotrading__api__progress__DecisionOut"][];
+            open_decisions: components["schemas"]["DecisionOut"][];
             /** Phases */
             phases: components["schemas"]["PhaseOut"][];
             /**
@@ -3243,78 +3315,6 @@ export interface components {
             announcement_kinds: ("new" | "increase" | "plan")[];
             /** Remaining To Market Cap Min */
             remaining_to_market_cap_min: string;
-        };
-        /** DecisionOut */
-        autotrading__api__journal__DecisionOut: {
-            /** Approval State */
-            approval_state: string;
-            /** Card Version */
-            card_version: number;
-            closes: components["schemas"]["Closes"] | null;
-            /**
-             * Decision
-             * @enum {string}
-             */
-            decision: "trade" | "no_trade";
-            /** Exited By */
-            exited_by: string | null;
-            /** Exits Decision Id */
-            exits_decision_id: string | null;
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /**
-             * Known At
-             * Format: date-time
-             */
-            known_at: string;
-            /** Limit Price */
-            limit_price: string | null;
-            /** Max Loss */
-            max_loss: string | null;
-            /**
-             * Mode
-             * @constant
-             */
-            mode: "paper";
-            /** No Trade Reason */
-            no_trade_reason: ("priced_in" | "insufficient_evidence" | "excessive_risk" | "other") | null;
-            /** Note */
-            note: string | null;
-            /** Order Type */
-            order_type: string | null;
-            performance: components["schemas"]["PerformanceOut"] | null;
-            /** Quantity */
-            quantity: string | null;
-            /** Side */
-            side: ("buy" | "sell") | null;
-            /** Signal Ids */
-            signal_ids: string[];
-            /** Strategy Id */
-            strategy_id: string | null;
-            /**
-             * System Time
-             * Format: date-time
-             */
-            system_time: string;
-            /**
-             * Thesis Card Id
-             * Format: uuid
-             */
-            thesis_card_id: string;
-        };
-        /** DecisionOut */
-        autotrading__api__progress__DecisionOut: {
-            /** Decision */
-            decision: string;
-            /** Default */
-            default: string;
-            /** Id */
-            id: string;
-            /** Needed By */
-            needed_by: string;
         };
     };
     responses: never;

@@ -22,6 +22,11 @@ import earningsAapl from "../../tests/fixtures/api/earnings-aapl.json";
 import earningsAaplEvening from "../../tests/fixtures/api/earnings-aapl-evening.json";
 import earningsDashboard from "../../tests/fixtures/api/earnings-dashboard.json";
 import earningsMeta from "../../tests/fixtures/api/earnings-meta.json";
+import evidenceAapl from "../../tests/fixtures/api/evidence-aapl.json";
+import journalCard from "../../tests/fixtures/api/journal-card.json";
+import journalReplay from "../../tests/fixtures/api/journal-replay.json";
+import journal from "../../tests/fixtures/api/journal.json";
+import signals from "../../tests/fixtures/api/signals.json";
 import researchAapl from "../../tests/fixtures/api/research-aapl.json";
 import researchDashboardStale from "../../tests/fixtures/api/research-dashboard-stale.json";
 import researchDashboard from "../../tests/fixtures/api/research-dashboard.json";
@@ -52,6 +57,11 @@ import progress from "../../tests/fixtures/api/progress.json";
 
 import type {
   AssumptionList,
+  EvidenceCandidates,
+  Journal,
+  JournalCard,
+  Replay,
+  Signals,
   AuditLogPage,
   BuybackStates,
   Earnings,
@@ -203,3 +213,13 @@ export const recordedEarnings = {
 };
 
 export const recordedEarningsDashboard = earningsDashboard.response as EarningsDashboard;
+
+/** The paper journal (M1.6) from tests/integration/test_journal.py: two AAPL cards written at
+ * 2026-09-15 12:00 UTC (a NO TRADE, priced in, now at version 2; a paper TRADE buy 10, exited
+ * at 2026-10-06), viewed as known on 2026-10-06; the TRADE card and its replay (all identical);
+ * AAPL's evidence candidates at 2026-09-15; the signals as known on 2026-10-06. */
+export const recordedJournal = journal.response as unknown as Journal;
+export const recordedJournalCard = journalCard.response as unknown as JournalCard;
+export const recordedReplay = journalReplay.response as unknown as Replay;
+export const recordedEvidence = evidenceAapl.response as unknown as EvidenceCandidates;
+export const recordedSignals = signals.response as unknown as Signals;

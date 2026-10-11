@@ -383,10 +383,10 @@ export async function saveAssumptions(
 }
 
 /** FastAPI's 422 body ({detail: [{loc, msg}]}) or a plain {detail} as readable lines. */
-export function validationMessages(error: unknown): string[] {
+export function validationMessages(error: unknown, fallback = "The API refused the assumptions."): string[] {
   const detail = (error as { detail?: unknown } | undefined)?.detail;
   if (typeof detail === "string") return [detail];
-  if (!Array.isArray(detail)) return ["The API refused the assumptions."];
+  if (!Array.isArray(detail)) return [fallback];
   return detail.map((item: { loc?: unknown[]; msg?: string }) => {
     const field = (item.loc ?? []).filter((part) => part !== "body" && part !== "parameters").join(".");
     const message = (item.msg ?? "invalid").replace(/^Value error, /, "");
@@ -531,6 +531,156 @@ export async function loadEarningsDashboard(knownAt?: string): Promise<EarningsD
   } catch {
     return null;
   }
+}
+
+// ---------- paper journal and signals (M1.6, ADR-027) ----------
+
+export type Journal = components["schemas"]["JournalOut"];
+export type JournalRow = components["schemas"]["JournalRow"];
+export type JournalCard = components["schemas"]["JournalCardOut"];
+export type ThesisCard = components["schemas"]["CardOut"];
+export type JournalDecision = components["schemas"]["JournalDecisionOut"];
+export type JournalPerformance = components["schemas"]["PerformanceOut"];
+export type JournalClose = components["schemas"]["CloseOut"];
+export type EvidenceItem = components["schemas"]["EvidenceOut"];
+export type EvidenceCandidates = components["schemas"]["CandidatesOut"];
+export type ValuationSnapshot = components["schemas"]["ValuationSnapshot"];
+export type Replay = components["schemas"]["ReplayOut"];
+export type ReplayItem = components["schemas"]["ReplayItem"];
+export type Signals = components["schemas"]["SignalsOut"];
+export type Signal = components["schemas"]["SignalOut"];
+export type NewJournalEntry = components["schemas"]["NewEntry"];
+export type NewCardVersion = components["schemas"]["CardContent"];
+
+/** The journal as known at `knownAt` (one company's with `ticker`), or null when the API is down. */
+export async function loadJournal(knownAt?: string, ticker?: string): Promise<Journal | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/journal", {
+      params: { query: { ...(knownAt ? { known_at: knownAt } : {}), ...(ticker ? { ticker } : {}) } },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export type JournalCardResult =
+  | { status: "ok"; data: JournalCard }
+  | { status: "not_found" }
+  | { status: "unavailable" };
+
+/** One card (a version, or the latest known at `knownAt`) with its decisions. */
+export async function loadJournalCard(
+  cardId: string,
+  knownAt?: string,
+  version?: number,
+): Promise<JournalCardResult> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data, response } = await client.GET("/journal/{card_id}", {
+      params: {
+        path: { card_id: cardId },
+        query: { ...(knownAt ? { known_at: knownAt } : {}), ...(version ? { version } : {}) },
+      },
+      cache: "no-store",
+    });
+    if (data) return { status: "ok", data };
+    return response.status === 404 || response.status === 422 ? { status: "not_found" } : { status: "unavailable" };
+  } catch {
+    return { status: "unavailable" };
+  }
+}
+
+/** The card's evidence, valuation and closes read again at its stored time. */
+export async function loadReplay(cardId: string, version?: number): Promise<Replay | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/journal/{card_id}/replay", {
+      params: { path: { card_id: cardId }, query: version ? { version } : {} },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Each company's current signal at `knownAt`, and one ticker's history. */
+export async function loadSignals(knownAt?: string, ticker?: string): Promise<Signals | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/signals", {
+      params: { query: { ...(knownAt ? { known_at: knownAt } : {}), ...(ticker ? { ticker } : {}) } },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** What a new card for `ticker` can cite: rows of the company known now. */
+export async function loadEvidence(ticker: string): Promise<EvidenceCandidates | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/instruments/{ticker}/evidence", {
+      params: { path: { ticker } },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export type JournalWriteResult =
+  | { status: "ok"; data: JournalCard }
+  | { status: "invalid"; errors: string[] }
+  | { status: "unavailable" };
+
+async function journalWrite(
+  call: (client: ReturnType<typeof createClient<paths>>) => Promise<{
+    data?: JournalCard;
+    error?: unknown;
+    response: Response;
+  }>,
+): Promise<JournalWriteResult> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data, error, response } = await call(client);
+    if (data) return { status: "ok", data };
+    if ([404, 409, 422].includes(response.status)) {
+      return { status: "invalid", errors: validationMessages(error, "The API refused the entry.") };
+    }
+    return { status: "unavailable" };
+  } catch {
+    return { status: "unavailable" };
+  }
+}
+
+/** A new Thesis Card with its decision (paper TRADE or NO TRADE); nothing is ever sent. */
+export async function createJournalEntry(body: NewJournalEntry): Promise<JournalWriteResult> {
+  return journalWrite((client) => client.POST("/journal", { body, cache: "no-store" }));
+}
+
+/** A new version of a card. */
+export async function addCardVersion(cardId: string, body: NewCardVersion): Promise<JournalWriteResult> {
+  return journalWrite((client) =>
+    client.POST("/journal/{card_id}/versions", { params: { path: { card_id: cardId } }, body, cache: "no-store" }),
+  );
+}
+
+/** Exit an open paper TRADE at the last close known now. */
+export async function exitPaperTrade(decisionId: string, note: string | null): Promise<JournalWriteResult> {
+  return journalWrite((client) =>
+    client.POST("/journal/decisions/{decision_id}/exit", {
+      params: { path: { decision_id: decisionId } },
+      body: { note },
+      cache: "no-store",
+    }),
+  );
 }
 
 // ---------- news (M0.8, ADR-018) ----------

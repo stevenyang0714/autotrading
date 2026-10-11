@@ -1,0 +1,849 @@
+{
+  "recorded_at": "2026-10-11T10:03:02.174798+00:00",
+  "recorded_from": "recorded SEC filings, Alpaca closes, FRED yields and news replayed into the integration test database (tests/integration/test_journal.py)",
+  "endpoint": "/instruments/AAPL/evidence",
+  "params": {
+    "known_at": "2026-09-15T12:00:00Z"
+  },
+  "response": {
+    "ticker": "AAPL",
+    "known_at": "2026-09-15T12:00:00Z",
+    "candidates": [
+      {
+        "kind": "financial_fact",
+        "ref": {
+          "id": "9fc268de-08d6-4fb4-9c71-47702a998e45"
+        },
+        "label": "revenue 2024-09-29 to 2025-09-27",
+        "summary": "416161000001 USD",
+        "note": null,
+        "published_at": "2025-10-31T11:01:26Z",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
+        "snapshot": {
+          "row_id": "9fc268de-08d6-4fb4-9c71-47702a998e45",
+          "metric_id": "revenue",
+          "value": "416161000001",
+          "unit": "USD",
+          "period_start": "2024-09-29",
+          "period_end": "2025-09-27",
+          "fiscal_period": "FY-2025",
+          "accession_id": "0000320193-26-999999",
+          "published_at": "2025-10-31T11:01:26Z",
+          "version": 2
+        }
+      },
+      {
+        "kind": "financial_fact",
+        "ref": {
+          "id": "fa37c285-e0b4-4890-862f-b9a03cf519e0"
+        },
+        "label": "revenue 2026-03-29 to 2026-06-27",
+        "summary": "109417000000 USD",
+        "note": null,
+        "published_at": "2026-07-31T10:01:02Z",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/0000320193-26-000020-index.htm",
+        "snapshot": {
+          "row_id": "fa37c285-e0b4-4890-862f-b9a03cf519e0",
+          "metric_id": "revenue",
+          "value": "109417000000",
+          "unit": "USD",
+          "period_start": "2026-03-29",
+          "period_end": "2026-06-27",
+          "fiscal_period": "Q3-2026",
+          "accession_id": "0000320193-26-000020",
+          "published_at": "2026-07-31T10:01:02Z",
+          "version": 1
+        }
+      },
+      {
+        "kind": "financial_fact",
+        "ref": {
+          "id": "8e06ac8a-b76d-4625-9c24-580d2ea970bd"
+        },
+        "label": "gross_profit 2024-09-29 to 2025-09-27",
+        "summary": "195201000000 USD",
+        "note": null,
+        "published_at": "2025-10-31T10:01:26Z",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
+        "snapshot": {
+          "row_id": "8e06ac8a-b76d-4625-9c24-580d2ea970bd",
+          "metric_id": "gross_profit",
+          "value": "195201000000",
+          "unit": "USD",
+          "period_start": "2024-09-29",
+          "period_end": "2025-09-27",
+          "fiscal_period": "FY-2025",
+          "accession_id": "0000320193-25-000079",
+          "published_at": "2025-10-31T10:01:26Z",
+          "version": 1
+        }
+      },
+      {
+        "kind": "financial_fact",
+        "ref": {
+          "id": "680657a1-416e-46e5-a839-9107d42364f2"
+        },
+        "label": "gross_profit 2026-03-29 to 2026-06-27",
+        "summary": "54770000000 USD",
+        "note": null,
+        "published_at": "2026-07-31T10:01:02Z",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/0000320193-26-000020-index.htm",
+        "snapshot": {
+          "row_id": "680657a1-416e-46e5-a839-9107d42364f2",
+          "metric_id": "gross_profit",
+          "value": "54770000000",
+          "unit": "USD",
+          "period_start": "2026-03-29",
+          "period_end": "2026-06-27",
+          "fiscal_period": "Q3-2026",
+          "accession_id": "0000320193-26-000020",
+          "published_at": "2026-07-31T10:01:02Z",
+          "version": 1
+        }
+      },
+      {
+        "kind": "financial_fact",
+        "ref": {
+          "id": "3a1de085-d5fa-42e9-85c0-d71c8dc5d303"
+        },
+        "label": "operating_income 2024-09-29 to 2025-09-27",
+        "summary": "133050000000 USD",
+        "note": null,
+        "published_at": "2025-10-31T10:01:26Z",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
+        "snapshot": {
+          "row_id": "3a1de085-d5fa-42e9-85c0-d71c8dc5d303",
+          "metric_id": "operating_income",
+          "value": "133050000000",
+          "unit": "USD",
+          "period_start": "2024-09-29",
+          "period_end": "2025-09-27",
+          "fiscal_period": "FY-2025",
+          "accession_id": "0000320193-25-000079",
+          "published_at": "2025-10-31T10:01:26Z",
+          "version": 1
+        }
+      },
+      {
+        "kind": "financial_fact",
+        "ref": {
+          "id": "f3c42077-9a3f-4d35-bd90-891d4a2dbc60"
+        },
+        "label": "operating_income 2026-03-29 to 2026-06-27",
+        "summary": "35695000000 USD",
+        "note": null,
+        "published_at": "2026-07-31T10:01:02Z",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/0000320193-26-000020-index.htm",
+        "snapshot": {
+          "row_id": "f3c42077-9a3f-4d35-bd90-891d4a2dbc60",
+          "metric_id": "operating_income",
+          "value": "35695000000",
+          "unit": "USD",
+          "period_start": "2026-03-29",
+          "period_end": "2026-06-27",
+          "fiscal_period": "Q3-2026",
+          "accession_id": "0000320193-26-000020",
+          "published_at": "2026-07-31T10:01:02Z",
+          "version": 1
+        }
+      },
+      {
+        "kind": "financial_fact",
+        "ref": {
+          "id": "75183452-d5ae-4bb5-a2e1-18f1dfbe5320"
+        },
+        "label": "net_income 2024-09-29 to 2025-09-27",
+        "summary": "112010000000 USD",
+        "note": null,
+        "published_at": "2025-10-31T10:01:26Z",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
+        "snapshot": {
+          "row_id": "75183452-d5ae-4bb5-a2e1-18f1dfbe5320",
+          "metric_id": "net_income",
+          "value": "112010000000",
+          "unit": "USD",
+          "period_start": "2024-09-29",
+          "period_end": "2025-09-27",
+          "fiscal_period": "FY-2025",
+          "accession_id": "0000320193-25-000079",
+          "published_at": "2025-10-31T10:01:26Z",
+          "version": 1
+        }
+      },
+      {
+        "kind": "financial_fact",
+        "ref": {
+          "id": "8779d1d7-5a0a-406f-945b-f756b8dfc6de"
+        },
+        "label": "net_income 2026-03-29 to 2026-06-27",
+        "summary": "29789000000 USD",
+        "note": null,
+        "published_at": "2026-07-31T10:01:02Z",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/0000320193-26-000020-index.htm",
+        "snapshot": {
+          "row_id": "8779d1d7-5a0a-406f-945b-f756b8dfc6de",
+          "metric_id": "net_income",
+          "value": "29789000000",
+          "unit": "USD",
+          "period_start": "2026-03-29",
+          "period_end": "2026-06-27",
+          "fiscal_period": "Q3-2026",
+          "accession_id": "0000320193-26-000020",
+          "published_at": "2026-07-31T10:01:02Z",
+          "version": 1
+        }
+      },
+      {
+        "kind": "financial_fact",
+        "ref": {
+          "id": "e3dbc5ff-4091-44d1-861c-8a283a5b7616"
+        },
+        "label": "eps_diluted 2024-09-29 to 2025-09-27",
+        "summary": "7.46 USD/shares",
+        "note": null,
+        "published_at": "2025-10-31T10:01:26Z",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
+        "snapshot": {
+          "row_id": "e3dbc5ff-4091-44d1-861c-8a283a5b7616",
+          "metric_id": "eps_diluted",
+          "value": "7.46",
+          "unit": "USD/shares",
+          "period_start": "2024-09-29",
+          "period_end": "2025-09-27",
+          "fiscal_period": "FY-2025",
+          "accession_id": "0000320193-25-000079",
+          "published_at": "2025-10-31T10:01:26Z",
+          "version": 1
+        }
+      },
+      {
+        "kind": "financial_fact",
+        "ref": {
+          "id": "6e1b19ed-e75d-4966-b3cd-d4bda6ce9079"
+        },
+        "label": "eps_diluted 2026-03-29 to 2026-06-27",
+        "summary": "2.02 USD/shares",
+        "note": null,
+        "published_at": "2026-07-31T10:01:02Z",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/0000320193-26-000020-index.htm",
+        "snapshot": {
+          "row_id": "6e1b19ed-e75d-4966-b3cd-d4bda6ce9079",
+          "metric_id": "eps_diluted",
+          "value": "2.02",
+          "unit": "USD/shares",
+          "period_start": "2026-03-29",
+          "period_end": "2026-06-27",
+          "fiscal_period": "Q3-2026",
+          "accession_id": "0000320193-26-000020",
+          "published_at": "2026-07-31T10:01:02Z",
+          "version": 1
+        }
+      },
+      {
+        "kind": "financial_fact",
+        "ref": {
+          "id": "7c6555d4-a878-4b56-9f06-6776034a2f90"
+        },
+        "label": "operating_cash_flow 2024-09-29 to 2025-09-27",
+        "summary": "111482000000 USD",
+        "note": null,
+        "published_at": "2025-10-31T10:01:26Z",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
+        "snapshot": {
+          "row_id": "7c6555d4-a878-4b56-9f06-6776034a2f90",
+          "metric_id": "operating_cash_flow",
+          "value": "111482000000",
+          "unit": "USD",
+          "period_start": "2024-09-29",
+          "period_end": "2025-09-27",
+          "fiscal_period": "FY-2025",
+          "accession_id": "0000320193-25-000079",
+          "published_at": "2025-10-31T10:01:26Z",
+          "version": 1
+        }
+      },
+      {
+        "kind": "financial_fact",
+        "ref": {
+          "id": "cc6daa87-1fd4-4c84-b9da-d42e69ea5b07"
+        },
+        "label": "operating_cash_flow 2025-09-28 to 2025-12-27",
+        "summary": "53925000000 USD",
+        "note": null,
+        "published_at": "2026-01-30T11:01:32Z",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000006/0000320193-26-000006-index.htm",
+        "snapshot": {
+          "row_id": "cc6daa87-1fd4-4c84-b9da-d42e69ea5b07",
+          "metric_id": "operating_cash_flow",
+          "value": "53925000000",
+          "unit": "USD",
+          "period_start": "2025-09-28",
+          "period_end": "2025-12-27",
+          "fiscal_period": "Q1-2026",
+          "accession_id": "0000320193-26-000006",
+          "published_at": "2026-01-30T11:01:32Z",
+          "version": 1
+        }
+      },
+      {
+        "kind": "financial_fact",
+        "ref": {
+          "id": "4259267e-eae3-452b-a971-59af1b51b546"
+        },
+        "label": "capex 2024-09-29 to 2025-09-27",
+        "summary": "12715000000 USD",
+        "note": null,
+        "published_at": "2025-10-31T10:01:26Z",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
+        "snapshot": {
+          "row_id": "4259267e-eae3-452b-a971-59af1b51b546",
+          "metric_id": "capex",
+          "value": "12715000000",
+          "unit": "USD",
+          "period_start": "2024-09-29",
+          "period_end": "2025-09-27",
+          "fiscal_period": "FY-2025",
+          "accession_id": "0000320193-25-000079",
+          "published_at": "2025-10-31T10:01:26Z",
+          "version": 1
+        }
+      },
+      {
+        "kind": "financial_fact",
+        "ref": {
+          "id": "8621dee0-4d2d-447d-bd2d-b0347f1a2fca"
+        },
+        "label": "capex 2025-09-28 to 2025-12-27",
+        "summary": "2373000000 USD",
+        "note": null,
+        "published_at": "2026-01-30T11:01:32Z",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000006/0000320193-26-000006-index.htm",
+        "snapshot": {
+          "row_id": "8621dee0-4d2d-447d-bd2d-b0347f1a2fca",
+          "metric_id": "capex",
+          "value": "2373000000",
+          "unit": "USD",
+          "period_start": "2025-09-28",
+          "period_end": "2025-12-27",
+          "fiscal_period": "Q1-2026",
+          "accession_id": "0000320193-26-000006",
+          "published_at": "2026-01-30T11:01:32Z",
+          "version": 1
+        }
+      },
+      {
+        "kind": "financial_fact",
+        "ref": {
+          "id": "d7e7ec94-8f3e-48d7-8ece-d181a56e76ef"
+        },
+        "label": "share_repurchases 2024-09-29 to 2025-09-27",
+        "summary": "90711000000 USD",
+        "note": null,
+        "published_at": "2025-10-31T10:01:26Z",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/0000320193-25-000079-index.htm",
+        "snapshot": {
+          "row_id": "d7e7ec94-8f3e-48d7-8ece-d181a56e76ef",
+          "metric_id": "share_repurchases",
+          "value": "90711000000",
+          "unit": "USD",
+          "period_start": "2024-09-29",
+          "period_end": "2025-09-27",
+          "fiscal_period": "FY-2025",
+          "accession_id": "0000320193-25-000079",
+          "published_at": "2025-10-31T10:01:26Z",
+          "version": 1
+        }
+      },
+      {
+        "kind": "financial_fact",
+        "ref": {
+          "id": "98dfb70a-52b8-4e22-aed6-823ce2ced1c5"
+        },
+        "label": "share_repurchases 2025-09-28 to 2025-12-27",
+        "summary": "24701000000 USD",
+        "note": null,
+        "published_at": "2026-01-30T11:01:32Z",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000006/0000320193-26-000006-index.htm",
+        "snapshot": {
+          "row_id": "98dfb70a-52b8-4e22-aed6-823ce2ced1c5",
+          "metric_id": "share_repurchases",
+          "value": "24701000000",
+          "unit": "USD",
+          "period_start": "2025-09-28",
+          "period_end": "2025-12-27",
+          "fiscal_period": "Q1-2026",
+          "accession_id": "0000320193-26-000006",
+          "published_at": "2026-01-30T11:01:32Z",
+          "version": 1
+        }
+      },
+      {
+        "kind": "financial_fact",
+        "ref": {
+          "id": "f8985cb5-ded2-48d9-b143-49c68871c549"
+        },
+        "label": "shares_outstanding at 2026-06-27",
+        "summary": "14608963000 shares",
+        "note": null,
+        "published_at": "2026-07-31T10:01:02Z",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/0000320193-26-000020-index.htm",
+        "snapshot": {
+          "row_id": "f8985cb5-ded2-48d9-b143-49c68871c549",
+          "metric_id": "shares_outstanding",
+          "value": "14608963000",
+          "unit": "shares",
+          "period_start": null,
+          "period_end": "2026-06-27",
+          "fiscal_period": "Q3-2026",
+          "accession_id": "0000320193-26-000020",
+          "published_at": "2026-07-31T10:01:02Z",
+          "version": 1
+        }
+      },
+      {
+        "kind": "filing",
+        "ref": {
+          "id": "d0f86286-1f8f-426d-b406-7ef9396ff17a"
+        },
+        "label": "10-Q 0000320193-26-000020",
+        "summary": "filed 2026-07-31, period 2026-06-27",
+        "note": null,
+        "published_at": "2026-07-31T10:01:02Z",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/0000320193-26-000020-index.htm",
+        "snapshot": {
+          "row_id": "d0f86286-1f8f-426d-b406-7ef9396ff17a",
+          "form": "10-Q",
+          "accession_number": "0000320193-26-000020",
+          "filing_date": "2026-07-31",
+          "accepted_at": "2026-07-31T10:01:02Z",
+          "report_date": "2026-06-27",
+          "items": null,
+          "published_at": "2026-07-31T10:01:02Z"
+        }
+      },
+      {
+        "kind": "filing",
+        "ref": {
+          "id": "f3687f94-a16a-4a87-9ebb-03a81c602d14"
+        },
+        "label": "8-K 0000320193-26-000018",
+        "summary": "filed 2026-07-30, period 2026-07-30",
+        "note": null,
+        "published_at": "2026-07-30T20:30:28Z",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000018/0000320193-26-000018-index.htm",
+        "snapshot": {
+          "row_id": "f3687f94-a16a-4a87-9ebb-03a81c602d14",
+          "form": "8-K",
+          "accession_number": "0000320193-26-000018",
+          "filing_date": "2026-07-30",
+          "accepted_at": "2026-07-30T20:30:28Z",
+          "report_date": "2026-07-30",
+          "items": "2.02,9.01",
+          "published_at": "2026-07-30T20:30:28Z"
+        }
+      },
+      {
+        "kind": "filing",
+        "ref": {
+          "id": "4d3aed8f-4c42-489c-bfc6-26329b8771c4"
+        },
+        "label": "10-Q 0000320193-26-000013",
+        "summary": "filed 2026-05-01, period 2026-03-28",
+        "note": null,
+        "published_at": "2026-05-01T10:01:00Z",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000013/0000320193-26-000013-index.htm",
+        "snapshot": {
+          "row_id": "4d3aed8f-4c42-489c-bfc6-26329b8771c4",
+          "form": "10-Q",
+          "accession_number": "0000320193-26-000013",
+          "filing_date": "2026-05-01",
+          "accepted_at": "2026-05-01T10:01:00Z",
+          "report_date": "2026-03-28",
+          "items": null,
+          "published_at": "2026-05-01T10:01:00Z"
+        }
+      },
+      {
+        "kind": "filing",
+        "ref": {
+          "id": "01bb7289-7733-4c33-96dd-548cbf68d4b3"
+        },
+        "label": "8-K 0000320193-26-000011",
+        "summary": "filed 2026-04-30, period 2026-04-30",
+        "note": null,
+        "published_at": "2026-04-30T20:30:41Z",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/0000320193-26-000011-index.htm",
+        "snapshot": {
+          "row_id": "01bb7289-7733-4c33-96dd-548cbf68d4b3",
+          "form": "8-K",
+          "accession_number": "0000320193-26-000011",
+          "filing_date": "2026-04-30",
+          "accepted_at": "2026-04-30T20:30:41Z",
+          "report_date": "2026-04-30",
+          "items": "2.02,9.01",
+          "published_at": "2026-04-30T20:30:41Z"
+        }
+      },
+      {
+        "kind": "filing",
+        "ref": {
+          "id": "13b2776f-108f-4fee-8e96-a1de1d762588"
+        },
+        "label": "8-K 0001140361-26-015711",
+        "summary": "filed 2026-04-20, period 2026-04-17",
+        "note": null,
+        "published_at": "2026-04-20T21:29:51Z",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000114036126015711/0001140361-26-015711-index.htm",
+        "snapshot": {
+          "row_id": "13b2776f-108f-4fee-8e96-a1de1d762588",
+          "form": "8-K",
+          "accession_number": "0001140361-26-015711",
+          "filing_date": "2026-04-20",
+          "accepted_at": "2026-04-20T21:29:51Z",
+          "report_date": "2026-04-17",
+          "items": "5.02",
+          "published_at": "2026-04-20T21:29:51Z"
+        }
+      },
+      {
+        "kind": "filing",
+        "ref": {
+          "id": "b5184184-d7c3-4c0e-adf9-88bbe372e414"
+        },
+        "label": "8-K 0001140361-26-006577",
+        "summary": "filed 2026-02-24, period 2026-02-24",
+        "note": null,
+        "published_at": "2026-02-24T21:55:58Z",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000114036126006577/0001140361-26-006577-index.htm",
+        "snapshot": {
+          "row_id": "b5184184-d7c3-4c0e-adf9-88bbe372e414",
+          "form": "8-K",
+          "accession_number": "0001140361-26-006577",
+          "filing_date": "2026-02-24",
+          "accepted_at": "2026-02-24T21:55:58Z",
+          "report_date": "2026-02-24",
+          "items": "5.07,9.01",
+          "published_at": "2026-02-24T21:55:58Z"
+        }
+      },
+      {
+        "kind": "filing",
+        "ref": {
+          "id": "3e6b95ac-7476-47a5-8955-ff352cb9b1d9"
+        },
+        "label": "10-Q 0000320193-26-000006",
+        "summary": "filed 2026-01-30, period 2025-12-27",
+        "note": null,
+        "published_at": "2026-01-30T11:01:32Z",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000006/0000320193-26-000006-index.htm",
+        "snapshot": {
+          "row_id": "3e6b95ac-7476-47a5-8955-ff352cb9b1d9",
+          "form": "10-Q",
+          "accession_number": "0000320193-26-000006",
+          "filing_date": "2026-01-30",
+          "accepted_at": "2026-01-30T11:01:32Z",
+          "report_date": "2025-12-27",
+          "items": null,
+          "published_at": "2026-01-30T11:01:32Z"
+        }
+      },
+      {
+        "kind": "filing",
+        "ref": {
+          "id": "0a65d0c3-6ed9-455f-b0fa-ce5b89da98e2"
+        },
+        "label": "8-K 0000320193-26-000005",
+        "summary": "filed 2026-01-29, period 2026-01-29",
+        "note": null,
+        "published_at": "2026-01-29T21:30:33Z",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000005/0000320193-26-000005-index.htm",
+        "snapshot": {
+          "row_id": "0a65d0c3-6ed9-455f-b0fa-ce5b89da98e2",
+          "form": "8-K",
+          "accession_number": "0000320193-26-000005",
+          "filing_date": "2026-01-29",
+          "accepted_at": "2026-01-29T21:30:33Z",
+          "report_date": "2026-01-29",
+          "items": "2.02,9.01",
+          "published_at": "2026-01-29T21:30:33Z"
+        }
+      },
+      {
+        "kind": "buyback_statement",
+        "ref": {
+          "id": "00aed65b-5e05-46fd-ad2a-1df6ea373daa"
+        },
+        "label": "Buyback increase (EX-99.1 0000320193-26-000011)",
+        "summary": "The board of directors has also authorized an additional program to repurchase up to $100 billion of the Company\u2019s common stock.",
+        "note": null,
+        "published_at": "2026-04-30T20:30:41Z",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
+        "snapshot": {
+          "row_id": "00aed65b-5e05-46fd-ad2a-1df6ea373daa",
+          "accession_number": "0000320193-26-000011",
+          "document_type": "EX-99.1",
+          "kind": "increase",
+          "amount": "100000000000",
+          "remaining_amount": null,
+          "stated_date": null,
+          "sentence": "The board of directors has also authorized an additional program to repurchase up to $100 billion of the Company\u2019s common stock.",
+          "extractor_version": "0.1.3",
+          "published_at": "2026-04-30T20:30:41Z"
+        }
+      },
+      {
+        "kind": "buyback_statement",
+        "ref": {
+          "id": "e54c2928-bef0-4fd8-b92c-484a5de53ffe"
+        },
+        "label": "Buyback increase (EX-99.1 0000320193-24-000067)",
+        "summary": "\u201cGiven our confidence in Apple\u2019s future and the value we see in our stock, our Board has authorized an additional $110 billion for share repurchases.",
+        "note": null,
+        "published_at": "2024-05-02T20:30:34Z",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000067/a8-kex991q2202403302024.htm",
+        "snapshot": {
+          "row_id": "e54c2928-bef0-4fd8-b92c-484a5de53ffe",
+          "accession_number": "0000320193-24-000067",
+          "document_type": "EX-99.1",
+          "kind": "increase",
+          "amount": "110000000000",
+          "remaining_amount": null,
+          "stated_date": null,
+          "sentence": "\u201cGiven our confidence in Apple\u2019s future and the value we see in our stock, our Board has authorized an additional $110 billion for share repurchases.",
+          "extractor_version": "0.1.3",
+          "published_at": "2024-05-02T20:30:34Z"
+        }
+      },
+      {
+        "kind": "buyback_state",
+        "ref": {
+          "id": "2a697ea8-9cbd-46ec-93b5-fb90aa87af55"
+        },
+        "label": "Buyback state under rules 0.2.0",
+        "summary": "ACTIVE",
+        "note": null,
+        "published_at": "2026-09-15T12:00:00Z",
+        "source_url": null,
+        "snapshot": {
+          "row_id": "2a697ea8-9cbd-46ec-93b5-fb90aa87af55",
+          "rule_version": "0.2.0",
+          "state": "active",
+          "score": null,
+          "known_at": "2026-09-15T12:00:00Z",
+          "system_time": "2026-10-11T10:02:59.540767Z",
+          "backfilled": true
+        }
+      },
+      {
+        "kind": "news",
+        "ref": {
+          "id": "640ae46b-a6cf-41d2-b5c0-c8eb7b0386cf"
+        },
+        "label": "Apple Newsroom: Widow\u2019s Bay triumphs as most decorated freshman comedy in Emmy history",
+        "summary": "This evening at the 78th Primetime Emmy Awards, Apple TV shatters records to become the most-awarded network of the year, landing 29 wins overall.",
+        "note": null,
+        "published_at": "2026-09-15T10:02:42.356000Z",
+        "source_url": "https://www.apple.com/newsroom/2026/09/widows-bay-triumphs-as-most-decorated-freshman-comedy-in-emmy-history/",
+        "snapshot": {
+          "row_id": "640ae46b-a6cf-41d2-b5c0-c8eb7b0386cf",
+          "title": "Widow\u2019s Bay triumphs as most decorated freshman comedy in Emmy history",
+          "publisher": "Apple Newsroom",
+          "url": "https://www.apple.com/newsroom/2026/09/widows-bay-triumphs-as-most-decorated-freshman-comedy-in-emmy-history/",
+          "kind": "press_release",
+          "published_at": "2026-09-15T10:02:42.356000Z"
+        }
+      },
+      {
+        "kind": "news",
+        "ref": {
+          "id": "8abd813b-b26f-453b-8aa2-31fcaebc3d4a"
+        },
+        "label": "Apple Newsroom: Major updates for Apple\u2019s software platforms are now available",
+        "summary": "Apple\u2019s latest software updates introduce Siri AI and deliver helpful new Apple Intelligence features.",
+        "note": null,
+        "published_at": "2026-09-14T17:10:12.527000Z",
+        "source_url": "https://www.apple.com/newsroom/2026/09/major-updates-for-apples-software-platforms-are-now-available/",
+        "snapshot": {
+          "row_id": "8abd813b-b26f-453b-8aa2-31fcaebc3d4a",
+          "title": "Major updates for Apple\u2019s software platforms are now available",
+          "publisher": "Apple Newsroom",
+          "url": "https://www.apple.com/newsroom/2026/09/major-updates-for-apples-software-platforms-are-now-available/",
+          "kind": "press_release",
+          "published_at": "2026-09-14T17:10:12.527000Z"
+        }
+      },
+      {
+        "kind": "news",
+        "ref": {
+          "id": "c49541db-63cf-4c38-a68e-c9df89ff05fc"
+        },
+        "label": "Apple Newsroom: Siri AI, a profoundly more capable and personal assistant, is here",
+        "summary": "Apple today released the next generation of Apple Intelligence.",
+        "note": null,
+        "published_at": "2026-09-14T17:09:41.324000Z",
+        "source_url": "https://www.apple.com/newsroom/2026/09/siri-ai-a-profoundly-more-capable-and-personal-assistant-is-here/",
+        "snapshot": {
+          "row_id": "c49541db-63cf-4c38-a68e-c9df89ff05fc",
+          "title": "Siri AI, a profoundly more capable and personal assistant, is here",
+          "publisher": "Apple Newsroom",
+          "url": "https://www.apple.com/newsroom/2026/09/siri-ai-a-profoundly-more-capable-and-personal-assistant-is-here/",
+          "kind": "press_release",
+          "published_at": "2026-09-14T17:09:41.324000Z"
+        }
+      },
+      {
+        "kind": "news",
+        "ref": {
+          "id": "d2d2718e-04f4-4f0b-8626-64ae131c78ef"
+        },
+        "label": "Apple Newsroom: Apple\u2019s new child safety features now available",
+        "summary": "Apple\u2019s new suite of tools that help parents create safer digital experiences for their kids is now available across iPhone, iPad, Mac, and more.",
+        "note": null,
+        "published_at": "2026-09-14T17:08:48.789000Z",
+        "source_url": "https://www.apple.com/newsroom/2026/09/apples-new-child-safety-features-now-available/",
+        "snapshot": {
+          "row_id": "d2d2718e-04f4-4f0b-8626-64ae131c78ef",
+          "title": "Apple\u2019s new child safety features now available",
+          "publisher": "Apple Newsroom",
+          "url": "https://www.apple.com/newsroom/2026/09/apples-new-child-safety-features-now-available/",
+          "kind": "press_release",
+          "published_at": "2026-09-14T17:08:48.789000Z"
+        }
+      },
+      {
+        "kind": "news",
+        "ref": {
+          "id": "2627849c-b9dc-461c-ae54-6880d4c0e48b"
+        },
+        "label": "Apple Newsroom: Get ready to experience iPhone 18 Pro, the new Apple Watch lineup, and AirPods 5",
+        "summary": "Starting Saturday, September 12, customers can pre-order iPhone 18 Pro and iPhone 18 Pro Max.",
+        "note": null,
+        "published_at": "2026-09-11T16:00:08.631000Z",
+        "source_url": "https://www.apple.com/newsroom/2026/09/get-ready-to-experience-iphone-18-pro-the-new-apple-watch-lineup-and-airpods-5/",
+        "snapshot": {
+          "row_id": "2627849c-b9dc-461c-ae54-6880d4c0e48b",
+          "title": "Get ready to experience iPhone 18 Pro, the new Apple Watch lineup, and AirPods 5",
+          "publisher": "Apple Newsroom",
+          "url": "https://www.apple.com/newsroom/2026/09/get-ready-to-experience-iphone-18-pro-the-new-apple-watch-lineup-and-airpods-5/",
+          "kind": "press_release",
+          "published_at": "2026-09-11T16:00:08.631000Z"
+        }
+      },
+      {
+        "kind": "news",
+        "ref": {
+          "id": "06dfdb6f-4c7e-4a2d-9c04-de66fe17f5d0"
+        },
+        "label": "Apple Newsroom: Apple unveils iPhone Duo",
+        "summary": "Apple today introduced iPhone Duo, the first foldable iPhone.",
+        "note": null,
+        "published_at": "2026-09-09T18:15:40.996000Z",
+        "source_url": "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
+        "snapshot": {
+          "row_id": "06dfdb6f-4c7e-4a2d-9c04-de66fe17f5d0",
+          "title": "Apple unveils iPhone Duo",
+          "publisher": "Apple Newsroom",
+          "url": "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
+          "kind": "press_release",
+          "published_at": "2026-09-09T18:15:40.996000Z"
+        }
+      },
+      {
+        "kind": "news",
+        "ref": {
+          "id": "2bc634ce-1ef2-4c0f-a919-a41abd718a49"
+        },
+        "label": "Apple Newsroom: Apple advances health and fitness capabilities using Apple Intelligence",
+        "summary": "Apple today announced its most advanced health and fitness experience yet, deepening the capabilities of Apple Watch and iPhone as intelligent, science-based tools for personal health.",
+        "note": null,
+        "published_at": "2026-09-09T17:52:05.481000Z",
+        "source_url": "https://www.apple.com/newsroom/2026/09/apple-advances-health-and-fitness-capabilities-using-apple-intelligence/",
+        "snapshot": {
+          "row_id": "2bc634ce-1ef2-4c0f-a919-a41abd718a49",
+          "title": "Apple advances health and fitness capabilities using Apple Intelligence",
+          "publisher": "Apple Newsroom",
+          "url": "https://www.apple.com/newsroom/2026/09/apple-advances-health-and-fitness-capabilities-using-apple-intelligence/",
+          "kind": "press_release",
+          "published_at": "2026-09-09T17:52:05.481000Z"
+        }
+      },
+      {
+        "kind": "news",
+        "ref": {
+          "id": "cb3797a3-6fe7-4378-8f16-9177f6992df2"
+        },
+        "label": "Apple Newsroom: Apple unveils Apple Watch Ultra 4",
+        "summary": "Apple today introduced Apple Watch Ultra 4, the ultimate sports and adventure watch, now with new health, fitness, and audio intelligence capabilities.",
+        "note": null,
+        "published_at": "2026-09-09T17:51:18.631000Z",
+        "source_url": "https://www.apple.com/newsroom/2026/09/apple-unveils-apple-watch-ultra-4/",
+        "snapshot": {
+          "row_id": "cb3797a3-6fe7-4378-8f16-9177f6992df2",
+          "title": "Apple unveils Apple Watch Ultra 4",
+          "publisher": "Apple Newsroom",
+          "url": "https://www.apple.com/newsroom/2026/09/apple-unveils-apple-watch-ultra-4/",
+          "kind": "press_release",
+          "published_at": "2026-09-09T17:51:18.631000Z"
+        }
+      },
+      {
+        "kind": "news",
+        "ref": {
+          "id": "99ea87c7-0b05-430e-af54-c40ddaa543ab"
+        },
+        "label": "Apple Newsroom: Introducing Apple Watch Series 12, with the all-new Health Sensing System",
+        "summary": "Apple today introduced Apple Watch Series 12, engineered to deliver the most accurate heart rate sensing in a wearable.",
+        "note": null,
+        "published_at": "2026-09-09T17:50:47.609000Z",
+        "source_url": "https://www.apple.com/newsroom/2026/09/introducing-apple-watch-series-12-with-the-all-new-health-sensing-system/",
+        "snapshot": {
+          "row_id": "99ea87c7-0b05-430e-af54-c40ddaa543ab",
+          "title": "Introducing Apple Watch Series 12, with the all-new Health Sensing System",
+          "publisher": "Apple Newsroom",
+          "url": "https://www.apple.com/newsroom/2026/09/introducing-apple-watch-series-12-with-the-all-new-health-sensing-system/",
+          "kind": "press_release",
+          "published_at": "2026-09-09T17:50:47.609000Z"
+        }
+      },
+      {
+        "kind": "news",
+        "ref": {
+          "id": "c74e2be9-cb1f-480a-b402-75569f916229"
+        },
+        "label": "Apple Newsroom: Apple introduces AirPods 5 with best-in-class open-ear Active Noise Cancellation",
+        "summary": "Apple today announced AirPods 5, delivering the industry\u2019s best Active Noise Cancellation in an open-ear design and even better sound quality.",
+        "note": null,
+        "published_at": "2026-09-09T17:34:55.485000Z",
+        "source_url": "https://www.apple.com/newsroom/2026/09/apple-introduces-airpods-5-with-best-in-class-open-ear-active-noise-cancellation/",
+        "snapshot": {
+          "row_id": "c74e2be9-cb1f-480a-b402-75569f916229",
+          "title": "Apple introduces AirPods 5 with best-in-class open-ear Active Noise Cancellation",
+          "publisher": "Apple Newsroom",
+          "url": "https://www.apple.com/newsroom/2026/09/apple-introduces-airpods-5-with-best-in-class-open-ear-active-noise-cancellation/",
+          "kind": "press_release",
+          "published_at": "2026-09-09T17:34:55.485000Z"
+        }
+      },
+      {
+        "kind": "price_close",
+        "ref": {
+          "day": "2026-09-14"
+        },
+        "label": "AAPL close 2026-09-14",
+        "summary": "334.08 USD",
+        "note": null,
+        "published_at": "2026-09-15T04:00:59.999999Z",
+        "source_url": "https://data.alpaca.markets/v2/stocks/bars?symbols=AAPL%2CMSFT%2CGOOGL%2CMETA%2CNVDA%2CJPM%2CXOM%2CAZO%2CORLY%2CLOW%2CSPY%2CQQQ%2CIWM%2CTLT%2CIEF%2CGLD%2CXLE%2CXLK&timeframe=1Day&adjustment=raw&feed=sip&start=2025-10-05&limit=10000&end=2026-10-05",
+        "snapshot": {
+          "row_id": "2985134e-bdc1-4866-bcab-a4e91ba44e3b",
+          "day": "2026-09-14",
+          "close": "334.08",
+          "volume": 39524847,
+          "feed_status": "end_of_day",
+          "published_at": "2026-09-15T04:00:59.999999Z",
+          "version": 2
+        }
+      }
+    ]
+  }
+}

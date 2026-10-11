@@ -1,0 +1,269 @@
+{
+  "recorded_at": "2026-10-11T10:03:02.139363+00:00",
+  "recorded_from": "recorded SEC filings, Alpaca closes, FRED yields and news replayed into the integration test database (tests/integration/test_journal.py)",
+  "endpoint": "/journal/025781e9-2bbf-4170-8c1f-44af653e8cbb/replay",
+  "params": {},
+  "response": {
+    "card_id": "025781e9-2bbf-4170-8c1f-44af653e8cbb",
+    "version": 1,
+    "known_at": "2026-09-15T12:00:00Z",
+    "system_time": "2026-10-11T10:03:00.127398Z",
+    "identical": true,
+    "evidence": [
+      {
+        "kind": "financial_fact",
+        "label": "revenue 2024-09-29 to 2025-09-27",
+        "status": "identical",
+        "changed": [],
+        "stored": {
+          "unit": "USD",
+          "value": "416161000000",
+          "row_id": "4d9cdb99-09a7-4c1c-8af7-b7868bb624b6",
+          "version": 1,
+          "metric_id": "revenue",
+          "period_end": "2025-09-27",
+          "accession_id": "0000320193-25-000079",
+          "period_start": "2024-09-29",
+          "published_at": "2025-10-31T10:01:26Z",
+          "fiscal_period": "FY-2025"
+        },
+        "again": {
+          "row_id": "4d9cdb99-09a7-4c1c-8af7-b7868bb624b6",
+          "metric_id": "revenue",
+          "value": "416161000000",
+          "unit": "USD",
+          "period_start": "2024-09-29",
+          "period_end": "2025-09-27",
+          "fiscal_period": "FY-2025",
+          "accession_id": "0000320193-25-000079",
+          "published_at": "2025-10-31T10:01:26Z",
+          "version": 1
+        }
+      },
+      {
+        "kind": "filing",
+        "label": "10-Q 0000320193-26-000020",
+        "status": "identical",
+        "changed": [],
+        "stored": {
+          "form": "10-Q",
+          "items": null,
+          "row_id": "d0f86286-1f8f-426d-b406-7ef9396ff17a",
+          "accepted_at": "2026-07-31T10:01:02Z",
+          "filing_date": "2026-07-31",
+          "report_date": "2026-06-27",
+          "published_at": "2026-07-31T10:01:02Z",
+          "accession_number": "0000320193-26-000020"
+        },
+        "again": {
+          "row_id": "d0f86286-1f8f-426d-b406-7ef9396ff17a",
+          "form": "10-Q",
+          "accession_number": "0000320193-26-000020",
+          "filing_date": "2026-07-31",
+          "accepted_at": "2026-07-31T10:01:02Z",
+          "report_date": "2026-06-27",
+          "items": null,
+          "published_at": "2026-07-31T10:01:02Z"
+        }
+      },
+      {
+        "kind": "buyback_state",
+        "label": "Buyback state under rules 0.2.0",
+        "status": "identical",
+        "changed": [],
+        "stored": {
+          "score": null,
+          "state": "active",
+          "row_id": "2a697ea8-9cbd-46ec-93b5-fb90aa87af55",
+          "known_at": "2026-09-15T12:00:00Z",
+          "backfilled": true,
+          "system_time": "2026-10-11T10:02:59.540767Z",
+          "rule_version": "0.2.0"
+        },
+        "again": {
+          "row_id": "2a697ea8-9cbd-46ec-93b5-fb90aa87af55",
+          "rule_version": "0.2.0",
+          "state": "active",
+          "score": null,
+          "known_at": "2026-09-15T12:00:00Z",
+          "system_time": "2026-10-11T10:02:59.540767Z",
+          "backfilled": true
+        }
+      },
+      {
+        "kind": "price_close",
+        "label": "AAPL close 2026-09-14",
+        "status": "identical",
+        "changed": [],
+        "stored": {
+          "day": "2026-09-14",
+          "close": "333.08",
+          "row_id": "f1ad71a4-c967-4db1-a155-3fe629edfefe",
+          "volume": 39524847,
+          "version": 1,
+          "feed_status": "end_of_day",
+          "published_at": "2026-09-15T03:59:59.999999Z"
+        },
+        "again": {
+          "row_id": "f1ad71a4-c967-4db1-a155-3fe629edfefe",
+          "day": "2026-09-14",
+          "close": "333.08",
+          "volume": 39524847,
+          "feed_status": "end_of_day",
+          "published_at": "2026-09-15T03:59:59.999999Z",
+          "version": 1
+        }
+      },
+      {
+        "kind": "financial_fact",
+        "label": "capex 2024-09-29 to 2025-09-27",
+        "status": "identical",
+        "changed": [],
+        "stored": {
+          "unit": "USD",
+          "value": "12715000000",
+          "row_id": "4259267e-eae3-452b-a971-59af1b51b546",
+          "version": 1,
+          "metric_id": "capex",
+          "period_end": "2025-09-27",
+          "accession_id": "0000320193-25-000079",
+          "period_start": "2024-09-29",
+          "published_at": "2025-10-31T10:01:26Z",
+          "fiscal_period": "FY-2025"
+        },
+        "again": {
+          "row_id": "4259267e-eae3-452b-a971-59af1b51b546",
+          "metric_id": "capex",
+          "value": "12715000000",
+          "unit": "USD",
+          "period_start": "2024-09-29",
+          "period_end": "2025-09-27",
+          "fiscal_period": "FY-2025",
+          "accession_id": "0000320193-25-000079",
+          "published_at": "2025-10-31T10:01:26Z",
+          "version": 1
+        }
+      }
+    ],
+    "valuation": {
+      "kind": "valuation",
+      "label": "Base DCF against the price",
+      "status": "identical",
+      "changed": [],
+      "stored": {
+        "price": "333.08",
+        "detail": null,
+        "status": "ok",
+        "price_day": "2026-09-14",
+        "base_per_share": "129.87",
+        "implied_upside": "-61.01",
+        "margin_of_safety": "-156.47",
+        "assumption_version": null
+      },
+      "again": {
+        "status": "ok",
+        "detail": null,
+        "assumption_version": null,
+        "base_per_share": "129.87",
+        "price": "333.08",
+        "price_day": "2026-09-14",
+        "margin_of_safety": "-156.47",
+        "implied_upside": "-61.01"
+      }
+    },
+    "decisions": [
+      {
+        "kind": "decision_closes",
+        "label": "TRADE closes at 2026-09-15 12:00 UTC",
+        "status": "identical",
+        "changed": [],
+        "stored": {
+          "stock": {
+            "day": "2026-09-14",
+            "close": "333.08",
+            "stale": false,
+            "row_id": "f1ad71a4-c967-4db1-a155-3fe629edfefe",
+            "symbol": "AAPL",
+            "feed_status": "end_of_day",
+            "published_at": "2026-09-15T03:59:59.999999Z"
+          },
+          "benchmark": {
+            "day": "2026-09-14",
+            "close": "760.88",
+            "stale": false,
+            "row_id": "14244405-882d-4973-9d84-5a5e7b894e48",
+            "symbol": "SPY",
+            "feed_status": "end_of_day",
+            "published_at": "2026-09-15T03:59:59.999999Z"
+          }
+        },
+        "again": {
+          "stock": {
+            "symbol": "AAPL",
+            "day": "2026-09-14",
+            "close": "333.08",
+            "published_at": "2026-09-15T03:59:59.999999Z",
+            "feed_status": "end_of_day",
+            "stale": false,
+            "row_id": "f1ad71a4-c967-4db1-a155-3fe629edfefe"
+          },
+          "benchmark": {
+            "symbol": "SPY",
+            "day": "2026-09-14",
+            "close": "760.88",
+            "published_at": "2026-09-15T03:59:59.999999Z",
+            "feed_status": "end_of_day",
+            "stale": false,
+            "row_id": "14244405-882d-4973-9d84-5a5e7b894e48"
+          }
+        }
+      },
+      {
+        "kind": "decision_closes",
+        "label": "TRADE closes at 2026-10-06 12:00 UTC",
+        "status": "identical",
+        "changed": [],
+        "stored": {
+          "stock": {
+            "day": "2026-10-05",
+            "close": "332.89",
+            "stale": false,
+            "row_id": "4c247235-da6d-4045-8e07-58605eb59a5c",
+            "symbol": "AAPL",
+            "feed_status": "end_of_day",
+            "published_at": "2026-10-06T03:59:59.999999Z"
+          },
+          "benchmark": {
+            "day": "2026-10-05",
+            "close": "774.83",
+            "stale": false,
+            "row_id": "f70c617f-5072-4b5d-822a-3168bd042e3e",
+            "symbol": "SPY",
+            "feed_status": "end_of_day",
+            "published_at": "2026-10-06T03:59:59.999999Z"
+          }
+        },
+        "again": {
+          "stock": {
+            "symbol": "AAPL",
+            "day": "2026-10-05",
+            "close": "332.89",
+            "published_at": "2026-10-06T03:59:59.999999Z",
+            "feed_status": "end_of_day",
+            "stale": false,
+            "row_id": "4c247235-da6d-4045-8e07-58605eb59a5c"
+          },
+          "benchmark": {
+            "symbol": "SPY",
+            "day": "2026-10-05",
+            "close": "774.83",
+            "published_at": "2026-10-06T03:59:59.999999Z",
+            "feed_status": "end_of_day",
+            "stale": false,
+            "row_id": "f70c617f-5072-4b5d-822a-3168bd042e3e"
+          }
+        }
+      }
+    ]
+  }
+}

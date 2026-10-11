@@ -156,6 +156,7 @@ export const DASHBOARDS: readonly DashboardDef[] = [
     purpose: "Paper journal, backtests, walk-forward validation and paper trading.",
     plannedPhase: 1,
     group: "dashboards",
+    live: true,
   },
   {
     id: "execution",

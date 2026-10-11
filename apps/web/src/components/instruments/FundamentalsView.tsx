@@ -51,6 +51,8 @@ interface Props {
   buybacks?: ReactNode;
   /** Results releases: timing, actuals, guidance and reaction (M1.5), after the record. */
   earnings?: ReactNode;
+  /** The company's paper journal entries (M1.6), after the buybacks. */
+  journal?: ReactNode;
 }
 
 /**
@@ -72,6 +74,7 @@ export function FundamentalsView({
   research,
   buybacks,
   earnings,
+  journal,
 }: Props) {
   const newest = [...data.annual.rows, ...data.balance_sheet.rows]
     .flatMap((row) => row.cells)
@@ -147,6 +150,8 @@ export function FundamentalsView({
       {earnings}
 
       {buybacks}
+
+      {journal}
 
       {news}
 

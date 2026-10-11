@@ -1841,6 +1841,34 @@
         "title": "DeadLetterOut",
         "type": "object"
       },
+      "DecisionOut": {
+        "properties": {
+          "decision": {
+            "title": "Decision",
+            "type": "string"
+          },
+          "default": {
+            "title": "Default",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "needed_by": {
+            "title": "Needed By",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "decision",
+          "needed_by",
+          "default"
+        ],
+        "title": "DecisionOut",
+        "type": "object"
+      },
       "DerivedCell": {
         "description": "A value computed at read time from inputs known at known_at (ADR-021).",
         "properties": {
@@ -3796,7 +3824,7 @@
           },
           "decisions": {
             "items": {
-              "$ref": "#/components/schemas/autotrading__api__journal__DecisionOut"
+              "$ref": "#/components/schemas/JournalDecisionOut"
             },
             "title": "Decisions",
             "type": "array"
@@ -3826,6 +3854,228 @@
           "decisions"
         ],
         "title": "JournalCardOut",
+        "type": "object"
+      },
+      "JournalDecisionOut": {
+        "properties": {
+          "approval_state": {
+            "title": "Approval State",
+            "type": "string"
+          },
+          "card_version": {
+            "title": "Card Version",
+            "type": "integer"
+          },
+          "closes": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Closes"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "decision": {
+            "enum": [
+              "trade",
+              "no_trade"
+            ],
+            "title": "Decision",
+            "type": "string"
+          },
+          "exited_by": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exited By"
+          },
+          "exits_decision_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exits Decision Id"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "limit_price": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit Price"
+          },
+          "max_loss": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Loss"
+          },
+          "mode": {
+            "const": "paper",
+            "title": "Mode",
+            "type": "string"
+          },
+          "no_trade_reason": {
+            "anyOf": [
+              {
+                "enum": [
+                  "priced_in",
+                  "insufficient_evidence",
+                  "excessive_risk",
+                  "other"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "No Trade Reason"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "order_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order Type"
+          },
+          "performance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PerformanceOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "side": {
+            "anyOf": [
+              {
+                "enum": [
+                  "buy",
+                  "sell"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Side"
+          },
+          "signal_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Signal Ids",
+            "type": "array"
+          },
+          "strategy_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Strategy Id"
+          },
+          "system_time": {
+            "format": "date-time",
+            "title": "System Time",
+            "type": "string"
+          },
+          "thesis_card_id": {
+            "format": "uuid",
+            "title": "Thesis Card Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "thesis_card_id",
+          "card_version",
+          "decision",
+          "side",
+          "quantity",
+          "order_type",
+          "limit_price",
+          "max_loss",
+          "no_trade_reason",
+          "note",
+          "exits_decision_id",
+          "exited_by",
+          "closes",
+          "strategy_id",
+          "signal_ids",
+          "mode",
+          "approval_state",
+          "known_at",
+          "system_time",
+          "performance"
+        ],
+        "title": "JournalDecisionOut",
         "type": "object"
       },
       "JournalOut": {
@@ -3865,7 +4115,7 @@
           "decision": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/autotrading__api__journal__DecisionOut"
+                "$ref": "#/components/schemas/JournalDecisionOut"
               },
               {
                 "type": "null"
@@ -3875,7 +4125,7 @@
           "exit": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/autotrading__api__journal__DecisionOut"
+                "$ref": "#/components/schemas/JournalDecisionOut"
               },
               {
                 "type": "null"
@@ -5420,7 +5670,7 @@
           },
           "open_decisions": {
             "items": {
-              "$ref": "#/components/schemas/autotrading__api__progress__DecisionOut"
+              "$ref": "#/components/schemas/DecisionOut"
             },
             "title": "Open Decisions",
             "type": "array"
@@ -8049,256 +8299,6 @@
           "remaining_to_market_cap_min"
         ],
         "title": "WatchRule",
-        "type": "object"
-      },
-      "autotrading__api__journal__DecisionOut": {
-        "properties": {
-          "approval_state": {
-            "title": "Approval State",
-            "type": "string"
-          },
-          "card_version": {
-            "title": "Card Version",
-            "type": "integer"
-          },
-          "closes": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Closes"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "decision": {
-            "enum": [
-              "trade",
-              "no_trade"
-            ],
-            "title": "Decision",
-            "type": "string"
-          },
-          "exited_by": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Exited By"
-          },
-          "exits_decision_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Exits Decision Id"
-          },
-          "id": {
-            "format": "uuid",
-            "title": "Id",
-            "type": "string"
-          },
-          "known_at": {
-            "format": "date-time",
-            "title": "Known At",
-            "type": "string"
-          },
-          "limit_price": {
-            "anyOf": [
-              {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Limit Price"
-          },
-          "max_loss": {
-            "anyOf": [
-              {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Max Loss"
-          },
-          "mode": {
-            "const": "paper",
-            "title": "Mode",
-            "type": "string"
-          },
-          "no_trade_reason": {
-            "anyOf": [
-              {
-                "enum": [
-                  "priced_in",
-                  "insufficient_evidence",
-                  "excessive_risk",
-                  "other"
-                ],
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "No Trade Reason"
-          },
-          "note": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Note"
-          },
-          "order_type": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Order Type"
-          },
-          "performance": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/PerformanceOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "quantity": {
-            "anyOf": [
-              {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Quantity"
-          },
-          "side": {
-            "anyOf": [
-              {
-                "enum": [
-                  "buy",
-                  "sell"
-                ],
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Side"
-          },
-          "signal_ids": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Signal Ids",
-            "type": "array"
-          },
-          "strategy_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Strategy Id"
-          },
-          "system_time": {
-            "format": "date-time",
-            "title": "System Time",
-            "type": "string"
-          },
-          "thesis_card_id": {
-            "format": "uuid",
-            "title": "Thesis Card Id",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "thesis_card_id",
-          "card_version",
-          "decision",
-          "side",
-          "quantity",
-          "order_type",
-          "limit_price",
-          "max_loss",
-          "no_trade_reason",
-          "note",
-          "exits_decision_id",
-          "exited_by",
-          "closes",
-          "strategy_id",
-          "signal_ids",
-          "mode",
-          "approval_state",
-          "known_at",
-          "system_time",
-          "performance"
-        ],
-        "title": "DecisionOut",
-        "type": "object"
-      },
-      "autotrading__api__progress__DecisionOut": {
-        "properties": {
-          "decision": {
-            "title": "Decision",
-            "type": "string"
-          },
-          "default": {
-            "title": "Default",
-            "type": "string"
-          },
-          "id": {
-            "title": "Id",
-            "type": "string"
-          },
-          "needed_by": {
-            "title": "Needed By",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "decision",
-          "needed_by",
-          "default"
-        ],
-        "title": "DecisionOut",
         "type": "object"
       }
     }

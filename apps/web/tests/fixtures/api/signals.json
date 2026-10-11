@@ -1,0 +1,92 @@
+{
+  "recorded_at": "2026-10-11T10:03:02.180925+00:00",
+  "recorded_from": "recorded SEC filings, Alpaca closes, FRED yields and news replayed into the integration test database (tests/integration/test_journal.py)",
+  "endpoint": "/signals",
+  "params": {
+    "known_at": "2026-10-06T12:00:00Z",
+    "ticker": "AAPL"
+  },
+  "response": {
+    "known_at": "2026-10-06T12:00:00Z",
+    "rule_version": "0.2.0",
+    "current": [
+      {
+        "id": "a9430b3e-d744-430c-9e1f-5b081a8698cc",
+        "ticker": "AAPL",
+        "family_id": 2,
+        "family": "Corporate Actions & Capital Structure",
+        "strategy_id": "S1",
+        "strategy": "Buyback + Value + Quality",
+        "rule_version": "0.2.0",
+        "state": "active",
+        "score": null,
+        "direction": "long",
+        "generated_at": "2026-10-06T12:00:00Z",
+        "valid_from": "2026-10-06T12:00:00Z",
+        "system_time": "2026-10-11T10:03:01.614544Z",
+        "observation_ids": [
+          {
+            "id": "5f331e70-de78-4a9f-b080-fd6389b702c4",
+            "table": "buyback_state_assignments"
+          }
+        ],
+        "source_quality": 1,
+        "evidence_independence": 7,
+        "execution_eligibility": "paper_only",
+        "backfilled": true
+      }
+    ],
+    "history": [
+      {
+        "id": "a9430b3e-d744-430c-9e1f-5b081a8698cc",
+        "ticker": "AAPL",
+        "family_id": 2,
+        "family": "Corporate Actions & Capital Structure",
+        "strategy_id": "S1",
+        "strategy": "Buyback + Value + Quality",
+        "rule_version": "0.2.0",
+        "state": "active",
+        "score": null,
+        "direction": "long",
+        "generated_at": "2026-10-06T12:00:00Z",
+        "valid_from": "2026-10-06T12:00:00Z",
+        "system_time": "2026-10-11T10:03:01.614544Z",
+        "observation_ids": [
+          {
+            "id": "5f331e70-de78-4a9f-b080-fd6389b702c4",
+            "table": "buyback_state_assignments"
+          }
+        ],
+        "source_quality": 1,
+        "evidence_independence": 7,
+        "execution_eligibility": "paper_only",
+        "backfilled": true
+      },
+      {
+        "id": "47168d4a-1ccc-4aaf-bae3-a513e58ebc13",
+        "ticker": "AAPL",
+        "family_id": 2,
+        "family": "Corporate Actions & Capital Structure",
+        "strategy_id": "S1",
+        "strategy": "Buyback + Value + Quality",
+        "rule_version": "0.2.0",
+        "state": "active",
+        "score": null,
+        "direction": "long",
+        "generated_at": "2026-09-15T12:00:00Z",
+        "valid_from": "2026-09-15T12:00:00Z",
+        "system_time": "2026-10-11T10:02:59.540767Z",
+        "observation_ids": [
+          {
+            "id": "2a697ea8-9cbd-46ec-93b5-fb90aa87af55",
+            "table": "buyback_state_assignments"
+          }
+        ],
+        "source_quality": 1,
+        "evidence_independence": 7,
+        "execution_eligibility": "paper_only",
+        "backfilled": true
+      }
+    ]
+  }
+}

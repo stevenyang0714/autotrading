@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { saveAssumptionsAction } from "@/app/instruments/[ticker]/actions";
 import { EarningsView } from "@/components/earnings/EarningsView";
+import { InstrumentJournal } from "@/components/journal/InstrumentJournal";
 import { BuybacksView } from "@/components/instruments/BuybacksView";
 import { FairValueView } from "@/components/instruments/FairValueView";
 import { FundamentalsView } from "@/components/instruments/FundamentalsView";
@@ -15,6 +16,7 @@ import {
   loadAssumptions,
   loadBuybacks,
   loadEarnings,
+  loadJournal,
   loadFairValue,
   loadFundamentals,
   loadInstrumentPrices,
@@ -61,6 +63,7 @@ export default async function InstrumentPage({
     announcements,
     coverage,
     sources,
+    journal,
   ] = await Promise.all([
       loadFundamentals(ticker, knownAt ?? undefined),
       loadInstrumentPrices(ticker, knownAt ?? undefined),
@@ -73,6 +76,7 @@ export default async function InstrumentPage({
       loadNews({ ...newsQuery, kinds: ["press_release"] }),
       loadNews({ ...newsQuery, kinds: ["article", "official"] }),
       loadSourceHealth(),
+      loadJournal(knownAt ?? undefined, ticker),
     ]);
   if (result.status === "not_found") notFound();
   if (result.status === "unavailable") {
@@ -119,6 +123,13 @@ export default async function InstrumentPage({
         research={research.status === "not_found" ? undefined : <ResearchRecordView result={research} />}
         earnings={earnings.status === "not_found" ? undefined : <EarningsView result={earnings} />}
         buybacks={buybacks.status === "not_found" ? undefined : <BuybacksView result={buybacks} />}
+        journal={
+          <InstrumentJournal
+            ticker={ticker.toUpperCase()}
+            journal={journal}
+            knownOn={knownAt ? knownOn : undefined}
+          />
+        }
         news={
           <InstrumentNews ticker={ticker.toUpperCase()} announcements={announcements} coverage={coverage} />
         }

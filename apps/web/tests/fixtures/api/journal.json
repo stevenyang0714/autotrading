@@ -1,0 +1,225 @@
+{
+  "recorded_at": "2026-10-11T10:03:02.063693+00:00",
+  "recorded_from": "recorded SEC filings, Alpaca closes, FRED yields and news replayed into the integration test database (tests/integration/test_journal.py)",
+  "endpoint": "/journal",
+  "params": {
+    "known_at": "2026-10-06T12:00:00Z"
+  },
+  "response": {
+    "known_at": "2026-10-06T12:00:00Z",
+    "entries": [
+      {
+        "card_id": "5c81c7de-ac34-46d6-83f1-9d32c904da87",
+        "ticker": "AAPL",
+        "version": 2,
+        "thesis": "Still priced in after the buyback update.",
+        "known_at": "2026-09-15T12:00:00Z",
+        "signal_ids": [],
+        "decision": {
+          "id": "2401e8d5-bfac-476a-b673-63674b83b1cd",
+          "thesis_card_id": "18a95003-2ad2-4990-a949-55c67bea9ee1",
+          "card_version": 1,
+          "decision": "no_trade",
+          "side": null,
+          "quantity": null,
+          "order_type": null,
+          "limit_price": null,
+          "max_loss": null,
+          "no_trade_reason": "priced_in",
+          "note": "Fair value below price.",
+          "exits_decision_id": null,
+          "exited_by": null,
+          "closes": {
+            "stock": {
+              "symbol": "AAPL",
+              "day": "2026-09-14",
+              "close": "333.08",
+              "published_at": "2026-09-15T03:59:59.999999Z",
+              "feed_status": "end_of_day",
+              "stale": false,
+              "row_id": "f1ad71a4-c967-4db1-a155-3fe629edfefe"
+            },
+            "benchmark": {
+              "symbol": "SPY",
+              "day": "2026-09-14",
+              "close": "760.88",
+              "published_at": "2026-09-15T03:59:59.999999Z",
+              "feed_status": "end_of_day",
+              "stale": false,
+              "row_id": "14244405-882d-4973-9d84-5a5e7b894e48"
+            }
+          },
+          "strategy_id": "S1",
+          "signal_ids": [
+            "47168d4a-1ccc-4aaf-bae3-a513e58ebc13"
+          ],
+          "mode": "paper",
+          "approval_state": "recorded",
+          "known_at": "2026-09-15T12:00:00Z",
+          "system_time": "2026-10-11T10:02:59.932212Z",
+          "performance": {
+            "status": "ok",
+            "detail": null,
+            "open": false,
+            "entry": {
+              "symbol": "AAPL",
+              "day": "2026-09-14",
+              "close": "333.08",
+              "published_at": "2026-09-15T03:59:59.999999Z",
+              "feed_status": "end_of_day",
+              "stale": false,
+              "row_id": "f1ad71a4-c967-4db1-a155-3fe629edfefe"
+            },
+            "mark": {
+              "symbol": "AAPL",
+              "day": "2026-10-05",
+              "close": "332.89",
+              "published_at": "2026-10-06T03:59:59.999999Z",
+              "feed_status": "end_of_day",
+              "stale": false,
+              "row_id": "4c247235-da6d-4045-8e07-58605eb59a5c"
+            },
+            "split_factor": "1",
+            "entry_basis": "333.080000",
+            "return_pct": "-0.06",
+            "pnl": null,
+            "benchmark": "SPY",
+            "benchmark_return_pct": "1.83",
+            "relative": "-1.89",
+            "max_loss_breached": null
+          }
+        },
+        "exit": null
+      },
+      {
+        "card_id": "025781e9-2bbf-4170-8c1f-44af653e8cbb",
+        "ticker": "AAPL",
+        "version": 1,
+        "thesis": "Buy the buyback compounder.",
+        "known_at": "2026-09-15T12:00:00Z",
+        "signal_ids": [
+          "47168d4a-1ccc-4aaf-bae3-a513e58ebc13"
+        ],
+        "decision": {
+          "id": "272f3f3f-21c1-4338-ba93-fa8934c11081",
+          "thesis_card_id": "2512d7e1-2bc8-421b-b7dc-e7ddbf14be46",
+          "card_version": 1,
+          "decision": "trade",
+          "side": "buy",
+          "quantity": "10",
+          "order_type": "market",
+          "limit_price": null,
+          "max_loss": "100",
+          "no_trade_reason": null,
+          "note": null,
+          "exits_decision_id": null,
+          "exited_by": "8cd22ad4-2277-4e2b-a03c-41f867475460",
+          "closes": {
+            "stock": {
+              "symbol": "AAPL",
+              "day": "2026-09-14",
+              "close": "333.08",
+              "published_at": "2026-09-15T03:59:59.999999Z",
+              "feed_status": "end_of_day",
+              "stale": false,
+              "row_id": "f1ad71a4-c967-4db1-a155-3fe629edfefe"
+            },
+            "benchmark": {
+              "symbol": "SPY",
+              "day": "2026-09-14",
+              "close": "760.88",
+              "published_at": "2026-09-15T03:59:59.999999Z",
+              "feed_status": "end_of_day",
+              "stale": false,
+              "row_id": "14244405-882d-4973-9d84-5a5e7b894e48"
+            }
+          },
+          "strategy_id": "S1",
+          "signal_ids": [
+            "47168d4a-1ccc-4aaf-bae3-a513e58ebc13"
+          ],
+          "mode": "paper",
+          "approval_state": "recorded",
+          "known_at": "2026-09-15T12:00:00Z",
+          "system_time": "2026-10-11T10:03:00.127398Z",
+          "performance": {
+            "status": "ok",
+            "detail": null,
+            "open": false,
+            "entry": {
+              "symbol": "AAPL",
+              "day": "2026-09-14",
+              "close": "333.08",
+              "published_at": "2026-09-15T03:59:59.999999Z",
+              "feed_status": "end_of_day",
+              "stale": false,
+              "row_id": "f1ad71a4-c967-4db1-a155-3fe629edfefe"
+            },
+            "mark": {
+              "symbol": "AAPL",
+              "day": "2026-10-05",
+              "close": "332.89",
+              "published_at": "2026-10-06T03:59:59.999999Z",
+              "feed_status": "end_of_day",
+              "stale": false,
+              "row_id": "4c247235-da6d-4045-8e07-58605eb59a5c"
+            },
+            "split_factor": "1",
+            "entry_basis": "333.080000",
+            "return_pct": "-0.06",
+            "pnl": "-1.90",
+            "benchmark": "SPY",
+            "benchmark_return_pct": "1.83",
+            "relative": "-1.89",
+            "max_loss_breached": false
+          }
+        },
+        "exit": {
+          "id": "8cd22ad4-2277-4e2b-a03c-41f867475460",
+          "thesis_card_id": "2512d7e1-2bc8-421b-b7dc-e7ddbf14be46",
+          "card_version": 1,
+          "decision": "trade",
+          "side": "sell",
+          "quantity": "10",
+          "order_type": "market",
+          "limit_price": null,
+          "max_loss": null,
+          "no_trade_reason": null,
+          "note": "Target met.",
+          "exits_decision_id": "272f3f3f-21c1-4338-ba93-fa8934c11081",
+          "exited_by": null,
+          "closes": {
+            "stock": {
+              "symbol": "AAPL",
+              "day": "2026-10-05",
+              "close": "332.89",
+              "published_at": "2026-10-06T03:59:59.999999Z",
+              "feed_status": "end_of_day",
+              "stale": false,
+              "row_id": "4c247235-da6d-4045-8e07-58605eb59a5c"
+            },
+            "benchmark": {
+              "symbol": "SPY",
+              "day": "2026-10-05",
+              "close": "774.83",
+              "published_at": "2026-10-06T03:59:59.999999Z",
+              "feed_status": "end_of_day",
+              "stale": false,
+              "row_id": "f70c617f-5072-4b5d-822a-3168bd042e3e"
+            }
+          },
+          "strategy_id": "S1",
+          "signal_ids": [
+            "47168d4a-1ccc-4aaf-bae3-a513e58ebc13"
+          ],
+          "mode": "paper",
+          "approval_state": "recorded",
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-11T10:03:00.283402Z",
+          "performance": null
+        }
+      }
+    ],
+    "detail": "Paper journal: decisions are records, never orders. Returns use end-of-day closes only (no costs, slippage, dividends or fills)."
+  }
+}
