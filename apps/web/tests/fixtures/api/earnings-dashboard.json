@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-11T07:28:08.045537+00:00",
+  "recorded_at": "2026-10-11T08:02:15.740887+00:00",
   "recorded_from": "recorded SEC filings and Alpaca closes replayed into the integration test database (tests/integration/test_earnings.py)",
   "endpoint": "/earnings",
   "params": {

@@ -579,7 +579,7 @@ test.describe("desktop tooltips", () => {
   });
 
   test("the ? button opens the full entry and Escape closes it", async ({ page }) => {
-    await page.goto("/dashboards/earnings");
+    await page.goto("/dashboards/policy-monitor");
     await page.getByRole("button", { name: "What is Planned Phase?" }).click();
     const dialog = page.getByRole("dialog", { name: "Planned Phase" });
     await expect(dialog).toContainText("Methodology");

@@ -47,7 +47,8 @@ from autotrading.domain.earnings import (
     actual_series,
     actuals,
     match_report,
-    reaction,
+    prepare,
+    reaction_from,
     timing,
 )
 from autotrading.domain.guidance import GUIDANCE_VERSION
@@ -101,7 +102,7 @@ class QuarterValueOut(BaseModel):
     period_end: date | None
     value: Decimal | None
     detail: str | None
-    inputs: list[InputOut]
+    inputs: list[InputOut]  # the current quarter's; earlier quarters' are at their own event
 
 
 class ActualOut(BaseModel):
@@ -261,23 +262,27 @@ def _guidance(
     return out
 
 
-def _value_out(value: QuarterValue[FactView], forms: dict[str, str]) -> QuarterValueOut:
+def _value_out(
+    value: QuarterValue[FactView], forms: dict[str, str], with_inputs: bool = True
+) -> QuarterValueOut:
     return QuarterValueOut(
         period_start=value.period_start,
         period_end=value.period_end,
         value=value.value,
         detail=value.detail,
-        inputs=[input_out(i, forms) for i in value.inputs],
+        inputs=[input_out(i, forms) for i in value.inputs] if with_inputs else [],
     )
 
 
 def _actual_out(actual: Actual[FactView], forms: dict[str, str]) -> ActualOut:
+    # The quarter before and the year-earlier quarter are the current quarters of earlier
+    # events, which carry their inputs: repeating them here would multiply the response.
     return ActualOut(
         metric=actual.metric,
         unit=actual.unit,
         current=_value_out(actual.current, forms),
-        prior_quarter=_value_out(actual.prior_quarter, forms),
-        year_ago=_value_out(actual.year_ago, forms),
+        prior_quarter=_value_out(actual.prior_quarter, forms, with_inputs=False),
+        year_ago=_value_out(actual.year_ago, forms, with_inputs=False),
         change_qoq=actual.change_qoq,
         change_yoy=actual.change_yoy,
         change_unit=actual.change_unit,
@@ -308,20 +313,22 @@ def _reaction_out(found: Reaction) -> ReactionOut:
 
 
 def company_events(
-    session: Session, instrument: Instrument, at: datetime
+    session: Session, instrument: Instrument, at: datetime, since: datetime | None = None
 ) -> list[EarningsEventOut]:
-    """Every earnings event of one company known at T, newest first."""
+    """Every earnings event of one company known at T (accepted from `since`), newest first."""
     assert instrument.entity_id is not None
     chain = issuer_chain(session, instrument.entity_id)
-    filings = _events(session, chain.order, at)
+    filings = [
+        f for f in _events(session, chain.order, at) if since is None or f.published_at >= since
+    ]
     if not filings:
         return []
-    since = min(f.published_at for f in filings) - BARS_BEFORE
-    view = market_view(session, instrument, chain.order, at, ACTUAL_METRICS, bars_since=since)
-    stock = _bars(view.bars)
-    benchmark = _benchmark(session, since, at)
+    bars_since = min(f.published_at for f in filings) - BARS_BEFORE
+    view = market_view(session, instrument, chain.order, at, ACTUAL_METRICS, bars_since=bars_since)
+    benchmark = _benchmark(session, bars_since, at)
     sessions = frozenset(b.day for b in benchmark if b.feed_status == "end_of_day")
     calendar = market_calendar()
+    closes = prepare(_bars(view.bars), benchmark, at, calendar, view.splits)
     series = actual_series(view.facts)
     reports = _reports(session, chain.order)
     read = {
@@ -330,21 +337,18 @@ def company_events(
         for a in reader_accessions(session, EARNINGS_READER, cik)
     }
     guidance = _guidance(session, chain.order, [f.accession_number for f in filings], at)
-    events = []
+    matched = []
     for filing in filings:
         report = match_report(filing.published_at, reports)
         known = report is not None and report.published_at <= at
         found = actuals(series, report.period_end, at, view.splits) if known and report else []
-        forms = filing_forms(
-            session,
-            (
-                f
-                for a in found
-                for v in (a.current, a.prior_quarter, a.year_ago)
-                for i in v.inputs
-                for f in i.sources
-            ),
-        )
+        matched.append((filing, report, known, found))
+    forms = filing_forms(  # one query for every event's filings
+        session,
+        (f for *_, found in matched for a in found for i in a.current.inputs for f in i.sources),
+    )
+    events = []
+    for filing, report, known, found in matched:
         stated = guidance.get(filing.accession_number, [])
         status: GuidanceStatus = (
             "extracted" if stated else "none" if filing.accession_number in read else "not_read"
@@ -375,9 +379,7 @@ def company_events(
                 actuals=[_actual_out(a, forms) for a in found],
                 guidance_status=status,
                 guidance=stated,
-                reaction=_reaction_out(
-                    reaction(filing.published_at, stock, benchmark, at, calendar, view.splits)
-                ),
+                reaction=_reaction_out(reaction_from(filing.published_at, closes)),
                 consensus=ConsensusOut(),
             )
         )
@@ -420,10 +422,10 @@ def earnings_dashboard(session: SessionDep, known_at: KnownAt = None) -> Earning
     at = known_at_or_now(session, known_at)
     latest, recent = [], []
     for ticker, instrument, entity in universe_equities(session):
-        events = company_events(session, instrument, at)
+        events = company_events(session, instrument, at, since=at - RECENT)
         if events:
             latest.append(_summary(ticker, entity.name, events[0]))
-        recent += [_summary(ticker, entity.name, e) for e in events if e.accepted_at >= at - RECENT]
+        recent += [_summary(ticker, entity.name, e) for e in events]
     return EarningsDashboard(
         known_at=at,
         latest=latest,

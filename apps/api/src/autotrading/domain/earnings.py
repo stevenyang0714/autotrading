@@ -16,6 +16,7 @@ data known at a time T; no I/O. Consensus has no source (OD-3): never estimated 
   before. End-of-day closes known at T only, split-adjusted to T's basis.
 """
 
+from bisect import bisect_right
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
@@ -124,6 +125,31 @@ def _return(now: Decimal, before: Decimal) -> Decimal:
     return ((now / before - 1) * 100).quantize(RATIO)
 
 
+@dataclass(frozen=True)
+class Closes:
+    """A company's and the benchmark's end-of-day closes known at T, prepared once for all of
+    its events: split-adjusted, with each session's close time."""
+
+    own: list[DayBar]
+    close_times: list[datetime]  # of `own`, ascending
+    benchmark: dict[date, DayBar]
+
+
+def prepare(
+    stock: Sequence[DayBar],
+    benchmark: Sequence[DayBar],
+    at: datetime,
+    calendar: MarketCalendar,
+    splits: Sequence[Split],
+) -> Closes:
+    own = _usable(stock, at, splits)
+    return Closes(
+        own,
+        [session_close(b.day, calendar) for b in own],
+        {b.day: b for b in _usable(benchmark, at, [])},
+    )
+
+
 def reaction(
     event_at: datetime,
     stock: Sequence[DayBar],
@@ -133,10 +159,14 @@ def reaction(
     splits: Sequence[Split],
 ) -> Reaction:
     """The stock's and SPY's returns from the last close before the event, as known at T."""
-    own = _usable(stock, at, splits)
-    spy = {b.day: b for b in _usable(benchmark, at, [])}
-    before = [b for b in own if session_close(b.day, calendar) <= event_at]
-    after = [b for b in own if session_close(b.day, calendar) > event_at]
+    return reaction_from(event_at, prepare(stock, benchmark, at, calendar, splits))
+
+
+def reaction_from(event_at: datetime, closes: Closes) -> Reaction:
+    """As `reaction`, from closes prepared once per company."""
+    split = bisect_right(closes.close_times, event_at)  # closes at or before the event
+    before, after = closes.own[:split], closes.own[split:]
+    spy = closes.benchmark
     base = before[-1] if before else None
     event_day = event_at.astimezone(NEW_YORK).date()
     if base is None or event_day - base.day > BASE_WITHIN:
