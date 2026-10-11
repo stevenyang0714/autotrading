@@ -29,6 +29,7 @@ SHARE_COUNT_METRICS = frozenset(
         "shares_outstanding",
         "shares_outstanding_cover",
         "shares_repurchased",
+        "volume",  # shares traded in a day (M1.5 reaction volume)
     }
 )
 ADJUSTED_METRICS = PER_SHARE_METRICS | SHARE_COUNT_METRICS

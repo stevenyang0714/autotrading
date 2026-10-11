@@ -13,7 +13,7 @@ Trailing twelve months = the sum of the four latest consecutive quarters, flows 
 """
 
 from collections import defaultdict
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from datetime import date, timedelta
 from decimal import Decimal
@@ -137,3 +137,27 @@ def trailing_twelve_months[FactT: ValueFact](
         if after.period_start != before.period_end + timedelta(days=1):
             return None
     return sum((q.value for q in last), Decimal(0)), last
+
+
+def free_cash_flow_quarters[FactT: ValueFact](
+    ocf: Sequence[Quarter[FactT]], capex: Sequence[Quarter[FactT]]
+) -> list[Quarter[FactT]]:
+    """Free cash flow per quarter: both quarters known, their inputs kept (ADR-021)."""
+    by_period = {(q.period_start, q.period_end): q for q in capex}
+    out = []
+    for q in ocf:
+        c = by_period.get((q.period_start, q.period_end))
+        if c is not None:
+            out.append(
+                Quarter(
+                    "free_cash_flow",
+                    q.number,
+                    q.fiscal_year_end,
+                    q.period_start,
+                    q.period_end,
+                    q.value - c.value,
+                    "operating_cash_flow - capex",
+                    (*q.inputs, *c.inputs),
+                )
+            )
+    return out

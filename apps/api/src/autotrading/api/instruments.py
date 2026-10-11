@@ -42,7 +42,12 @@ from autotrading.domain.fundamentals import (
     issuer_at,
     merge_by_precedence,
 )
-from autotrading.domain.quarters import Quarter, quarters, trailing_twelve_months
+from autotrading.domain.quarters import (
+    Quarter,
+    free_cash_flow_quarters,
+    quarters,
+    trailing_twelve_months,
+)
 from autotrading.domain.splits import ADJUSTED_METRICS, Split, adjust
 from autotrading.repositories.facts import as_of_query
 
@@ -487,7 +492,9 @@ class _CellBuilder:
 
     def quarter_table(self, metrics: tuple[str, ...]) -> QuarterTable:
         series = {m: quarters(self._views, m) for m in metrics if m != "free_cash_flow"}
-        series["free_cash_flow"] = _fcf_quarters(series["operating_cash_flow"], series["capex"])
+        series["free_cash_flow"] = free_cash_flow_quarters(
+            series["operating_cash_flow"], series["capex"]
+        )
         ends = sorted({(q.period_start, q.period_end) for qs in series.values() for q in qs})
         columns = ends[-QUARTER_COLUMNS:]
         rows = []
@@ -632,27 +639,3 @@ class _CellBuilder:
             factor=str(adjusted.factor),
             splits=[s.ex_date for s in adjusted.splits],
         )
-
-
-def _fcf_quarters(
-    ocf: list[Quarter[FactView]], capex: list[Quarter[FactView]]
-) -> list[Quarter[FactView]]:
-    """Free cash flow per quarter: both quarters known, their inputs kept (ADR-021)."""
-    by_period = {(q.period_start, q.period_end): q for q in capex}
-    out = []
-    for q in ocf:
-        c = by_period.get((q.period_start, q.period_end))
-        if c is not None:
-            out.append(
-                Quarter(
-                    "free_cash_flow",
-                    q.number,
-                    q.fiscal_year_end,
-                    q.period_start,
-                    q.period_end,
-                    q.value - c.value,
-                    "operating_cash_flow - capex",
-                    (*q.inputs, *c.inputs),
-                )
-            )
-    return out
