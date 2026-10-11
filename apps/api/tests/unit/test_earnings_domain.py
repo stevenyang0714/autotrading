@@ -11,6 +11,7 @@ from autotrading.domain.earnings import (
     Actual,
     DayBar,
     Report,
+    actual_series,
     actuals,
     match_report,
     reaction,
@@ -215,7 +216,9 @@ def by_metric(found: list[Actual[F]]) -> dict[str, Actual[F]]:
 
 
 def test_the_quarter_against_the_quarter_before_and_a_year_earlier() -> None:
-    found = by_metric(actuals(company(), d("2026-06-30"), datetime(2026, 9, 1, tzinfo=UTC), []))
+    found = by_metric(
+        actuals(actual_series(company()), d("2026-06-30"), datetime(2026, 9, 1, tzinfo=UTC), [])
+    )
     revenue = found["revenue"]
     assert (revenue.current.value, revenue.prior_quarter.value, revenue.year_ago.value) == (
         Decimal(132),
@@ -237,7 +240,9 @@ def test_the_quarter_against_the_quarter_before_and_a_year_earlier() -> None:
 
 
 def test_a_fourth_quarter_eps_is_never_derived() -> None:
-    found = by_metric(actuals(company(), d("2025-12-31"), datetime(2026, 3, 1, tzinfo=UTC), []))
+    found = by_metric(
+        actuals(actual_series(company()), d("2025-12-31"), datetime(2026, 3, 1, tzinfo=UTC), [])
+    )
     assert found["revenue"].current.value == Decimal(130)  # year - 9 months
     eps = found["eps_diluted"]
     assert (eps.current.value, eps.current.detail) == (

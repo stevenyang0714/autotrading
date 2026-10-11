@@ -34,9 +34,12 @@ export type CompleteTermId =
   | "cash"
   | "cash_returned"
   | "cash_returned_to_fcf"
+  | "change_qoq"
+  | "change_yoy"
   | "close_vs_moving_average"
   | "commercial_paper"
   | "condition_status"
+  | "consensus_estimate"
   | "core_pce_inflation_yoy"
   | "cpi_inflation_yoy"
   | "dashboard_alerts_center"
@@ -66,6 +69,13 @@ export type CompleteTermId =
   | "discount_rate"
   | "dividends_paid"
   | "duplicate_group"
+  | "earnings_actuals"
+  | "earnings_event"
+  | "earnings_reaction"
+  | "earnings_report"
+  | "earnings_surprise"
+  | "earnings_timing"
+  | "earnings_volume_ratio"
   | "earnings_yield"
   | "ebitda_ttm"
   | "effective_tax_rate"
@@ -89,6 +99,7 @@ export type CompleteTermId =
   | "freshness_sla"
   | "gross_margin"
   | "gross_profit"
+  | "guidance_statement"
   | "hy_oas_percentile"
   | "implied_upside"
   | "income_tax_expense"
@@ -969,6 +980,56 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "回饋股東 / FCF",
     "hint_zh": "回饋股東金額 ÷ 自由現金流；超過 100% 代表動用現金或借錢。"
   },
+  "change_qoq": {
+    "term_id": "change_qoq",
+    "display_name": "Change vs Prior Quarter",
+    "category": "earnings",
+    "short_definition": "How the quarter compares with the quarter before.",
+    "full_definition": "For amounts (revenue, EPS, free cash flow): the quarter / the quarter before - 1, in percent; n/m when the earlier value is not positive. For margins: the difference in percentage points.",
+    "formula": "now / prior quarter - 1 (margins: now - prior)",
+    "unit": "percent or percentage points",
+    "example": "Apple's release of 2026-04-30 (quarter to 2026-03-28): revenue -22.66% (after the holiday quarter).",
+    "direction": "Higher = growth",
+    "interpretation": "Momentum within the year.",
+    "why_it_matters": "Seasonal businesses swing from quarter to quarter.",
+    "source": "SEC 8-K Item 2.02 filings and 10-Q/10-K XBRL; Alpaca end-of-day closes (domain/earnings.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/earnings.py",
+    "as_of": "2026-10-11",
+    "update_cadence": "per release",
+    "caveats": "Seasonality: compare with a year earlier for the trend.",
+    "related_terms": [
+      "earnings_actuals",
+      "change_yoy"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "季增",
+    "hint_zh": "本季 ÷ 前一季 − 1；利潤率用百分點差。"
+  },
+  "change_yoy": {
+    "term_id": "change_yoy",
+    "display_name": "Change vs a Year Earlier",
+    "category": "earnings",
+    "short_definition": "How the quarter compares with the same quarter a year earlier.",
+    "full_definition": "For amounts (revenue, EPS, free cash flow): the quarter / the same quarter a year earlier - 1, in percent; n/m when the earlier value is not positive. For margins: the difference in percentage points.",
+    "formula": "now / year-ago quarter - 1 (margins: now - year ago)",
+    "unit": "percent or percentage points",
+    "example": "Apple's release of 2026-04-30 (quarter to 2026-03-28): revenue +16.60%, EPS +21.82%, gross margin +2.22 points.",
+    "direction": "Higher = growth",
+    "interpretation": "Growth with seasonality removed.",
+    "why_it_matters": "The headline comparison of most results.",
+    "source": "SEC 8-K Item 2.02 filings and 10-Q/10-K XBRL; Alpaca end-of-day closes (domain/earnings.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/earnings.py",
+    "as_of": "2026-10-11",
+    "update_cadence": "per release",
+    "caveats": "Acquisitions and accounting changes affect it.",
+    "related_terms": [
+      "earnings_actuals",
+      "change_qoq"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "年增",
+    "hint_zh": "本季 ÷ 去年同季 − 1；利潤率用百分點差。"
+  },
   "close_vs_moving_average": {
     "term_id": "close_vs_moving_average",
     "display_name": "Close vs 50-Session Average",
@@ -1043,6 +1104,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "條件判定",
     "hint_zh": "通過、未通過或無資料；無資料永遠不算通過。"
+  },
+  "consensus_estimate": {
+    "term_id": "consensus_estimate",
+    "display_name": "Consensus Estimate",
+    "category": "earnings",
+    "short_definition": "Analysts' average expectation before a release. Not available.",
+    "full_definition": "There is no point-in-time consensus provider (OD-3, Phase 1 decision P1-2). The field is always shown as Data unavailable and never estimated, scraped or replaced by guidance (errata E6).",
+    "formula": "none",
+    "unit": "N/A",
+    "example": "Every event: Data unavailable.",
+    "direction": "N/A",
+    "interpretation": "Results here are compared with the company's own past, not with expectations.",
+    "why_it_matters": "Most price reactions are about the result against expectations.",
+    "source": "Phase 1 decision P1-2 (OD-3); errata E6",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/spec/SPEC_ERRATA_v2.1.md",
+    "as_of": "2026-10-11",
+    "update_cadence": "N/A",
+    "caveats": "Arrives only with a licensed point-in-time provider.",
+    "related_terms": [
+      "earnings_surprise",
+      "guidance_statement"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "共識預估",
+    "hint_zh": "分析師預期；沒有資料來源（OD-3），一律 Data unavailable，不估算。"
   },
   "core_pce_inflation_yoy": {
     "term_id": "core_pce_inflation_yoy",
@@ -1172,25 +1258,28 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "term_id": "dashboard_earnings",
     "display_name": "Earnings",
     "category": "navigation",
-    "short_definition": "Calendar, results against expectations, guidance, revisions and market reaction.",
-    "full_definition": "Earnings results compared with what was expected before the release, plus guidance changes, revisions, post-event reaction and peer read-through (02 §12).",
-    "formula": "not a calculation; dashboard defined in build spec 02 §21",
+    "short_definition": "Each company's results releases: timing, actuals against the past, guidance and price reaction.",
+    "full_definition": "Live from M1.5 (ADR-026): each universe company's latest release (when, before or after the session, revenue and EPS against a year earlier, the day-0 reaction against SPY, whether it gave guidance) and every release of the last two years, as known on the chosen date. Results are compared with the company's own past: there is no consensus provider (OD-3), so consensus and surprise show Data unavailable (errata E6).",
+    "formula": "not a calculation; reads GET /earnings",
     "unit": "page",
-    "example": "A beat that the market had already priced in shows little price reaction.",
+    "example": "As known on 2026-10-06 (test data): Apple's 2026-04-30 release, revenue +16.60% a year on, +2.96 points against SPY on day 0.",
     "direction": "N/A",
-    "interpretation": "Planned for Phase 1; until then the page shows no data, live or simulated.",
-    "why_it_matters": "Surprise relative to expectations moves prices, not the headline beat or miss.",
-    "source": "Build spec 02 §21; research report 01 §21; ROADMAP dashboard map",
+    "interpretation": "Scan releases; open a company for its actuals, guidance quotes and filings.",
+    "why_it_matters": "Results and the market's reaction are the main recurring catalyst for a stock.",
+    "source": "Build spec 02 §12 and §21; ADR-026",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/spec/02_master_build_prompt_v2.md",
-    "as_of": "2026-10-05",
-    "update_cadence": "per release",
-    "caveats": "Contents arrive with Phase 1; scope can change through a roadmap update.",
+    "as_of": "2026-10-11",
+    "update_cadence": "daily (SEC 10:00 SGT, prices daily)",
+    "caveats": "Actuals wait for the 10-Q or 10-K; guidance is rule-based and limited to revenue, EPS and margins.",
     "related_terms": [
-      "planned_phase"
+      "earnings_event",
+      "earnings_reaction",
+      "guidance_statement",
+      "consensus_estimate"
     ],
-    "methodology_version": "0.1.0",
-    "name_zh": "財報季",
-    "hint_zh": "實際財報與前期比較、財測與市場反應（Phase 1）。"
+    "methodology_version": "0.2.0",
+    "name_zh": "財報",
+    "hint_zh": "每家公司的財報發布：時間、與過去比較的實際數字、指引與相對 SPY 的反應；沒有共識預估。"
   },
   "dashboard_event_transmission": {
     "term_id": "dashboard_event_transmission",
@@ -1764,6 +1853,189 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.1",
     "name_zh": "轉載群組",
     "hint_zh": "同一則新聞的各個轉載版本歸成一組，只算一則報導。"
+  },
+  "earnings_actuals": {
+    "term_id": "earnings_actuals",
+    "display_name": "Quarter Actuals",
+    "category": "earnings",
+    "short_definition": "The reported quarter's revenue, EPS, margins and free cash flow, with the quarter before and a year earlier.",
+    "full_definition": "From the matched report's quarter: revenue; diluted EPS (the reported three-month value; a fourth quarter is never derived, ADR-013); gross, operating and net margin (part / revenue); free cash flow (operating cash flow - capex). Quarters come from year-to-date filings (ADR-021). Each is shown with the quarter before and the same quarter a year earlier, as known at the As known on time.",
+    "formula": "quarter values from 10-Q/10-K XBRL",
+    "unit": "USD, USD per share, percent",
+    "example": "Apple's release of 2026-04-30 (quarter to 2026-03-28): revenue $111.184B, EPS $2.01, gross margin 49.27%.",
+    "direction": "N/A",
+    "interpretation": "What the quarter actually delivered, from the filing.",
+    "why_it_matters": "Results against the company's own past; there is no consensus to compare with (OD-3).",
+    "source": "SEC 8-K Item 2.02 filings and 10-Q/10-K XBRL; Alpaca end-of-day closes (domain/earnings.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/earnings.py",
+    "as_of": "2026-10-11",
+    "update_cadence": "per release",
+    "caveats": "EPS of a fourth quarter is unavailable unless the company reports it.",
+    "related_terms": [
+      "earnings_report",
+      "change_qoq",
+      "change_yoy",
+      "eps_diluted",
+      "gross_margin"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "單季實際數字",
+    "hint_zh": "營收、EPS、毛利率、營業利益率、淨利率、FCF，和前一季、去年同季比較。"
+  },
+  "earnings_event": {
+    "term_id": "earnings_event",
+    "display_name": "Earnings Event",
+    "category": "earnings",
+    "short_definition": "A company's results release: an 8-K with Item 2.02, at its EDGAR acceptance time.",
+    "full_definition": "Every 8-K a universe company (or its predecessor issuer) filed with Item 2.02 'Results of Operations and Financial Condition' since 2021 (ADR-026 E1), timed by EDGAR's acceptance time to the second (01 §23), not only its date. Each event shows when it was released, the 10-Q or 10-K its numbers wait for, the quarter's actuals, any numeric guidance and the price reaction against SPY.",
+    "formula": "8-K with Item 2.02, at acceptance time",
+    "unit": "event",
+    "example": "Apple's release of 2026-04-30 (quarter to 2026-03-28): accepted 16:30:41 ET, after the close.",
+    "direction": "N/A",
+    "interpretation": "The moment new results became public.",
+    "why_it_matters": "Reactions and look-ahead checks depend on the exact time, not the day.",
+    "source": "SEC 8-K Item 2.02 filings and 10-Q/10-K XBRL; Alpaca end-of-day closes (domain/earnings.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/earnings.py",
+    "as_of": "2026-10-11",
+    "update_cadence": "per release",
+    "caveats": "When a press release went out before the 8-K was accepted, the 8-K time is used.",
+    "related_terms": [
+      "earnings_timing",
+      "earnings_report",
+      "earnings_reaction",
+      "filing_date"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "財報事件",
+    "hint_zh": "8-K Item 2.02 財報發布，以 EDGAR 接受時間（精確到秒）為準。"
+  },
+  "earnings_reaction": {
+    "term_id": "earnings_reaction",
+    "display_name": "Reaction vs SPY",
+    "category": "earnings",
+    "short_definition": "The stock's return after a release minus SPY's over the same days.",
+    "full_definition": "From the last end-of-day close at or before the release to the first close after it (day 0), and to the 1st and 5th sessions after day 0: the stock's return minus SPY's over the same days, in percentage points (ADR-026 E4). Closes are split-adjusted and only those known at the As known on time count, so a release after the close shows nothing until the next session's close.",
+    "formula": "(close_k / close_base - 1) - (SPY_k / SPY_base - 1)",
+    "unit": "percentage points",
+    "example": "Apple's release of 2026-04-30 (quarter to 2026-03-28): day 0 (2026-05-01) +3.24% vs SPY +0.28% = +2.96 points; day +5 +5.46 points.",
+    "direction": "Higher = the market liked it more",
+    "interpretation": "How the market judged the results.",
+    "why_it_matters": "Price confirmation of a thesis; also a check for look-ahead in research.",
+    "source": "SEC 8-K Item 2.02 filings and 10-Q/10-K XBRL; Alpaca end-of-day closes (domain/earnings.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/earnings.py",
+    "as_of": "2026-10-11",
+    "update_cadence": "daily",
+    "caveats": "Market moves on the same day are removed only as SPY's average move; no beta adjustment.",
+    "related_terms": [
+      "earnings_event",
+      "earnings_timing",
+      "earnings_volume_ratio",
+      "relative_return_1m"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "相對 SPY 反應",
+    "hint_zh": "發布前最後收盤到第 0、+1、+5 個交易日，個股報酬減 SPY 報酬（百分點）。"
+  },
+  "earnings_report": {
+    "term_id": "earnings_report",
+    "display_name": "Matched Report",
+    "category": "earnings",
+    "short_definition": "The 10-Q or 10-K whose XBRL numbers a release waits for.",
+    "full_definition": "The first 10-Q or 10-K the issuer chain filed from two days before the release on, for a period that ended in the 100 days before it (ADR-026 E2). A release has no XBRL, so its quarter's actuals appear only once this report is public; until then the event says the report is not yet public.",
+    "formula": "first 10-Q/10-K filed from release - 2 days, period end within 100 days before",
+    "unit": "filing",
+    "example": "Apple's release of 2026-04-30 (quarter to 2026-03-28): 10-Q 0000320193-26-000013, accepted 2026-05-01 06:01 ET.",
+    "direction": "N/A",
+    "interpretation": "The source of the event's actual numbers.",
+    "why_it_matters": "Keeps the actuals point-in-time: nothing before the report was public.",
+    "source": "SEC 8-K Item 2.02 filings and 10-Q/10-K XBRL; Alpaca end-of-day closes (domain/earnings.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/earnings.py",
+    "as_of": "2026-10-11",
+    "update_cadence": "per release",
+    "caveats": "A late or missing 10-Q leaves the event without actuals.",
+    "related_terms": [
+      "earnings_event",
+      "earnings_actuals"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "配對報告",
+    "hint_zh": "新聞稿之後的 10-Q 或 10-K；實際數字要等它公開才有。"
+  },
+  "earnings_surprise": {
+    "term_id": "earnings_surprise",
+    "display_name": "Earnings Surprise",
+    "category": "earnings",
+    "short_definition": "Actual results against the consensus estimate. Not available.",
+    "full_definition": "Needs the consensus estimate, which has no provider (OD-3): always Data unavailable, never computed against guidance or a model (errata E6).",
+    "formula": "actual / consensus - 1 (not computed)",
+    "unit": "N/A",
+    "example": "Every event: Data unavailable.",
+    "direction": "N/A",
+    "interpretation": "Use the reaction against SPY as the market's own verdict instead.",
+    "why_it_matters": "Surprise, not the headline number, usually drives the reaction.",
+    "source": "Phase 1 decision P1-2 (OD-3); errata E6",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/spec/SPEC_ERRATA_v2.1.md",
+    "as_of": "2026-10-11",
+    "update_cadence": "N/A",
+    "caveats": "Arrives with a consensus provider.",
+    "related_terms": [
+      "consensus_estimate",
+      "earnings_reaction"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "財報驚喜",
+    "hint_zh": "實際 ÷ 共識 − 1；沒有共識所以不計算。"
+  },
+  "earnings_timing": {
+    "term_id": "earnings_timing",
+    "display_name": "Release Timing",
+    "category": "earnings",
+    "short_definition": "Whether a release came before the open, during the session or after the close.",
+    "full_definition": "The acceptance time against its New York trading day: before 09:30 (pre-market), 09:30-16:00 (market hours; 13:00 on early-close days in the calendar), after the close (after hours), or a day without a session. Trading days are those with an SPY close.",
+    "formula": "acceptance time vs the session of its New York day",
+    "unit": "category",
+    "example": "Apple's release of 2026-04-30 (quarter to 2026-03-28): after hours. ExxonMobil, 2025-10-31 06:31 ET: pre-market.",
+    "direction": "N/A",
+    "interpretation": "Decides which close is the first one after the release.",
+    "why_it_matters": "An after-hours release is first priced at the next session.",
+    "source": "SEC 8-K Item 2.02 filings and 10-Q/10-K XBRL; Alpaca end-of-day closes (domain/earnings.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/earnings.py",
+    "as_of": "2026-10-11",
+    "update_cadence": "per release",
+    "caveats": "Early closes before 2026 are not in the calendar and count as 16:00.",
+    "related_terms": [
+      "earnings_event",
+      "earnings_reaction",
+      "market_session"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "發布時段",
+    "hint_zh": "盤前、盤中、盤後或非交易日；決定第一個反應的收盤是哪一天。"
+  },
+  "earnings_volume_ratio": {
+    "term_id": "earnings_volume_ratio",
+    "display_name": "Volume vs 20 Sessions",
+    "category": "earnings",
+    "short_definition": "Day-0 trading volume against the average of the 20 sessions before the release.",
+    "full_definition": "Shares traded on the first session after the release / the average of the 20 sessions up to the last close before it, split-adjusted.",
+    "formula": "volume(day 0) / mean(volume, 20 sessions before)",
+    "unit": "x",
+    "example": "Apple's release of 2026-04-30 (quarter to 2026-03-28): 1.84x.",
+    "direction": "Higher = more attention",
+    "interpretation": "How much trading the release caused.",
+    "why_it_matters": "A large reaction on heavy volume is more meaningful than on light volume.",
+    "source": "SEC 8-K Item 2.02 filings and 10-Q/10-K XBRL; Alpaca end-of-day closes (domain/earnings.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/earnings.py",
+    "as_of": "2026-10-11",
+    "update_cadence": "daily",
+    "caveats": "Index rebalancing and option expiry days also inflate volume.",
+    "related_terms": [
+      "earnings_reaction",
+      "volume"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "成交量比",
+    "hint_zh": "第 0 天成交量 ÷ 發布前 20 個交易日平均量。"
   },
   "earnings_yield": {
     "term_id": "earnings_yield",
@@ -2356,6 +2628,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "毛利",
     "hint_zh": "營收減去銷貨成本。"
+  },
+  "guidance_statement": {
+    "term_id": "guidance_statement",
+    "display_name": "Guidance",
+    "category": "earnings",
+    "short_definition": "A company's own numeric outlook for revenue, EPS or a margin, quoted from its release.",
+    "full_definition": "Rule-based (P1-3, ADR-026 E3, extractor 0.1.0): a sentence of an earnings 8-K exhibit with a forward word and a future period, or a bullet or table row of an outlook section whose heading names the period, stating a number or range for revenue (or sales growth), EPS or a gross, operating or net margin. 'Plus or minus' becomes a range; '(previously ...)' is ignored; expenses, capital expenditures and tax rates are not kept. Only the sentence (at most 300 characters) and the link are stored.",
+    "formula": "rule-based sentence match",
+    "unit": "USD, USD per share, percent",
+    "example": "Meta, 2024-02-01: first quarter 2024 revenue $34.5-37 billion. NVIDIA: revenue $108.0 billion, plus or minus 2%.",
+    "direction": "N/A",
+    "interpretation": "What management expects; compare with later actuals.",
+    "why_it_matters": "Guidance changes often move the stock more than the quarter itself.",
+    "source": "SEC 8-K exhibits (sec.earnings_release, domain/guidance.py)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/guidance.py",
+    "as_of": "2026-10-11",
+    "update_cadence": "per release",
+    "caveats": "Apple, Alphabet, Microsoft, JPMorgan, AutoZone and ExxonMobil give no numeric revenue, EPS or margin guidance in their releases: 'guidance not extracted'.",
+    "related_terms": [
+      "earnings_event",
+      "consensus_estimate"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "財報指引",
+    "hint_zh": "公司自己給的營收、EPS、利潤率數字或區間，引用原文句子。"
   },
   "hy_oas_percentile": {
     "term_id": "hy_oas_percentile",

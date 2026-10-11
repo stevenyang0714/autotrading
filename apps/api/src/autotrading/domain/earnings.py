@@ -16,7 +16,7 @@ data known at a time T; no I/O. Consensus has no source (OD-3): never estimated 
   before. End-of-day closes known at T only, split-adjusted to T's basis.
 """
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
@@ -275,14 +275,22 @@ def _find[FactT: DatedFact](
     return min(found, key=lambda q: abs((q.period_end - end).days)) if found else None
 
 
-def actuals[FactT: DatedFact](
-    facts: Sequence[FactT], quarter_end: date, at: datetime, splits: Sequence[Split]
-) -> list[Actual[FactT]]:
-    """Each actual of the quarter ending on `quarter_end` (facts known at T)."""
+def actual_series[FactT: DatedFact](facts: Sequence[FactT]) -> dict[str, list[Quarter[FactT]]]:
+    """The quarter series the actuals read, computed once per company."""
     series = {m: quarters(facts, m) for m in ACTUAL_METRICS}
     series["free_cash_flow"] = free_cash_flow_quarters(
         series["operating_cash_flow"], series["capex"]
     )
+    return series
+
+
+def actuals[FactT: DatedFact](
+    series: Mapping[str, Sequence[Quarter[FactT]]],
+    quarter_end: date,
+    at: datetime,
+    splits: Sequence[Split],
+) -> list[Actual[FactT]]:
+    """Each actual of the quarter ending on `quarter_end` (series of the facts known at T)."""
     current = _find(series["revenue"], quarter_end) or next(
         (q for m in ("net_income", "operating_cash_flow") if (q := _find(series[m], quarter_end))),
         None,

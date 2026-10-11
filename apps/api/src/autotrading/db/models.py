@@ -875,6 +875,69 @@ class FilingBuybackStatement(ProvenanceMixin, Base):
     )
 
 
+# ---------- earnings guidance (M1.5) ----------
+
+GUIDANCE_METRICS = (
+    "revenue",
+    "revenue_growth",
+    "eps",
+    "gross_margin",
+    "operating_margin",
+    "net_margin",
+)
+
+
+class FilingGuidanceStatement(ProvenanceMixin, Base):
+    """A revenue, EPS or margin outlook stated in an exhibit of an earnings 8-K (ADR-026 E3,
+    P1-3): the metric, its range, unit and period as written, and the sentence (at most 300
+    characters, never the document), read by `sec.earnings_release` with one extractor version.
+    Append-only: a trigger rejects UPDATE and DELETE. published_at is the filing's EDGAR
+    acceptance time; source_url the document."""
+
+    __tablename__ = "filing_guidance_statements"
+    __table_args__ = (
+        *provenance_constraints(),
+        CheckConstraint(r"accession_number ~ '^\d{10}-\d{2}-\d{6}$'", name="accession_format"),
+        CheckConstraint(sql_in("metric", GUIDANCE_METRICS), name="metric"),
+        CheckConstraint(sql_in("unit", ("USD", "USD/shares", "percent")), name="unit"),
+        CheckConstraint("low <= high", name="range_order"),
+        CheckConstraint(sql_in("rule", ("sentence", "outlook_section")), name="rule"),
+        CheckConstraint("length(sentence) BETWEEN 1 AND 300", name="sentence_length"),
+        UniqueConstraint(
+            "entity_id",
+            "source_url",
+            "metric",
+            "low",
+            "high",
+            "adjusted",
+            "extractor_version",
+            name="uq_filing_guidance_statements_source_value",
+        ),
+        Index("ix_filing_guidance_statements_entity_id_published_at", "entity_id", "published_at"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    entity_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("entities.id"))
+    accession_number: Mapped[str] = mapped_column(Text)
+    document: Mapped[str] = mapped_column(Text)
+    document_type: Mapped[str] = mapped_column(Text)  # EX-99.1, ...
+    metric: Mapped[str] = mapped_column(Text)
+    low: Mapped[Decimal] = mapped_column(Numeric)
+    high: Mapped[Decimal] = mapped_column(Numeric)
+    unit: Mapped[str] = mapped_column(Text)
+    period_text: Mapped[str] = mapped_column(Text)
+    adjusted: Mapped[bool] = mapped_column(Boolean)
+    sentence: Mapped[str] = mapped_column(Text)
+    rule: Mapped[str] = mapped_column(Text)
+    extractor_version: Mapped[str] = mapped_column(Text)
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
 # ---------- valuation assumptions (M1.3a) ----------
 
 
