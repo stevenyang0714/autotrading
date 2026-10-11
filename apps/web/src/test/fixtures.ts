@@ -18,6 +18,10 @@ import buybacksAapl from "../../tests/fixtures/api/buybacks-aapl.json";
 import buybacksXom from "../../tests/fixtures/api/buybacks-xom.json";
 import buybacksNvda from "../../tests/fixtures/api/buybacks-nvda.json";
 import buybackStates from "../../tests/fixtures/api/buyback-states.json";
+import earningsAapl from "../../tests/fixtures/api/earnings-aapl.json";
+import earningsAaplEvening from "../../tests/fixtures/api/earnings-aapl-evening.json";
+import earningsDashboard from "../../tests/fixtures/api/earnings-dashboard.json";
+import earningsMeta from "../../tests/fixtures/api/earnings-meta.json";
 import researchAapl from "../../tests/fixtures/api/research-aapl.json";
 import researchDashboardStale from "../../tests/fixtures/api/research-dashboard-stale.json";
 import researchDashboard from "../../tests/fixtures/api/research-dashboard.json";
@@ -50,6 +54,8 @@ import type {
   AssumptionList,
   AuditLogPage,
   BuybackStates,
+  Earnings,
+  EarningsDashboard,
   Buybacks,
   DataHealthData,
   DataHealthReport,
@@ -186,3 +192,14 @@ export const recordedBuybacks = {
 /** Buyback states as known on 2026-10-06 (M1.4b), evaluated then and at 2026-03-31 under rule
  * 0.1.0: Apple and ExxonMobil ACTIVE, NVIDIA WATCH (its press release only), Meta none. */
 export const recordedBuybackStates = buybackStates.response as BuybackStates;
+
+/** Earnings events as known on 2026-10-06 (M1.5): Apple (its 2026-04-30 release after the
+ * close, matched to the next morning's 10-Q; no numeric guidance), the same on that evening
+ * (no reaction, no 10-Q yet), and Meta (a revenue outlook in its 2024-02-01 release). */
+export const recordedEarnings = {
+  aapl: earningsAapl.response as Earnings,
+  aaplEvening: earningsAaplEvening.response as Earnings,
+  meta: earningsMeta.response as Earnings,
+};
+
+export const recordedEarningsDashboard = earningsDashboard.response as EarningsDashboard;

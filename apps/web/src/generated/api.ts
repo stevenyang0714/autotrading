@@ -89,6 +89,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/earnings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Earnings Dashboard */
+        get: operations["earnings_dashboard_earnings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/glossary": {
         parameters: {
             query?: never;
@@ -221,6 +238,23 @@ export interface paths {
         };
         /** Instrument Buybacks */
         get: operations["instrument_buybacks_instruments__ticker__buybacks_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/instruments/{ticker}/earnings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Instrument Earnings */
+        get: operations["instrument_earnings_instruments__ticker__earnings_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -481,6 +515,28 @@ export interface components {
             quarter_max_age_days: number;
             /** Quarter Repurchase To Market Cap Min */
             quarter_repurchase_to_market_cap_min: string;
+        };
+        /** ActualOut */
+        ActualOut: {
+            /** Change Qoq */
+            change_qoq: string | null;
+            /**
+             * Change Unit
+             * @enum {string}
+             */
+            change_unit: "percent" | "percentage points";
+            /** Change Yoy */
+            change_yoy: string | null;
+            current: components["schemas"]["QuarterValueOut"];
+            /**
+             * Metric
+             * @enum {string}
+             */
+            metric: "revenue" | "eps_diluted" | "gross_margin" | "operating_margin" | "net_margin" | "free_cash_flow";
+            prior_quarter: components["schemas"]["QuarterValueOut"];
+            /** Unit */
+            unit: string;
+            year_ago: components["schemas"]["QuarterValueOut"];
         };
         /** AnnouncementEvent */
         AnnouncementEvent: {
@@ -855,6 +911,20 @@ export interface components {
             /** Value */
             value: string | null;
         };
+        /** ConsensusOut */
+        ConsensusOut: {
+            /**
+             * Detail
+             * @default Data unavailable: no consensus provider (OD-3)
+             */
+            detail: string;
+            /** Eps */
+            eps?: null;
+            /** Revenue */
+            revenue?: null;
+            /** Surprise */
+            surprise?: null;
+        };
         /** DataAsOf */
         DataAsOf: {
             latest_filing: components["schemas"]["FilingRef"] | null;
@@ -1003,6 +1073,104 @@ export interface components {
             risk_free: components["schemas"]["RiskFreeOut"] | null;
             /** Value */
             value: string | null;
+        };
+        /** EarningsDashboard */
+        EarningsDashboard: {
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Latest */
+            latest: components["schemas"]["EarningsSummary"][];
+            /** Recent */
+            recent: components["schemas"]["EarningsSummary"][];
+        };
+        /** EarningsEventOut */
+        EarningsEventOut: {
+            /**
+             * Accepted At
+             * Format: date-time
+             */
+            accepted_at: string;
+            /** Accepted At Precision */
+            accepted_at_precision: string;
+            /** Accession */
+            accession: string;
+            /** Actuals */
+            actuals: components["schemas"]["ActualOut"][];
+            consensus: components["schemas"]["ConsensusOut"];
+            /** Form */
+            form: string;
+            /** Guidance */
+            guidance: components["schemas"]["GuidanceOut"][];
+            /**
+             * Guidance Status
+             * @enum {string}
+             */
+            guidance_status: "extracted" | "none" | "not_read";
+            /** Items */
+            items: string[];
+            reaction: components["schemas"]["ReactionOut"];
+            report: components["schemas"]["ReportOut"] | null;
+            /** Report Detail */
+            report_detail: string | null;
+            /**
+             * Timing
+             * @enum {string}
+             */
+            timing: "pre_market" | "market_hours" | "after_hours" | "non_session";
+            /** Url */
+            url: string;
+        };
+        /** EarningsOut */
+        EarningsOut: {
+            /** Events */
+            events: components["schemas"]["EarningsEventOut"][];
+            /** Guidance Version */
+            guidance_version: string;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Ticker */
+            ticker: string;
+        };
+        /** EarningsSummary */
+        EarningsSummary: {
+            /**
+             * Accepted At
+             * Format: date-time
+             */
+            accepted_at: string;
+            /** Accession */
+            accession: string;
+            consensus: components["schemas"]["ConsensusOut"];
+            /** Day0 Relative */
+            day0_relative: string | null;
+            /** Eps Yoy */
+            eps_yoy: string | null;
+            /** Guidance Count */
+            guidance_count: number;
+            /**
+             * Guidance Status
+             * @enum {string}
+             */
+            guidance_status: "extracted" | "none" | "not_read";
+            /** Name */
+            name: string;
+            /** Period End */
+            period_end: string | null;
+            /** Revenue Yoy */
+            revenue_yoy: string | null;
+            /** Ticker */
+            ticker: string;
+            /**
+             * Timing
+             * @enum {string}
+             */
+            timing: "pre_market" | "market_hours" | "after_hours" | "non_session";
         };
         /** EntityOut */
         EntityOut: {
@@ -1228,6 +1396,30 @@ export interface components {
             loaded_at: string;
             /** Methodology Version */
             methodology_version: string;
+        };
+        /** GuidanceOut */
+        GuidanceOut: {
+            /** Adjusted */
+            adjusted: boolean;
+            /** Document Type */
+            document_type: string;
+            /** High */
+            high: string;
+            /** Low */
+            low: string;
+            /** Metric */
+            metric: string;
+            /** Period */
+            period: string;
+            /** Sentence */
+            sentence: string;
+            /**
+             * Unit
+             * @enum {string}
+             */
+            unit: "USD" | "USD/shares" | "percent";
+            /** Url */
+            url: string;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -1814,6 +2006,19 @@ export interface components {
             /** Rows */
             rows: components["schemas"]["QuarterRow"][];
         };
+        /** QuarterValueOut */
+        QuarterValueOut: {
+            /** Detail */
+            detail: string | null;
+            /** Inputs */
+            inputs: components["schemas"]["InputOut"][];
+            /** Period End */
+            period_end: string | null;
+            /** Period Start */
+            period_start: string | null;
+            /** Value */
+            value: string | null;
+        };
         /** QuoteOut */
         QuoteOut: {
             /** Ask */
@@ -1841,6 +2046,40 @@ export interface components {
             symbol: string;
             /** Venue */
             venue?: string | null;
+        };
+        /** ReactionOut */
+        ReactionOut: {
+            /** Base Close */
+            base_close: string | null;
+            /** Base Day */
+            base_day: string | null;
+            /** Benchmark */
+            benchmark: string;
+            /** Detail */
+            detail: string | null;
+            /** Volume Detail */
+            volume_detail: string | null;
+            /** Volume Ratio */
+            volume_ratio: string | null;
+            /** Windows */
+            windows: components["schemas"]["ReactionWindowOut"][];
+        };
+        /** ReactionWindowOut */
+        ReactionWindowOut: {
+            /** Benchmark Return */
+            benchmark_return: string | null;
+            /** Day */
+            day: string | null;
+            /** Detail */
+            detail: string | null;
+            /** Label */
+            label: string;
+            /** Relative */
+            relative: string | null;
+            /** Sessions After */
+            sessions_after: number;
+            /** Stock Return */
+            stock_return: string | null;
         };
         /** ReconciliationDetail */
         ReconciliationDetail: {
@@ -1922,6 +2161,25 @@ export interface components {
              * @enum {string}
              */
             unit: "USD" | "USD/shares" | "x" | "percent" | "shares" | "flag";
+        };
+        /** ReportOut */
+        ReportOut: {
+            /** Accession */
+            accession: string;
+            /** Form */
+            form: string;
+            /**
+             * Period End
+             * Format: date
+             */
+            period_end: string;
+            /**
+             * Published At
+             * Format: date-time
+             */
+            published_at: string;
+            /** Url */
+            url: string;
         };
         /** ResearchDashboard */
         ResearchDashboard: {
@@ -2578,6 +2836,38 @@ export interface operations {
             };
         };
     };
+    earnings_dashboard_earnings_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EarningsDashboard"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_terms_glossary_get: {
         parameters: {
             query?: {
@@ -2833,6 +3123,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BuybacksOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    instrument_earnings_instruments__ticker__earnings_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+            };
+            header?: never;
+            path: {
+                ticker: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EarningsOut"];
                 };
             };
             /** @description Validation Error */

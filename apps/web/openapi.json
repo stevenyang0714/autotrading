@@ -40,6 +40,79 @@
         "title": "ActiveRule",
         "type": "object"
       },
+      "ActualOut": {
+        "properties": {
+          "change_qoq": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Qoq"
+          },
+          "change_unit": {
+            "enum": [
+              "percent",
+              "percentage points"
+            ],
+            "title": "Change Unit",
+            "type": "string"
+          },
+          "change_yoy": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Yoy"
+          },
+          "current": {
+            "$ref": "#/components/schemas/QuarterValueOut"
+          },
+          "metric": {
+            "enum": [
+              "revenue",
+              "eps_diluted",
+              "gross_margin",
+              "operating_margin",
+              "net_margin",
+              "free_cash_flow"
+            ],
+            "title": "Metric",
+            "type": "string"
+          },
+          "prior_quarter": {
+            "$ref": "#/components/schemas/QuarterValueOut"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          },
+          "year_ago": {
+            "$ref": "#/components/schemas/QuarterValueOut"
+          }
+        },
+        "required": [
+          "metric",
+          "unit",
+          "current",
+          "prior_quarter",
+          "year_ago",
+          "change_qoq",
+          "change_yoy",
+          "change_unit"
+        ],
+        "title": "ActualOut",
+        "type": "object"
+      },
       "AnnouncementEvent": {
         "properties": {
           "amount": {
@@ -1229,6 +1302,29 @@
         "title": "ConditionOut",
         "type": "object"
       },
+      "ConsensusOut": {
+        "properties": {
+          "detail": {
+            "default": "Data unavailable: no consensus provider (OD-3)",
+            "title": "Detail",
+            "type": "string"
+          },
+          "eps": {
+            "title": "Eps",
+            "type": "null"
+          },
+          "revenue": {
+            "title": "Revenue",
+            "type": "null"
+          },
+          "surprise": {
+            "title": "Surprise",
+            "type": "null"
+          }
+        },
+        "title": "ConsensusOut",
+        "type": "object"
+      },
       "DataAsOf": {
         "properties": {
           "latest_filing": {
@@ -1675,6 +1771,289 @@
           "equity_risk_premium"
         ],
         "title": "DiscountRate",
+        "type": "object"
+      },
+      "EarningsDashboard": {
+        "properties": {
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "latest": {
+            "items": {
+              "$ref": "#/components/schemas/EarningsSummary"
+            },
+            "title": "Latest",
+            "type": "array"
+          },
+          "recent": {
+            "items": {
+              "$ref": "#/components/schemas/EarningsSummary"
+            },
+            "title": "Recent",
+            "type": "array"
+          }
+        },
+        "required": [
+          "known_at",
+          "latest",
+          "recent"
+        ],
+        "title": "EarningsDashboard",
+        "type": "object"
+      },
+      "EarningsEventOut": {
+        "properties": {
+          "accepted_at": {
+            "format": "date-time",
+            "title": "Accepted At",
+            "type": "string"
+          },
+          "accepted_at_precision": {
+            "title": "Accepted At Precision",
+            "type": "string"
+          },
+          "accession": {
+            "title": "Accession",
+            "type": "string"
+          },
+          "actuals": {
+            "items": {
+              "$ref": "#/components/schemas/ActualOut"
+            },
+            "title": "Actuals",
+            "type": "array"
+          },
+          "consensus": {
+            "$ref": "#/components/schemas/ConsensusOut"
+          },
+          "form": {
+            "title": "Form",
+            "type": "string"
+          },
+          "guidance": {
+            "items": {
+              "$ref": "#/components/schemas/GuidanceOut"
+            },
+            "title": "Guidance",
+            "type": "array"
+          },
+          "guidance_status": {
+            "enum": [
+              "extracted",
+              "none",
+              "not_read"
+            ],
+            "title": "Guidance Status",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "reaction": {
+            "$ref": "#/components/schemas/ReactionOut"
+          },
+          "report": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReportOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "report_detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report Detail"
+          },
+          "timing": {
+            "enum": [
+              "pre_market",
+              "market_hours",
+              "after_hours",
+              "non_session"
+            ],
+            "title": "Timing",
+            "type": "string"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "accession",
+          "form",
+          "url",
+          "accepted_at",
+          "accepted_at_precision",
+          "timing",
+          "items",
+          "report",
+          "report_detail",
+          "actuals",
+          "guidance_status",
+          "guidance",
+          "reaction",
+          "consensus"
+        ],
+        "title": "EarningsEventOut",
+        "type": "object"
+      },
+      "EarningsOut": {
+        "properties": {
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/EarningsEventOut"
+            },
+            "title": "Events",
+            "type": "array"
+          },
+          "guidance_version": {
+            "title": "Guidance Version",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticker",
+          "known_at",
+          "guidance_version",
+          "events"
+        ],
+        "title": "EarningsOut",
+        "type": "object"
+      },
+      "EarningsSummary": {
+        "properties": {
+          "accepted_at": {
+            "format": "date-time",
+            "title": "Accepted At",
+            "type": "string"
+          },
+          "accession": {
+            "title": "Accession",
+            "type": "string"
+          },
+          "consensus": {
+            "$ref": "#/components/schemas/ConsensusOut"
+          },
+          "day0_relative": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Day0 Relative"
+          },
+          "eps_yoy": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eps Yoy"
+          },
+          "guidance_count": {
+            "title": "Guidance Count",
+            "type": "integer"
+          },
+          "guidance_status": {
+            "enum": [
+              "extracted",
+              "none",
+              "not_read"
+            ],
+            "title": "Guidance Status",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "period_end": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period End"
+          },
+          "revenue_yoy": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revenue Yoy"
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          },
+          "timing": {
+            "enum": [
+              "pre_market",
+              "market_hours",
+              "after_hours",
+              "non_session"
+            ],
+            "title": "Timing",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticker",
+          "name",
+          "accession",
+          "accepted_at",
+          "timing",
+          "period_end",
+          "revenue_yoy",
+          "eps_yoy",
+          "day0_relative",
+          "guidance_status",
+          "guidance_count",
+          "consensus"
+        ],
+        "title": "EarningsSummary",
         "type": "object"
       },
       "EntityOut": {
@@ -2306,6 +2685,66 @@
           "loaded_at"
         ],
         "title": "GlossaryVersion",
+        "type": "object"
+      },
+      "GuidanceOut": {
+        "properties": {
+          "adjusted": {
+            "title": "Adjusted",
+            "type": "boolean"
+          },
+          "document_type": {
+            "title": "Document Type",
+            "type": "string"
+          },
+          "high": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "High",
+            "type": "string"
+          },
+          "low": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Low",
+            "type": "string"
+          },
+          "metric": {
+            "title": "Metric",
+            "type": "string"
+          },
+          "period": {
+            "title": "Period",
+            "type": "string"
+          },
+          "sentence": {
+            "title": "Sentence",
+            "type": "string"
+          },
+          "unit": {
+            "enum": [
+              "USD",
+              "USD/shares",
+              "percent"
+            ],
+            "title": "Unit",
+            "type": "string"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "metric",
+          "low",
+          "high",
+          "unit",
+          "period",
+          "adjusted",
+          "sentence",
+          "url",
+          "document_type"
+        ],
+        "title": "GuidanceOut",
         "type": "object"
       },
       "HTTPValidationError": {
@@ -4175,6 +4614,73 @@
         "title": "QuarterTable",
         "type": "object"
       },
+      "QuarterValueOut": {
+        "properties": {
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "inputs": {
+            "items": {
+              "$ref": "#/components/schemas/InputOut"
+            },
+            "title": "Inputs",
+            "type": "array"
+          },
+          "period_end": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period End"
+          },
+          "period_start": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Start"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "period_start",
+          "period_end",
+          "value",
+          "detail",
+          "inputs"
+        ],
+        "title": "QuarterValueOut",
+        "type": "object"
+      },
       "QuoteOut": {
         "properties": {
           "ask": {
@@ -4307,6 +4813,172 @@
           "feed_status"
         ],
         "title": "QuoteOut",
+        "type": "object"
+      },
+      "ReactionOut": {
+        "properties": {
+          "base_close": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Close"
+          },
+          "base_day": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Day"
+          },
+          "benchmark": {
+            "title": "Benchmark",
+            "type": "string"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "volume_detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Volume Detail"
+          },
+          "volume_ratio": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Volume Ratio"
+          },
+          "windows": {
+            "items": {
+              "$ref": "#/components/schemas/ReactionWindowOut"
+            },
+            "title": "Windows",
+            "type": "array"
+          }
+        },
+        "required": [
+          "benchmark",
+          "base_day",
+          "base_close",
+          "windows",
+          "volume_ratio",
+          "volume_detail",
+          "detail"
+        ],
+        "title": "ReactionOut",
+        "type": "object"
+      },
+      "ReactionWindowOut": {
+        "properties": {
+          "benchmark_return": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Benchmark Return"
+          },
+          "day": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Day"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "relative": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Relative"
+          },
+          "sessions_after": {
+            "title": "Sessions After",
+            "type": "integer"
+          },
+          "stock_return": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stock Return"
+          }
+        },
+        "required": [
+          "label",
+          "sessions_after",
+          "day",
+          "stock_return",
+          "benchmark_return",
+          "relative",
+          "detail"
+        ],
+        "title": "ReactionWindowOut",
         "type": "object"
       },
       "ReconciliationDetail": {
@@ -4550,6 +5222,41 @@
           "since"
         ],
         "title": "RelativeOut",
+        "type": "object"
+      },
+      "ReportOut": {
+        "properties": {
+          "accession": {
+            "title": "Accession",
+            "type": "string"
+          },
+          "form": {
+            "title": "Form",
+            "type": "string"
+          },
+          "period_end": {
+            "format": "date",
+            "title": "Period End",
+            "type": "string"
+          },
+          "published_at": {
+            "format": "date-time",
+            "title": "Published At",
+            "type": "string"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "accession",
+          "form",
+          "published_at",
+          "period_end",
+          "url"
+        ],
+        "title": "ReportOut",
         "type": "object"
       },
       "ResearchDashboard": {
@@ -6398,6 +7105,58 @@
         ]
       }
     },
+    "/earnings": {
+      "get": {
+        "operationId": "earnings_dashboard_earnings_get",
+        "parameters": [
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EarningsDashboard"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Earnings Dashboard",
+        "tags": [
+          "earnings"
+        ]
+      }
+    },
     "/glossary": {
       "get": {
         "operationId": "list_terms_glossary_get",
@@ -6822,6 +7581,67 @@
         "summary": "Instrument Buybacks",
         "tags": [
           "buybacks"
+        ]
+      }
+    },
+    "/instruments/{ticker}/earnings": {
+      "get": {
+        "operationId": "instrument_earnings_instruments__ticker__earnings_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ticker",
+            "required": true,
+            "schema": {
+              "title": "Ticker",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EarningsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Instrument Earnings",
+        "tags": [
+          "earnings"
         ]
       }
     },

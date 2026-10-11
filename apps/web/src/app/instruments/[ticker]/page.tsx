@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { saveAssumptionsAction } from "@/app/instruments/[ticker]/actions";
+import { EarningsView } from "@/components/earnings/EarningsView";
 import { BuybacksView } from "@/components/instruments/BuybacksView";
 import { FairValueView } from "@/components/instruments/FairValueView";
 import { FundamentalsView } from "@/components/instruments/FundamentalsView";
@@ -13,6 +14,7 @@ import { ValuationView } from "@/components/instruments/ValuationView";
 import {
   loadAssumptions,
   loadBuybacks,
+  loadEarnings,
   loadFairValue,
   loadFundamentals,
   loadInstrumentPrices,
@@ -54,6 +56,7 @@ export default async function InstrumentPage({
     fairValue,
     assumptions,
     research,
+    earnings,
     buybacks,
     announcements,
     coverage,
@@ -65,6 +68,7 @@ export default async function InstrumentPage({
       loadFairValue(ticker, knownAt ?? undefined, version),
       loadAssumptions(ticker),
       loadResearch(ticker, knownAt ?? undefined),
+      loadEarnings(ticker, knownAt ?? undefined),
       loadBuybacks(ticker, knownAt ?? undefined),
       loadNews({ ...newsQuery, kinds: ["press_release"] }),
       loadNews({ ...newsQuery, kinds: ["article", "official"] }),
@@ -113,6 +117,7 @@ export default async function InstrumentPage({
           />
         }
         research={research.status === "not_found" ? undefined : <ResearchRecordView result={research} />}
+        earnings={earnings.status === "not_found" ? undefined : <EarningsView result={earnings} />}
         buybacks={buybacks.status === "not_found" ? undefined : <BuybacksView result={buybacks} />}
         news={
           <InstrumentNews ticker={ticker.toUpperCase()} announcements={announcements} coverage={coverage} />

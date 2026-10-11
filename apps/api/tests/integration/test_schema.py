@@ -60,6 +60,7 @@ APP_TABLES = {
     "filing_buyback_statements",
     "buyback_rule_sets",
     "buyback_state_assignments",
+    "filing_guidance_statements",
 }
 FEB = datetime(2025, 2, 1, 21, 5, tzinfo=UTC)
 AUG = datetime(2025, 8, 1, 20, 30, tzinfo=UTC)
@@ -189,6 +190,8 @@ def test_guardrails_exist(engine: Engine) -> None:
         "buyback_rule_sets_audit",
         "buyback_state_assignments_append_only",
         "buyback_state_assignments_no_truncate",
+        "filing_guidance_statements_append_only",
+        "filing_guidance_statements_no_truncate",
     } <= triggers
     assert exclusions == {"ex_identifiers_value_period", "ex_identifiers_subject_period"}
 

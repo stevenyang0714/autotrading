@@ -219,6 +219,15 @@ METRICS: tuple[MetricDefinition, ...] = (
                     "mega_cap",
                 )
             },
+            # M1.5 (ADR-026): earnings events, from 8-Ks, the matched report and closes.
+            "earnings_timing": "earnings.timing",
+            "earnings_report": "earnings.match_report",
+            "earnings_actuals": "earnings.actuals",
+            "change_qoq": "earnings.actuals",
+            "change_yoy": "earnings.actuals",
+            "earnings_reaction": "earnings.reaction",
+            "earnings_volume_ratio": "earnings.reaction",
+            "guidance_statement": "guidance.guidance",
         }.items()
     ),
     MetricDefinition(

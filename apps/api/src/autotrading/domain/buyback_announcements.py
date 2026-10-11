@@ -131,11 +131,17 @@ class Statement:
     rule: str  # the pattern that matched
 
 
+_CELL_TAGS = frozenset({"td", "th"})
+
+
 class _Text(HTMLParser):
-    def __init__(self) -> None:
+    def __init__(self, rows: bool = False) -> None:
         super().__init__(convert_charrefs=True)
         self.parts: list[str] = []
         self._hidden = 0
+        # rows: a table row is one line, its cells separated by " | " (M1.5 guidance tables)
+        self._rows = rows
+        self._in_row = 0
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         style = dict(attrs).get("style") or ""
@@ -145,26 +151,41 @@ class _Text(HTMLParser):
             or "display:none" in style.replace(" ", "")
         ):
             self._hidden += 1  # hidden, or nested inside hidden content
-        if tag in _BLOCK_TAGS:
-            self.parts.append("\n")
+        self.parts.append(self._break(tag))
+        if self._rows and tag == "tr":
+            self._in_row += 1
 
     def handle_endtag(self, tag: str) -> None:
         if self._hidden and tag not in _VOID_TAGS:
             self._hidden -= 1
-        if tag in _BLOCK_TAGS:
-            self.parts.append("\n")
+        if self._rows and tag == "tr":
+            self._in_row = max(0, self._in_row - 1)
+        self.parts.append(self._break(tag))
+
+    def _break(self, tag: str) -> str:
+        """What a tag adds: a line break for blocks; in rows mode, cells inside a row are
+        separated by " | " and blocks nested in them by a space."""
+        if self._rows and self._in_row and tag != "tr":
+            if tag in _CELL_TAGS:
+                return " | "
+            return " " if tag in _BLOCK_TAGS else ""
+        return "\n" if tag in _BLOCK_TAGS else ""
 
     def handle_data(self, data: str) -> None:
         if not self._hidden:
             self.parts.append(data)
 
 
-def document_text(raw: bytes) -> str:
-    """Visible text of an HTML document, one line per block element."""
-    parser = _Text()
+def document_text(raw: bytes, rows: bool = False) -> str:
+    """Visible text of an HTML document, one line per block element; with `rows`, one line per
+    table row, its non-empty cells separated by " | "."""
+    parser = _Text(rows)
     parser.feed(raw.decode("utf-8", errors="replace"))
     text = "".join(parser.parts).replace("\xa0", " ").replace("​", "")
-    return "\n".join(re.sub(r"[ \t\r\f\v]+", " ", line).strip() for line in text.split("\n"))
+    lines = (re.sub(r"[ \t\r\f\v]+", " ", line).strip() for line in text.split("\n"))
+    if rows:
+        lines = (" | ".join(c.strip() for c in line.split("|") if c.strip()) for line in lines)
+    return "\n".join(lines)
 
 
 def sentences(text: str) -> list[str]:
@@ -180,7 +201,7 @@ def _amount(match: re.Match[str], name: str) -> Decimal:
     return (number * _UNITS[match.group(f"{name}_unit").lower()]).quantize(Decimal(1))
 
 
-def _trim(sentence: str, at: int) -> str:
+def trim(sentence: str, at: int) -> str:
     """At most MAX_SENTENCE characters, centred on position `at` when cut."""
     if len(sentence) <= MAX_SENTENCE:
         return sentence
@@ -245,7 +266,7 @@ def statement(sentence: str) -> Statement | None:
         amount=amount,
         remaining_amount=remaining if kind != "remaining" else None,
         stated_date=_stated_date(sentence),
-        sentence=_trim(sentence, found.start(name)),
+        sentence=trim(sentence, found.start(name)),
         rule=rule,
     )
 

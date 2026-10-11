@@ -49,7 +49,7 @@ terms:
   dashboard_fundamental_research: {name: 基本面研究, hint: 10 家公司一張表：成長、利潤率、ROIC、資本配置與估值，點公司看研究紀錄。}
   dashboard_corporate_actions: {name: 公司行動, hint: 每家公司的回購狀態、條件對門檻的檢視、狀態歷史與回購時間軸。}
   dashboard_event_transmission: {name: 事件傳導, hint: 事件如何經由產業鏈影響資產（Phase 3）。}
-  dashboard_earnings: {name: 財報季, hint: 實際財報與前期比較、財測與市場反應（Phase 1）。}
+  dashboard_earnings: {name: 財報, hint: 每家公司的財報發布：時間、與過去比較的實際數字、指引與相對 SPY 的反應；沒有共識預估。}
   dashboard_x_expert_watch: {name: X 專家觀察, hint: 追蹤研究者在 X 上的觀點變化（Phase 4）。}
   dashboard_policy_monitor: {name: 政策監控, hint: 政策提案到實施的生命週期（Phase 3）。}
   dashboard_congress_trades: {name: 國會交易, hint: 美國議員申報的交易與申報延遲（Phase 4）。}
@@ -145,6 +145,19 @@ terms:
   cash_returned_to_fcf: {name: 回饋股東 / FCF, hint: 回饋股東金額 ÷ 自由現金流；超過 100% 代表動用現金或借錢。}
   diluted_shares_change: {name: 稀釋股數年增減, hint: 稀釋加權股數 ÷ 一年前 − 1，換算到同一分割基準；沒標稀釋股數且稀釋 EPS = 基本 EPS 時用基本股數。}
   research_record: {name: 研究紀錄, hint: 一家公司近四季與五個財年的成長、品質與資本配置，每個數字附來源申報。}
+
+  # earnings events (M1.5)
+  earnings_event: {name: 財報事件, hint: 8-K Item 2.02 財報發布，以 EDGAR 接受時間（精確到秒）為準。}
+  earnings_timing: {name: 發布時段, hint: 盤前、盤中、盤後或非交易日；決定第一個反應的收盤是哪一天。}
+  earnings_report: {name: 配對報告, hint: 新聞稿之後的 10-Q 或 10-K；實際數字要等它公開才有。}
+  earnings_actuals: {name: 單季實際數字, hint: 營收、EPS、毛利率、營業利益率、淨利率、FCF，和前一季、去年同季比較。}
+  change_qoq: {name: 季增, hint: 本季 ÷ 前一季 − 1；利潤率用百分點差。}
+  change_yoy: {name: 年增, hint: 本季 ÷ 去年同季 − 1；利潤率用百分點差。}
+  earnings_reaction: {name: 相對 SPY 反應, hint: 發布前最後收盤到第 0、+1、+5 個交易日，個股報酬減 SPY 報酬（百分點）。}
+  earnings_volume_ratio: {name: 成交量比, hint: 第 0 天成交量 ÷ 發布前 20 個交易日平均量。}
+  guidance_statement: {name: 財報指引, hint: 公司自己給的營收、EPS、利潤率數字或區間，引用原文句子。}
+  consensus_estimate: {name: 共識預估, hint: 分析師預期；沒有資料來源（OD-3），一律 Data unavailable，不估算。}
+  earnings_surprise: {name: 財報驚喜, hint: 實際 ÷ 共識 − 1；沒有共識所以不計算。}
 
   # buyback states (M1.4b)
   buyback_state: {name: 回購狀態, hint: 依版本化規則判定：無、WATCH、ACTIVE、HIGH-CONVICTION 候選；每個條件都存值、門檻與證據。}

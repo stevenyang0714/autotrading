@@ -180,18 +180,26 @@ def test_replay_ingests_both_xom_issuers(
     replayed: list[IngestionRun], sessions: sessionmaker[Session]
 ) -> None:
     # tickers, 4 companies (META included), splits, filing XBRL of Apple and Meta (ADR-021),
-    # 8-Ks of Apple, Exxon Mobil Corp and Meta (M1.4a)
+    # then per company with recorded 8-Ks (Apple, Exxon Mobil Corp, Meta) the 8-K run (M1.4a)
+    # and the earnings-release run of its Item 2.02 8-Ks (M1.5)
     assert [(r.job, r.status) for r in replayed] == (
         [("sec.tickers", "succeeded")]
         + [("sec.company", "succeeded")] * 4
         + [("alpaca.splits", "succeeded")]
         + [("sec.filing_xbrl", "succeeded")] * 2
-        + [("sec.eight_k", "succeeded")] * 3
+        + [("sec.eight_k", "succeeded"), ("sec.earnings_release", "succeeded")] * 3
     )
     read = [f["accession"] for r in replayed[6:8] for f in r.params["filings"]]
     assert sorted(read) == sorted(RECORDED_INSTANCES)
-    eight_ks = [f["accession"] for r in replayed[8:] for f in r.params["filings"]]
-    assert sorted(eight_ks) == sorted(RECORDED_EIGHT_KS)
+
+    def accessions(job: str) -> list[str]:
+        return sorted(
+            f["accession"] for r in replayed[8:] if r.job == job for f in r.params["filings"]
+        )
+
+    assert accessions("sec.eight_k") == sorted(RECORDED_EIGHT_KS)
+    debt_notice = "0001140361-25-018400"  # Item 8.01: not an earnings release
+    assert accessions("sec.earnings_release") == sorted(RECORDED_EIGHT_KS - {debt_notice})
     with sessions() as session:
         assert company_ciks(session, ["XOM"]) == ["0000034088", "0002115436"]
         link = session.scalars(select(EntityRelationship)).one()

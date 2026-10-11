@@ -49,6 +49,8 @@ interface Props {
   research?: ReactNode;
   /** Authorization, actual repurchase and net share reduction (M1.4a), after the record. */
   buybacks?: ReactNode;
+  /** Results releases: timing, actuals, guidance and reaction (M1.5), after the record. */
+  earnings?: ReactNode;
 }
 
 /**
@@ -69,6 +71,7 @@ export function FundamentalsView({
   fairValue,
   research,
   buybacks,
+  earnings,
 }: Props) {
   const newest = [...data.annual.rows, ...data.balance_sheet.rows]
     .flatMap((row) => row.cells)
@@ -140,6 +143,8 @@ export function FundamentalsView({
       {fairValue}
 
       {research}
+
+      {earnings}
 
       {buybacks}
 

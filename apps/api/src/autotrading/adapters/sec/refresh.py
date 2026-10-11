@@ -14,9 +14,12 @@ Each `sec.company` run is followed by:
   sheet can confirm the share classes;
 - a `sec.eight_k` run (M1.4a, ADR-025) for 8-Ks since 2021 with item 2.02, 7.01 or 8.01 not
   read yet at the current extractor version: at most EIGHT_K_PER_RUN, oldest first, so the
-  first backfill spreads over a few refreshes.
+  first backfill spreads over a few refreshes;
+- a `sec.earnings_release` run (M1.5, ADR-026) for earnings 8-Ks (Item 2.02) since 2021 not
+  read yet for guidance at the current guidance version, the same way.
 """
 
+from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any
@@ -27,6 +30,7 @@ from sqlalchemy import exists, or_, select
 from sqlalchemy.orm import Session
 
 from autotrading.adapters.sec.company import SecCompanyJob
+from autotrading.adapters.sec.earnings import SecEarningsReleaseJob
 from autotrading.adapters.sec.eight_k import SecEightKJob
 from autotrading.adapters.sec.filing_xbrl import METHODOLOGY_VERSION, SecFilingXbrlJob
 from autotrading.adapters.sec.tickers import NAMESPACE, SOURCE_ID, Predecessor, SecTickersJob
@@ -40,6 +44,7 @@ from autotrading.db.models import (
     Source,
 )
 from autotrading.domain.buyback_announcements import EXTRACTOR_VERSION
+from autotrading.domain.guidance import GUIDANCE_VERSION
 from autotrading.ingestion.job import Window
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.ingestion.schedule import refresh_window
@@ -240,27 +245,45 @@ EIGHT_K_ITEMS = frozenset({"2.02", "7.01", "8.01"})
 EIGHT_K_PER_RUN = 50
 
 
-def read_eight_k_accessions(session: Session, cik: str) -> set[str]:
-    """8-Ks of `cik` already read by a successful `sec.eight_k` run at this extractor version."""
+@dataclass(frozen=True)
+class FilingReader:
+    """A job that reads a company's 8-Ks once per extractor version: which forms and items,
+    and the version its runs record (`params["extractor"]`)."""
+
+    job: str
+    version: str
+    forms: tuple[str, ...]
+    items: frozenset[str]
+
+
+EIGHT_K_READER = FilingReader(SecEightKJob.name, EXTRACTOR_VERSION, EIGHT_K_FORMS, EIGHT_K_ITEMS)
+# Earnings releases (M1.5, ADR-026 E1): 8-Ks with Item 2.02, not amendments.
+EARNINGS_READER = FilingReader(
+    SecEarningsReleaseJob.name, GUIDANCE_VERSION, ("8-K",), frozenset({"2.02"})
+)
+
+
+def reader_accessions(session: Session, reader: FilingReader, cik: str) -> set[str]:
+    """Filings of `cik` already read by a successful run of `reader` at its version."""
     runs = session.scalars(
         select(IngestionRun.params).where(
-            IngestionRun.job == SecEightKJob.name,
+            IngestionRun.job == reader.job,
             IngestionRun.status == "succeeded",
             IngestionRun.params["cik"].astext == cik,
-            IngestionRun.params["extractor"].astext == EXTRACTOR_VERSION,
+            IngestionRun.params["extractor"].astext == reader.version,
         )
     )
     return {f["accession"] for params in runs for f in params["filings"]}
 
 
-def eight_k_candidates(session: Session, cik: str) -> list[Filing]:
-    """8-Ks of `cik` to read, oldest first (see the module docstring)."""
-    read = read_eight_k_accessions(session, cik)
+def candidates(session: Session, reader: FilingReader, cik: str) -> list[Filing]:
+    """Filings of `cik` for `reader` not read yet, oldest first (see the module docstring)."""
+    read = reader_accessions(session, reader, cik)
     filings = session.scalars(
         select(Filing)
         .where(
             Filing.cik == cik,
-            Filing.form.in_(EIGHT_K_FORMS),
+            Filing.form.in_(reader.forms),
             Filing.filing_date >= EIGHT_K_SINCE,
         )
         .order_by(Filing.filing_date, Filing.accession_number)
@@ -268,36 +291,69 @@ def eight_k_candidates(session: Session, cik: str) -> list[Filing]:
     return [
         f
         for f in filings
-        if f.accession_number not in read and EIGHT_K_ITEMS & set((f.items or "").split(","))
+        if f.accession_number not in read and reader.items & set((f.items or "").split(","))
     ]
+
+
+def reader_run(
+    runner: IngestionRunner,
+    reader: FilingReader,
+    cik: str,
+    only: set[str] | frozenset[str] | None = None,
+) -> UUID | None:
+    """One run of `reader` for up to EIGHT_K_PER_RUN unread filings of `cik` (None if there
+    are none); `only` limits the accessions (recorded replays)."""
+    with runner.sessions() as session:
+        found = [
+            f
+            for f in candidates(session, reader, cik)
+            if only is None or f.accession_number in only
+        ][:EIGHT_K_PER_RUN]
+        if not found:
+            return None
+        params = {
+            "cik": cik,
+            "filings": [{"accession": f.accession_number} for f in found],
+            "extractor": reader.version,
+        }
+        window = Window(start=found[0].published_at, end=found[-1].published_at)
+    return runner.create_run(reader.job, params, window)
+
+
+def _company_cik(runner: IngestionRunner, company_run_id: UUID) -> str:
+    with runner.sessions() as session:
+        return str(session.get_one(IngestionRun, company_run_id).params["cik"])
+
+
+def read_eight_k_accessions(session: Session, cik: str) -> set[str]:
+    """8-Ks of `cik` already read by a successful `sec.eight_k` run at this extractor version."""
+    return reader_accessions(session, EIGHT_K_READER, cik)
+
+
+def eight_k_candidates(session: Session, cik: str) -> list[Filing]:
+    return candidates(session, EIGHT_K_READER, cik)
 
 
 def create_eight_k_run(
     runner: IngestionRunner, company_run_id: UUID, only: set[str] | frozenset[str] | None = None
 ) -> UUID | None:
-    """One `sec.eight_k` run for the company run's CIK (see eight_k_run)."""
-    with runner.sessions() as session:
-        cik = str(session.get_one(IngestionRun, company_run_id).params["cik"])
-    return eight_k_run(runner, cik, only)
+    """One `sec.eight_k` run for the company run's CIK (see reader_run)."""
+    return reader_run(runner, EIGHT_K_READER, _company_cik(runner, company_run_id), only)
 
 
 def eight_k_run(
     runner: IngestionRunner, cik: str, only: set[str] | frozenset[str] | None = None
 ) -> UUID | None:
-    """One `sec.eight_k` run for up to EIGHT_K_PER_RUN unread 8-Ks of `cik` (None if there are
-    none); `only` limits the accessions (recorded replays)."""
-    with runner.sessions() as session:
-        candidates = [
-            f
-            for f in eight_k_candidates(session, cik)
-            if only is None or f.accession_number in only
-        ][:EIGHT_K_PER_RUN]
-        if not candidates:
-            return None
-        params = {
-            "cik": cik,
-            "filings": [{"accession": f.accession_number} for f in candidates],
-            "extractor": EXTRACTOR_VERSION,
-        }
-        window = Window(start=candidates[0].published_at, end=candidates[-1].published_at)
-    return runner.create_run(SecEightKJob.name, params, window)
+    return reader_run(runner, EIGHT_K_READER, cik, only)
+
+
+def create_earnings_run(
+    runner: IngestionRunner, company_run_id: UUID, only: set[str] | frozenset[str] | None = None
+) -> UUID | None:
+    """One `sec.earnings_release` run for the company run's CIK (M1.5, see reader_run)."""
+    return reader_run(runner, EARNINGS_READER, _company_cik(runner, company_run_id), only)
+
+
+def read_earnings_accessions(session: Session, cik: str) -> set[str]:
+    """Earnings 8-Ks of `cik` read for guidance at the current extractor version."""
+    return reader_accessions(session, EARNINGS_READER, cik)
