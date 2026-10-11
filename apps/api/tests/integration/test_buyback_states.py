@@ -138,7 +138,9 @@ def stored(sessions: sessionmaker[Session]) -> Iterator[datetime]:
     with sessions() as session:
         now = session.execute(select(func.now())).scalar_one()
         for at in (MONTH_END, VALUED_AT):
-            evaluate_universe(session, at, now, "manual")
+            evaluate_universe(session, at, now, "manual")  # the active rule set, 0.2.0
+        # The retired 0.1.0 too: its assignments must stay reproducible.
+        evaluate_universe(session, MONTH_END, now, "manual", stored_rule_set(session, "0.1.0"))
     yield now
     for obj in s3.list_objects_v2(Bucket=bucket).get("Contents", []):
         s3.delete_object(Bucket=bucket, Key=obj["Key"])
@@ -151,10 +153,14 @@ def client(sessions: sessionmaker[Session], stored: datetime) -> Iterator[TestCl
         yield client
 
 
-def assignment(session: Session, ticker: str, at: datetime) -> BuybackStateAssignment:
+def assignment(
+    session: Session, ticker: str, at: datetime, rule_version: str = "0.2.0"
+) -> BuybackStateAssignment:
     return session.scalars(
         select(BuybackStateAssignment).where(
-            BuybackStateAssignment.ticker == ticker, BuybackStateAssignment.known_at == at
+            BuybackStateAssignment.ticker == ticker,
+            BuybackStateAssignment.known_at == at,
+            BuybackStateAssignment.rule_version == rule_version,
         )
     ).one()
 
@@ -168,12 +174,15 @@ def test_each_assignment_stores_its_rule_version_inputs_thresholds_and_evidence(
 ) -> None:
     with sessions() as session:
         rows = session.scalars(
-            select(BuybackStateAssignment).where(BuybackStateAssignment.known_at == VALUED_AT)
+            select(BuybackStateAssignment).where(
+                BuybackStateAssignment.known_at == VALUED_AT,
+                BuybackStateAssignment.rule_version == "0.2.0",
+            )
         ).all()
         assert sorted(r.ticker for r in rows) == ["AAPL", "META", "NVDA", "XOM"]
         apple = assignment(session, "AAPL", VALUED_AT)
     assert (apple.rule_version, apple.extractor_version, apple.system_time) == (
-        "0.1.0",
+        "0.2.0",
         EXTRACTOR_VERSION,
         stored,
     )
@@ -183,7 +192,7 @@ def test_each_assignment_stores_its_rule_version_inputs_thresholds_and_evidence(
     assert {k: (c["status"], c["value"], c["threshold"]) for k, c in found.items()} == {
         "watch.announcement": ("pass", "159", "365"),
         "watch.remaining": ("fail", None, "2"),
-        "active.quarter_repurchase": ("pass", "0.61", "0.5"),
+        "active.quarter_repurchase": ("pass", "0.61", "0"),  # a mega cap (B13)
         "active.diluted_shares": ("pass", "-1.56", "-1"),
         "high_conviction.fcf_funding": ("pass", "0.60", "1.2"),
         "high_conviction.net_debt": ("pass", "-31.53", "10"),
@@ -204,6 +213,14 @@ def test_each_assignment_stores_its_rule_version_inputs_thresholds_and_evidence(
     assert found["high_conviction.fcf_yield"]["detail"].startswith("FCF yield known at 12 month")
     assert apple.score is None
     assert apple.assessment["score"]["detail"] == "unavailable: undervaluation"
+    intensity = next(
+        c for c in apple.assessment["score"]["components"] if c["component"] == "intensity"
+    )
+    assert (intensity["full"], intensity["score"]) == ("2", "99.0")  # 1.98% of a mega cap (B14)
+    # Rule 0.1.0 at the month end, stored beside 0.2.0: its own thresholds.
+    with sessions() as session:
+        old = conditions(assignment(session, "AAPL", MONTH_END, "0.1.0"))
+    assert old["active.quarter_repurchase"]["threshold"] == "0.5"
 
 
 def test_recomputing_with_the_same_times_reproduces_every_assignment(
@@ -274,7 +291,7 @@ def test_recomputing_with_the_same_times_reproduces_every_assignment(
 
     with sessions() as session:
         rows = session.scalars(select(BuybackStateAssignment)).all()
-        assert len(rows) == 8  # four companies, two times
+        assert len(rows) == 12  # four companies: two times under 0.2.0, one under 0.1.0
         for row in rows:
             again = evaluate(
                 session,
@@ -287,7 +304,7 @@ def test_recomputing_with_the_same_times_reproduces_every_assignment(
             assert again.model_dump(mode="json") == row.assessment, (row.ticker, row.known_at)
         # The same T with today's database sees the late 8-K and the correction.
         now = session.execute(select(func.now())).scalar_one()
-        rule_set = stored_rule_set(session, "0.1.0")
+        rule_set = stored_rule_set(session, "0.2.0")
         fresh = evaluate(session, instrument(session, "META"), VALUED_AT, now, rule_set)
         assert fresh.state == "watch"
         assert assignment(session, "META", VALUED_AT).state == "none"
@@ -329,9 +346,10 @@ def test_an_announcement_without_repurchases_never_goes_past_watch(
 
 def test_dashboard_shows_every_company_state_as_known_on_a_date(client: TestClient) -> None:
     body = client.get("/buybacks", params={"known_at": VALUED_AT.isoformat()}).json()
-    assert body["rule_set"]["rule_version"] == "0.1.0"
+    assert body["rule_set"]["rule_version"] == "0.2.0"
     assert body["rule_set"]["status"] == "active"
     assert body["rule_set"]["states"]["watch"]["announcement_days"] == 365
+    assert body["rule_set"]["states"]["active"]["mega_cap_min"] == "500000000000"
     assert body["rule_set"]["score"]["label"] == "default weights, unvalidated"
     rows = {c["ticker"]: c for c in body["companies"]}
     assert {t: r["assignment"]["assessment"]["state"] for t, r in rows.items()} == {
@@ -351,29 +369,32 @@ def test_dashboard_shows_every_company_state_as_known_on_a_date(client: TestClie
     assert all(e["day"] <= "2026-04-15" for e in apple["announcements"])
 
     rules = client.get("/buybacks/rules").json()
-    assert [(r["rule_version"], r["status"]) for r in rules] == [("0.1.0", "active")]
+    assert [(r["rule_version"], r["status"]) for r in rules] == [
+        ("0.2.0", "active"),
+        ("0.1.0", "retired"),
+    ]
     page = client.get("/instruments/AAPL/buybacks", params={"known_at": VALUED_AT.isoformat()})
     state = page.json()["state"]
-    assert (state["rule_version"], state["assessment"]["state"]) == ("0.1.0", "active")
+    assert (state["rule_version"], state["assessment"]["state"]) == ("0.2.0", "active")
     assert len(page.json()["state_history"]) == 2
 
 
 def test_rule_sets_are_registered_once_and_never_change(engine: Engine) -> None:
     rules = load_rules()
     with Session(engine) as session:
-        assert sync_buyback_rules(session, rules).unchanged == ["0.1.0"]
+        assert sync_buyback_rules(session, rules).unchanged == ["0.2.0", "0.1.0"]
         entry = rules.rule_sets[0]
         watch = entry.states.watch.model_copy(update={"announcement_days": 180})
         edited = entry.model_copy(
             update={"states": entry.states.model_copy(update={"watch": watch})}
         )
-        with pytest.raises(BuybackRulesVersionError, match=r"0\.1\.0 changed"):
+        with pytest.raises(BuybackRulesVersionError, match=r"0\.2\.0 changed"):
             sync_buyback_rules(session, rules.model_copy(update={"rule_sets": [edited]}))
-        bumped = edited.model_copy(update={"rule_version": "0.2.0", "status": "retired"})
+        bumped = edited.model_copy(update={"rule_version": "0.3.0", "status": "retired"})
         result = sync_buyback_rules(
             session, rules.model_copy(update={"rule_sets": [entry, bumped]})
         )
-        assert result.created == ["0.2.0"]
+        assert result.created == ["0.3.0"]
         session.rollback()
 
 

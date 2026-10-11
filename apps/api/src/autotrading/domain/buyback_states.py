@@ -8,8 +8,9 @@ States, each requiring the one below it (thresholds are the rule set's):
   `remaining_to_market_cap_min`% of market cap at T.
 - ACTIVE: repurchases in the latest reported quarter (ended at most `quarter_max_age_days`
   before T) of at least `quarter_repurchase_to_market_cap_min`% of market cap at the quarter
-  end, and diluted shares of the latest period at most `diluted_shares_change_max`% against a
-  year earlier.
+  end, or any repurchase for a mega cap (market cap then >= `mega_cap_min`, B13), and diluted
+  shares of the latest period at most `diluted_shares_change_max`% against a year earlier.
+  Market cap at a period end uses the rule set's `period_end_shares` (B12).
 - HIGH-CONVICTION candidate: funded by FCF (TTM repurchases at most `repurchase_to_fcf_max` x
   TTM free cash flow, and net debt up by at most `net_debt_increase_max`% of |net debt a year
   earlier|, B7) and valuation context (FCF yield at least `fcf_yield_to_median_min` x its
@@ -25,8 +26,8 @@ An announcement alone never goes past WATCH, because ACTIVE needs reported repur
 No state triggers a trade (02 §5); the thresholds are defaults, not validated (OD-7).
 
 Score (B3, B8, B10): each component maps one measure linearly to 0-100 between two fixed
-points, clamped; the total is their weighted mean, unavailable when any component is. It
-never decides a state.
+points, clamped (a mega cap's own 100 point where the rule set gives one, B14); the total is
+their weighted mean, unavailable when any component is. It never decides a state.
 """
 
 import hashlib
@@ -39,7 +40,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from autotrading.domain.buyback import Event, buyback_record, market_cap_at
+from autotrading.domain.buyback import Event, SharesAt, buyback_record, market_cap_at
 from autotrading.domain.research import Book, Window, percent, periods
 from autotrading.domain.splits import Split, adjust
 from autotrading.domain.valuation import (
@@ -86,6 +87,9 @@ class ActiveRule(_Rule):
     quarter_repurchase_to_market_cap_min: Decimal
     quarter_max_age_days: Annotated[int, Field(gt=0)]
     diluted_shares_change_max: Decimal
+    # B13 (rule 0.2.0): from this market cap at the quarter end (USD), any repurchase in the
+    # quarter passes, whatever its share of market cap. None: every company needs the share.
+    mega_cap_min: Decimal | None = None
 
 
 class HighConvictionRule(_Rule):
@@ -127,10 +131,11 @@ class ScoreComponentRule(_Rule):
     measure: Measure
     zero: Decimal  # the measure scoring 0
     full: Decimal  # the measure scoring 100
+    mega_cap_full: Decimal | None = None  # B14: the 100 point of a mega cap, when different
 
     @model_validator(mode="after")
     def _distinct(self) -> "ScoreComponentRule":
-        if self.zero == self.full:
+        if self.zero in (self.full, self.mega_cap_full):
             raise ValueError(f"{self.component}: zero and full must differ")
         return self
 
@@ -151,20 +156,27 @@ class ScoreRule(_Rule):
     excluded: list[ExcludedComponent]
     components: list[ScoreComponentRule]
     discipline: DisciplineRule
+    # B14: market cap at the latest period end (USD) from which `mega_cap_full` applies.
+    mega_cap_min: Decimal | None = None
 
 
 class RuleSet(_Rule):
-    """One released rule version: immutable (B4)."""
+    """One released rule version: immutable (B4). Settings added after a release have a
+    default that keeps the earlier behaviour, and are left out of the content at that default,
+    so an earlier version's content and hash stay as released."""
 
     rule_version: Annotated[str, Field(pattern=r"^\d+\.\d+\.\d+$")]
     approved: date
     note: str
+    # The share count of a period end's market cap (B12): rule 0.1.0 used the balance sheet's.
+    period_end_shares: SharesAt = "balance_sheet"
     states: StateRules
     score: ScoreRule
 
     def content(self) -> dict[str, object]:
-        """Everything but a file entry's `status`: retiring a version is not a change to it."""
-        return self.model_dump(mode="json", exclude={"status"})
+        """Everything but a file entry's `status` (retiring a version is not a change to it)
+        and settings at the default that predates them."""
+        return self.model_dump(mode="json", exclude={"status"}, exclude_defaults=True)
 
     def content_sha256(self) -> str:
         canonical = json.dumps(self.content(), sort_keys=True, separators=(",", ":"))
@@ -195,6 +207,9 @@ class RulesFile(BaseModel):
 
     def active(self) -> RuleSet:
         return next(r.rule_set() for r in self.rule_sets if r.status == "active")
+
+    def get(self, rule_version: str) -> RuleSet:
+        return next(r.rule_set() for r in self.rule_sets if r.rule_version == rule_version)
 
 
 # ---------- evidence and results ----------
@@ -308,6 +323,10 @@ def _ratio(numerator: Decimal, denominator: Decimal) -> Decimal:
     return (numerator / denominator).quantize(RATIO)
 
 
+def _billions(amount: Decimal) -> str:
+    return f"${(amount / 10**9).normalize():f} billion"
+
+
 def _missing(*named: tuple[str, object]) -> str:
     return "not reported: " + ", ".join(label for label, value in named if value is None)
 
@@ -418,6 +437,7 @@ def _active[FactT: DatedFact](
     ev: Evidence[FactT],
     book: Book[FactT],
     latest: dict[str, Valued[FactT]],
+    shares_at: SharesAt,
 ) -> list[Condition[FactT]]:
     day = _day(ev.at)
     threshold = rule.quarter_repurchase_to_market_cap_min
@@ -470,9 +490,24 @@ def _active[FactT: DatedFact](
         elif q.value <= 0:
             quarter = condition("fail", None, f"no repurchases in the quarter ended {q.period_end}")
         else:
-            cap, missing = market_cap_at(book, ev.closes, q.period_end)
+            cap, missing = market_cap_at(book, ev.closes, q.period_end, shares_at)
             if cap is None or cap.value is None:
                 quarter = condition("unavailable", None, "not reported: " + ", ".join(missing))
+            elif rule.mega_cap_min is not None and cap.value >= rule.mega_cap_min:
+                # B13: a mega cap passes on any repurchase in the quarter (checked above).
+                quarter = Condition(
+                    "active.quarter_repurchase",
+                    "active",
+                    "pass",
+                    percent(q.value, cap.value),
+                    "percent",
+                    Decimal(0),
+                    "above",
+                    f"mega cap (market cap at the quarter end >= {_billions(rule.mega_cap_min)}): "
+                    f"any repurchase counts; repurchases in the quarter ended {q.period_end} / "
+                    "market cap then",
+                    inputs=(paid, cap),
+                )
             else:
                 share = percent(q.value, cap.value)
                 quarter = condition(
@@ -959,6 +994,14 @@ def _quotient[FactT: DatedFact](
     return scale(top.value, bottom.value), None, inputs
 
 
+def _mega_cap[FactT: DatedFact](
+    inputs: Sequence[Input[FactT]], minimum: Decimal | None
+) -> Decimal | None:
+    """The market cap among a measure's inputs when it is at least `minimum` (B14)."""
+    cap = next((i.value for i in inputs if i.name == "market_cap"), None)
+    return cap if minimum is not None and cap is not None and cap >= minimum else None
+
+
 def _score[FactT: DatedFact](
     rule: ScoreRule,
     measures: dict[Measure, tuple[Decimal | None, str | None, tuple[Input[FactT], ...]]],
@@ -966,15 +1009,27 @@ def _score[FactT: DatedFact](
     components: list[Component[FactT]] = []
     for c in rule.components:
         value, detail, inputs = measures[c.measure]
+        full = c.full
+        if c.mega_cap_full is not None and _mega_cap(inputs, rule.mega_cap_min) is not None:
+            assert rule.mega_cap_min is not None
+            full = c.mega_cap_full
+            detail = "; ".join(
+                part
+                for part in (
+                    detail,
+                    f"mega cap (market cap >= {_billions(rule.mega_cap_min)}): 100 at {full}",
+                )
+                if part
+            )
         components.append(
             Component(
                 c.component,
                 c.weight,
                 c.measure,
                 c.zero,
-                c.full,
+                full,
                 value,
-                linear(value, c.zero, c.full) if value is not None else None,
+                linear(value, c.zero, full) if value is not None else None,
                 detail,
                 inputs,
             )
@@ -993,7 +1048,7 @@ def _score[FactT: DatedFact](
 def assess[FactT: DatedFact](rules: RuleSet, ev: Evidence[FactT]) -> Assessment[FactT]:
     """The state, its conditions and the score at T under one rule set."""
     book = Book(ev.facts, ev.at, ev.splits)
-    record = buyback_record(ev.facts, ev.closes, ev.at, ev.splits)
+    record = buyback_record(ev.facts, ev.closes, ev.at, ev.splits, rules.period_end_shares)
     shown = periods(book)
     by_period = [
         {metric: values[i] for _, metric, _, values in record.rows} for i in range(len(shown))
@@ -1005,7 +1060,7 @@ def assess[FactT: DatedFact](rules: RuleSet, ev: Evidence[FactT]) -> Assessment[
     yield_ratio = _fcf_yield_ratio(rules.states.high_conviction, ev, at_t["fcf_yield"])
 
     watch = _watch(rules.states.watch, ev, at_t["market_cap"])
-    active = _active(rules.states.active, ev, book, latest)
+    active = _active(rules.states.active, ev, book, latest, rules.period_end_shares)
     conviction = _high_conviction(rules.states.high_conviction, ev, book, window, yield_ratio)
     ready = _trade_ready(rules.states.trade_ready, ev)
     status = {c.condition_id: c.status for c in (*watch, *active, *conviction, *ready)}

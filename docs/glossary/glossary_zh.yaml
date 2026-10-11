@@ -149,11 +149,11 @@ terms:
   # buyback states (M1.4b)
   buyback_state: {name: 回購狀態, hint: 依版本化規則判定：無、WATCH、ACTIVE、HIGH-CONVICTION 候選；每個條件都存值、門檻與證據。}
   buyback_state_watch: {name: 觀察 WATCH, hint: 365 天內有新授權、授權增加或每年計畫，或剩餘授權 ≥ 市值 2%。}
-  buyback_state_active: {name: 執行中 ACTIVE, hint: WATCH，且最近一季買回 ≥ 市值 0.5%、稀釋股數年減 ≥ 1%。只有公告到不了這一級。}
+  buyback_state_active: {name: 執行中 ACTIVE, hint: WATCH，且最近一季買回 ≥ 市值 0.5%（超大型股有買回即可）、稀釋股數年減 ≥ 1%。只有公告到不了這一級。}
   buyback_state_high_conviction: {name: 高信心候選, hint: ACTIVE，且由 FCF 支應、淨負債沒大增，且 FCF 殖利率 ≥ 5 年中位數或股價比 DCF 低 15% 以上。}
   buyback_state_trade_ready: {name: 可交易 TRADE-READY, hint: 需市場確認與風險檢查；風險檢查在 Phase 2，Phase 1 無法達到。}
   remaining_to_market_cap: {name: 剩餘授權 ÷ 市值, hint: 公告中最近的剩餘授權額 ÷ T 時市值。}
-  quarter_repurchase_to_market_cap: {name: 單季買回 ÷ 市值, hint: 最近一季買回金額 ÷ 季末市值；該季沒買回就不通過。}
+  quarter_repurchase_to_market_cap: {name: 單季買回 ÷ 市值, hint: 最近一季買回金額 ÷ 季末市值（季末前最近一筆股數）；沒買回就不通過；超大型股有買回即通過。}
   fcf_funding: {name: FCF 支應倍數, hint: 近四季買回 ÷ 近四季自由現金流。}
   net_debt_change_yoy: {name: 淨負債年變動, hint: （期末淨負債 − 一年前）÷ |一年前淨負債|。}
   fcf_yield_to_median: {name: FCF 殖利率 ÷ 5 年中位數, hint: T 時 FCF 殖利率 ÷ 過去 5 年每月底 FCF 殖利率的中位數。}
@@ -163,7 +163,7 @@ terms:
   market_confirmation: {name: 市場確認, hint: 收盤高於 50 日均線，或一個月報酬勝過 SPY。}
   buyback_quality_score: {name: 回購品質分數, hint: 6 個分項的加權平均（預設權重，未驗證）；任一分項缺資料就不給總分。}
   buyback_score_undervaluation: {name: 分項：低估, hint: FCF 殖利率 ÷ 5 年中位數，0.8 倍 0 分、1.2 倍 100 分。權重 30。}
-  buyback_score_intensity: {name: 分項：買回強度, hint: 近四季買回 ÷ 市值，0% 0 分、4% 100 分。權重 20。}
+  buyback_score_intensity: {name: 分項：買回強度, hint: 近四季買回 ÷ 市值，0% 0 分、4% 100 分（超大型股 2% 即 100 分）。權重 20。}
   buyback_score_fcf_quality: {name: 分項：FCF 品質, hint: FCF ÷ 淨利，50% 0 分、100% 100 分。權重 15。}
   buyback_score_balance_sheet: {name: 分項：資產負債, hint: 淨負債 ÷ 近四季 FCF，4 倍 0 分、0 倍 100 分。權重 10。}
   buyback_score_discipline: {name: 分項：歷史紀律, hint: 近 5 個財年中買回 ≤ FCF 且股數減少的比例。權重 10。}
@@ -174,6 +174,7 @@ terms:
   backfilled_evaluation: {name: 補算評定, hint: 事後用當時已公開的資料算出的月底狀態。}
   threshold_review: {name: 門檻檢視, hint: 每家公司在目前規則版本下的狀態與所有條件值，供確認或調整門檻。}
   condition_status: {name: 條件判定, hint: 通過、未通過或無資料；無資料永遠不算通過。}
+  mega_cap: {name: 超大型股, hint: 期末市值 ≥ 5000 億美元；單季只要有實際買回就過 ACTIVE 的買回條件，買回強度 2% 即滿分（規則 0.2.0）。}
 
   # buybacks (M1.4a)
   buyback_record: {name: 回購紀錄, hint: 授權、實際買回、淨減少股數分開看：董事會准了多少、實際花了多少、股東實際多拿到多少。}

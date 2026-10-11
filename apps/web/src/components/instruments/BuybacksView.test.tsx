@@ -48,11 +48,12 @@ describe("BuybacksView with recorded API responses", () => {
     render(<BuybacksView result={{ status: "ok", data: recordedBuybacks.aapl }} />);
     const card = block("state");
     expect(card.querySelector("[data-state]")?.textContent).toBe("ACTIVE");
-    expect(card.textContent).toContain("rule v0.1.0");
+    expect(card.textContent).toContain("rule v0.2.0");
     expect(card.textContent).toContain("backfilled on");
     const quarter = card.querySelector('[data-condition="active.quarter_repurchase"]');
     expect(quarter?.textContent).toContain("0.61%");
-    expect(quarter?.textContent).toContain("(≥ 0.5%)");
+    expect(quarter?.textContent).toContain("(> 0%)"); // a mega cap: any repurchase (B13)
+    expect(quarter?.textContent).toContain("mega cap (market cap at the quarter end >= $500 billion)");
     expect(quarter?.querySelector("[data-status]")?.textContent).toBe("pass");
     expect(within(quarter as HTMLElement).getAllByRole("link", { hidden: true }).some((a) => a.textContent?.startsWith("10-Q "))).toBe(
       true,
@@ -65,6 +66,7 @@ describe("BuybacksView with recorded API responses", () => {
     expect(score.textContent).toContain("default weights, unvalidated");
     expect(score.querySelector("[data-score]")?.textContent).toBe("Data unavailable");
     expect(score.querySelector('[data-component="discipline"]')?.textContent).toContain("100.0 / 100");
+    expect(score.querySelector('[data-component="intensity"]')?.textContent).toContain("100 at 2");
     expect(screen.getByRole("list", { name: "State history" }).children).toHaveLength(2);
   });
 

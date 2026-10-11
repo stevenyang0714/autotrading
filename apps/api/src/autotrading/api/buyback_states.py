@@ -63,7 +63,7 @@ from autotrading.db.models import (
     FinancialFact,
     Instrument,
 )
-from autotrading.domain.buyback import BUYBACK_METRICS, events
+from autotrading.domain.buyback import BUYBACK_METRICS, SharesAt, events
 from autotrading.domain.buyback_announcements import EXTRACTOR_VERSION
 from autotrading.domain.buyback_states import (
     Assessment,
@@ -202,6 +202,7 @@ class RuleSetOut(BaseModel):
     note: str
     content_sha256: str
     loaded_at: datetime
+    period_end_shares: SharesAt  # the share count of a period end's market cap (B12)
     states: StateRules
     score: ScoreRule
 
@@ -515,6 +516,7 @@ def _rule_set_out(row: BuybackRuleSet, file: RulesFile) -> RuleSetOut:
         note=content.note,
         content_sha256=row.content_sha256,
         loaded_at=row.loaded_at,
+        period_end_shares=content.period_end_shares,
         states=content.states,
         score=content.score,
     )
@@ -523,8 +525,12 @@ def _rule_set_out(row: BuybackRuleSet, file: RulesFile) -> RuleSetOut:
 @router.get("/buybacks/rules")
 def buyback_rules(session: SessionDep) -> list[RuleSetOut]:
     file = _rules()
-    rows = session.scalars(select(BuybackRuleSet).order_by(BuybackRuleSet.loaded_at.desc()))
-    return [_rule_set_out(row, file) for row in rows]
+    rows = sorted(
+        session.scalars(select(BuybackRuleSet)),
+        key=lambda r: tuple(int(n) for n in r.rule_version.split(".")),
+        reverse=True,
+    )
+    return [_rule_set_out(row, file) for row in rows]  # newest version first
 
 
 @router.get("/buybacks")

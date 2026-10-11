@@ -22,7 +22,10 @@ from autotrading.domain.valuation import Close, select_price
 RULES_PATH = Path(__file__).resolve().parents[4] / "config" / "buyback_rules.yaml"
 # A released rule set never changes (ADR-025 B4): a change to its content needs a new
 # rule_version, and its hash is added here.
-RELEASED = {"0.1.0": "ce338c414407608f2844fde3d265bfc96d114586a23efbfb13eb9a42310b5465"}
+RELEASED = {
+    "0.1.0": "ce338c414407608f2844fde3d265bfc96d114586a23efbfb13eb9a42310b5465",
+    "0.2.0": "7966ec40c8503ac2cb5347fea3d48f8c938a48cb6ecbc3b422a20432b33ae7d0",
+}
 
 
 @dataclass(frozen=True)
@@ -197,7 +200,7 @@ def conditions(result: object) -> dict[str, object]:
 
 def test_released_rule_sets_never_change(rules: RulesFile) -> None:
     assert {r.rule_version: r.content_sha256() for r in rules.rule_sets} == RELEASED
-    assert rules.active().rule_version == "0.1.0"
+    assert rules.active().rule_version == "0.2.0"
 
 
 def test_a_company_meeting_every_condition_is_a_high_conviction_candidate(
@@ -337,3 +340,51 @@ def test_score_components_map_linearly_and_any_gap_leaves_the_total_unavailable(
     gap = assess(rules.active(), evidence(fcf_yield_history=[])).score
     assert gap.total is None and gap.detail == "unavailable: undervaluation"
     assert next(c for c in gap.components if c.component == "intensity").score is not None
+
+
+def test_a_period_end_market_cap_uses_the_latest_dated_share_count(rules: RulesFile) -> None:
+    # B12: no balance-sheet count on the quarter end, only the cover page of the 10-Q before.
+    facts = [
+        f
+        for f in company()
+        if not (f.metric_id == "shares_outstanding" and f.period_end == d("2026-06-30"))
+    ] + [instant("shares_outstanding_cover", "2026-05-15", 965)]
+    old = conditions(assess(rules.get("0.1.0"), evidence(facts=facts)))["active.quarter_repurchase"]
+    assert (old.status, old.detail) == (  # type: ignore[attr-defined]
+        "unavailable",
+        "not reported: shares outstanding on 2026-06-30",
+    )
+    new = conditions(assess(rules.get("0.2.0"), evidence(facts=facts)))["active.quarter_repurchase"]
+    assert (new.status, new.value) == ("pass", Decimal("0.62"))  # type: ignore[attr-defined]  # 120 / (20 x 965)
+    cap = next(i for i in new.inputs if i.name == "market_cap")  # type: ignore[attr-defined]
+    assert cap.note == "close 2026-06-30 $20 x 965 shares outstanding (cover page, 2026-05-15)"
+
+
+def test_a_mega_cap_passes_the_quarter_test_on_any_repurchase(rules: RulesFile) -> None:
+    # B13 and B14: a market cap of $960 billion at the quarter end (960 shares at $1 billion).
+    mega = [close("2026-06-30", "1000000000"), close("2026-08-14", "1000000000")]
+    old = assess(rules.get("0.1.0"), evidence(closes=mega))
+    assert conditions(old)["active.quarter_repurchase"].status == "fail"  # type: ignore[attr-defined]
+    assert old.state == "watch"
+    new = assess(rules.get("0.2.0"), evidence(closes=mega))
+    quarter = conditions(new)["active.quarter_repurchase"]
+    assert (quarter.status, quarter.threshold, quarter.comparison) == (  # type: ignore[attr-defined]
+        "pass",
+        Decimal(0),
+        "above",
+    )
+    assert quarter.detail.startswith("mega cap (market cap at the quarter end >= $500 billion)")  # type: ignore[attr-defined]
+    assert new.state == "active"
+    intensity = next(c for c in new.score.components if c.component == "intensity")
+    assert intensity.full == Decimal(2)
+    assert intensity.detail == "mega cap (market cap >= $500 billion): 100 at 2"
+    # Without repurchases a mega cap still fails.
+    none = assess(rules.get("0.2.0"), evidence(facts=company(q2_2026_buyback=0), closes=mega))
+    assert conditions(none)["active.quarter_repurchase"].status == "fail"  # type: ignore[attr-defined]
+    # Below the mega-cap line nothing changes: the company of the other tests.
+    small = next(
+        c
+        for c in assess(rules.get("0.2.0"), evidence()).score.components
+        if c.component == "intensity"
+    )
+    assert small.full == Decimal(4)

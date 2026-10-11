@@ -11,8 +11,87 @@
 # Units: percent values are percentage points (2 = 2%); ratios are multiples (1.2 = 1.2x).
 version: 0.1.0
 rule_sets:
-  - rule_version: 0.1.0
+  - rule_version: 0.2.0
     status: active  # active: evaluated daily; retired: kept for the stored assignments
+    approved: "2026-10-11"
+    note: >-
+      Steven's review of 0.1.0 (P1-9): a period end's market cap uses the latest share count
+      dated by then, cover page or balance sheet (B12); a mega cap passes ACTIVE's quarter test
+      on any repurchase (B13); a mega cap's repurchase intensity scores 100 at 2% (B14).
+    # B12: market cap at a quarter or period end = the last close by then x the latest share
+    # count dated on or before it, cover page or balance sheet (V2 at the period end).
+    period_end_shares: latest_dated
+    states:
+      watch:
+        announcement_days: 365
+        announcement_kinds: [new, increase, plan]
+        remaining_to_market_cap_min: 2
+      active:
+        quarter_repurchase_to_market_cap_min: 0.5
+        quarter_max_age_days: 200
+        diluted_shares_change_max: -1
+        # B13: from this market cap at the quarter end (USD), any repurchase in the quarter
+        # passes; the share of market cap is shown but not tested.
+        mega_cap_min: 500000000000
+      high_conviction:
+        repurchase_to_fcf_max: 1.2
+        net_debt_increase_max: 10
+        fcf_yield_to_median_min: 1.0
+        fcf_yield_history_years: 5
+        fcf_yield_history_min_months: 36
+        dcf_discount_min: 15
+      trade_ready:
+        moving_average_sessions: 50
+        relative_return_sessions: 21
+        benchmark: SPY
+        reachable: false
+    score:
+      label: default weights, unvalidated
+      # B14: from this market cap at the latest period end (USD), a component's mega_cap_full
+      # replaces its full point.
+      mega_cap_min: 500000000000
+      excluded:
+        - component: insider_alignment
+          weight: 5
+          reason: no insider data in Phase 1
+      components:
+        - component: undervaluation
+          weight: 30
+          measure: fcf_yield_to_median
+          zero: 0.8
+          full: 1.2
+        - component: intensity
+          weight: 20
+          measure: buyback_intensity
+          zero: 0
+          full: 4
+          mega_cap_full: 2
+        - component: fcf_quality
+          weight: 15
+          measure: fcf_conversion
+          zero: 50
+          full: 100
+        - component: balance_sheet
+          weight: 10
+          measure: net_debt_to_fcf
+          zero: 4
+          full: 0
+        - component: discipline
+          weight: 10
+          measure: disciplined_years
+          zero: 0
+          full: 100
+        - component: share_count
+          weight: 10
+          measure: net_share_reduction_pct
+          zero: 0
+          full: 3
+      discipline:
+        years: 5
+        min_years: 3
+
+  - rule_version: 0.1.0
+    status: retired
     approved: "2026-10-10"
     note: Defaults from the M1.4 plan (P1-9), for Steven to confirm or tune with the threshold review.
     states:

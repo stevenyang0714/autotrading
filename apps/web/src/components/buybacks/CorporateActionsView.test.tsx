@@ -20,13 +20,16 @@ describe("CorporateActionsView with recorded API responses", () => {
     expect(
       ["AAPL", "META", "NVDA", "XOM"].map((t) => row(t).querySelector("[data-state]")?.textContent),
     ).toEqual(["ACTIVE", "No state", "WATCH", "ACTIVE"]);
-    expect(document.querySelector('th[data-column="active.quarter_repurchase"]')?.textContent).toContain("≥ 0.5%");
+    expect(document.querySelector('th[data-column="active.quarter_repurchase"]')?.textContent).toContain(
+      "≥ 0.5%; mega cap: any",
+    );
+    expect(document.querySelector("[data-mega-cap]")?.textContent).toContain("$500 billion or more");
     expect(document.querySelector('th[data-column="high_conviction.fcf_funding"]')?.textContent).toContain("≤ 1.2x");
     const quarter = row("META").querySelector('[data-condition="active.quarter_repurchase"]');
     expect(quarter?.getAttribute("data-status")).toBe("fail");
     expect(quarter?.getAttribute("title")).toBe("no repurchases in the quarter ended 2026-06-30");
     expect(row("XOM").querySelector('[data-condition="high_conviction.net_debt"]')?.textContent).toBe("12.61%");
-    expect(screen.getByText(/rule v0\.1\.0/).textContent).toContain("approved 2026-10-10");
+    expect(screen.getByText(/rule v0\.2\.0/).textContent).toContain("approved 2026-10-11");
     expect(within(row("AAPL")).getByRole("link", { name: "AAPL" }).getAttribute("href")).toBe("/instruments/AAPL#buybacks");
   });
 

@@ -126,9 +126,9 @@ Added for M1.3b (the spec has no dashboard criteria):
 - [x] The dashboard responds in ≤ 3 s for ten equities. (Live 2026-10-09: 0.94 s.)
 
 ## M1.4 Buyback engine
-Plan approved 2026-10-10 with decisions B1–B10, and B11 during M1.4b (ADR-025). Two PRs:
+Plan approved 2026-10-10 with decisions B1–B10, and B11–B14 during M1.4b (ADR-025). Two PRs:
 - **M1.4a, data (#20, merged).** Announcements from 8-Ks and press releases, the buyback record (authorization, actual repurchase, net share reduction per period), the instrument page's Buybacks section.
-- **M1.4b, states (PR pending).** Rule file 0.1.0, states and score, stored assignments with daily evaluation and month-end backfill, the instrument page's state card, the Corporate Actions dashboard and threshold review.
+- **M1.4b, states (PR pending).** Rule file 0.1.0, then 0.2.0 after Steven's threshold review (B12–B14), states and score, stored assignments with daily evaluation and month-end backfill, the instrument page's state card, the Corporate Actions dashboard and threshold review.
 
 **Build**
 - **Per company and period:**

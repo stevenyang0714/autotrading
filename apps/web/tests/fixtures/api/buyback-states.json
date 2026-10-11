@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-10T04:52:51.649405+00:00",
+  "recorded_at": "2026-10-11T03:51:50.365007+00:00",
   "recorded_from": "recorded SEC, Alpaca, FRED and news fixtures replayed into the integration test database (tests/integration/test_buyback_states.py)",
   "endpoint": "/buybacks",
   "params": {
@@ -8,12 +8,13 @@
   "response": {
     "known_at": "2026-10-06T12:00:00Z",
     "rule_set": {
-      "rule_version": "0.1.0",
+      "rule_version": "0.2.0",
       "status": "active",
-      "approved": "2026-10-10",
-      "note": "Defaults from the M1.4 plan (P1-9), for Steven to confirm or tune with the threshold review.",
-      "content_sha256": "ce338c414407608f2844fde3d265bfc96d114586a23efbfb13eb9a42310b5465",
-      "loaded_at": "2026-10-10T04:52:22.734118Z",
+      "approved": "2026-10-11",
+      "note": "Steven's review of 0.1.0 (P1-9): a period end's market cap uses the latest share count dated by then, cover page or balance sheet (B12); a mega cap passes ACTIVE's quarter test on any repurchase (B13); a mega cap's repurchase intensity scores 100 at 2% (B14).",
+      "content_sha256": "7966ec40c8503ac2cb5347fea3d48f8c938a48cb6ecbc3b422a20432b33ae7d0",
+      "loaded_at": "2026-10-11T03:51:15.782685Z",
+      "period_end_shares": "latest_dated",
       "states": {
         "watch": {
           "announcement_days": 365,
@@ -27,7 +28,8 @@
         "active": {
           "quarter_repurchase_to_market_cap_min": "0.5",
           "quarter_max_age_days": 200,
-          "diluted_shares_change_max": "-1"
+          "diluted_shares_change_max": "-1",
+          "mega_cap_min": "500000000000"
         },
         "high_conviction": {
           "repurchase_to_fcf_max": "1.2",
@@ -59,48 +61,55 @@
             "weight": 30,
             "measure": "fcf_yield_to_median",
             "zero": "0.8",
-            "full": "1.2"
+            "full": "1.2",
+            "mega_cap_full": null
           },
           {
             "component": "intensity",
             "weight": 20,
             "measure": "buyback_intensity",
             "zero": "0",
-            "full": "4"
+            "full": "4",
+            "mega_cap_full": "2"
           },
           {
             "component": "fcf_quality",
             "weight": 15,
             "measure": "fcf_conversion",
             "zero": "50",
-            "full": "100"
+            "full": "100",
+            "mega_cap_full": null
           },
           {
             "component": "balance_sheet",
             "weight": 10,
             "measure": "net_debt_to_fcf",
             "zero": "4",
-            "full": "0"
+            "full": "0",
+            "mega_cap_full": null
           },
           {
             "component": "discipline",
             "weight": 10,
             "measure": "disciplined_years",
             "zero": "0",
-            "full": "100"
+            "full": "100",
+            "mega_cap_full": null
           },
           {
             "component": "share_count",
             "weight": 10,
             "measure": "net_share_reduction_pct",
             "zero": "0",
-            "full": "3"
+            "full": "3",
+            "mega_cap_full": null
           }
         ],
         "discipline": {
           "years": 5,
           "min_years": 3
-        }
+        },
+        "mega_cap_min": "500000000000"
       }
     },
     "companies": [
@@ -110,11 +119,11 @@
         "assignment": {
           "ticker": "AAPL",
           "known_at": "2026-10-06T12:00:00Z",
-          "system_time": "2026-10-10T04:52:50.292983Z",
-          "rule_version": "0.1.0",
+          "system_time": "2026-10-11T03:51:48.501185Z",
+          "rule_version": "0.2.0",
           "backfilled": true,
           "trigger": "manual",
-          "recorded_at": "2026-10-10T04:52:50.802424Z",
+          "recorded_at": "2026-10-11T03:51:49.054505Z",
           "assessment": {
             "state": "active",
             "levels": [
@@ -190,9 +199,9 @@
                 "status": "pass",
                 "value": "0.61",
                 "unit": "percent",
-                "threshold": "0.5",
-                "comparison": "at_least",
-                "detail": "repurchases in the quarter ended 2026-06-27 / market cap then",
+                "threshold": "0",
+                "comparison": "above",
+                "detail": "mega cap (market cap at the quarter end >= $500 billion): any repurchase counts; repurchases in the quarter ended 2026-06-27 / market cap then",
                 "inputs": [
                   {
                     "name": "share_repurchases_quarter",
@@ -236,7 +245,7 @@
                     "value": "4145731520140",
                     "period_start": null,
                     "period_end": "2026-06-27",
-                    "note": "close 2026-06-26 $283.78 x 14608963000 shares outstanding",
+                    "note": "close 2026-06-26 $283.78 x 14608963000 shares outstanding (balance sheet, 2026-06-27)",
                     "sources": [
                       {
                         "metric_id": "shares_outstanding",
@@ -1149,10 +1158,10 @@
                   "weight": 20,
                   "measure": "buyback_intensity",
                   "zero": "0",
-                  "full": "4",
+                  "full": "2",
                   "value": "1.98",
-                  "score": "49.5",
-                  "detail": null,
+                  "score": "99.0",
+                  "detail": "mega cap (market cap >= $500 billion): 100 at 2",
                   "inputs": [
                     {
                       "name": "share_repurchases_ttm",
@@ -1238,7 +1247,7 @@
                       "value": "4145731520140",
                       "period_start": null,
                       "period_end": "2026-06-27",
-                      "note": "close 2026-06-26 $283.78 x 14608963000 shares outstanding",
+                      "note": "close 2026-06-26 $283.78 x 14608963000 shares outstanding (balance sheet, 2026-06-27)",
                       "sources": [
                         {
                           "metric_id": "shares_outstanding",
@@ -2242,7 +2251,7 @@
             "assumption_version": null,
             "extractor_version": "0.1.3",
             "issuers": [
-              "23da6f5b-19d2-4b30-a632-9455395c783d"
+              "6d704a7e-dd29-4ade-bb57-366b532a2f3e"
             ]
           }
         },
@@ -2307,11 +2316,11 @@
         "assignment": {
           "ticker": "META",
           "known_at": "2026-10-06T12:00:00Z",
-          "system_time": "2026-10-10T04:52:50.292983Z",
-          "rule_version": "0.1.0",
+          "system_time": "2026-10-11T03:51:48.501185Z",
+          "rule_version": "0.2.0",
           "backfilled": true,
           "trigger": "manual",
-          "recorded_at": "2026-10-10T04:52:50.991233Z",
+          "recorded_at": "2026-10-11T03:51:49.259495Z",
           "assessment": {
             "state": "none",
             "levels": [
@@ -3247,10 +3256,10 @@
                   "weight": 20,
                   "measure": "buyback_intensity",
                   "zero": "0",
-                  "full": "4",
+                  "full": "2",
                   "value": "0.23",
-                  "score": "5.8",
-                  "detail": null,
+                  "score": "11.5",
+                  "detail": "mega cap (market cap >= $500 billion): 100 at 2",
                   "inputs": [
                     {
                       "name": "share_repurchases_ttm",
@@ -3336,7 +3345,7 @@
                       "value": "1435262920000",
                       "period_start": null,
                       "period_end": "2026-06-30",
-                      "note": "close 2026-06-30 $563.29 x 2548000000 shares outstanding",
+                      "note": "close 2026-06-30 $563.29 x 2548000000 shares outstanding (balance sheet, 2026-06-30)",
                       "sources": [
                         {
                           "metric_id": "shares_outstanding",
@@ -3826,7 +3835,7 @@
             "assumption_version": null,
             "extractor_version": "0.1.3",
             "issuers": [
-              "42bd328f-f407-40b2-9db5-7b3d77c71a28"
+              "1954bc44-0104-41f9-b375-f90d50e4c4ed"
             ]
           }
         },
@@ -3911,11 +3920,11 @@
         "assignment": {
           "ticker": "NVDA",
           "known_at": "2026-10-06T12:00:00Z",
-          "system_time": "2026-10-10T04:52:50.292983Z",
-          "rule_version": "0.1.0",
+          "system_time": "2026-10-11T03:51:48.501185Z",
+          "rule_version": "0.2.0",
           "backfilled": true,
           "trigger": "manual",
-          "recorded_at": "2026-10-10T04:52:51.195451Z",
+          "recorded_at": "2026-10-11T03:51:49.408722Z",
           "assessment": {
             "state": "watch",
             "levels": [
@@ -4211,7 +4220,7 @@
             "assumption_version": null,
             "extractor_version": "0.1.3",
             "issuers": [
-              "63857233-dc88-402c-9a86-1b161810b398"
+              "5c33c040-9b40-4644-b119-676a356c5ba9"
             ]
           }
         },
@@ -4267,11 +4276,11 @@
         "assignment": {
           "ticker": "XOM",
           "known_at": "2026-10-06T12:00:00Z",
-          "system_time": "2026-10-10T04:52:50.292983Z",
-          "rule_version": "0.1.0",
+          "system_time": "2026-10-11T03:51:48.501185Z",
+          "rule_version": "0.2.0",
           "backfilled": true,
           "trigger": "manual",
-          "recorded_at": "2026-10-10T04:52:51.217127Z",
+          "recorded_at": "2026-10-11T03:51:49.428873Z",
           "assessment": {
             "state": "active",
             "levels": [
@@ -4347,9 +4356,9 @@
                 "status": "pass",
                 "value": "0.91",
                 "unit": "percent",
-                "threshold": "0.5",
-                "comparison": "at_least",
-                "detail": "repurchases in the quarter ended 2026-06-30 / market cap then",
+                "threshold": "0",
+                "comparison": "above",
+                "detail": "mega cap (market cap at the quarter end >= $500 billion): any repurchase counts; repurchases in the quarter ended 2026-06-30 / market cap then",
                 "inputs": [
                   {
                     "name": "share_repurchases_quarter",
@@ -4390,15 +4399,15 @@
                   },
                   {
                     "name": "market_cap",
-                    "value": "562192640000",
+                    "value": "562180603171",
                     "period_start": null,
                     "period_end": "2026-06-30",
-                    "note": "close 2026-06-30 $136.72 x 4112000000 shares outstanding",
+                    "note": "close 2026-06-30 $136.72 x 4111911960 shares outstanding (cover page, 2026-06-30)",
                     "sources": [
                       {
-                        "metric_id": "shares_outstanding",
-                        "source_concept": "us-gaap:CommonStockSharesOutstanding",
-                        "value": "4112000000",
+                        "metric_id": "shares_outstanding_cover",
+                        "source_concept": "dei:EntityCommonStockSharesOutstanding",
+                        "value": "4111911960",
                         "period_start": null,
                         "period_end": "2026-06-30",
                         "filing": {
@@ -5298,10 +5307,10 @@
                   "weight": 20,
                   "measure": "buyback_intensity",
                   "zero": "0",
-                  "full": "4",
+                  "full": "2",
                   "value": "3.65",
-                  "score": "91.2",
-                  "detail": null,
+                  "score": "100.0",
+                  "detail": "mega cap (market cap >= $500 billion): 100 at 2",
                   "inputs": [
                     {
                       "name": "share_repurchases_ttm",
@@ -5384,15 +5393,15 @@
                     },
                     {
                       "name": "market_cap",
-                      "value": "562192640000",
+                      "value": "562180603171",
                       "period_start": null,
                       "period_end": "2026-06-30",
-                      "note": "close 2026-06-30 $136.72 x 4112000000 shares outstanding",
+                      "note": "close 2026-06-30 $136.72 x 4111911960 shares outstanding (cover page, 2026-06-30)",
                       "sources": [
                         {
-                          "metric_id": "shares_outstanding",
-                          "source_concept": "us-gaap:CommonStockSharesOutstanding",
-                          "value": "4112000000",
+                          "metric_id": "shares_outstanding_cover",
+                          "source_concept": "dei:EntityCommonStockSharesOutstanding",
+                          "value": "4111911960",
                           "period_start": null,
                           "period_end": "2026-06-30",
                           "filing": {
@@ -6363,8 +6372,8 @@
             "assumption_version": null,
             "extractor_version": "0.1.3",
             "issuers": [
-              "251bbe54-7fcc-4cca-bb16-04af07447f86",
-              "60bc4f24-b903-46be-a180-fa5f95301465"
+              "69581a35-07eb-4824-82f2-b88ddd00cd76",
+              "e173052b-f904-44b9-a164-8b1c3c48492e"
             ]
           }
         },

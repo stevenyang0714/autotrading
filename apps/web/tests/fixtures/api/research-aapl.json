@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-10T04:53:22.242785+00:00",
+  "recorded_at": "2026-10-11T03:52:23.014934+00:00",
   "recorded_from": "recorded SEC fixtures replayed into the integration test database (tests/integration/test_instruments.py)",
   "endpoint": "/instruments/AAPL/research",
   "params": {

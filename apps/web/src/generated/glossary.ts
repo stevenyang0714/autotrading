@@ -115,6 +115,7 @@ export type CompleteTermId =
   | "market_cap"
   | "market_confirmation"
   | "market_session"
+  | "mega_cap"
   | "milestone_status"
   | "model_output"
   | "multiple_percentile"
@@ -482,7 +483,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "Buyback Intensity",
     "category": "corporate_action",
     "short_definition": "Actual repurchases relative to market cap.",
-    "full_definition": "Dollars paid for share repurchases divided by market capitalization at the period end: the last end-of-day close on or before the end times balance-sheet shares outstanding then, on the close's split basis. Per fiscal year as reported, and for the last four quarters (TTM) from year-to-date 10-Q values, as known at the As known on time. Unavailable without an end-of-day close (fixture prices) or a share count.",
+    "full_definition": "Dollars paid for share repurchases divided by market capitalization at the period end: the last end-of-day close on or before the end times the latest share count dated on or before it, cover page or balance sheet (V2 applied at the period end, ADR-025 B12), on the close's split basis. Per fiscal year as reported, and for the last four quarters (TTM) from year-to-date 10-Q values, as known at the As known on time. Unavailable without an end-of-day close (fixture prices) or a share count.",
     "formula": "share_repurchases / (close at period end x shares_outstanding at period end)",
     "unit": "percent",
     "example": "Apple FY2025: $90.711B / $3.774T (close 2025-09-26 x 14.773B shares) = 2.40%.",
@@ -491,15 +492,15 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "why_it_matters": "Separates real buyback activity from announcements.",
     "source": "Derived from SEC XBRL filings and daily closes (domain/buyback.py)",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback.py",
-    "as_of": "2026-10-10",
+    "as_of": "2026-10-11",
     "update_cadence": "per filing",
-    "caveats": "Does not by itself imply undervaluation or future outperformance; repurchases / FCF shows the funding side.",
+    "caveats": "Does not by itself imply undervaluation or future outperformance; repurchases / FCF shows the funding side. A company that tags shares only at year ends (AutoZone, NVIDIA, JPMorgan) uses its latest cover-page count, which can be up to a quarter older than the period end.",
     "related_terms": [
       "net_share_reduction",
       "repurchase_to_fcf",
       "market_cap"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "回購強度",
     "hint_zh": "買回金額 ÷ 期末市值。"
   },
@@ -568,20 +569,20 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "full_definition": "Each rule set of config/buyback_rules.yaml has a rule_version. A released version never changes: `make migrate` registers it with the sha256 of its content and refuses a change under the same version, and a unit test pins the hash (B4). Tuning a threshold means a new version through a pull request; stored assignments keep theirs.",
     "formula": "not a calculation; config/buyback_rules.yaml",
     "unit": "version",
-    "example": "0.1.0: the M1.4 plan's default thresholds, approved 2026-10-10.",
+    "example": "0.1.0: the M1.4 plan's default thresholds, approved 2026-10-10. 0.2.0 (2026-10-11, after the threshold review): period-end market cap on the latest dated share count (B12), mega caps pass ACTIVE's quarter test on any repurchase (B13) and score intensity 100 at 2% (B14).",
     "direction": "N/A",
     "interpretation": "Two assignments compare only under the same rule version.",
     "why_it_matters": "Makes every state reproducible and every threshold change visible.",
     "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/buyback_rules.yaml",
-    "as_of": "2026-10-10",
+    "as_of": "2026-10-11",
     "update_cadence": "per rule change",
     "caveats": "Only the active version is evaluated daily.",
     "related_terms": [
       "buyback_state",
       "threshold_review"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "回購規則版本",
     "hint_zh": "規則檔的版本；內容一改就必須升版，存下的評定保留當時版本。"
   },
@@ -665,8 +666,8 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "Score: Repurchase Intensity",
     "category": "corporate_action",
     "short_definition": "Score component (weight 20): repurchases of the latest period / market cap.",
-    "full_definition": "Buyback intensity of the latest period (TTM repurchases / market cap at its end): 0% scores 0, 4% scores 100.",
-    "formula": "clamp(x / 4%) x 100",
+    "full_definition": "Buyback intensity of the latest period (TTM repurchases / market cap at its end): 0% scores 0, 4% scores 100; for a mega cap (market cap at the period end >= $500 billion), 2% scores 100 (rule 0.2.0, B14).",
+    "formula": "clamp(x / 4%) x 100; mega cap: clamp(x / 2%) x 100",
     "unit": "score 0-100",
     "example": "Apple as known on 2026-10-06 (recorded SEC filings and closes): 1.98% scores 49.5.",
     "direction": "Higher = more buying",
@@ -674,16 +675,16 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "why_it_matters": "Rewards executed buybacks.",
     "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
-    "as_of": "2026-10-10",
+    "as_of": "2026-10-11",
     "update_cadence": "daily (11:00 SGT) and month ends since 2021",
-    "caveats": "Does not by itself mean the buybacks were well timed.",
+    "caveats": "Does not by itself mean the buybacks were well timed. The mega-cap point keeps the largest companies, whose buybacks are a smaller share of a far larger value, on the same 0-100 scale.",
     "related_terms": [
       "buyback_quality_score",
       "buyback_intensity"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "分項：買回強度",
-    "hint_zh": "近四季買回 ÷ 市值，0% 0 分、4% 100 分。權重 20。"
+    "hint_zh": "近四季買回 ÷ 市值，0% 0 分、4% 100 分（超大型股 2% 即 100 分）。權重 20。"
   },
   "buyback_score_share_count": {
     "term_id": "buyback_score_share_count",
@@ -767,7 +768,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "ACTIVE",
     "category": "corporate_action",
     "short_definition": "WATCH, and the company is actually buying back stock and its diluted share count is falling.",
-    "full_definition": "WATCH, and both: (1) repurchases in the latest reported quarter (ended at most 200 days before T) of at least 0.5% of market cap at the quarter end; a quarter without repurchases fails; (2) weighted diluted shares of the latest period at least 1% below a year earlier.",
+    "full_definition": "WATCH, and both: (1) repurchases in the latest reported quarter (ended at most 200 days before T) of at least 0.5% of market cap at the quarter end, or, for a mega cap (market cap then >= $500 billion, rule 0.2.0, B13), any repurchase; a quarter without repurchases fails; (2) weighted diluted shares of the latest period at least 1% below a year earlier.",
     "formula": "WATCH AND quarter repurchases / market cap >= 0.5% AND diluted share change <= -1%",
     "unit": "state",
     "example": "ExxonMobil as known on 2026-10-06 (recorded SEC filings and closes): ACTIVE (0.91% of market cap repurchased in the June quarter, diluted shares -3.63%).",
@@ -776,17 +777,17 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "why_it_matters": "Turns an announcement into evidence from the 10-Q/10-K: an announcement alone never reaches ACTIVE (E7).",
     "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
-    "as_of": "2026-10-10",
+    "as_of": "2026-10-11",
     "update_cadence": "daily (11:00 SGT) and month ends since 2021",
-    "caveats": "Thresholds are rule v0.1.0 defaults, not validated (OD-7). Quarterly repurchases are differenced from year-to-date filings; market cap needs an end-of-day close near the quarter end.",
+    "caveats": "Thresholds are rule v0.2.0 defaults after Steven's first review, not validated (OD-7). Quarterly repurchases are differenced from year-to-date filings; market cap needs an end-of-day close near the quarter end.",
     "related_terms": [
       "buyback_state",
       "quarter_repurchase_to_market_cap",
       "diluted_shares_change"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "執行中 ACTIVE",
-    "hint_zh": "WATCH，且最近一季買回 ≥ 市值 0.5%、稀釋股數年減 ≥ 1%。只有公告到不了這一級。"
+    "hint_zh": "WATCH，且最近一季買回 ≥ 市值 0.5%（超大型股有買回即可）、稀釋股數年減 ≥ 1%。只有公告到不了這一級。"
   },
   "buyback_state_high_conviction": {
     "term_id": "buyback_state_high_conviction",
@@ -3011,6 +3012,33 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "交易時段",
     "hint_zh": "美股是否開盤（紐約時間 09:30–16:00，扣除假日與提早收盤）。"
   },
+  "mega_cap": {
+    "term_id": "mega_cap",
+    "display_name": "Mega Cap",
+    "category": "corporate_action",
+    "short_definition": "A company with a market cap of at least $500 billion at the period end, in the buyback rules.",
+    "full_definition": "In buyback rule 0.2.0 (B13, B14): market cap at the quarter or period end (the last end-of-day close by then x the latest share count dated by then) of at least $500 billion. A mega cap passes ACTIVE's quarter test on any repurchase, since even large buybacks are a small share of its value, and its repurchase intensity scores 100 at 2% instead of 4%.",
+    "formula": "market cap at the period end >= $500 billion",
+    "unit": "flag",
+    "example": "NVIDIA ($5.0T), Apple ($4.1T), Microsoft ($2.8T), JPMorgan ($870B) and ExxonMobil ($562B) at their June 2026 quarter ends.",
+    "direction": "N/A",
+    "interpretation": "Judged per period, so a company can move across the line.",
+    "why_it_matters": "A share-of-market-cap test alone would hold back the largest buyers in dollars.",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/buyback_rules.yaml",
+    "as_of": "2026-10-11",
+    "update_cadence": "per evaluation",
+    "caveats": "The line is a default, not validated (OD-7); diluted shares must still fall at least 1% for ACTIVE.",
+    "related_terms": [
+      "buyback_state_active",
+      "quarter_repurchase_to_market_cap",
+      "buyback_score_intensity",
+      "market_cap"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "超大型股",
+    "hint_zh": "期末市值 ≥ 5000 億美元；單季只要有實際買回就過 ACTIVE 的買回條件，買回強度 2% 即滿分（規則 0.2.0）。"
+  },
   "milestone_status": {
     "term_id": "milestone_status",
     "display_name": "Milestone Status",
@@ -4009,26 +4037,26 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "Quarter Repurchases / Market Cap",
     "category": "corporate_action",
     "short_definition": "Dollars repurchased in the latest reported quarter as a share of market cap at its end.",
-    "full_definition": "Share repurchases of the latest quarter (reported three months, or differenced from year-to-date 10-Q/10-K values) divided by market cap at the quarter end (the last end-of-day close on or before it x shares outstanding then). The quarter must end at most 200 days before T; no repurchases fails.",
+    "full_definition": "Share repurchases of the latest quarter (reported three months, or differenced from year-to-date 10-Q/10-K values) divided by market cap at the quarter end (the last end-of-day close on or before it x the latest share count dated on or before it, cover page or balance sheet, B12). The quarter must end at most 200 days before T; no repurchases fails. Rule 0.2.0: for a mega cap (market cap at the quarter end >= $500 billion) any repurchase passes and the share is shown only (B13).",
     "formula": "quarter share_repurchases / (close at quarter end x shares outstanding)",
     "unit": "percent",
-    "example": "Apple as known on 2026-10-06 (recorded SEC filings and closes): 0.61% for the quarter ended 2026-06-27.",
+    "example": "AutoZone, quarter ended 2026-05-09: $580.7M / $57.6B (close $3,496.19 x 16,476,820 cover-page shares of 2026-03-13) = 1.01%. NVIDIA, quarter ended 2026-07-26: $19.7B is 0.39% of $5.0T: a mega cap, so it passes.",
     "direction": "Higher = more buying",
     "interpretation": "How much stock the company bought in its last quarter.",
     "why_it_matters": "The ACTIVE condition that needs actual repurchases (>= 0.5%).",
     "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
-    "as_of": "2026-10-10",
+    "as_of": "2026-10-11",
     "update_cadence": "daily (11:00 SGT) and month ends since 2021",
-    "caveats": "One quarter can be lumpy; the TTM intensity is in the score.",
+    "caveats": "One quarter can be lumpy; the TTM intensity is in the score. Rule 0.1.0 used only the balance-sheet count on the quarter end.",
     "related_terms": [
       "buyback_state_active",
       "share_repurchases",
       "buyback_intensity"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "單季買回 ÷ 市值",
-    "hint_zh": "最近一季買回金額 ÷ 季末市值；該季沒買回就不通過。"
+    "hint_zh": "最近一季買回金額 ÷ 季末市值（季末前最近一筆股數）；沒買回就不通過；超大型股有買回即通過。"
   },
   "quarterly_derived_value": {
     "term_id": "quarterly_derived_value",
@@ -4917,20 +4945,20 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "full_definition": "On the Corporate Actions dashboard: each company's state, every condition's value against its threshold (pass, fail, unavailable) and the score components, as known on the chosen date, so Steven can confirm or tune the defaults (P1-9). A change becomes a new rule version.",
     "formula": "not a calculation; reads GET /buybacks",
     "unit": "table",
-    "example": "Rule 0.1.0 as known on 2026-10-06: Apple and ExxonMobil ACTIVE, NVIDIA WATCH, Meta none.",
+    "example": "Rule 0.1.0 on 2026-10-10 left AutoZone, JPMorgan and NVIDIA at WATCH: two tag shares only at year ends, and NVIDIA's $19.7B quarter was 0.39% of a $5T market cap. Rule 0.2.0 answers both (B12, B13).",
     "direction": "N/A",
     "interpretation": "Look for thresholds that every company passes or none can.",
     "why_it_matters": "The thresholds are defaults until reviewed against real companies.",
     "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
-    "as_of": "2026-10-10",
+    "as_of": "2026-10-11",
     "update_cadence": "per page load",
     "caveats": "Review on enough history; one date can mislead.",
     "related_terms": [
       "buyback_rule_version",
       "buyback_state"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "門檻檢視",
     "hint_zh": "每家公司在目前規則版本下的狀態與所有條件值，供確認或調整門檻。"
   },

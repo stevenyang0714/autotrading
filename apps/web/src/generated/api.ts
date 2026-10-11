@@ -475,6 +475,8 @@ export interface components {
         ActiveRule: {
             /** Diluted Shares Change Max */
             diluted_shares_change_max: string;
+            /** Mega Cap Min */
+            mega_cap_min?: string | null;
             /** Quarter Max Age Days */
             quarter_max_age_days: number;
             /** Quarter Repurchase To Market Cap Min */
@@ -2075,6 +2077,11 @@ export interface components {
             loaded_at: string;
             /** Note */
             note: string;
+            /**
+             * Period End Shares
+             * @enum {string}
+             */
+            period_end_shares: "latest_dated" | "balance_sheet";
             /** Rule Version */
             rule_version: string;
             score: components["schemas"]["ScoreRule"];
@@ -2161,6 +2168,8 @@ export interface components {
              * @enum {string}
              */
             measure: "fcf_yield_to_median" | "buyback_intensity" | "fcf_conversion" | "net_debt_to_fcf" | "disciplined_years" | "net_share_reduction_pct";
+            /** Mega Cap Full */
+            mega_cap_full?: string | null;
             /** Weight */
             weight: number;
             /** Zero */
@@ -2186,6 +2195,8 @@ export interface components {
             excluded: components["schemas"]["ExcludedComponent"][];
             /** Label */
             label: string;
+            /** Mega Cap Min */
+            mega_cap_min?: string | null;
         };
         /** SeriesObservations */
         SeriesObservations: {

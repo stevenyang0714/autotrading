@@ -326,7 +326,7 @@ test("AAPL buybacks show the stored state with each condition against its thresh
   const card = page.locator('#buybacks [data-block="state"]');
   // The replay stores states now and at month ends since 2025 (fixture prices: no market cap).
   await expect(card.locator("[data-state]").first()).toHaveText(/^(No state|WATCH|ACTIVE|HIGH-CONVICTION candidate)$/);
-  await expect(card).toContainText("rule v0.1.0");
+  await expect(card).toContainText("rule v0.2.0");
   await expect(card.locator('[data-condition="watch.announcement"]')).toContainText("(within 365 days)");
   await expect(card.locator('[data-level="trade_ready"]')).toContainText("Unreachable in Phase 1.");
   await expect(card.locator('[data-block="score"]')).toContainText("default weights, unvalidated");

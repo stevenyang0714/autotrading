@@ -4,7 +4,7 @@
  */
 
 import type { CompleteTermId } from "@/generated/glossary";
-import type { StateCondition, StateId } from "@/lib/api";
+import type { RuleSet, StateCondition, StateId } from "@/lib/api";
 
 export const STATE_LABELS: Record<StateId, string> = {
   none: "No state",
@@ -184,3 +184,19 @@ export const INPUT_LABELS: Record<string, string> = {
   net_share_reduction: "Net share reduction",
   shares_outstanding: "Shares outstanding",
 };
+
+/** "$500 billion": a rule's dollar line. */
+export function formatBillions(value: string): string {
+  return `$${(Number(value) / 1e9).toLocaleString("en-US")} billion`;
+}
+
+/** A column's threshold as the rule set states it, with the mega-cap exception (B13). */
+export function ruleThreshold(rule: RuleSet, condition: StateCondition | undefined): string | null {
+  if (!condition) return null;
+  const active = rule.states.active;
+  if (condition.condition_id === "active.quarter_repurchase") {
+    const base = `≥ ${Number(active.quarter_repurchase_to_market_cap_min)}%`;
+    return active.mega_cap_min ? `${base}; mega cap: any` : base;
+  }
+  return formatThreshold(condition);
+}

@@ -110,10 +110,20 @@ def _split_basis[FactT: DatedFact](
 
 
 def share_count[FactT: DatedFact](
-    facts: Sequence[FactT], basis: datetime, splits: Sequence[Split]
+    facts: Sequence[FactT],
+    basis: datetime,
+    splits: Sequence[Split],
+    on_or_before: date | None = None,
 ) -> Input[FactT] | None:
-    """V2: the most recently dated count, cover page or balance sheet, on the close's basis."""
-    counts = [f for f in facts if f.metric_id in SHARE_METRICS and f.period_start is None]
+    """V2: the most recently dated count, cover page or balance sheet, on the close's basis;
+    with `on_or_before`, the latest dated by then (a period end's market cap, ADR-025 B12)."""
+    counts = [
+        f
+        for f in facts
+        if f.metric_id in SHARE_METRICS
+        and f.period_start is None
+        and (on_or_before is None or f.period_end <= on_or_before)
+    ]
     if not counts:
         return None
     latest = max(counts, key=lambda f: (f.period_end, f.metric_id == SHARE_METRICS[0]))

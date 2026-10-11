@@ -12,8 +12,9 @@ import {
   STATE_TERMS,
   STATUS_STYLES,
   conditionMeta,
+  formatBillions,
   formatMeasure,
-  formatThreshold,
+  ruleThreshold,
 } from "@/lib/buybackStates";
 import { formatSgtEt } from "@/lib/time";
 
@@ -184,6 +185,15 @@ export function CorporateActionsView({
             Thresholds are defaults, not validated. A change is a new rule version.
           </Metric>
         </p>
+        {rule.states.active.mega_cap_min ? (
+          <p className="text-xs text-neutral-400" data-mega-cap="">
+            <Metric termId="mega_cap" icon={false}>
+              Mega caps (market cap at the quarter end of {formatBillions(rule.states.active.mega_cap_min)} or more)
+              pass the quarter test on any repurchase; their repurchase intensity scores 100 at{" "}
+              {rule.score.components.find((c) => c.component === "intensity")?.mega_cap_full ?? "the usual"}%.
+            </Metric>
+          </p>
+        ) : null}
         <div className="overflow-x-auto rounded border border-neutral-800">
           <table className="w-full min-w-[72rem] text-sm" aria-label="Threshold review">
             <thead>
@@ -203,12 +213,12 @@ export function CorporateActionsView({
                 </th>
                 {ids.map((id) => {
                   const meta = conditionMeta(id);
-                  const found = columns.get(id);
+                  const threshold = ruleThreshold(rule, columns.get(id));
                   return (
                     <th key={id} scope="col" className="px-2 py-2 text-right align-bottom font-normal" data-column={id}>
                       <Metric termId={meta.termId} icon={false}>
                         <span className="block">{meta.short}</span>
-                        {found ? <span className="block text-neutral-500">{formatThreshold(found)}</span> : null}
+                        {threshold ? <span className="block text-neutral-500">{threshold}</span> : null}
                       </Metric>
                     </th>
                   );

@@ -51,7 +51,16 @@ SEC_XBRL_METRICS = (
 # Metrics whose definition changed since 0.1.0 (ADR-025): repurchase_authorized only corroborates
 # the 8-K announcements since M1.4a; diluted_shares_change falls back to basic shares where
 # nothing dilutes (B11).
-METHODOLOGY = {"repurchase_authorized": "0.2.0", "diluted_shares_change": "0.2.0"}
+METHODOLOGY = {
+    "repurchase_authorized": "0.2.0",
+    "diluted_shares_change": "0.2.0",
+    # B12-B14 (buyback rule 0.2.0): a period end's market cap on the latest dated share count;
+    # mega caps pass ACTIVE's quarter test on any repurchase and score intensity 100 at 2%.
+    "buyback_intensity": "0.2.0",
+    "quarter_repurchase_to_market_cap": "0.2.0",
+    "buyback_state_active": "0.2.0",
+    "buyback_score_intensity": "0.2.0",
+}
 
 # FRED series shown on the Macro page (M0.6): reported values with vintages, one term per
 # series in config/macro_series.yaml (a test keeps the two in step).
@@ -207,6 +216,7 @@ METRICS: tuple[MetricDefinition, ...] = (
                     "buyback_score_share_count",
                     "net_debt_to_fcf",
                     "disciplined_years",
+                    "mega_cap",
                 )
             },
         }.items()

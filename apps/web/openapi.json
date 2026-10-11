@@ -9,6 +9,18 @@
             "title": "Diluted Shares Change Max",
             "type": "string"
           },
+          "mega_cap_min": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mega Cap Min"
+          },
           "quarter_max_age_days": {
             "exclusiveMinimum": 0.0,
             "title": "Quarter Max Age Days",
@@ -4970,6 +4982,14 @@
             "title": "Note",
             "type": "string"
           },
+          "period_end_shares": {
+            "enum": [
+              "latest_dated",
+              "balance_sheet"
+            ],
+            "title": "Period End Shares",
+            "type": "string"
+          },
           "rule_version": {
             "title": "Rule Version",
             "type": "string"
@@ -4996,6 +5016,7 @@
           "note",
           "content_sha256",
           "loaded_at",
+          "period_end_shares",
           "states",
           "score"
         ],
@@ -5227,6 +5248,18 @@
             "title": "Measure",
             "type": "string"
           },
+          "mega_cap_full": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mega Cap Full"
+          },
           "weight": {
             "exclusiveMinimum": 0.0,
             "title": "Weight",
@@ -5317,6 +5350,18 @@
           "label": {
             "title": "Label",
             "type": "string"
+          },
+          "mega_cap_min": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mega Cap Min"
           }
         },
         "required": [
