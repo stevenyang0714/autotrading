@@ -34,6 +34,7 @@ export type CompleteTermId =
   | "cash"
   | "cash_returned"
   | "cash_returned_to_fcf"
+  | "catalyst"
   | "change_qoq"
   | "change_yoy"
   | "close_vs_moving_average"
@@ -86,6 +87,8 @@ export type CompleteTermId =
   | "equity_risk_premium"
   | "ev_to_ebitda"
   | "ev_to_sales"
+  | "evidence_item"
+  | "execution_eligibility"
   | "fair_value_dcf"
   | "fcf_conversion"
   | "fcf_funding"
@@ -106,7 +109,10 @@ export type CompleteTermId =
   | "ingestion_note"
   | "ingestion_status"
   | "interest_expense"
+  | "invalidation"
   | "invested_capital"
+  | "journal_entry"
+  | "journal_replay"
   | "last_price"
   | "license_status"
   | "long_term_debt_current"
@@ -140,6 +146,7 @@ export type CompleteTermId =
   | "net_share_reduction_pct"
   | "news_time_basis"
   | "next_refresh"
+  | "no_trade"
   | "nopat"
   | "observation_date"
   | "open_decision"
@@ -155,6 +162,8 @@ export type CompleteTermId =
   | "page_overview"
   | "page_progress"
   | "page_reconciliation"
+  | "paper_mode"
+  | "paper_return"
   | "payrolls_monthly_change"
   | "payrolls_prior_month_revision"
   | "pct_below_52w_high"
@@ -195,6 +204,7 @@ export type CompleteTermId =
   | "shares_outstanding"
   | "shares_outstanding_cover"
   | "shares_repurchased"
+  | "signal"
   | "source_tier"
   | "split_adjusted"
   | "split_event"
@@ -202,8 +212,10 @@ export type CompleteTermId =
   | "stockholders_equity"
   | "story_count"
   | "terminal_growth"
+  | "thesis_card"
   | "threshold_review"
   | "total_debt"
+  | "trade_decision"
   | "trailing_twelve_months"
   | "update_cadence"
   | "valuation_assumptions"
@@ -980,6 +992,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "回饋股東 / FCF",
     "hint_zh": "回饋股東金額 ÷ 自由現金流；超過 100% 代表動用現金或借錢。"
   },
+  "catalyst": {
+    "term_id": "catalyst",
+    "display_name": "Catalyst",
+    "category": "signal",
+    "short_definition": "Future identifiable event that can reprice an asset.",
+    "full_definition": "An event expected to make the market recognize (or reject) a thesis, with an expected date when one is known. A Thesis Card lists up to five; they are stated, not predicted, and do not count as evidence.",
+    "formula": "event + expected date window",
+    "unit": "event/date",
+    "example": "Apple fiscal Q4 results, expected 2026-10-30.",
+    "direction": "N/A",
+    "interpretation": "What could make the market recognize the thesis.",
+    "why_it_matters": "Defines the expected time window for a thesis.",
+    "source": "Build spec 02 §17; api/journal.py",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/api/journal.py",
+    "as_of": "2026-10-11",
+    "update_cadence": "per event",
+    "caveats": "A catalyst is possible, not certain.",
+    "related_terms": [
+      "invalidation",
+      "market_confirmation",
+      "thesis_card"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "催化劑",
+    "hint_zh": "可能讓市場重新定價的未來事件，可附預期日期；不算依據。"
+  },
   "change_qoq": {
     "term_id": "change_qoq",
     "display_name": "Change vs Prior Quarter",
@@ -1505,22 +1543,25 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "Strategy Lab",
     "category": "navigation",
     "short_definition": "Paper journal, backtests, walk-forward validation and paper trading.",
-    "full_definition": "The paper journal from Phase 1, then point-in-time backtests with costs and walk-forward validation from Phase 2 (02 §23).",
+    "full_definition": "Live from M1.6 as the paper journal: every Thesis Card with its decision and paper return against SPY, the current signals, and a link to write a new card. Point-in-time backtests with costs and walk-forward validation follow in Phase 2 (02 §23).",
     "formula": "not a calculation; dashboard defined in build spec 02 §21",
     "unit": "page",
-    "example": "A buyback strategy is tested on data known at each date, including delisted names.",
+    "example": "An AAPL NO TRADE (priced in) next to an AAPL paper TRADE with its return against SPY.",
     "direction": "N/A",
-    "interpretation": "Planned for Phase 1; until then the page shows no data, live or simulated.",
-    "why_it_matters": "No strategy can be unlocked without out-of-sample evidence.",
-    "source": "Build spec 02 §21; research report 01 §21; ROADMAP dashboard map",
+    "interpretation": "Review decisions as known on a date; open a card for its evidence and replay.",
+    "why_it_matters": "No strategy can be unlocked without out-of-sample evidence; the journal records judgement until then.",
+    "source": "Build spec 02 §21; research report 01 §21; ROADMAP dashboard map; ADR-027",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/spec/02_master_build_prompt_v2.md",
-    "as_of": "2026-10-05",
+    "as_of": "2026-10-11",
     "update_cadence": "per release",
-    "caveats": "Contents arrive with Phase 1; scope can change through a roadmap update.",
+    "caveats": "Paper only. Backtests and walk-forward validation arrive in Phase 2.",
     "related_terms": [
-      "planned_phase"
+      "planned_phase",
+      "journal_entry",
+      "signal",
+      "paper_return"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "策略實驗室",
     "hint_zh": "模擬交易日誌與回測（Phase 1–2）。"
   },
@@ -2293,6 +2334,57 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "EV/營收",
     "hint_zh": "企業價值 ÷ 近四季營收。"
   },
+  "evidence_item": {
+    "term_id": "evidence_item",
+    "display_name": "Evidence Item",
+    "category": "journal",
+    "short_definition": "One system row cited by a Thesis Card, stored as it was known when the card was written.",
+    "full_definition": "The card names the row; the server reads it as known at the card's time T and as the database held it at its system time S, and stores the values (J2). A row the company does not have, or that was not public at T, is refused.",
+    "formula": "row read as of (T, S) -> snapshot",
+    "unit": "row",
+    "example": "AAPL revenue for the fiscal year to 2025-09-27 from the 10-K, value and filing as known on the card's date.",
+    "direction": "N/A",
+    "interpretation": "The facts the thesis rests on, exactly as they were then.",
+    "why_it_matters": "Later restatements or corrections cannot change what the card cited.",
+    "source": "api/journal.py (resolve)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/api/journal.py",
+    "as_of": "2026-10-11",
+    "update_cadence": "per entry",
+    "caveats": "A card cites 3 to 7 rows; a row cited twice is refused.",
+    "related_terms": [
+      "thesis_card",
+      "journal_replay",
+      "point_in_time"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "依據",
+    "hint_zh": "卡片引用的一筆系統資料，以寫卡當時已知的值存成快照。"
+  },
+  "execution_eligibility": {
+    "term_id": "execution_eligibility",
+    "display_name": "Execution Eligibility",
+    "category": "signal",
+    "short_definition": "Whether a signal may lead to an order; in Phase 1 always paper only.",
+    "full_definition": "Every Phase 1 signal is paper_only: no risk check exists before Phase 2 (P1-4) and nothing in the system can send an order (ADR-008). The database refuses any other value.",
+    "formula": "paper_only (Phase 1, a database check)",
+    "unit": "state",
+    "example": "Every signal on the Strategy Lab reads paper only.",
+    "direction": "N/A",
+    "interpretation": "A signal can be journaled and tracked on paper, never traded.",
+    "why_it_matters": "Separates research from execution until strategies pass validation and risk checks.",
+    "source": "Build spec 02 §28 and errata E1; migration 0018",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/signals.py",
+    "as_of": "2026-10-11",
+    "update_cadence": "per phase",
+    "caveats": "Live trading also stays disabled in the settings (LIVE_TRADING_ENABLED is refused).",
+    "related_terms": [
+      "signal",
+      "paper_mode"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "執行資格",
+    "hint_zh": "訊號能否導致下單；Phase 1 一律 paper only（只能模擬）。"
+  },
   "fair_value_dcf": {
     "term_id": "fair_value_dcf",
     "display_name": "DCF Fair Value per Share",
@@ -2805,6 +2897,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "利息費用",
     "hint_zh": "借款在期間內認列的利息成本。"
   },
+  "invalidation": {
+    "term_id": "invalidation",
+    "display_name": "Invalidation",
+    "category": "risk",
+    "short_definition": "Condition that makes a thesis fail.",
+    "full_definition": "Required on every Thesis Card: the observable condition that would prove the thesis wrong. Phase 1 records it; monitoring it automatically comes with alerts in a later phase.",
+    "formula": "explicit monitorable rule or threshold",
+    "unit": "rule",
+    "example": "Repurchases fall below free cash flow for two quarters.",
+    "direction": "N/A",
+    "interpretation": "If this happens, the thesis is wrong and the position is reviewed.",
+    "why_it_matters": "Every thesis must state what would prove it wrong.",
+    "source": "Build spec 02 §17; api/journal.py",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/api/journal.py",
+    "as_of": "2026-10-11",
+    "update_cadence": "continuous",
+    "caveats": "Must be monitorable with available data.",
+    "related_terms": [
+      "catalyst",
+      "thesis_card"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "看錯條件",
+    "hint_zh": "發生就代表論點錯了的可觀察條件；每張卡必填。"
+  },
   "invested_capital": {
     "term_id": "invested_capital",
     "display_name": "Invested Capital",
@@ -2831,6 +2948,58 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "投入資本",
     "hint_zh": "股東權益 + 總負債 − 現金。"
+  },
+  "journal_entry": {
+    "term_id": "journal_entry",
+    "display_name": "Journal Entry",
+    "category": "journal",
+    "short_definition": "A Thesis Card with its decisions: the unit of the paper journal.",
+    "full_definition": "One card (all its versions) with its first decision, its exit if any, and the paper performance at the As known on time. A card written after that time is not shown.",
+    "formula": "card + decisions + performance at T",
+    "unit": "entry",
+    "example": "An AAPL card with a paper TRADE buy 10 and its later exit.",
+    "direction": "N/A",
+    "interpretation": "One idea from thesis to outcome.",
+    "why_it_matters": "Reviewing entries over time shows which reasons worked.",
+    "source": "api/journal.py",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/api/journal.py",
+    "as_of": "2026-10-11",
+    "update_cadence": "per entry",
+    "caveats": "Single user; no sharing.",
+    "related_terms": [
+      "thesis_card",
+      "trade_decision",
+      "paper_return"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "日誌項目",
+    "hint_zh": "一張論點卡加上它的決策與到目前為止的模擬績效。"
+  },
+  "journal_replay": {
+    "term_id": "journal_replay",
+    "display_name": "Journal Replay",
+    "category": "journal",
+    "short_definition": "Reading a card's evidence, valuation and decision closes again at its stored time to show nothing has changed.",
+    "full_definition": "Each item is read again as known at the card's time T and as the database held it at its system time S, then compared with the stored snapshot: identical, differs (with the fields) or missing (M1.6 acceptance 1). Later restatements, corrections, closes and buyback states are recorded after S and so do not appear.",
+    "formula": "snapshot == read(row, T, S) for every item",
+    "unit": "status per item",
+    "example": "A card with 5 evidence items, its valuation and 1 decision: all identical.",
+    "direction": "All identical = the record is intact",
+    "interpretation": "Proof that the card shows only what was known then.",
+    "why_it_matters": "Look-ahead bias is the most common way research fools itself.",
+    "source": "api/journal.py (replay); ADR-012 point in time",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/api/journal.py",
+    "as_of": "2026-10-11",
+    "update_cadence": "on request",
+    "caveats": "A difference means data recorded before S changed, which the append-only tables should prevent; report it.",
+    "related_terms": [
+      "evidence_item",
+      "point_in_time",
+      "thesis_card"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "日誌重放",
+    "hint_zh": "以卡片當時的時點重讀每筆依據、估值與收盤，逐筆確認與存下的相同。"
   },
   "last_price": {
     "term_id": "last_price",
@@ -3666,6 +3835,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "下次更新",
     "hint_zh": "平台下一次依排程抓取這個來源的時間。"
   },
+  "no_trade": {
+    "term_id": "no_trade",
+    "display_name": "NO TRADE",
+    "category": "journal",
+    "short_definition": "An explicit decision not to trade, with a reason: priced in, insufficient evidence, excessive risk or other.",
+    "full_definition": "Recorded and audited exactly like a TRADE (02 §19). The reason other needs a note. The journal shows how the stock moved after it, so skipped ideas are reviewed as honestly as taken ones.",
+    "formula": "decision = no_trade; reason in (priced_in, insufficient_evidence, excessive_risk, other)",
+    "unit": "decision",
+    "example": "AAPL NO TRADE (priced in): the price is above the base DCF.",
+    "direction": "N/A",
+    "interpretation": "A considered pass, not an absence of a decision.",
+    "why_it_matters": "Most of a disciplined process is saying no; without records those choices cannot be judged.",
+    "source": "Build spec 02 §19; api/journal.py",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/api/journal.py",
+    "as_of": "2026-10-11",
+    "update_cadence": "per entry",
+    "caveats": "The move after a NO TRADE is shown unsigned and without money.",
+    "related_terms": [
+      "trade_decision",
+      "thesis_card"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "不交易",
+    "hint_zh": "明確決定不交易並附理由（已反映在股價、依據不足、風險過高、其他）；與 TRADE 一樣記錄與稽核。"
+  },
   "nopat": {
     "term_id": "nopat",
     "display_name": "NOPAT",
@@ -4052,6 +4246,58 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "財報對帳",
     "hint_zh": "每家公司最新 10-K、10-Q 與申報檔本身的 XBRL 逐項比對的結果。"
+  },
+  "paper_mode": {
+    "term_id": "paper_mode",
+    "display_name": "Paper Mode",
+    "category": "journal",
+    "short_definition": "Decisions are records only: no broker connection, no order, no fill.",
+    "full_definition": "Phase 1 journals in paper mode only (P1-6). The database refuses any other mode, a broker, a risk check or portfolio snapshot reference and any approval state but recorded; the API accepts no broker fields; the market data client reaches market-data endpoints only; live trading cannot be enabled.",
+    "formula": "mode = paper (a database check)",
+    "unit": "state",
+    "example": "Every decision in the Strategy Lab journal is paper.",
+    "direction": "N/A",
+    "interpretation": "Results are hypothetical, from closes.",
+    "why_it_matters": "Tests judgement without risking money or depending on fills.",
+    "source": "ADR-008; build spec 02 §28; migration 0018",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/api/journal.py",
+    "as_of": "2026-10-11",
+    "update_cadence": "per phase",
+    "caveats": "Paper results ignore costs, slippage, dividends and whether a limit order would have filled.",
+    "related_terms": [
+      "trade_decision",
+      "execution_eligibility",
+      "paper_return"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "模擬模式",
+    "hint_zh": "決策只是紀錄；沒有券商連線、沒有委託、沒有成交。"
+  },
+  "paper_return": {
+    "term_id": "paper_return",
+    "display_name": "Paper Return vs SPY",
+    "category": "journal",
+    "short_definition": "A paper TRADE's return from its entry close to the latest or exit close, against SPY over the same closes.",
+    "full_definition": "The entry is the last end-of-day close known when the TRADE was recorded; the mark is the last close known at the As known on time, or the exit decision's close. Splits in between scale the entry price and quantity. The return is signed by side (a sell gains when the price falls); profit and loss in USD = (mark - entry on the mark's basis) x quantity on that basis x side. SPY's return over the same entry and mark closes is shown with the difference in percentage points (the position against holding SPY). A maximum loss is flagged when the paper loss exceeds it. A NO TRADE shows the stock's move after it, unsigned.",
+    "formula": "side x (mark / (entry / split factor) - 1); relative = return - SPY return",
+    "unit": "percent; USD; percentage points",
+    "example": "Illustration: buy 10 at $250.00, marked at $265.00: +6.00% and +$150.00; with SPY +2.10% over the same closes, relative +3.90 points.",
+    "direction": "Higher = better for the position",
+    "interpretation": "How the decision would have done on paper so far.",
+    "why_it_matters": "Feedback on judgement over time, against a simple benchmark.",
+    "source": "Alpaca end-of-day closes; domain/journal.py",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/journal.py",
+    "as_of": "2026-10-11",
+    "update_cadence": "daily, with end-of-day closes",
+    "caveats": "Closes only: no costs, slippage, dividends or fills. A few trades say little about skill.",
+    "related_terms": [
+      "trade_decision",
+      "paper_mode",
+      "relative_return_1m"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "模擬報酬",
+    "hint_zh": "進場收盤到最新或出場收盤的報酬，依方向計正負，並對比同期 SPY（百分點）。"
   },
   "payrolls_monthly_change": {
     "term_id": "payrolls_monthly_change",
@@ -5060,6 +5306,33 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "買回股數",
     "hint_zh": "期間內實際買回的自家股票股數，不是授權額度。"
   },
+  "signal": {
+    "term_id": "signal",
+    "display_name": "Signal",
+    "category": "signal",
+    "short_definition": "A rule's output that a company deserves a look, with the rule version and the data behind it.",
+    "full_definition": "Generated by a versioned rule, never by hand (ADR-027 J1). Phase 1 has one source: a buyback state assignment at ACTIVE or HIGH-CONVICTION makes one long signal of family 2 (Corporate Actions & Capital Structure) for strategy S1 (Buyback + Value + Quality), at the assignment's time T, with its score, the assignment it came from, source quality 1 (SEC filings and consolidated closes), evidence independence (how many rule conditions passed) and execution eligibility paper only. A signal from a backfilled assignment is marked backfilled.",
+    "formula": "buyback state in (ACTIVE, HIGH-CONVICTION) -> one long signal per company, time and rule version",
+    "unit": "signal",
+    "example": "Apple at 2026-10-06 under rules 0.2.0 is ACTIVE: one long signal with its Buyback Quality Score and passed conditions, paper only.",
+    "direction": "N/A",
+    "interpretation": "A prompt to research and decide, not a recommendation; the decision is yours and is recorded either way.",
+    "why_it_matters": "Decisions can later be compared with the signals they followed or ignored.",
+    "source": "Buyback state assignments (M1.4b); domain/signals.py",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/signals.py",
+    "as_of": "2026-10-11",
+    "update_cadence": "daily, with the buyback state evaluation",
+    "caveats": "Earnings make no signal yet: strategy S2 needs a consensus estimate (OD-3). Rule weights are unvalidated until Phase 2 backtests.",
+    "related_terms": [
+      "buyback_state_active",
+      "buyback_state_high_conviction",
+      "execution_eligibility",
+      "thesis_card"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "訊號",
+    "hint_zh": "規則自動產生的「值得研究」提示；Phase 1 只有回購狀態 ACTIVE 或 HIGH-CONVICTION 時產生，一律只能模擬。"
+  },
   "source_tier": {
     "term_id": "source_tier",
     "display_name": "Source Tier",
@@ -5234,6 +5507,34 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "永續成長率",
     "hint_zh": "第 10 年後永遠的成長率；至少要比折現率低 1 個百分點。"
   },
+  "thesis_card": {
+    "term_id": "thesis_card",
+    "display_name": "Thesis Card",
+    "category": "journal",
+    "short_definition": "A short written case for or against a position: thesis, 3-7 pieces of evidence, catalysts, invalidation and valuation.",
+    "full_definition": "Written at the time it is saved (no backdating; ADR-027). Each evidence item is a system row (a reported value, filing, buyback or guidance statement, buyback state, news story or close) read as known then and stored as a snapshot; free notes are allowed but are not evidence. The valuation is the base DCF against the price as the fair value page showed it then. A change is a new version; earlier versions stay.",
+    "formula": "thesis + evidence[3..7] + catalysts[0..5] + invalidation + valuation snapshot",
+    "unit": "card",
+    "example": "Apple, NO TRADE: buybacks shrink the share count, but the price is above the base DCF (priced in).",
+    "direction": "N/A",
+    "interpretation": "What you believed, why, and what would prove it wrong, frozen at the time.",
+    "why_it_matters": "Makes later review honest: the card shows only what was known when it was written.",
+    "source": "Build spec 02 §17; api/journal.py",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/api/journal.py",
+    "as_of": "2026-10-11",
+    "update_cadence": "per entry",
+    "caveats": "Evidence cannot cite outside links (J2); single user, no sign-in.",
+    "related_terms": [
+      "evidence_item",
+      "catalyst",
+      "invalidation",
+      "trade_decision",
+      "journal_replay"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "論點卡",
+    "hint_zh": "論點、3–7 個系統資料依據、催化劑、看錯條件與估值，寫下當時的快照；修改就存新版本。"
+  },
   "threshold_review": {
     "term_id": "threshold_review",
     "display_name": "Threshold Review",
@@ -5285,6 +5586,33 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "總負債（借款）",
     "hint_zh": "長期負債（含一年內到期）加商業本票；未申報的短期項目以 0 計並標示。"
+  },
+  "trade_decision": {
+    "term_id": "trade_decision",
+    "display_name": "Trade Decision",
+    "category": "journal",
+    "short_definition": "A paper TRADE (side, quantity, order type) or an explicit NO TRADE, recorded on a Thesis Card.",
+    "full_definition": "A TRADE records a side, quantity, order type (a limit price only for a limit order) and an optional maximum loss, and enters at the last end-of-day close known at its time; nothing is sent anywhere. An exit is a new decision on the opposite side that points at its entry; each entry has at most one. Decisions are never changed and every one is in the Audit Log. Phase 1 limits are database checks: paper mode, no broker, risk check or portfolio snapshot, approval state recorded.",
+    "formula": "decision in (trade, no_trade); trade: side, quantity > 0, order type; no_trade: reason",
+    "unit": "decision",
+    "example": "AAPL paper TRADE buy 10 at market, maximum loss $100, entered at the last close known then.",
+    "direction": "N/A",
+    "interpretation": "What you decided, at a known price, so it can be reviewed later.",
+    "why_it_matters": "A decision log separates judgement from outcome and from hindsight.",
+    "source": "Build spec 02 §28 and errata E1; migration 0018",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/api/journal.py",
+    "as_of": "2026-10-11",
+    "update_cadence": "per entry",
+    "caveats": "A limit price is recorded, not simulated: the paper entry is always the last close.",
+    "related_terms": [
+      "no_trade",
+      "paper_mode",
+      "paper_return",
+      "thesis_card"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "交易決策",
+    "hint_zh": "模擬 TRADE（方向、股數、委託類型）或明確的 NO TRADE；不會送出任何委託。"
   },
   "trailing_twelve_months": {
     "term_id": "trailing_twelve_months",

@@ -31,6 +31,8 @@ from autotrading.db.models import (
     MacroSeries,
     PriceBar,
     Source,
+    ThesisCard,
+    TradeDecision,
     ValuationAssumptionSet,
 )
 
@@ -85,6 +87,14 @@ def _uuids(ids: list[str]) -> list[UUID]:
         except ValueError:
             continue
     return out
+
+
+def _decision_label(row: TradeDecision) -> str:
+    """ "paper TRADE buy 10", "paper exit sell 10" or "NO TRADE (priced in)"."""
+    if row.decision == "no_trade":
+        return f"NO TRADE ({(row.no_trade_reason or '').replace('_', ' ')})"
+    kind = "exit" if row.exits_decision_id else "TRADE"
+    return f"paper {kind} {row.side} {row.quantity}"
 
 
 def _labels(session: Session, table: str, ids: list[str]) -> dict[str, str]:
@@ -157,6 +167,16 @@ def _labels(session: Session, table: str, ids: list[str]) -> dict[str, str]:
                     Identifier.valid_to.is_(None),
                 )
                 .order_by(Identifier.id_namespace.desc())  # sec before alpaca
+            )
+        ],
+        "thesis_cards": lambda: [
+            (row.id, f"{row.ticker} thesis card v{row.version}")
+            for row in session.scalars(select(ThesisCard).where(ThesisCard.id.in_(_uuids(ids))))
+        ],
+        "trade_decisions": lambda: [
+            (row.id, f"{row.ticker} {_decision_label(row)}")
+            for row in session.scalars(
+                select(TradeDecision).where(TradeDecision.id.in_(_uuids(ids)))
             )
         ],
     }

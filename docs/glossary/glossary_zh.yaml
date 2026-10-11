@@ -158,6 +158,18 @@ terms:
   guidance_statement: {name: 財報指引, hint: 公司自己給的營收、EPS、利潤率數字或區間，引用原文句子。}
   consensus_estimate: {name: 共識預估, hint: 分析師預期；沒有資料來源（OD-3），一律 Data unavailable，不估算。}
   earnings_surprise: {name: 財報驚喜, hint: 實際 ÷ 共識 − 1；沒有共識所以不計算。}
+  signal: {name: 訊號, hint: 規則自動產生的「值得研究」提示；Phase 1 只有回購狀態 ACTIVE 或 HIGH-CONVICTION 時產生，一律只能模擬。}
+  execution_eligibility: {name: 執行資格, hint: 訊號能否導致下單；Phase 1 一律 paper only（只能模擬）。}
+  thesis_card: {name: 論點卡, hint: 論點、3–7 個系統資料依據、催化劑、看錯條件與估值，寫下當時的快照；修改就存新版本。}
+  evidence_item: {name: 依據, hint: 卡片引用的一筆系統資料，以寫卡當時已知的值存成快照。}
+  trade_decision: {name: 交易決策, hint: 模擬 TRADE（方向、股數、委託類型）或明確的 NO TRADE；不會送出任何委託。}
+  no_trade: {name: 不交易, hint: 明確決定不交易並附理由（已反映在股價、依據不足、風險過高、其他）；與 TRADE 一樣記錄與稽核。}
+  paper_mode: {name: 模擬模式, hint: 決策只是紀錄；沒有券商連線、沒有委託、沒有成交。}
+  paper_return: {name: 模擬報酬, hint: 進場收盤到最新或出場收盤的報酬，依方向計正負，並對比同期 SPY（百分點）。}
+  journal_entry: {name: 日誌項目, hint: 一張論點卡加上它的決策與到目前為止的模擬績效。}
+  journal_replay: {name: 日誌重放, hint: 以卡片當時的時點重讀每筆依據、估值與收盤，逐筆確認與存下的相同。}
+  catalyst: {name: 催化劑, hint: 可能讓市場重新定價的未來事件，可附預期日期；不算依據。}
+  invalidation: {name: 看錯條件, hint: 發生就代表論點錯了的可觀察條件；每張卡必填。}
 
   # buyback states (M1.4b)
   buyback_state: {name: 回購狀態, hint: 依版本化規則判定：無、WATCH、ACTIVE、HIGH-CONVICTION 候選；每個條件都存值、門檻與證據。}

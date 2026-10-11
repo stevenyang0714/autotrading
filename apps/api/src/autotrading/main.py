@@ -17,6 +17,7 @@ from autotrading.api.glossary import router as glossary_router
 from autotrading.api.health import HealthChecker
 from autotrading.api.health import router as health_router
 from autotrading.api.instruments import router as instruments_router
+from autotrading.api.journal import router as journal_router
 from autotrading.api.macro import router as macro_router
 from autotrading.api.news import router as news_router
 from autotrading.api.overview import router as overview_router
@@ -81,6 +82,7 @@ def create_app(
     app.include_router(buyback_states_router)
     app.include_router(earnings_router)
     app.include_router(signals_router)
+    app.include_router(journal_router)
     return app
 
 
