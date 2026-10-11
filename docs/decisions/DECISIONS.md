@@ -612,6 +612,30 @@ M1.4. Two PRs: M1.4a (data: announcements, buyback record, the instrument page's
   - Microsoft never reaches WATCH: its programs were not announced in 8-Ks.
   - Thresholds are defaults (OD-7, P1-9); the threshold review is for Steven to confirm or tune with a new rule version.
 
+
+## ADR-026 Earnings events — Accepted (2026-10-11, approved by Steven with the M1.5 plan)
+M1.5, one PR.
+- **Decisions (Steven, 2026-10-11):**
+  - E1 Events are 8-Ks with Item 2.02 since 2021-01-01 (as B2), then each day's new ones.
+  - E2 Actuals come only from SEC XBRL of the matched 10-Q/10-K, as of its own publication: between a release and its report the event says the report is not yet public.
+  - E3 Guidance is limited to revenue (and sales growth), EPS and gross / operating / net margin, as explicit numbers or ranges; expenses, capital expenditures and tax rates are not kept.
+  - E4 Reaction = the stock's return minus SPY's over the same days, in percentage points (as `relative_return_1m`); no beta adjustment.
+- **Technical defaults:**
+  - Event time: the 8-K's EDGAR acceptance time (`published_at`, precision exact; ADR-013 amendment). 8-K only, not 8-K/A.
+  - Timing: before the open, during the session or after the close of the New York day; trading days are those with an SPY end-of-day close; closes at 16:00 ET, or 13:00 on the calendar's early-close days (listed from 2026; earlier early closes count as 16:00).
+  - Report: the first 10-Q or 10-K of the issuer chain filed from two days before the release on, for a period that ended in the 100 days before it.
+  - Actuals: the report's quarter (a 10-K's fourth quarter = year − nine months), the quarter before and the quarter a year earlier; diluted EPS from reported three-month values only, never a derived fourth quarter (ADR-013). Changes in percent, margins in percentage points; n/m when the earlier amount is not positive. The API carries inputs on the current quarter only (earlier quarters carry theirs at their own event).
+  - Reaction: base = the last end-of-day close at or before the event; day 0 = the first close after it; day +1 and +5 = sessions after day 0; volume of day 0 / the average of the 20 sessions up to the base. End-of-day closes known at T only (fixture closes never count), split-adjusted to T's basis. A release after the close therefore has no reaction until the next session's close is public (end of that day).
+- **Guidance extractor 0.1.0** (`domain/guidance.py`):
+  - Text in rows mode: a table row is one line, its cells joined (`document_text(rows=True)`; the buyback extractor's default is unchanged).
+  - A statement needs a metric (E3), a value right after it, and either a forward word with a future period in the same sentence (the forward word before the value), or an outlook section: the lines after a short heading naming an outlook or guidance and its period, whose bullets and table rows have no verb (ends at the next section heading, safe-harbor text or after 25 lines).
+  - "Plus or minus N%" and "N basis points" make a range; "GAAP and non-GAAP … X% and Y%, respectively" are two points; "(previously …)" is ignored; a value after "by" is a change, not a level; results and comparisons (was, grew, versus, up N%, preliminary …) and a second value in a row (outlook against results) never count.
+  - Calibrated on all 235 earnings 8-Ks since 2021 (every EX-99 exhibit): Lowe's 21 of 23 releases, Meta 20 of 23, NVIDIA 23 of 24, O'Reilly 23 of 23; Apple, Alphabet, Microsoft, JPMorgan, AutoZone and ExxonMobil none (no numeric revenue, EPS or margin outlook in their releases). The misses are qualitative outlooks (Meta and Lowe's 2021) and NVIDIA's August 2022 preliminary results.
+- **Storage and job:** `filing_guidance_statements` (migration 0017, append-only); `sec.earnings_release` reads each earnings 8-K's EX-99 exhibits once per guidance version after every SEC company refresh, recording the filings read in its run parameters, so "none" differs from "not read". The 8-K readers share one `FilingReader` (adapters/sec/refresh.py).
+- **API and web:** `GET /instruments/{ticker}/earnings`, `GET /earnings`; the instrument page's Earnings section and the live Earnings dashboard. Consensus and surprise are always null with "Data unavailable: no consensus provider (OD-3)" (errata E6).
+- **Live check 2026-10-11:** 233 events (23–24 per company); 232 matched to their 10-Q/10-K (AutoZone's 2026-09-22 release waits for its 10-K); a reaction for every one. Apple 2026-07-30 (after the close): revenue $109.417B, +16.36% a year on, EPS $2.02 (+28.66%); day 0 −7.35% against SPY +0.72% = −8.07 points on 2.6x volume. Endpoints: one company 0.29 s, the dashboard about 1.5 s.
+- **Known gaps:** no consensus or surprise (OD-3); the 8-K time is used when a press release went out earlier; early closes before 2026 are not in the calendar; a fourth-quarter EPS appears only when reported; guidance limited to E3 and to issuers that state numbers in the release (Microsoft guides on its call).
+
 ---
 
 ## Open decisions (owner: Steven)

@@ -128,7 +128,7 @@ Added for M1.3b (the spec has no dashboard criteria):
 ## M1.4 Buyback engine
 Plan approved 2026-10-10 with decisions B1–B10, and B11–B14 during M1.4b (ADR-025). Two PRs:
 - **M1.4a, data (#20, merged).** Announcements from 8-Ks and press releases, the buyback record (authorization, actual repurchase, net share reduction per period), the instrument page's Buybacks section.
-- **M1.4b, states (PR pending).** Rule file 0.1.0, then 0.2.0 after Steven's threshold review (B12–B14), states and score, stored assignments with daily evaluation and month-end backfill, the instrument page's state card, the Corporate Actions dashboard and threshold review.
+- **M1.4b, states (#21, merged).** Rule file 0.1.0, then 0.2.0 after Steven's threshold review (B12–B14), states and score, stored assignments with daily evaluation and month-end backfill, the instrument page's state card, the Corporate Actions dashboard and threshold review.
 
 **Build**
 - **Per company and period:**
@@ -167,6 +167,8 @@ Plan approved 2026-10-10 with decisions B1–B10, and B11–B14 during M1.4b (AD
 - [x] Authorization, actual repurchase and net share reduction are shown separately for every universe company. (M1.4a: the Buybacks section's three blocks; integration test over Apple, ExxonMobil and Meta.)
 
 ## M1.5 Earnings events
+Plan approved 2026-10-11 with decisions E1–E4 (ADR-026). Done (PR pending).
+
 **Build**
 - **Events:** 8-K Item 2.02 at its acceptance timestamp, matched to the 10-Q/10-K that follows.
 - **Actuals:** revenue, EPS, margins and FCF against the prior quarter and the same quarter a year earlier, from SEC facts.
@@ -178,9 +180,9 @@ Plan approved 2026-10-10 with decisions B1–B10, and B11–B14 during M1.4b (AD
 - **Earnings dashboard:** past events, actuals against prior, guidance, reaction.
 
 **Acceptance**
-- [ ] Every event uses its filing acceptance timestamp, not only the calendar date (01 §23).
-- [ ] Reaction windows start at the first close after the event timestamp; an after-hours release is tested for no look-ahead.
-- [ ] Consensus fields show `Data unavailable` and are never estimated (errata E6).
+- [x] Every event uses its filing acceptance timestamp, not only the calendar date (01 §23). (EDGAR acceptance time, precision exact; integration test: Apple 2026-04-30 16:30:41 ET; live: all 233 events exact.)
+- [x] Reaction windows start at the first close after the event timestamp; an after-hours release is tested for no look-ahead. (Apple's 2026-04-30 release after the close: as known that evening no window and no 10-Q; later day 0 = 2026-05-01. ExxonMobil's pre-market release reacts the same day. Unit tests for both and for day +5 not yet known.)
+- [x] Consensus fields show `Data unavailable` and are never estimated (errata E6). (Consensus and surprise always null with the reason; integration test over every event; the UI shows Data unavailable.)
 
 ## M1.6 Paper journal, signals and the Thesis Card
 **Build**
