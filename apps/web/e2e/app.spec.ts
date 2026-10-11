@@ -48,6 +48,7 @@ test("every page loads without console errors", async ({ page }) => {
     "/system/reconciliation/0000320193-25-000079",
     "/instruments/META",
     "/system/progress",
+    "/journal/new?ticker=AAPL",
     ...DASHBOARD_SLUGS.map((s) => `/dashboards/${s}`),
   ];
   for (const path of pages) {
@@ -372,6 +373,73 @@ test("Earnings dashboard lists each company's latest release and opens it (M1.5)
   await latest.locator('tr[data-ticker="AAPL"]').getByRole("link", { name: "AAPL" }).click();
   await expect(page).toHaveURL(/\/instruments\/AAPL#earnings$/, { timeout: 15_000 });
   await expect(page.locator("#earnings [data-event]").first()).toBeVisible();
+});
+
+test("Strategy Lab shows the paper journal and the signals, and opens a new card (M1.6)", async ({ page }) => {
+  await page.goto("/dashboards/strategy-lab");
+  await expect(page.locator("[data-paper-only]")).toContainText("PAPER ONLY");
+  await expect(page.locator("[data-paper-only]")).toContainText("no order can be sent");
+  await expect(page.locator('[data-block="signals"]')).toBeVisible();
+  await expect(page.locator('[data-block="journal"]')).toBeVisible();
+  await page.locator("#new-ticker").fill("AAPL");
+  await page.locator('[data-block="journal"]').getByRole("button", { name: "Write" }).click();
+  await expect(page).toHaveURL(/\/journal\/new\?ticker=AAPL/, { timeout: 15_000 });
+  const form = page.getByRole("form", { name: "New Thesis Card" });
+  await expect(form).toBeVisible();
+  expect(await form.locator('input[name="evidence"]').count()).toBeGreaterThanOrEqual(3);
+});
+
+test("the instrument page has the company's paper journal (M1.6)", async ({ page }) => {
+  await page.goto("/instruments/AAPL");
+  const section = page.locator("#journal");
+  await expect(section).toContainText("Paper only: decisions are records, never orders.");
+  await expect(section.getByRole("link", { name: "Write a Thesis Card" })).toHaveAttribute(
+    "href",
+    "/journal/new?ticker=AAPL",
+  );
+});
+
+test("A NO TRADE and a paper TRADE are recorded alike, replay identical, and the TRADE exits (M1.6)", async ({
+  page,
+  isMobile,
+}) => {
+  // Journal entries are append-only, so this writes only to CI's throwaway database, and once.
+  test.skip(!process.env.CI, "writes permanent journal entries; CI database only");
+  test.skip(isMobile, "one writer");
+  test.setTimeout(90_000);
+  const write = async (trade: boolean) => {
+    await page.goto("/journal/new?ticker=AAPL");
+    const form = page.getByRole("form", { name: "New Thesis Card" });
+    await form.locator('textarea[name="thesis"]').fill(`e2e: ${trade ? "buy" : "pass on"} the buyback compounder`);
+    const boxes = form.locator('input[name="evidence"]');
+    for (const i of [0, 1, 2]) await boxes.nth(i).check();
+    await form.locator('textarea[name="invalidation"]').fill("Repurchases stop.");
+    if (trade) {
+      await form.getByRole("radio", { name: /Paper TRADE/ }).check();
+      await form.locator('input[name="quantity"]').fill("5");
+    }
+    await form.getByRole("button", { name: "Save Thesis Card" }).click();
+    await expect(page).toHaveURL(/\/journal\/[0-9a-f-]{36}$/, { timeout: 20_000 });
+    await expect(page.locator("[data-replay]")).toHaveAttribute("data-replay", "identical");
+    return page.url();
+  };
+
+  await write(false);
+  await expect(page.getByRole("list", { name: "Decisions" })).toContainText("NO TRADE: Priced in");
+
+  const tradeUrl = await write(true);
+  const decisions = page.getByRole("list", { name: "Decisions" });
+  await expect(decisions).toContainText("paper TRADE buy 5");
+  await expect(decisions.locator('[data-performance="open"]')).toBeVisible();
+  await decisions.getByRole("form", { name: "Exit" }).getByRole("button", { name: "Exit at the last close" }).click();
+  await expect(page).toHaveURL(tradeUrl, { timeout: 20_000 });
+  await expect(decisions).toContainText("paper exit sell 5");
+  await expect(decisions.locator('[data-performance="closed"]')).toBeVisible();
+
+  await page.goto("/dashboards/strategy-lab");
+  const table = page.getByRole("table", { name: "Journal entries" });
+  await expect(table.locator('tr[data-decision="no_trade"]').first()).toContainText("NO TRADE: Priced in");
+  await expect(table.locator('tr[data-decision="trade"]').first()).toContainText("exited");
 });
 
 test("Reconciliation lists Apple's 10-K as pass and opens its items (M1.1)", async ({ page }) => {

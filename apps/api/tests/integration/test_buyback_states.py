@@ -41,6 +41,7 @@ from autotrading.db.models import (
     FinancialFact,
     Identifier,
     Instrument,
+    SignalRecord,
     Source,
 )
 from autotrading.domain.buyback_announcements import EXTRACTOR_VERSION
@@ -53,6 +54,7 @@ from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.main import create_app
 from autotrading.repositories.facts import FinancialFactRepository
+from autotrading.repositories.signals import backfill_signals
 from autotrading.settings import get_settings
 from tests import alpaca_replay, fred_replay, news_replay
 from tests.factories import financial_fact, provenance
@@ -403,6 +405,69 @@ def test_assignments_cannot_be_changed(engine: Engine, stored: datetime) -> None
         conn.execute(text("UPDATE buyback_state_assignments SET state = 'high_conviction'"))
     with engine.connect() as conn, pytest.raises(DBAPIError):
         conn.execute(text("DELETE FROM buyback_rule_sets"))
+
+
+def test_qualifying_assignments_store_a_paper_only_signal(
+    sessions: sessionmaker[Session], client: TestClient
+) -> None:
+    # ADR-027 J1: ACTIVE or HIGH-CONVICTION makes one signal, in the assignment's transaction.
+    with sessions() as session:
+        signals = session.scalars(select(SignalRecord)).all()
+        qualifying = {
+            (a.ticker, a.known_at, a.rule_version): a
+            for a in session.scalars(select(BuybackStateAssignment))
+            if a.state in ("active", "high_conviction")
+        }
+        assert {(s.ticker, s.generated_at, s.rule_version) for s in signals} == set(qualifying)
+        for s in signals:
+            source = qualifying[(s.ticker, s.generated_at, s.rule_version)]
+            assert s.observation_ids == [
+                {"table": "buyback_state_assignments", "id": str(source.id)}
+            ]
+            assert (s.family_id, s.strategy_id, s.direction, s.execution_eligibility) == (
+                2,
+                "S1",
+                "long",
+                "paper_only",
+            )
+            assert (s.score, s.backfilled, s.system_time) == (
+                source.score,
+                source.backfilled,
+                source.system_time,
+            )
+        assert backfill_signals(session) == 0  # nothing left to add
+        # An assignment stored before M1.6 (no signal) gets one from the backfill.
+        session.execute(
+            text(
+                "INSERT INTO buyback_state_assignments (instrument_id, ticker, known_at, "
+                "system_time, rule_version, extractor_version, state, score, assessment, "
+                "backfilled, trigger) SELECT instrument_id, ticker, known_at - interval '1 day', "
+                "system_time, rule_version, extractor_version, state, score, assessment, "
+                "backfilled, 'backfill' FROM buyback_state_assignments WHERE id = :id"
+            ),
+            {"id": next(iter(qualifying.values())).id},
+        )
+        assert backfill_signals(session) == 1
+        session.rollback()
+
+    body = client.get(
+        "/signals", params={"known_at": VALUED_AT.isoformat(), "ticker": "AAPL"}
+    ).json()
+    assert body["rule_version"] == "0.2.0"
+    assert sorted((s["ticker"], s["state"]) for s in body["current"]) == [
+        ("AAPL", "active"),
+        ("XOM", "active"),
+    ]
+    assert {s["family"] for s in body["current"]} == {"Corporate Actions & Capital Structure"}
+    history = body["history"]
+    assert history[0]["generated_at"] == VALUED_AT.isoformat().replace("+00:00", "Z")
+    assert {s["ticker"] for s in history} == {"AAPL"}
+    assert [s["generated_at"] for s in history] == sorted(
+        (s["generated_at"] for s in history), reverse=True
+    )
+    # As known on mid-April: only the month-end assignments existed.
+    april = client.get("/signals", params={"known_at": "2026-04-15T00:00:00Z"}).json()
+    assert all(s["generated_at"] <= "2026-04-15" for s in april["current"])
 
 
 def instrument(session: Session, ticker: str) -> Instrument:

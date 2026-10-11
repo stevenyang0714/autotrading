@@ -263,6 +263,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/instruments/{ticker}/evidence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Evidence Candidates */
+        get: operations["evidence_candidates_instruments__ticker__evidence_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/instruments/{ticker}/fair-value": {
         parameters: {
             query?: never;
@@ -342,6 +359,108 @@ export interface paths {
         get: operations["instrument_valuation_instruments__ticker__valuation_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/journal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Journal
+         * @description Every card known at T, newest first, with its first decision, exit and performance.
+         */
+        get: operations["journal_journal_get"];
+        put?: never;
+        /**
+         * Create Entry
+         * @description A Thesis Card (version 1) and its decision, TRADE or NO TRADE, in one transaction.
+         */
+        post: operations["create_entry_journal_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/journal/decisions/{decision_id}/exit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Exit Trade
+         * @description Close an open paper TRADE at the last close known now: a new decision, opposite side.
+         */
+        post: operations["exit_trade_journal_decisions__decision_id__exit_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/journal/{card_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Journal Entry */
+        get: operations["journal_entry_journal__card_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/journal/{card_id}/replay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Replay
+         * @description Read the card's evidence, valuation and its decisions' closes again at the stored
+         *     (T, S) and compare each with what was stored (acceptance 1).
+         */
+        get: operations["replay_journal__card_id__replay_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/journal/{card_id}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add Version
+         * @description A new version of a card (the latest + 1); earlier versions and decisions stay.
+         */
+        post: operations["add_version_journal__card_id__versions_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -493,6 +612,23 @@ export interface paths {
         };
         /** Research Dashboard */
         get: operations["research_dashboard_research_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/signals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Signals */
+        get: operations["signals_signals_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -800,6 +936,87 @@ export interface components {
             /** Ticker */
             ticker: string;
         };
+        /** CandidatesOut */
+        CandidatesOut: {
+            /** Candidates */
+            candidates: components["schemas"]["EvidenceOut"][];
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Ticker */
+            ticker: string;
+        };
+        /** CardContent */
+        CardContent: {
+            /** Catalysts */
+            catalysts?: components["schemas"]["Catalyst"][];
+            /** Evidence */
+            evidence: components["schemas"]["EvidenceRef"][];
+            /** Invalidation */
+            invalidation: string;
+            /** Notes */
+            notes?: string | null;
+            /** Signal Ids */
+            signal_ids?: string[];
+            /** Thesis */
+            thesis: string;
+        };
+        /** CardOut */
+        CardOut: {
+            /** Author */
+            author: string;
+            /**
+             * Card Id
+             * Format: uuid
+             */
+            card_id: string;
+            /** Catalysts */
+            catalysts: components["schemas"]["Catalyst"][];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Evidence */
+            evidence: components["schemas"]["EvidenceOut"][];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Invalidation */
+            invalidation: string;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Notes */
+            notes: string | null;
+            /** Signal Ids */
+            signal_ids: string[];
+            /**
+             * System Time
+             * Format: date-time
+             */
+            system_time: string;
+            /** Thesis */
+            thesis: string;
+            /** Ticker */
+            ticker: string;
+            valuation: components["schemas"]["ValuationSnapshot"];
+            /** Version */
+            version: number;
+        };
+        /** Catalyst */
+        Catalyst: {
+            /** Description */
+            description: string;
+            /** Expected */
+            expected?: string | null;
+        };
         /** Chart */
         Chart: {
             /** Points */
@@ -824,6 +1041,29 @@ export interface components {
             /** Value */
             value: string;
         };
+        /** CloseOut */
+        CloseOut: {
+            /** Close */
+            close: string;
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Feed Status */
+            feed_status: string;
+            /**
+             * Published At
+             * Format: date-time
+             */
+            published_at: string;
+            /** Row Id */
+            row_id: string;
+            /** Stale */
+            stale: boolean;
+            /** Symbol */
+            symbol: string;
+        };
         /** ClosePoint */
         ClosePoint: {
             /** Close */
@@ -833,6 +1073,14 @@ export interface components {
              * Format: date
              */
             day: string;
+        };
+        /**
+         * Closes
+         * @description The last end-of-day closes known at a decision's T: the stock's and SPY's.
+         */
+        Closes: {
+            benchmark: components["schemas"]["CloseOut"] | null;
+            stock: components["schemas"]["CloseOut"] | null;
         };
         /** CompanyStates */
         CompanyStates: {
@@ -1195,6 +1443,52 @@ export interface components {
             /** Succeeded At */
             succeeded_at?: string | null;
         };
+        /** EvidenceOut */
+        EvidenceOut: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "financial_fact" | "filing" | "buyback_statement" | "guidance_statement" | "buyback_state" | "news" | "price_close";
+            /** Label */
+            label: string;
+            /** Note */
+            note: string | null;
+            /**
+             * Published At
+             * Format: date-time
+             */
+            published_at: string;
+            /** Ref */
+            ref: {
+                [key: string]: string;
+            };
+            /** Snapshot */
+            snapshot: {
+                [key: string]: unknown;
+            };
+            /** Source Url */
+            source_url: string | null;
+            /** Summary */
+            summary: string;
+        };
+        /**
+         * EvidenceRef
+         * @description One system row: by id, or a close by its session day.
+         */
+        EvidenceRef: {
+            /** Day */
+            day?: string | null;
+            /** Id */
+            id?: string | null;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "financial_fact" | "filing" | "buyback_statement" | "guidance_statement" | "buyback_state" | "news" | "price_close";
+            /** Note */
+            note?: string | null;
+        };
         /** ExcludedComponent */
         ExcludedComponent: {
             /** Component */
@@ -1203,6 +1497,11 @@ export interface components {
             reason: string;
             /** Weight */
             weight: number;
+        };
+        /** ExitIn */
+        ExitIn: {
+            /** Note */
+            note?: string | null;
         };
         /** FacetCount */
         FacetCount: {
@@ -1595,6 +1894,123 @@ export interface components {
             /** Stored Value */
             stored_value: string | null;
         };
+        /** JournalCardOut */
+        JournalCardOut: {
+            card: components["schemas"]["CardOut"];
+            /** Decisions */
+            decisions: components["schemas"]["JournalDecisionOut"][];
+            /**
+             * Detail
+             * @default Paper journal: decisions are records, never orders. Returns use end-of-day closes only (no costs, slippage, dividends or fills).
+             */
+            detail: string;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Versions */
+            versions: components["schemas"]["VersionOut"][];
+        };
+        /** JournalDecisionOut */
+        JournalDecisionOut: {
+            /** Approval State */
+            approval_state: string;
+            /** Card Version */
+            card_version: number;
+            closes: components["schemas"]["Closes"] | null;
+            /**
+             * Decision
+             * @enum {string}
+             */
+            decision: "trade" | "no_trade";
+            /** Exited By */
+            exited_by: string | null;
+            /** Exits Decision Id */
+            exits_decision_id: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Limit Price */
+            limit_price: string | null;
+            /** Max Loss */
+            max_loss: string | null;
+            /**
+             * Mode
+             * @constant
+             */
+            mode: "paper";
+            /** No Trade Reason */
+            no_trade_reason: ("priced_in" | "insufficient_evidence" | "excessive_risk" | "other") | null;
+            /** Note */
+            note: string | null;
+            /** Order Type */
+            order_type: string | null;
+            performance: components["schemas"]["PerformanceOut"] | null;
+            /** Quantity */
+            quantity: string | null;
+            /** Side */
+            side: ("buy" | "sell") | null;
+            /** Signal Ids */
+            signal_ids: string[];
+            /** Strategy Id */
+            strategy_id: string | null;
+            /**
+             * System Time
+             * Format: date-time
+             */
+            system_time: string;
+            /**
+             * Thesis Card Id
+             * Format: uuid
+             */
+            thesis_card_id: string;
+        };
+        /** JournalOut */
+        JournalOut: {
+            /**
+             * Detail
+             * @default Paper journal: decisions are records, never orders. Returns use end-of-day closes only (no costs, slippage, dividends or fills).
+             */
+            detail: string;
+            /** Entries */
+            entries: components["schemas"]["JournalRow"][];
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+        };
+        /** JournalRow */
+        JournalRow: {
+            /**
+             * Card Id
+             * Format: uuid
+             */
+            card_id: string;
+            decision: components["schemas"]["JournalDecisionOut"] | null;
+            exit: components["schemas"]["JournalDecisionOut"] | null;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Signal Ids */
+            signal_ids: string[];
+            /** Thesis */
+            thesis: string;
+            /** Ticker */
+            ticker: string;
+            /** Version */
+            version: number;
+        };
         /** LatestPrices */
         LatestPrices: {
             /**
@@ -1741,6 +2157,46 @@ export interface components {
             parameters: components["schemas"]["Assumptions-Input"];
             /** Reason */
             reason: string;
+        };
+        /** NewDecision */
+        NewDecision: {
+            /**
+             * Decision
+             * @enum {string}
+             */
+            decision: "trade" | "no_trade";
+            /** Limit Price */
+            limit_price?: number | string | null;
+            /** Max Loss */
+            max_loss?: number | string | null;
+            /** No Trade Reason */
+            no_trade_reason?: ("priced_in" | "insufficient_evidence" | "excessive_risk" | "other") | null;
+            /** Note */
+            note?: string | null;
+            /** Order Type */
+            order_type?: ("market" | "limit") | null;
+            /** Quantity */
+            quantity?: number | string | null;
+            /** Side */
+            side?: ("buy" | "sell") | null;
+        };
+        /** NewEntry */
+        NewEntry: {
+            /** Catalysts */
+            catalysts?: components["schemas"]["Catalyst"][];
+            decision: components["schemas"]["NewDecision"];
+            /** Evidence */
+            evidence: components["schemas"]["EvidenceRef"][];
+            /** Invalidation */
+            invalidation: string;
+            /** Notes */
+            notes?: string | null;
+            /** Signal Ids */
+            signal_ids?: string[];
+            /** Thesis */
+            thesis: string;
+            /** Ticker */
+            ticker: string;
         };
         /** NewsFeed */
         NewsFeed: {
@@ -1896,6 +2352,36 @@ export interface components {
             /** Last Refresh At */
             last_refresh_at: string | null;
             market?: components["schemas"]["MarketState"] | null;
+        };
+        /** PerformanceOut */
+        PerformanceOut: {
+            /** Benchmark */
+            benchmark: string;
+            /** Benchmark Return Pct */
+            benchmark_return_pct: string | null;
+            /** Detail */
+            detail: string | null;
+            entry: components["schemas"]["CloseOut"] | null;
+            /** Entry Basis */
+            entry_basis: string | null;
+            mark: components["schemas"]["CloseOut"] | null;
+            /** Max Loss Breached */
+            max_loss_breached: boolean | null;
+            /** Open */
+            open: boolean;
+            /** Pnl */
+            pnl: string | null;
+            /** Relative */
+            relative: string | null;
+            /** Return Pct */
+            return_pct: string | null;
+            /** Split Factor */
+            split_factor: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ok" | "unavailable";
         };
         /** PeriodColumn */
         PeriodColumn: {
@@ -2161,6 +2647,55 @@ export interface components {
              * @enum {string}
              */
             unit: "USD" | "USD/shares" | "x" | "percent" | "shares" | "flag";
+        };
+        /** ReplayItem */
+        ReplayItem: {
+            /** Again */
+            again: {
+                [key: string]: unknown;
+            } | null;
+            /** Changed */
+            changed: string[];
+            /** Kind */
+            kind: string;
+            /** Label */
+            label: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "identical" | "differs" | "missing";
+            /** Stored */
+            stored: {
+                [key: string]: unknown;
+            };
+        };
+        /** ReplayOut */
+        ReplayOut: {
+            /**
+             * Card Id
+             * Format: uuid
+             */
+            card_id: string;
+            /** Decisions */
+            decisions: components["schemas"]["ReplayItem"][];
+            /** Evidence */
+            evidence: components["schemas"]["ReplayItem"][];
+            /** Identical */
+            identical: boolean;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /**
+             * System Time
+             * Format: date-time
+             */
+            system_time: string;
+            valuation: components["schemas"]["ReplayItem"];
+            /** Version */
+            version: number;
         };
         /** ReportOut */
         ReportOut: {
@@ -2493,6 +3028,73 @@ export interface components {
             latest: components["schemas"]["ObservationOut"] | null;
             series: components["schemas"]["SeriesOut"];
         };
+        /** SignalOut */
+        SignalOut: {
+            /** Backfilled */
+            backfilled: boolean;
+            /** Direction */
+            direction: string;
+            /** Evidence Independence */
+            evidence_independence: number;
+            /** Execution Eligibility */
+            execution_eligibility: string;
+            /** Family */
+            family: string;
+            /** Family Id */
+            family_id: number;
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Observation Ids */
+            observation_ids: {
+                [key: string]: string;
+            }[];
+            /** Rule Version */
+            rule_version: string;
+            /** Score */
+            score: string | null;
+            /** Source Quality */
+            source_quality: number;
+            /** State */
+            state: string;
+            /** Strategy */
+            strategy: string | null;
+            /** Strategy Id */
+            strategy_id: string | null;
+            /**
+             * System Time
+             * Format: date-time
+             */
+            system_time: string;
+            /** Ticker */
+            ticker: string;
+            /**
+             * Valid From
+             * Format: date-time
+             */
+            valid_from: string;
+        };
+        /** SignalsOut */
+        SignalsOut: {
+            /** Current */
+            current: components["schemas"]["SignalOut"][];
+            /** History */
+            history: components["schemas"]["SignalOut"][];
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Rule Version */
+            rule_version: string;
+        };
         /** SourceHealth */
         SourceHealth: {
             /** Access Status */
@@ -2670,6 +3272,40 @@ export interface components {
             price: components["schemas"]["PriceOut"];
             /** Ticker */
             ticker: string;
+        };
+        /** ValuationSnapshot */
+        ValuationSnapshot: {
+            /** Assumption Version */
+            assumption_version: number | null;
+            /** Base Per Share */
+            base_per_share: string | null;
+            /** Detail */
+            detail: string | null;
+            /** Implied Upside */
+            implied_upside: string | null;
+            /** Margin Of Safety */
+            margin_of_safety: string | null;
+            /** Price */
+            price: string | null;
+            /** Price Day */
+            price_day: string | null;
+            /** Status */
+            status: string;
+        };
+        /** VersionOut */
+        VersionOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Version */
+            version: number;
         };
         /** WatchRule */
         WatchRule: {
@@ -3170,6 +3806,40 @@ export interface operations {
             };
         };
     };
+    evidence_candidates_instruments__ticker__evidence_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+            };
+            header?: never;
+            path: {
+                ticker: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CandidatesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     instrument_fair_value_instruments__ticker__fair_value_get: {
         parameters: {
             query?: {
@@ -3329,6 +3999,210 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Valuation"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    journal_journal_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+                ticker?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JournalOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_entry_journal_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewEntry"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JournalCardOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    exit_trade_journal_decisions__decision_id__exit_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                decision_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExitIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JournalCardOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    journal_entry_journal__card_id__get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+                version?: number | null;
+            };
+            header?: never;
+            path: {
+                card_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JournalCardOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    replay_journal__card_id__replay_get: {
+        parameters: {
+            query?: {
+                version?: number | null;
+            };
+            header?: never;
+            path: {
+                card_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplayOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_version_journal__card_id__versions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                card_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CardContent"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JournalCardOut"];
                 };
             };
             /** @description Validation Error */
@@ -3606,6 +4480,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ResearchDashboard"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    signals_signals_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+                ticker?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignalsOut"];
                 };
             };
             /** @description Validation Error */

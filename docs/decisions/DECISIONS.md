@@ -638,6 +638,28 @@ M1.5, one PR.
 
 ---
 
+## ADR-027 Paper journal, signals and the Thesis Card — Accepted (2026-10-11, approved by Steven with the M1.6 plan)
+M1.6, one PR.
+- **Decisions (Steven, 2026-10-11):**
+  - J1 Signals come from the buyback states: an assignment at ACTIVE or HIGH-CONVICTION makes one long signal of family 2 (Corporate Actions & Capital Structure) for strategy S1, with its rule version, score and the assignment it came from. Earnings make none (S2 needs a consensus estimate, OD-3).
+  - J2 A Thesis Card's evidence cites system rows only: the server reads each row as known at the card's time and stores it as a snapshot; a replay compares every item. Free notes are allowed but are not evidence.
+  - J3 Paper performance is tracked, exits included: entry at the last end-of-day close known when the decision is recorded; marked at the last close known at the viewing time or at the exit's close; against SPY over the same closes. Closes only: no orders, fills, costs or dividends.
+  - J4 Cards are written from the instrument page and the Strategy Lab; the Strategy Lab lists the whole journal.
+- **Technical defaults:**
+  - Time: a card or decision is written at T = the database's now, which is also its system time S. No backdating. (Tests pin an earlier T through a FastAPI dependency the HTTP API cannot reach; S stays the database's.)
+  - Tables (migration 0018), all append-only: `signals`; `thesis_cards` and `trade_decisions`, audited on insert (actor `web`). A card change is a new version of the same `card_id`; a decision is never changed, and an exit is a new decision on the opposite side pointing at its entry (one exit per entry, a unique index).
+  - Phase 1 limits are database checks (P1-6): `mode = 'paper'`; `broker`, `risk_check_id`, `portfolio_snapshot_id` null; `approval_state = 'recorded'`; `user_id = 'steven'` (one user, errata E1). Requests forbid extra fields, so no broker or mode can be sent. The market data client reaches data endpoints only, and `LIVE_TRADING_ENABLED` is refused at start-up.
+  - NO TRADE reasons (02 §19): priced in, insufficient evidence, excessive risk, other (needs a note). A NO TRADE stores the closes at its time and shows the move after it, unsigned and without money.
+  - Signal fields (E1): `strategy_id` nullable, `valid_from` = the assignment's T, `execution_eligibility = paper_only` (no risk check before Phase 2, P1-4), `source_quality = 1` (SEC filings and consolidated closes), `evidence_independence` = the number of rule conditions that passed, `backfilled` as the assignment's. One signal per company, family, T and rule version, inserted in the assignment's transaction; `make signals-backfill` adds those of assignments stored earlier.
+  - Evidence kinds: reported values (the visible version of the fact key at (T, S)), filings, buyback and guidance statements, buyback state assignments, news stories mentioning the company, and a close by its session day. A row of another company, or not public at T, is refused (422). A card cites 3 to 7 distinct rows, up to 5 catalysts, and must state its invalidation.
+  - Valuation snapshot: the base DCF per share, price and margin of safety as the fair value page showed them at (T, S), with the assumption version saved by then (ADR-023).
+  - Paper return: splits effective between entry and mark scale the entry price and quantity; signed by side; profit and loss in USD; SPY's return over the same closes and the difference in points; a maximum loss is flagged when exceeded. A limit price is recorded, not simulated. The last close has no age limit: its day, feed status (demo closes) and a stale flag (older than a week) are shown.
+- **API and web:** `POST /journal`, `POST /journal/{card_id}/versions`, `POST /journal/decisions/{id}/exit`; `GET /journal`, `GET /journal/{card_id}`, `GET /journal/{card_id}/replay`, `GET /signals`, `GET /instruments/{ticker}/evidence`. `/dashboards/strategy-lab` live (journal, current signals, PAPER ONLY notice), `/journal/new`, `/journal/[cardId]` (replay and exit), the instrument page's journal section. Audit Log labels for cards and decisions.
+- **Live check 2026-10-11:** 568 signals from the 1,410 stored assignments (342 under 0.2.0, 226 under 0.1.0; a second run adds none); current signals under 0.2.0: Apple, AutoZone, JPMorgan, NVIDIA, O'Reilly, ExxonMobil. Demo card: AAPL NO TRADE (priced in), 4 evidence items, base DCF $125.28 against the $336.64 close of 2026-10-09; replay 6 of 6 identical; both rows in the Audit Log as `web`. Endpoints: journal 0.07 s, card 0.05 s, replay 0.35 s, candidates 0.05 s.
+- **Known gaps:** one user, no sign-in (the API binds to localhost); closes only, no costs, slippage, dividends or fills; evidence cannot cite outside links; the invalidation is recorded, not monitored (alerts come later); backtests and risk checks are Phase 2.
+
+---
+
 ## Open decisions (owner: Steven)
 
 | ID | Decision | Needed by | Default until decided |

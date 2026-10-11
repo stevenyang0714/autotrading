@@ -950,6 +950,226 @@
         "title": "BuybacksOut",
         "type": "object"
       },
+      "CandidatesOut": {
+        "properties": {
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceOut"
+            },
+            "title": "Candidates",
+            "type": "array"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticker",
+          "known_at",
+          "candidates"
+        ],
+        "title": "CandidatesOut",
+        "type": "object"
+      },
+      "CardContent": {
+        "additionalProperties": false,
+        "properties": {
+          "catalysts": {
+            "items": {
+              "$ref": "#/components/schemas/Catalyst"
+            },
+            "maxItems": 5,
+            "title": "Catalysts",
+            "type": "array"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "maxItems": 7,
+            "minItems": 3,
+            "title": "Evidence",
+            "type": "array"
+          },
+          "invalidation": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Invalidation",
+            "type": "string"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "signal_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 10,
+            "title": "Signal Ids",
+            "type": "array"
+          },
+          "thesis": {
+            "maxLength": 400,
+            "minLength": 1,
+            "title": "Thesis",
+            "type": "string"
+          }
+        },
+        "required": [
+          "thesis",
+          "evidence",
+          "invalidation"
+        ],
+        "title": "CardContent",
+        "type": "object"
+      },
+      "CardOut": {
+        "properties": {
+          "author": {
+            "title": "Author",
+            "type": "string"
+          },
+          "card_id": {
+            "format": "uuid",
+            "title": "Card Id",
+            "type": "string"
+          },
+          "catalysts": {
+            "items": {
+              "$ref": "#/components/schemas/Catalyst"
+            },
+            "title": "Catalysts",
+            "type": "array"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceOut"
+            },
+            "title": "Evidence",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "invalidation": {
+            "title": "Invalidation",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "signal_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Signal Ids",
+            "type": "array"
+          },
+          "system_time": {
+            "format": "date-time",
+            "title": "System Time",
+            "type": "string"
+          },
+          "thesis": {
+            "title": "Thesis",
+            "type": "string"
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          },
+          "valuation": {
+            "$ref": "#/components/schemas/ValuationSnapshot"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "card_id",
+          "version",
+          "ticker",
+          "known_at",
+          "system_time",
+          "thesis",
+          "evidence",
+          "catalysts",
+          "invalidation",
+          "valuation",
+          "signal_ids",
+          "notes",
+          "author",
+          "created_at"
+        ],
+        "title": "CardOut",
+        "type": "object"
+      },
+      "Catalyst": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Description",
+            "type": "string"
+          },
+          "expected": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected"
+          }
+        },
+        "required": [
+          "description"
+        ],
+        "title": "Catalyst",
+        "type": "object"
+      },
       "Chart": {
         "properties": {
           "points": {
@@ -1010,6 +1230,52 @@
         "title": "ChartPoint",
         "type": "object"
       },
+      "CloseOut": {
+        "properties": {
+          "close": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Close",
+            "type": "string"
+          },
+          "day": {
+            "format": "date",
+            "title": "Day",
+            "type": "string"
+          },
+          "feed_status": {
+            "title": "Feed Status",
+            "type": "string"
+          },
+          "published_at": {
+            "format": "date-time",
+            "title": "Published At",
+            "type": "string"
+          },
+          "row_id": {
+            "title": "Row Id",
+            "type": "string"
+          },
+          "stale": {
+            "title": "Stale",
+            "type": "boolean"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol",
+          "day",
+          "close",
+          "published_at",
+          "feed_status",
+          "stale",
+          "row_id"
+        ],
+        "title": "CloseOut",
+        "type": "object"
+      },
       "ClosePoint": {
         "properties": {
           "close": {
@@ -1028,6 +1294,37 @@
           "close"
         ],
         "title": "ClosePoint",
+        "type": "object"
+      },
+      "Closes": {
+        "description": "The last end-of-day closes known at a decision's T: the stock's and SPY's.",
+        "properties": {
+          "benchmark": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CloseOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stock": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CloseOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "stock",
+          "benchmark"
+        ],
+        "title": "Closes",
         "type": "object"
       },
       "CompanyStates": {
@@ -2130,6 +2427,142 @@
         "title": "EntityOut",
         "type": "object"
       },
+      "EvidenceOut": {
+        "properties": {
+          "kind": {
+            "enum": [
+              "financial_fact",
+              "filing",
+              "buyback_statement",
+              "guidance_statement",
+              "buyback_state",
+              "news",
+              "price_close"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "published_at": {
+            "format": "date-time",
+            "title": "Published At",
+            "type": "string"
+          },
+          "ref": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Ref",
+            "type": "object"
+          },
+          "snapshot": {
+            "additionalProperties": true,
+            "title": "Snapshot",
+            "type": "object"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "ref",
+          "label",
+          "summary",
+          "note",
+          "published_at",
+          "source_url",
+          "snapshot"
+        ],
+        "title": "EvidenceOut",
+        "type": "object"
+      },
+      "EvidenceRef": {
+        "additionalProperties": false,
+        "description": "One system row: by id, or a close by its session day.",
+        "properties": {
+          "day": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Day"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "kind": {
+            "enum": [
+              "financial_fact",
+              "filing",
+              "buyback_statement",
+              "guidance_statement",
+              "buyback_state",
+              "news",
+              "price_close"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "title": "EvidenceRef",
+        "type": "object"
+      },
       "ExcludedComponent": {
         "additionalProperties": false,
         "properties": {
@@ -2153,6 +2586,25 @@
           "reason"
         ],
         "title": "ExcludedComponent",
+        "type": "object"
+      },
+      "ExitIn": {
+        "additionalProperties": false,
+        "properties": {
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "title": "ExitIn",
         "type": "object"
       },
       "FacetCount": {
@@ -3365,6 +3817,359 @@
         "title": "ItemOut",
         "type": "object"
       },
+      "JournalCardOut": {
+        "properties": {
+          "card": {
+            "$ref": "#/components/schemas/CardOut"
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/JournalDecisionOut"
+            },
+            "title": "Decisions",
+            "type": "array"
+          },
+          "detail": {
+            "default": "Paper journal: decisions are records, never orders. Returns use end-of-day closes only (no costs, slippage, dividends or fills).",
+            "title": "Detail",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/VersionOut"
+            },
+            "title": "Versions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "known_at",
+          "card",
+          "versions",
+          "decisions"
+        ],
+        "title": "JournalCardOut",
+        "type": "object"
+      },
+      "JournalDecisionOut": {
+        "properties": {
+          "approval_state": {
+            "title": "Approval State",
+            "type": "string"
+          },
+          "card_version": {
+            "title": "Card Version",
+            "type": "integer"
+          },
+          "closes": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Closes"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "decision": {
+            "enum": [
+              "trade",
+              "no_trade"
+            ],
+            "title": "Decision",
+            "type": "string"
+          },
+          "exited_by": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exited By"
+          },
+          "exits_decision_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exits Decision Id"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "limit_price": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit Price"
+          },
+          "max_loss": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Loss"
+          },
+          "mode": {
+            "const": "paper",
+            "title": "Mode",
+            "type": "string"
+          },
+          "no_trade_reason": {
+            "anyOf": [
+              {
+                "enum": [
+                  "priced_in",
+                  "insufficient_evidence",
+                  "excessive_risk",
+                  "other"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "No Trade Reason"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "order_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order Type"
+          },
+          "performance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PerformanceOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "side": {
+            "anyOf": [
+              {
+                "enum": [
+                  "buy",
+                  "sell"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Side"
+          },
+          "signal_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Signal Ids",
+            "type": "array"
+          },
+          "strategy_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Strategy Id"
+          },
+          "system_time": {
+            "format": "date-time",
+            "title": "System Time",
+            "type": "string"
+          },
+          "thesis_card_id": {
+            "format": "uuid",
+            "title": "Thesis Card Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "thesis_card_id",
+          "card_version",
+          "decision",
+          "side",
+          "quantity",
+          "order_type",
+          "limit_price",
+          "max_loss",
+          "no_trade_reason",
+          "note",
+          "exits_decision_id",
+          "exited_by",
+          "closes",
+          "strategy_id",
+          "signal_ids",
+          "mode",
+          "approval_state",
+          "known_at",
+          "system_time",
+          "performance"
+        ],
+        "title": "JournalDecisionOut",
+        "type": "object"
+      },
+      "JournalOut": {
+        "properties": {
+          "detail": {
+            "default": "Paper journal: decisions are records, never orders. Returns use end-of-day closes only (no costs, slippage, dividends or fills).",
+            "title": "Detail",
+            "type": "string"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/JournalRow"
+            },
+            "title": "Entries",
+            "type": "array"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "known_at",
+          "entries"
+        ],
+        "title": "JournalOut",
+        "type": "object"
+      },
+      "JournalRow": {
+        "properties": {
+          "card_id": {
+            "format": "uuid",
+            "title": "Card Id",
+            "type": "string"
+          },
+          "decision": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JournalDecisionOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "exit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JournalDecisionOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "signal_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Signal Ids",
+            "type": "array"
+          },
+          "thesis": {
+            "title": "Thesis",
+            "type": "string"
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "card_id",
+          "ticker",
+          "version",
+          "thesis",
+          "known_at",
+          "signal_ids",
+          "decision",
+          "exit"
+        ],
+        "title": "JournalRow",
+        "type": "object"
+      },
       "LatestPrices": {
         "properties": {
           "as_of": {
@@ -3785,6 +4590,205 @@
           "reason"
         ],
         "title": "NewAssumptions",
+        "type": "object"
+      },
+      "NewDecision": {
+        "additionalProperties": false,
+        "properties": {
+          "decision": {
+            "enum": [
+              "trade",
+              "no_trade"
+            ],
+            "title": "Decision",
+            "type": "string"
+          },
+          "limit_price": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit Price"
+          },
+          "max_loss": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Loss"
+          },
+          "no_trade_reason": {
+            "anyOf": [
+              {
+                "enum": [
+                  "priced_in",
+                  "insufficient_evidence",
+                  "excessive_risk",
+                  "other"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "No Trade Reason"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "order_type": {
+            "anyOf": [
+              {
+                "enum": [
+                  "market",
+                  "limit"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order Type"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 1000000000.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "side": {
+            "anyOf": [
+              {
+                "enum": [
+                  "buy",
+                  "sell"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Side"
+          }
+        },
+        "required": [
+          "decision"
+        ],
+        "title": "NewDecision",
+        "type": "object"
+      },
+      "NewEntry": {
+        "additionalProperties": false,
+        "properties": {
+          "catalysts": {
+            "items": {
+              "$ref": "#/components/schemas/Catalyst"
+            },
+            "maxItems": 5,
+            "title": "Catalysts",
+            "type": "array"
+          },
+          "decision": {
+            "$ref": "#/components/schemas/NewDecision"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "maxItems": 7,
+            "minItems": 3,
+            "title": "Evidence",
+            "type": "array"
+          },
+          "invalidation": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Invalidation",
+            "type": "string"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "signal_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 10,
+            "title": "Signal Ids",
+            "type": "array"
+          },
+          "thesis": {
+            "maxLength": 400,
+            "minLength": 1,
+            "title": "Thesis",
+            "type": "string"
+          },
+          "ticker": {
+            "maxLength": 10,
+            "minLength": 1,
+            "title": "Ticker",
+            "type": "string"
+          }
+        },
+        "required": [
+          "thesis",
+          "evidence",
+          "invalidation",
+          "ticker",
+          "decision"
+        ],
+        "title": "NewEntry",
         "type": "object"
       },
       "NewsFeed": {
@@ -4224,6 +5228,150 @@
           "last_refresh_at"
         ],
         "title": "Overview",
+        "type": "object"
+      },
+      "PerformanceOut": {
+        "properties": {
+          "benchmark": {
+            "title": "Benchmark",
+            "type": "string"
+          },
+          "benchmark_return_pct": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Benchmark Return Pct"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "entry": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CloseOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "entry_basis": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entry Basis"
+          },
+          "mark": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CloseOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "max_loss_breached": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Loss Breached"
+          },
+          "open": {
+            "title": "Open",
+            "type": "boolean"
+          },
+          "pnl": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pnl"
+          },
+          "relative": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Relative"
+          },
+          "return_pct": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Return Pct"
+          },
+          "split_factor": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Split Factor",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "ok",
+              "unavailable"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "detail",
+          "open",
+          "entry",
+          "mark",
+          "split_factor",
+          "entry_basis",
+          "return_pct",
+          "pnl",
+          "benchmark",
+          "benchmark_return_pct",
+          "relative",
+          "max_loss_breached"
+        ],
+        "title": "PerformanceOut",
         "type": "object"
       },
       "PeriodColumn": {
@@ -5222,6 +6370,117 @@
           "since"
         ],
         "title": "RelativeOut",
+        "type": "object"
+      },
+      "ReplayItem": {
+        "properties": {
+          "again": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Again"
+          },
+          "changed": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Changed",
+            "type": "array"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "identical",
+              "differs",
+              "missing"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "stored": {
+            "additionalProperties": true,
+            "title": "Stored",
+            "type": "object"
+          }
+        },
+        "required": [
+          "kind",
+          "label",
+          "status",
+          "changed",
+          "stored",
+          "again"
+        ],
+        "title": "ReplayItem",
+        "type": "object"
+      },
+      "ReplayOut": {
+        "properties": {
+          "card_id": {
+            "format": "uuid",
+            "title": "Card Id",
+            "type": "string"
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/ReplayItem"
+            },
+            "title": "Decisions",
+            "type": "array"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/ReplayItem"
+            },
+            "title": "Evidence",
+            "type": "array"
+          },
+          "identical": {
+            "title": "Identical",
+            "type": "boolean"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "system_time": {
+            "format": "date-time",
+            "title": "System Time",
+            "type": "string"
+          },
+          "valuation": {
+            "$ref": "#/components/schemas/ReplayItem"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "card_id",
+          "version",
+          "known_at",
+          "system_time",
+          "identical",
+          "evidence",
+          "valuation",
+          "decisions"
+        ],
+        "title": "ReplayOut",
         "type": "object"
       },
       "ReportOut": {
@@ -6233,6 +7492,171 @@
         "title": "SeriesSummary",
         "type": "object"
       },
+      "SignalOut": {
+        "properties": {
+          "backfilled": {
+            "title": "Backfilled",
+            "type": "boolean"
+          },
+          "direction": {
+            "title": "Direction",
+            "type": "string"
+          },
+          "evidence_independence": {
+            "title": "Evidence Independence",
+            "type": "integer"
+          },
+          "execution_eligibility": {
+            "title": "Execution Eligibility",
+            "type": "string"
+          },
+          "family": {
+            "title": "Family",
+            "type": "string"
+          },
+          "family_id": {
+            "title": "Family Id",
+            "type": "integer"
+          },
+          "generated_at": {
+            "format": "date-time",
+            "title": "Generated At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "observation_ids": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "title": "Observation Ids",
+            "type": "array"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "source_quality": {
+            "title": "Source Quality",
+            "type": "integer"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          },
+          "strategy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Strategy"
+          },
+          "strategy_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Strategy Id"
+          },
+          "system_time": {
+            "format": "date-time",
+            "title": "System Time",
+            "type": "string"
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          },
+          "valid_from": {
+            "format": "date-time",
+            "title": "Valid From",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "ticker",
+          "family_id",
+          "family",
+          "strategy_id",
+          "strategy",
+          "rule_version",
+          "state",
+          "score",
+          "direction",
+          "generated_at",
+          "valid_from",
+          "system_time",
+          "observation_ids",
+          "source_quality",
+          "evidence_independence",
+          "execution_eligibility",
+          "backfilled"
+        ],
+        "title": "SignalOut",
+        "type": "object"
+      },
+      "SignalsOut": {
+        "properties": {
+          "current": {
+            "items": {
+              "$ref": "#/components/schemas/SignalOut"
+            },
+            "title": "Current",
+            "type": "array"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/SignalOut"
+            },
+            "title": "History",
+            "type": "array"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "known_at",
+          "rule_version",
+          "current",
+          "history"
+        ],
+        "title": "SignalsOut",
+        "type": "object"
+      },
       "SourceHealth": {
         "properties": {
           "access_status": {
@@ -6714,6 +8138,133 @@
           "metrics"
         ],
         "title": "Valuation",
+        "type": "object"
+      },
+      "ValuationSnapshot": {
+        "properties": {
+          "assumption_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assumption Version"
+          },
+          "base_per_share": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Per Share"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "implied_upside": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Implied Upside"
+          },
+          "margin_of_safety": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin Of Safety"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price"
+          },
+          "price_day": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Day"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "detail",
+          "assumption_version",
+          "base_per_share",
+          "price",
+          "price_day",
+          "margin_of_safety",
+          "implied_upside"
+        ],
+        "title": "ValuationSnapshot",
+        "type": "object"
+      },
+      "VersionOut": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "known_at"
+        ],
+        "title": "VersionOut",
         "type": "object"
       },
       "WatchRule": {
@@ -7645,6 +9196,67 @@
         ]
       }
     },
+    "/instruments/{ticker}/evidence": {
+      "get": {
+        "operationId": "evidence_candidates_instruments__ticker__evidence_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ticker",
+            "required": true,
+            "schema": {
+              "title": "Ticker",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidatesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Evidence Candidates",
+        "tags": [
+          "journal"
+        ]
+      }
+    },
     "/instruments/{ticker}/fair-value": {
       "get": {
         "operationId": "instrument_fair_value_instruments__ticker__fair_value_get",
@@ -7966,6 +9578,363 @@
         "summary": "Instrument Valuation",
         "tags": [
           "valuation"
+        ]
+      }
+    },
+    "/journal": {
+      "get": {
+        "description": "Every card known at T, newest first, with its first decision, exit and performance.",
+        "operationId": "journal_journal_get",
+        "parameters": [
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          },
+          {
+            "in": "query",
+            "name": "ticker",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Ticker"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JournalOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Journal",
+        "tags": [
+          "journal"
+        ]
+      },
+      "post": {
+        "description": "A Thesis Card (version 1) and its decision, TRADE or NO TRADE, in one transaction.",
+        "operationId": "create_entry_journal_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewEntry"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JournalCardOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Entry",
+        "tags": [
+          "journal"
+        ]
+      }
+    },
+    "/journal/decisions/{decision_id}/exit": {
+      "post": {
+        "description": "Close an open paper TRADE at the last close known now: a new decision, opposite side.",
+        "operationId": "exit_trade_journal_decisions__decision_id__exit_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "decision_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Decision Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExitIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JournalCardOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Exit Trade",
+        "tags": [
+          "journal"
+        ]
+      }
+    },
+    "/journal/{card_id}": {
+      "get": {
+        "operationId": "journal_entry_journal__card_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "card_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Card Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          },
+          {
+            "in": "query",
+            "name": "version",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JournalCardOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Journal Entry",
+        "tags": [
+          "journal"
+        ]
+      }
+    },
+    "/journal/{card_id}/replay": {
+      "get": {
+        "description": "Read the card's evidence, valuation and its decisions' closes again at the stored\n(T, S) and compare each with what was stored (acceptance 1).",
+        "operationId": "replay_journal__card_id__replay_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "card_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Card Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "version",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReplayOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Replay",
+        "tags": [
+          "journal"
+        ]
+      }
+    },
+    "/journal/{card_id}/versions": {
+      "post": {
+        "description": "A new version of a card (the latest + 1); earlier versions and decisions stay.",
+        "operationId": "add_version_journal__card_id__versions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "card_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Card Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CardContent"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JournalCardOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Version",
+        "tags": [
+          "journal"
         ]
       }
     },
@@ -8510,6 +10479,86 @@
         "summary": "Research Dashboard",
         "tags": [
           "research"
+        ]
+      }
+    },
+    "/signals": {
+      "get": {
+        "operationId": "signals_signals_get",
+        "parameters": [
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          },
+          {
+            "in": "query",
+            "name": "ticker",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Ticker"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 500,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignalsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Signals",
+        "tags": [
+          "signals"
         ]
       }
     }

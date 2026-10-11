@@ -62,9 +62,14 @@ describe("dashboard glossary terms (errata E13)", () => {
     }
   });
 
-  it("serves each live dashboard from its own route (M1.3b, M1.4b, M1.5)", () => {
+  it("serves each live dashboard from its own route (M1.3b, M1.4b, M1.5, M1.6)", () => {
     const live = DASHBOARDS.filter((dashboard) => dashboard.live);
-    expect(live.map((dashboard) => dashboard.slug)).toEqual(["fundamental-research", "corporate-actions", "earnings"]);
+    expect(live.map((dashboard) => dashboard.slug)).toEqual([
+      "fundamental-research",
+      "corporate-actions",
+      "earnings",
+      "strategy-lab",
+    ]);
     for (const dashboard of live) {
       expect(existsSync(resolve(__dirname, "../app/dashboards", dashboard.slug, "page.tsx"))).toBe(true);
     }

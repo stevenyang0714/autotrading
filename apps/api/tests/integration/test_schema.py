@@ -61,6 +61,9 @@ APP_TABLES = {
     "buyback_rule_sets",
     "buyback_state_assignments",
     "filing_guidance_statements",
+    "signals",
+    "thesis_cards",
+    "trade_decisions",
 }
 FEB = datetime(2025, 2, 1, 21, 5, tzinfo=UTC)
 AUG = datetime(2025, 8, 1, 20, 30, tzinfo=UTC)
@@ -192,6 +195,14 @@ def test_guardrails_exist(engine: Engine) -> None:
         "buyback_state_assignments_no_truncate",
         "filing_guidance_statements_append_only",
         "filing_guidance_statements_no_truncate",
+        "signals_append_only",
+        "signals_no_truncate",
+        "thesis_cards_append_only",
+        "thesis_cards_no_truncate",
+        "thesis_cards_audit",
+        "trade_decisions_append_only",
+        "trade_decisions_no_truncate",
+        "trade_decisions_audit",
     } <= triggers
     assert exclusions == {"ex_identifiers_value_period", "ex_identifiers_subject_period"}
 
@@ -221,8 +232,8 @@ def test_registries_match_spec(engine: Engine) -> None:
         "UPDATE signal_families SET id = 11 WHERE id = 1",
         "DELETE FROM strategies WHERE id = 'S12'",
         "INSERT INTO strategies VALUES ('S13', 'New', 'alert', 'none')",
-        "TRUNCATE strategies",
-        "TRUNCATE signal_families",
+        "TRUNCATE strategies CASCADE",  # signals and decisions reference it (M1.6)
+        "TRUNCATE signal_families CASCADE",
         "UPDATE source_tiers SET label = 'x' WHERE tier = 99",  # zero rows still refused
     ],
 )

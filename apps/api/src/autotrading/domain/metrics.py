@@ -228,6 +228,11 @@ METRICS: tuple[MetricDefinition, ...] = (
             "earnings_reaction": "earnings.reaction",
             "earnings_volume_ratio": "earnings.reaction",
             "guidance_statement": "guidance.guidance",
+            # M1.6 (ADR-027): signals from buyback states; paper returns and replay.
+            "signal": "signals.buyback_signal",
+            "execution_eligibility": "signals.buyback_signal",
+            "paper_return": "journal.paper_return",
+            "journal_replay": "journal.compare",
         }.items()
     ),
     MetricDefinition(

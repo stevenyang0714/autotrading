@@ -167,7 +167,7 @@ Plan approved 2026-10-10 with decisions B1–B10, and B11–B14 during M1.4b (AD
 - [x] Authorization, actual repurchase and net share reduction are shown separately for every universe company. (M1.4a: the Buybacks section's three blocks; integration test over Apple, ExxonMobil and Meta.)
 
 ## M1.5 Earnings events
-Plan approved 2026-10-11 with decisions E1–E4 (ADR-026). Done (PR pending).
+Plan approved 2026-10-11 with decisions E1–E4 (ADR-026). Done (#22).
 
 **Build**
 - **Events:** 8-K Item 2.02 at its acceptance timestamp, matched to the 10-Q/10-K that follows.
@@ -185,6 +185,8 @@ Plan approved 2026-10-11 with decisions E1–E4 (ADR-026). Done (PR pending).
 - [x] Consensus fields show `Data unavailable` and are never estimated (errata E6). (Consensus and surprise always null with the reason; integration test over every event; the UI shows Data unavailable.)
 
 ## M1.6 Paper journal, signals and the Thesis Card
+Plan approved 2026-10-11 with decisions J1–J4 (ADR-027). Done (PR pending).
+
 **Build**
 - **Signal and TradeDecision records** per 02 §28 and errata E1 (`strategy_id` nullable, `valid_from`, `created_at`, `user_id`). `mode = paper` only; broker fields null (P1-6).
 - **Thesis Card** (02 §17):
@@ -196,9 +198,9 @@ Plan approved 2026-10-11 with decisions E1–E4 (ADR-026). Done (PR pending).
 - **Strategy Lab dashboard:** the journal. Backtests come in Phase 2.
 
 **Acceptance**
-- [ ] Replaying a journal entry as known at its time reproduces the evidence it cited.
-- [ ] No code path can send an order: there is no broker client, and `LIVE_TRADING_ENABLED` stays false (test).
-- [ ] NO TRADE decisions are recorded like any other decision.
+- [x] Replaying a journal entry as known at its time reproduces the evidence it cited. (Each evidence item, the valuation and every decision's closes are read again at the card's (T, S); integration test: identical after a correction, a restatement, a revised close and a new buyback state, all recorded later, which do show when read at today's system time; live: the AAPL demo card 6 of 6 identical.)
+- [x] No code path can send an order: there is no broker client, and `LIVE_TRADING_ENABLED` stays false (test). (The database refuses a broker, any mode but paper and any approval state but recorded; requests forbid broker and mode fields; no route names orders; the source names no trading endpoint and the Alpaca client reaches market data only; `LIVE_TRADING_ENABLED=true` fails start-up. Unit and integration tests.)
+- [x] NO TRADE decisions are recorded like any other decision. (Same table, same audit trail and the same journal rows as a TRADE; integration test over both; live: the AAPL NO TRADE in the Audit Log as `web`.)
 
 ## M1.7 Alerts Center (in-app)
 **Build**
