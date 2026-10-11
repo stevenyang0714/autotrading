@@ -23,7 +23,8 @@ fiscal year end; for TTM the quarter end a year earlier); averages are (opening 
   of a period with no dividend figure at all count as 0 and are named (as D4); cash returned =
   buybacks + dividends; cash returned / FCF (n/m when FCF <= 0); diluted share change =
   weighted diluted shares / those a year earlier - 1, both on the split basis of T (TTM: the
-  latest reported quarter against the same quarter a year earlier).
+  latest reported quarter against the same quarter a year earlier). A company that tags no
+  diluted count but reports diluted EPS equal to basic EPS uses its basic count (B11).
 """
 
 from collections.abc import Callable, Mapping, Sequence
@@ -76,6 +77,9 @@ RESEARCH_METRICS = (
     "dividends_paid",
     "stock_based_compensation",
     "diluted_shares",
+    "basic_shares",  # with the two EPS: diluted shares where nothing dilutes (B11)
+    "eps_diluted",
+    "eps_basic",
     "stockholders_equity",
     "cash",
     "long_term_debt_noncurrent",
@@ -260,33 +264,54 @@ class Book[FactT: DatedFact]:
             "not reported for this period, counted as 0",
         )
 
-    def diluted_shares(self, window: Window, end: date) -> Input[FactT] | None:
-        """Weighted diluted shares of the period like `window` ending on `end`, on T's basis."""
+    def _weighted(self, metric: str, window: Window, end: date) -> FactT | None:
+        """The weighted share count of the period like `window` ending on `end`."""
         if window.kind == "fiscal_year":
-            fact = next(
+            return next(
                 (
                     f
                     for f in self.facts
-                    if f.metric_id == "diluted_shares"
+                    if f.metric_id == metric
                     and f.period_end == end
                     and f.period_start is not None
                     and (end - f.period_start).days in FISCAL_YEAR_DAYS
                 ),
                 None,
             )
-        else:
-            quarter = next((q for q in self.series("diluted_shares") if q.period_end == end), None)
-            fact = quarter.inputs[0] if quarter is not None else None
+        quarter = next((q for q in self.series(metric) if q.period_end == end), None)
+        return quarter.inputs[0] if quarter is not None else None
+
+    def diluted_shares(self, window: Window, end: date) -> Input[FactT] | None:
+        """Weighted diluted shares of the period like `window` ending on `end`, on T's basis.
+        Without a diluted count, the basic count where the same filing's diluted EPS equals its
+        basic EPS for the period: nothing dilutes (ADR-025 B11; ExxonMobil since 2014)."""
+        fact = self._weighted("diluted_shares", window, end)
+        sources: tuple[FactT, ...] = (fact,) if fact is not None else ()
+        notes: list[str] = []
         if fact is None:
-            return None
+            fact = self._weighted("basic_shares", window, end)
+            if fact is None:
+                return None
+            diluted, basic = (
+                self.index.get((m, fact.period_start, fact.period_end))
+                for m in ("eps_diluted", "eps_basic")
+            )
+            if diluted is None or basic is None or diluted.value != basic.value:
+                return None
+            sources = (fact, diluted, basic)
+            notes.append("basic weighted shares: diluted EPS equals basic EPS for the period")
         adjusted = adjust("diluted_shares", fact.value, fact.reported_at, self.at, self.splits)
         value = adjusted.value if adjusted is not None else fact.value
-        note = (
-            f"split-adjusted from {fact.value} (factor {adjusted.factor})"
-            if adjusted is not None
-            else None
+        if adjusted is not None:
+            notes.append(f"split-adjusted from {fact.value} (factor {adjusted.factor})")
+        return Input(
+            "diluted_shares",
+            value,
+            fact.period_start,
+            fact.period_end,
+            sources,
+            "; ".join(notes) or None,
         )
-        return Input("diluted_shares", value, fact.period_start, fact.period_end, (fact,), note)
 
 
 def valued[FactT: DatedFact](

@@ -6,11 +6,14 @@ DEMO DATA banner (ADR-006).
     cd apps/api && uv run python -m tests.replay
 """
 
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 
+from sqlalchemy import func, select
 from sqlalchemy.orm import sessionmaker
 
 from autotrading.adapters.sec.refresh import universe_predecessors
+from autotrading.api.buyback_states import evaluate_universe
+from autotrading.domain.fair_value import month_ends
 from autotrading.infra.db import make_engine
 from autotrading.infra.object_store import ensure_bucket, make_s3_client
 from autotrading.infra.redis_client import make_redis
@@ -20,6 +23,8 @@ from autotrading.ingestion.runner import IngestionRunner
 from autotrading.ingestion.schedule import refresh_window
 from autotrading.settings import get_settings
 from tests import alpaca_replay, fred_replay, news_replay, sec_replay
+
+REPLAY_BACKFILL_SINCE = date(2025, 1, 1)  # enough history for the pages, short for CI
 
 
 def main() -> None:
@@ -50,6 +55,15 @@ def main() -> None:
         f"replayed {len(sec_runs)} SEC, {len(fred_runs)} FRED, {len(alpaca_runs)} Alpaca and "
         f"{len(news_runs)} news runs from recorded fixtures"
     )
+    # Buyback states (M1.4b) now and at the month ends since REPLAY_BACKFILL_SINCE, as the
+    # daily job and `make buyback-backfill` store them, so the pages have states and history.
+    with sessionmaker(make_engine(settings))() as session:
+        now = session.execute(select(func.now())).scalar_one()
+        stored = sum(
+            evaluate_universe(session, at, now, "replay")
+            for at in [*month_ends(REPLAY_BACKFILL_SINCE, now), now]
+        )
+    print(f"stored {stored} buyback state assignments")
 
 
 if __name__ == "__main__":

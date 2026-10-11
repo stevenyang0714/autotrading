@@ -21,9 +21,15 @@ from itertools import pairwise
 from zoneinfo import ZoneInfo
 
 NEW_YORK = ZoneInfo("America/New_York")
-PER_SHARE_METRICS = frozenset({"eps_diluted"})
+PER_SHARE_METRICS = frozenset({"eps_diluted", "eps_basic", "close"})  # close: a daily close
 SHARE_COUNT_METRICS = frozenset(
-    {"diluted_shares", "shares_outstanding", "shares_outstanding_cover", "shares_repurchased"}
+    {
+        "diluted_shares",
+        "basic_shares",
+        "shares_outstanding",
+        "shares_outstanding_cover",
+        "shares_repurchased",
+    }
 )
 ADJUSTED_METRICS = PER_SHARE_METRICS | SHARE_COUNT_METRICS
 # Restatement ratios that look like a split when no recorded split explains them.

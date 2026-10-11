@@ -21,6 +21,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/buybacks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Buyback States */
+        get: operations["buyback_states_buybacks_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/buybacks/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Buyback Rules */
+        get: operations["buyback_rules_buybacks_rules_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/data-health": {
         parameters: {
             query?: never;
@@ -437,6 +471,17 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ActiveRule */
+        ActiveRule: {
+            /** Diluted Shares Change Max */
+            diluted_shares_change_max: string;
+            /** Mega Cap Min */
+            mega_cap_min?: string | null;
+            /** Quarter Max Age Days */
+            quarter_max_age_days: number;
+            /** Quarter Repurchase To Market Cap Min */
+            quarter_repurchase_to_market_cap_min: string;
+        };
         /** AnnouncementEvent */
         AnnouncementEvent: {
             /** Amount */
@@ -485,6 +530,29 @@ export interface components {
             title: string | null;
             /** Url */
             url: string;
+        };
+        /**
+         * AssessmentOut
+         * @description Everything an assignment stores: recomputing it gives the same document.
+         */
+        AssessmentOut: {
+            /** Assumption Version */
+            assumption_version: number | null;
+            /** Conditions */
+            conditions: components["schemas"]["ConditionOut"][];
+            /** Extractor Version */
+            extractor_version: string;
+            /** Issuers */
+            issuers: string[];
+            /** Levels */
+            levels: components["schemas"]["LevelOut"][];
+            period: components["schemas"]["ResearchPeriod"] | null;
+            score: components["schemas"]["ScoreOut"];
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "none" | "watch" | "active" | "high_conviction" | "trade_ready";
         };
         /** AssumptionList */
         AssumptionList: {
@@ -640,6 +708,17 @@ export interface components {
              */
             unit: "USD" | "USD/shares" | "x" | "percent" | "shares" | "flag";
         };
+        /** BuybackStatesOut */
+        BuybackStatesOut: {
+            /** Companies */
+            companies: components["schemas"]["CompanyStates"][];
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            rule_set: components["schemas"]["RuleSetOut"];
+        };
         /** BuybacksOut */
         BuybacksOut: {
             /** Announcements */
@@ -655,6 +734,11 @@ export interface components {
             periods: components["schemas"]["ResearchPeriod"][];
             /** Rows */
             rows: components["schemas"]["BuybackRow"][];
+            /** Rule Version */
+            rule_version: string;
+            state: components["schemas"]["StateAssignmentOut"] | null;
+            /** State History */
+            state_history: components["schemas"]["StatePoint"][];
             tagged_authorized: components["schemas"]["InputOut"] | null;
             tagged_remaining: components["schemas"]["InputOut"] | null;
             /** Ticker */
@@ -694,6 +778,18 @@ export interface components {
              */
             day: string;
         };
+        /** CompanyStates */
+        CompanyStates: {
+            /** Announcements */
+            announcements: components["schemas"]["AnnouncementEvent"][];
+            assignment: components["schemas"]["StateAssignmentOut"] | null;
+            /** History */
+            history: components["schemas"]["StatePoint"][];
+            /** Name */
+            name: string;
+            /** Ticker */
+            ticker: string;
+        };
         /** ComponentHealth */
         ComponentHealth: {
             /** Detail */
@@ -705,6 +801,59 @@ export interface components {
              * @enum {string}
              */
             status: "ok" | "down" | "stale";
+        };
+        /** ComponentOut */
+        ComponentOut: {
+            /** Component */
+            component: string;
+            /** Detail */
+            detail: string | null;
+            /** Full */
+            full: string;
+            /** Inputs */
+            inputs: components["schemas"]["InputOut"][];
+            /**
+             * Measure
+             * @enum {string}
+             */
+            measure: "fcf_yield_to_median" | "buyback_intensity" | "fcf_conversion" | "net_debt_to_fcf" | "disciplined_years" | "net_share_reduction_pct";
+            /** Score */
+            score: string | null;
+            /** Value */
+            value: string | null;
+            /** Weight */
+            weight: number;
+            /** Zero */
+            zero: string;
+        };
+        /** ConditionOut */
+        ConditionOut: {
+            /** Announcements */
+            announcements: components["schemas"]["AnnouncementEvent"][];
+            /** Comparison */
+            comparison: ("at_least" | "at_most" | "above") | null;
+            /** Condition Id */
+            condition_id: string;
+            /** Detail */
+            detail: string;
+            /** Inputs */
+            inputs: components["schemas"]["InputOut"][];
+            /**
+             * Level
+             * @enum {string}
+             */
+            level: "watch" | "active" | "high_conviction" | "trade_ready";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pass" | "fail" | "unavailable";
+            /** Threshold */
+            threshold: string | null;
+            /** Unit */
+            unit: string;
+            /** Value */
+            value: string | null;
         };
         /** DataAsOf */
         DataAsOf: {
@@ -840,6 +989,13 @@ export interface components {
             /** Value */
             value: string | null;
         };
+        /** DisciplineRule */
+        DisciplineRule: {
+            /** Min Years */
+            min_years: number;
+            /** Years */
+            years: number;
+        };
         /** DiscountRate */
         DiscountRate: {
             /** Equity Risk Premium */
@@ -870,6 +1026,15 @@ export interface components {
             role: "issuer" | "predecessor";
             /** Succeeded At */
             succeeded_at?: string | null;
+        };
+        /** ExcludedComponent */
+        ExcludedComponent: {
+            /** Component */
+            component: string;
+            /** Reason */
+            reason: string;
+            /** Weight */
+            weight: number;
         };
         /** FacetCount */
         FacetCount: {
@@ -1086,6 +1251,21 @@ export interface components {
              */
             status: "ok" | "degraded" | "down";
         };
+        /** HighConvictionRule */
+        HighConvictionRule: {
+            /** Dcf Discount Min */
+            dcf_discount_min: string;
+            /** Fcf Yield History Min Months */
+            fcf_yield_history_min_months: number;
+            /** Fcf Yield History Years */
+            fcf_yield_history_years: number;
+            /** Fcf Yield To Median Min */
+            fcf_yield_to_median_min: string;
+            /** Net Debt Increase Max */
+            net_debt_increase_max: string;
+            /** Repurchase To Fcf Max */
+            repurchase_to_fcf_max: string;
+        };
         /** Indicator */
         Indicator: {
             /**
@@ -1258,6 +1438,21 @@ export interface components {
              * Format: date
              */
             vintage: string;
+        };
+        /** LevelOut */
+        LevelOut: {
+            /**
+             * Level
+             * @enum {string}
+             */
+            level: "watch" | "active" | "high_conviction" | "trade_ready";
+            /** Rule */
+            rule: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pass" | "fail" | "unavailable";
         };
         /** Limit */
         Limit: {
@@ -1866,6 +2061,37 @@ export interface components {
             /** Value */
             value: string;
         };
+        /** RuleSetOut */
+        RuleSetOut: {
+            /**
+             * Approved
+             * Format: date
+             */
+            approved: string;
+            /** Content Sha256 */
+            content_sha256: string;
+            /**
+             * Loaded At
+             * Format: date-time
+             */
+            loaded_at: string;
+            /** Note */
+            note: string;
+            /**
+             * Period End Shares
+             * @enum {string}
+             */
+            period_end_shares: "latest_dated" | "balance_sheet";
+            /** Rule Version */
+            rule_version: string;
+            score: components["schemas"]["ScoreRule"];
+            states: components["schemas"]["StateRules"];
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "active" | "retired";
+        };
         /** RunOut */
         RunOut: {
             /** Attempt */
@@ -1930,6 +2156,47 @@ export interface components {
             scenario: "bear" | "base" | "bull";
             /** Terminal Value */
             terminal_value: string;
+        };
+        /** ScoreComponentRule */
+        ScoreComponentRule: {
+            /** Component */
+            component: string;
+            /** Full */
+            full: string;
+            /**
+             * Measure
+             * @enum {string}
+             */
+            measure: "fcf_yield_to_median" | "buyback_intensity" | "fcf_conversion" | "net_debt_to_fcf" | "disciplined_years" | "net_share_reduction_pct";
+            /** Mega Cap Full */
+            mega_cap_full?: string | null;
+            /** Weight */
+            weight: number;
+            /** Zero */
+            zero: string;
+        };
+        /** ScoreOut */
+        ScoreOut: {
+            /** Components */
+            components: components["schemas"]["ComponentOut"][];
+            /** Detail */
+            detail: string | null;
+            /** Label */
+            label: string;
+            /** Total */
+            total: string | null;
+        };
+        /** ScoreRule */
+        ScoreRule: {
+            /** Components */
+            components: components["schemas"]["ScoreComponentRule"][];
+            discipline: components["schemas"]["DisciplineRule"];
+            /** Excluded */
+            excluded: components["schemas"]["ExcludedComponent"][];
+            /** Label */
+            label: string;
+            /** Mega Cap Min */
+            mega_cap_min?: string | null;
         };
         /** SeriesObservations */
         SeriesObservations: {
@@ -2052,6 +2319,74 @@ export interface components {
             /** Source Url */
             source_url: string;
         };
+        /** StateAssignmentOut */
+        StateAssignmentOut: {
+            assessment: components["schemas"]["AssessmentOut"];
+            /** Backfilled */
+            backfilled: boolean;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /** Rule Version */
+            rule_version: string;
+            /**
+             * System Time
+             * Format: date-time
+             */
+            system_time: string;
+            /** Ticker */
+            ticker: string;
+            /**
+             * Trigger
+             * @enum {string}
+             */
+            trigger: "schedule" | "manual" | "backfill" | "replay";
+        };
+        /** StatePoint */
+        StatePoint: {
+            /** Backfilled */
+            backfilled: boolean;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Score */
+            score: string | null;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "none" | "watch" | "active" | "high_conviction" | "trade_ready";
+        };
+        /** StateRules */
+        StateRules: {
+            active: components["schemas"]["ActiveRule"];
+            high_conviction: components["schemas"]["HighConvictionRule"];
+            trade_ready: components["schemas"]["TradeReadyRule"];
+            watch: components["schemas"]["WatchRule"];
+        };
+        /** TradeReadyRule */
+        TradeReadyRule: {
+            /** Benchmark */
+            benchmark: string;
+            /** Moving Average Sessions */
+            moving_average_sessions: number;
+            /**
+             * Reachable
+             * @constant
+             */
+            reachable: false;
+            /** Relative Return Sessions */
+            relative_return_sessions: number;
+        };
         /** ValidationError */
         ValidationError: {
             /** Context */
@@ -2077,6 +2412,15 @@ export interface components {
             price: components["schemas"]["PriceOut"];
             /** Ticker */
             ticker: string;
+        };
+        /** WatchRule */
+        WatchRule: {
+            /** Announcement Days */
+            announcement_days: number;
+            /** Announcement Kinds */
+            announcement_kinds: ("new" | "increase" | "plan")[];
+            /** Remaining To Market Cap Min */
+            remaining_to_market_cap_min: string;
         };
     };
     responses: never;
@@ -2125,6 +2469,58 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    buyback_states_buybacks_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BuybackStatesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    buyback_rules_buybacks_rules_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleSetOut"][];
                 };
             };
         };

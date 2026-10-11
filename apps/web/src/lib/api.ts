@@ -463,6 +463,32 @@ export async function loadBuybacks(ticker: string, knownAt?: string): Promise<Bu
   }
 }
 
+// ---------- buyback states (M1.4b, ADR-025) ----------
+
+export type BuybackStates = components["schemas"]["BuybackStatesOut"];
+export type CompanyStates = components["schemas"]["CompanyStates"];
+export type StateAssignment = components["schemas"]["StateAssignmentOut"];
+export type StatePoint = components["schemas"]["StatePoint"];
+export type Assessment = components["schemas"]["AssessmentOut"];
+export type StateCondition = components["schemas"]["ConditionOut"];
+export type ScoreComponent = components["schemas"]["ComponentOut"];
+export type RuleSet = components["schemas"]["RuleSetOut"];
+export type StateId = Assessment["state"];
+
+/** Every universe company's stored buyback state at or before `knownAt` (GET /buybacks). */
+export async function loadBuybackStates(knownAt?: string): Promise<BuybackStates | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/buybacks", {
+      params: { query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
 // ---------- news (M0.8, ADR-018) ----------
 
 export type NewsFeed = components["schemas"]["NewsFeed"];

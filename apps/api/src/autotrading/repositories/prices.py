@@ -166,9 +166,11 @@ def daily_bars(
     since: datetime,
     until: datetime,
     known_at: datetime,
+    system_time: datetime | None = None,
 ) -> list[PriceBar]:
-    """Daily bars between two times, each as known at `known_at` (ADR-012), oldest first."""
-    known = as_of_query(PriceBar, known_at=known_at).where(
+    """Daily bars between two times, each as known at `known_at` and as this database held
+    them at `system_time` (default: now; ADR-012), oldest first."""
+    known = as_of_query(PriceBar, known_at=known_at, system_time=system_time).where(
         PriceBar.instrument_id == instrument_id,
         PriceBar.adjustment == adjustment,
         PriceBar.bar_time >= since,

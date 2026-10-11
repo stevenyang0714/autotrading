@@ -1,3 +1,4 @@
+import { BuybackStateCard } from "@/components/buybacks/BuybackStateCard";
 import { Metric } from "@/components/Metric";
 import { PeriodTable } from "@/components/instruments/PeriodTable";
 import { ValuationInputItem } from "@/components/instruments/ValuationView";
@@ -126,9 +127,10 @@ function Authorization({ data }: { data: Buybacks }) {
 }
 
 /**
- * Buybacks section of the instrument page (M1.4a, ADR-025): authorization, actual repurchase
- * and net share reduction shown apart (02 §5), as known at the page's As known on time. An
- * announcement is evidence of an authorization, never of a repurchase.
+ * Buybacks section of the instrument page (M1.4a, ADR-025): the buyback state (M1.4b), then
+ * authorization, actual repurchase and net share reduction shown apart (02 §5), as known at the
+ * page's As known on time. An announcement is evidence of an authorization, never of a
+ * repurchase.
  */
 export function BuybacksView({ result }: { result: BuybacksResult }) {
   return (
@@ -151,6 +153,11 @@ export function BuybacksView({ result }: { result: BuybacksResult }) {
             </Metric>
             . An announcement is not a repurchase, and a repurchase is not a smaller share count.
           </p>
+          <BuybackStateCard
+            state={result.data.state}
+            history={result.data.state_history}
+            ruleVersion={result.data.rule_version}
+          />
           <Authorization data={result.data} />
           {result.data.periods.length === 0 ? (
             <p className="text-sm text-neutral-400">No fiscal years reported yet.</p>

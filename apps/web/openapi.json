@@ -1,6 +1,45 @@
 {
   "components": {
     "schemas": {
+      "ActiveRule": {
+        "additionalProperties": false,
+        "properties": {
+          "diluted_shares_change_max": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Diluted Shares Change Max",
+            "type": "string"
+          },
+          "mega_cap_min": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mega Cap Min"
+          },
+          "quarter_max_age_days": {
+            "exclusiveMinimum": 0.0,
+            "title": "Quarter Max Age Days",
+            "type": "integer"
+          },
+          "quarter_repurchase_to_market_cap_min": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Quarter Repurchase To Market Cap Min",
+            "type": "string"
+          }
+        },
+        "required": [
+          "quarter_repurchase_to_market_cap_min",
+          "quarter_max_age_days",
+          "diluted_shares_change_max"
+        ],
+        "title": "ActiveRule",
+        "type": "object"
+      },
       "AnnouncementEvent": {
         "properties": {
           "amount": {
@@ -139,6 +178,83 @@
           "title"
         ],
         "title": "AnnouncementSourceOut",
+        "type": "object"
+      },
+      "AssessmentOut": {
+        "description": "Everything an assignment stores: recomputing it gives the same document.",
+        "properties": {
+          "assumption_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assumption Version"
+          },
+          "conditions": {
+            "items": {
+              "$ref": "#/components/schemas/ConditionOut"
+            },
+            "title": "Conditions",
+            "type": "array"
+          },
+          "extractor_version": {
+            "title": "Extractor Version",
+            "type": "string"
+          },
+          "issuers": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Issuers",
+            "type": "array"
+          },
+          "levels": {
+            "items": {
+              "$ref": "#/components/schemas/LevelOut"
+            },
+            "title": "Levels",
+            "type": "array"
+          },
+          "period": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResearchPeriod"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "score": {
+            "$ref": "#/components/schemas/ScoreOut"
+          },
+          "state": {
+            "enum": [
+              "none",
+              "watch",
+              "active",
+              "high_conviction",
+              "trade_ready"
+            ],
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "state",
+          "levels",
+          "conditions",
+          "score",
+          "period",
+          "assumption_version",
+          "extractor_version",
+          "issuers"
+        ],
+        "title": "AssessmentOut",
         "type": "object"
       },
       "AssumptionList": {
@@ -641,6 +757,32 @@
         "title": "BuybackRow",
         "type": "object"
       },
+      "BuybackStatesOut": {
+        "properties": {
+          "companies": {
+            "items": {
+              "$ref": "#/components/schemas/CompanyStates"
+            },
+            "title": "Companies",
+            "type": "array"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "rule_set": {
+            "$ref": "#/components/schemas/RuleSetOut"
+          }
+        },
+        "required": [
+          "known_at",
+          "rule_set",
+          "companies"
+        ],
+        "title": "BuybackStatesOut",
+        "type": "object"
+      },
       "BuybacksOut": {
         "properties": {
           "announcements": {
@@ -673,6 +815,27 @@
             "title": "Rows",
             "type": "array"
           },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          },
+          "state": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StateAssignmentOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "state_history": {
+            "items": {
+              "$ref": "#/components/schemas/StatePoint"
+            },
+            "title": "State History",
+            "type": "array"
+          },
           "tagged_authorized": {
             "anyOf": [
               {
@@ -702,6 +865,9 @@
           "ticker",
           "known_at",
           "extractor_version",
+          "rule_version",
+          "state",
+          "state_history",
           "announcements",
           "tagged_authorized",
           "tagged_remaining",
@@ -791,6 +957,51 @@
         "title": "ClosePoint",
         "type": "object"
       },
+      "CompanyStates": {
+        "properties": {
+          "announcements": {
+            "items": {
+              "$ref": "#/components/schemas/AnnouncementEvent"
+            },
+            "title": "Announcements",
+            "type": "array"
+          },
+          "assignment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StateAssignmentOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/StatePoint"
+            },
+            "title": "History",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticker",
+          "name",
+          "assignment",
+          "history",
+          "announcements"
+        ],
+        "title": "CompanyStates",
+        "type": "object"
+      },
       "ComponentHealth": {
         "properties": {
           "detail": {
@@ -824,6 +1035,198 @@
           "detail"
         ],
         "title": "ComponentHealth",
+        "type": "object"
+      },
+      "ComponentOut": {
+        "properties": {
+          "component": {
+            "title": "Component",
+            "type": "string"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "full": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Full",
+            "type": "string"
+          },
+          "inputs": {
+            "items": {
+              "$ref": "#/components/schemas/InputOut"
+            },
+            "title": "Inputs",
+            "type": "array"
+          },
+          "measure": {
+            "enum": [
+              "fcf_yield_to_median",
+              "buyback_intensity",
+              "fcf_conversion",
+              "net_debt_to_fcf",
+              "disciplined_years",
+              "net_share_reduction_pct"
+            ],
+            "title": "Measure",
+            "type": "string"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "weight": {
+            "title": "Weight",
+            "type": "integer"
+          },
+          "zero": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Zero",
+            "type": "string"
+          }
+        },
+        "required": [
+          "component",
+          "weight",
+          "measure",
+          "zero",
+          "full",
+          "value",
+          "score",
+          "detail",
+          "inputs"
+        ],
+        "title": "ComponentOut",
+        "type": "object"
+      },
+      "ConditionOut": {
+        "properties": {
+          "announcements": {
+            "items": {
+              "$ref": "#/components/schemas/AnnouncementEvent"
+            },
+            "title": "Announcements",
+            "type": "array"
+          },
+          "comparison": {
+            "anyOf": [
+              {
+                "enum": [
+                  "at_least",
+                  "at_most",
+                  "above"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comparison"
+          },
+          "condition_id": {
+            "title": "Condition Id",
+            "type": "string"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "inputs": {
+            "items": {
+              "$ref": "#/components/schemas/InputOut"
+            },
+            "title": "Inputs",
+            "type": "array"
+          },
+          "level": {
+            "enum": [
+              "watch",
+              "active",
+              "high_conviction",
+              "trade_ready"
+            ],
+            "title": "Level",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pass",
+              "fail",
+              "unavailable"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "threshold": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threshold"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "condition_id",
+          "level",
+          "status",
+          "value",
+          "unit",
+          "threshold",
+          "comparison",
+          "detail",
+          "inputs",
+          "announcements"
+        ],
+        "title": "ConditionOut",
         "type": "object"
       },
       "DataAsOf": {
@@ -1215,6 +1618,27 @@
         "title": "DerivedInput",
         "type": "object"
       },
+      "DisciplineRule": {
+        "additionalProperties": false,
+        "properties": {
+          "min_years": {
+            "exclusiveMinimum": 0.0,
+            "title": "Min Years",
+            "type": "integer"
+          },
+          "years": {
+            "exclusiveMinimum": 0.0,
+            "title": "Years",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "years",
+          "min_years"
+        ],
+        "title": "DisciplineRule",
+        "type": "object"
+      },
       "DiscountRate": {
         "properties": {
           "equity_risk_premium": {
@@ -1325,6 +1749,31 @@
           "role"
         ],
         "title": "EntityOut",
+        "type": "object"
+      },
+      "ExcludedComponent": {
+        "additionalProperties": false,
+        "properties": {
+          "component": {
+            "title": "Component",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "weight": {
+            "exclusiveMinimum": 0.0,
+            "title": "Weight",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "component",
+          "weight",
+          "reason"
+        ],
+        "title": "ExcludedComponent",
         "type": "object"
       },
       "FacetCount": {
@@ -1902,6 +2351,51 @@
           "components"
         ],
         "title": "HealthReport",
+        "type": "object"
+      },
+      "HighConvictionRule": {
+        "additionalProperties": false,
+        "properties": {
+          "dcf_discount_min": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Dcf Discount Min",
+            "type": "string"
+          },
+          "fcf_yield_history_min_months": {
+            "exclusiveMinimum": 0.0,
+            "title": "Fcf Yield History Min Months",
+            "type": "integer"
+          },
+          "fcf_yield_history_years": {
+            "exclusiveMinimum": 0.0,
+            "title": "Fcf Yield History Years",
+            "type": "integer"
+          },
+          "fcf_yield_to_median_min": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Fcf Yield To Median Min",
+            "type": "string"
+          },
+          "net_debt_increase_max": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Net Debt Increase Max",
+            "type": "string"
+          },
+          "repurchase_to_fcf_max": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Repurchase To Fcf Max",
+            "type": "string"
+          }
+        },
+        "required": [
+          "repurchase_to_fcf_max",
+          "net_debt_increase_max",
+          "fcf_yield_to_median_min",
+          "fcf_yield_history_years",
+          "fcf_yield_history_min_months",
+          "dcf_discount_min"
+        ],
+        "title": "HighConvictionRule",
         "type": "object"
       },
       "Indicator": {
@@ -2521,6 +3015,40 @@
           "vintage"
         ],
         "title": "LatestValue",
+        "type": "object"
+      },
+      "LevelOut": {
+        "properties": {
+          "level": {
+            "enum": [
+              "watch",
+              "active",
+              "high_conviction",
+              "trade_ready"
+            ],
+            "title": "Level",
+            "type": "string"
+          },
+          "rule": {
+            "title": "Rule",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pass",
+              "fail",
+              "unavailable"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "level",
+          "status",
+          "rule"
+        ],
+        "title": "LevelOut",
         "type": "object"
       },
       "Limit": {
@@ -4434,6 +4962,67 @@
         "title": "RiskFreeOut",
         "type": "object"
       },
+      "RuleSetOut": {
+        "properties": {
+          "approved": {
+            "format": "date",
+            "title": "Approved",
+            "type": "string"
+          },
+          "content_sha256": {
+            "title": "Content Sha256",
+            "type": "string"
+          },
+          "loaded_at": {
+            "format": "date-time",
+            "title": "Loaded At",
+            "type": "string"
+          },
+          "note": {
+            "title": "Note",
+            "type": "string"
+          },
+          "period_end_shares": {
+            "enum": [
+              "latest_dated",
+              "balance_sheet"
+            ],
+            "title": "Period End Shares",
+            "type": "string"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          },
+          "score": {
+            "$ref": "#/components/schemas/ScoreRule"
+          },
+          "states": {
+            "$ref": "#/components/schemas/StateRules"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "retired"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rule_version",
+          "status",
+          "approved",
+          "note",
+          "content_sha256",
+          "loaded_at",
+          "period_end_shares",
+          "states",
+          "score"
+        ],
+        "title": "RuleSetOut",
+        "type": "object"
+      },
       "RunOut": {
         "properties": {
           "attempt": {
@@ -4633,6 +5222,155 @@
           "terminal_value"
         ],
         "title": "ScenarioOut",
+        "type": "object"
+      },
+      "ScoreComponentRule": {
+        "additionalProperties": false,
+        "properties": {
+          "component": {
+            "title": "Component",
+            "type": "string"
+          },
+          "full": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Full",
+            "type": "string"
+          },
+          "measure": {
+            "enum": [
+              "fcf_yield_to_median",
+              "buyback_intensity",
+              "fcf_conversion",
+              "net_debt_to_fcf",
+              "disciplined_years",
+              "net_share_reduction_pct"
+            ],
+            "title": "Measure",
+            "type": "string"
+          },
+          "mega_cap_full": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mega Cap Full"
+          },
+          "weight": {
+            "exclusiveMinimum": 0.0,
+            "title": "Weight",
+            "type": "integer"
+          },
+          "zero": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Zero",
+            "type": "string"
+          }
+        },
+        "required": [
+          "component",
+          "weight",
+          "measure",
+          "zero",
+          "full"
+        ],
+        "title": "ScoreComponentRule",
+        "type": "object"
+      },
+      "ScoreOut": {
+        "properties": {
+          "components": {
+            "items": {
+              "$ref": "#/components/schemas/ComponentOut"
+            },
+            "title": "Components",
+            "type": "array"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total"
+          }
+        },
+        "required": [
+          "total",
+          "detail",
+          "label",
+          "components"
+        ],
+        "title": "ScoreOut",
+        "type": "object"
+      },
+      "ScoreRule": {
+        "additionalProperties": false,
+        "properties": {
+          "components": {
+            "items": {
+              "$ref": "#/components/schemas/ScoreComponentRule"
+            },
+            "title": "Components",
+            "type": "array"
+          },
+          "discipline": {
+            "$ref": "#/components/schemas/DisciplineRule"
+          },
+          "excluded": {
+            "items": {
+              "$ref": "#/components/schemas/ExcludedComponent"
+            },
+            "title": "Excluded",
+            "type": "array"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "mega_cap_min": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mega Cap Min"
+          }
+        },
+        "required": [
+          "label",
+          "excluded",
+          "components",
+          "discipline"
+        ],
+        "title": "ScoreRule",
         "type": "object"
       },
       "SeriesObservations": {
@@ -5043,6 +5781,163 @@
         "title": "SplitOut",
         "type": "object"
       },
+      "StateAssignmentOut": {
+        "properties": {
+          "assessment": {
+            "$ref": "#/components/schemas/AssessmentOut"
+          },
+          "backfilled": {
+            "title": "Backfilled",
+            "type": "boolean"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "recorded_at": {
+            "format": "date-time",
+            "title": "Recorded At",
+            "type": "string"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          },
+          "system_time": {
+            "format": "date-time",
+            "title": "System Time",
+            "type": "string"
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          },
+          "trigger": {
+            "enum": [
+              "schedule",
+              "manual",
+              "backfill",
+              "replay"
+            ],
+            "title": "Trigger",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticker",
+          "known_at",
+          "system_time",
+          "rule_version",
+          "backfilled",
+          "trigger",
+          "recorded_at",
+          "assessment"
+        ],
+        "title": "StateAssignmentOut",
+        "type": "object"
+      },
+      "StatePoint": {
+        "properties": {
+          "backfilled": {
+            "title": "Backfilled",
+            "type": "boolean"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "state": {
+            "enum": [
+              "none",
+              "watch",
+              "active",
+              "high_conviction",
+              "trade_ready"
+            ],
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "known_at",
+          "state",
+          "score",
+          "backfilled"
+        ],
+        "title": "StatePoint",
+        "type": "object"
+      },
+      "StateRules": {
+        "additionalProperties": false,
+        "properties": {
+          "active": {
+            "$ref": "#/components/schemas/ActiveRule"
+          },
+          "high_conviction": {
+            "$ref": "#/components/schemas/HighConvictionRule"
+          },
+          "trade_ready": {
+            "$ref": "#/components/schemas/TradeReadyRule"
+          },
+          "watch": {
+            "$ref": "#/components/schemas/WatchRule"
+          }
+        },
+        "required": [
+          "watch",
+          "active",
+          "high_conviction",
+          "trade_ready"
+        ],
+        "title": "StateRules",
+        "type": "object"
+      },
+      "TradeReadyRule": {
+        "additionalProperties": false,
+        "properties": {
+          "benchmark": {
+            "title": "Benchmark",
+            "type": "string"
+          },
+          "moving_average_sessions": {
+            "exclusiveMinimum": 1.0,
+            "title": "Moving Average Sessions",
+            "type": "integer"
+          },
+          "reachable": {
+            "const": false,
+            "title": "Reachable",
+            "type": "boolean"
+          },
+          "relative_return_sessions": {
+            "exclusiveMinimum": 0.0,
+            "title": "Relative Return Sessions",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "moving_average_sessions",
+          "relative_return_sessions",
+          "benchmark",
+          "reachable"
+        ],
+        "title": "TradeReadyRule",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "ctx": {
@@ -5112,6 +6007,40 @@
           "metrics"
         ],
         "title": "Valuation",
+        "type": "object"
+      },
+      "WatchRule": {
+        "additionalProperties": false,
+        "properties": {
+          "announcement_days": {
+            "exclusiveMinimum": 0.0,
+            "title": "Announcement Days",
+            "type": "integer"
+          },
+          "announcement_kinds": {
+            "items": {
+              "enum": [
+                "new",
+                "increase",
+                "plan"
+              ],
+              "type": "string"
+            },
+            "title": "Announcement Kinds",
+            "type": "array"
+          },
+          "remaining_to_market_cap_min": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Remaining To Market Cap Min",
+            "type": "string"
+          }
+        },
+        "required": [
+          "announcement_days",
+          "announcement_kinds",
+          "remaining_to_market_cap_min"
+        ],
+        "title": "WatchRule",
         "type": "object"
       }
     }
@@ -5293,6 +6222,83 @@
         "summary": "Audit Log",
         "tags": [
           "audit"
+        ]
+      }
+    },
+    "/buybacks": {
+      "get": {
+        "operationId": "buyback_states_buybacks_get",
+        "parameters": [
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuybackStatesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Buyback States",
+        "tags": [
+          "buyback-states"
+        ]
+      }
+    },
+    "/buybacks/rules": {
+      "get": {
+        "operationId": "buyback_rules_buybacks_rules_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RuleSetOut"
+                  },
+                  "title": "Response Buyback Rules Buybacks Rules Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Buyback Rules",
+        "tags": [
+          "buyback-states"
         ]
       }
     },

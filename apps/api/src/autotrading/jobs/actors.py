@@ -12,13 +12,16 @@ from typing import Any
 from uuid import UUID
 
 import dramatiq
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import func, select
+from sqlalchemy.orm import Session, sessionmaker
 
 from autotrading import adapters  # noqa: F401  (adapters register their ingestion jobs)
 from autotrading.adapters.alpaca import refresh as alpaca_refresh
 from autotrading.adapters.fred import refresh as fred_refresh
 from autotrading.adapters.news import refresh as news_refresh
 from autotrading.adapters.sec import refresh as sec_refresh
+from autotrading.api import buyback_states
+from autotrading.domain.fair_value import month_ends
 from autotrading.infra.db import make_engine
 from autotrading.infra.heartbeat import write_heartbeat
 from autotrading.infra.object_store import make_s3_client
@@ -186,3 +189,49 @@ def start_news_feeds(*, manual: bool) -> list[UUID]:
     for run_id in run_ids:
         run_ingestion.send(str(run_id))
     return run_ids
+
+
+# ---------- buyback states (M1.4b) ----------
+
+EVALUATION_QUEUE = "evaluation"
+
+
+@lru_cache
+def sessions() -> sessionmaker[Session]:
+    return sessionmaker(make_engine(_settings))
+
+
+def _now(session: Session) -> datetime:
+    return session.execute(select(func.now())).scalar_one()
+
+
+@dramatiq.actor(queue_name=EVALUATION_QUEUE, max_retries=1, broker=broker)
+def evaluate_buyback_states(trigger: str) -> None:
+    """Every universe equity now (T = system time = now), under the active rule set."""
+    with sessions()() as session:
+        now = _now(session)
+        stored = buyback_states.evaluate_universe(session, now, now, trigger)  # type: ignore[arg-type]
+    logger.info("Buyback states: %d assignments stored at %s (%s)", stored, now, trigger)
+
+
+@dramatiq.actor(queue_name=EVALUATION_QUEUE, max_retries=1, broker=broker)
+def backfill_buyback_states(known_at: str, system_time: str) -> None:
+    """Every universe equity at one month end, as the database held it at `system_time`."""
+    at, held = datetime.fromisoformat(known_at), datetime.fromisoformat(system_time)
+    with sessions()() as session:
+        stored = buyback_states.evaluate_universe(session, at, held, "backfill")
+    logger.info("Buyback states backfill: %d assignments stored for %s", stored, at)
+
+
+def start_buyback_evaluation(*, manual: bool) -> None:
+    evaluate_buyback_states.send("manual" if manual else "schedule")
+
+
+def start_buyback_backfill() -> int:
+    """One message per month end since BACKFILL_SINCE, all with one system time (now)."""
+    with sessions()() as session:
+        now = _now(session)
+    points = month_ends(buyback_states.BACKFILL_SINCE, now)
+    for point in points:
+        backfill_buyback_states.send(point.isoformat(), now.isoformat())
+    return len(points)

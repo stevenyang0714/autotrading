@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-08T18:26:48.694120+00:00",
+  "recorded_at": "2026-10-11T03:52:23.070178+00:00",
   "recorded_from": "recorded SEC fixtures replayed into the integration test database (tests/integration/test_instruments.py)",
   "endpoint": "/instruments/XOM/research",
   "params": {
@@ -4874,50 +4874,668 @@
           {
             "metric_id": "diluted_shares_change",
             "unit": "percent",
-            "value": null,
-            "reason": "unavailable",
-            "detail": "not reported: diluted shares, diluted shares a year earlier",
-            "inputs": []
+            "value": "-3.63",
+            "reason": null,
+            "detail": null,
+            "inputs": [
+              {
+                "name": "diluted_shares",
+                "value": "4174000000",
+                "period_start": "2026-04-01",
+                "period_end": "2026-06-30",
+                "note": "basic weighted shares: diluted EPS equals basic EPS for the period",
+                "sources": [
+                  {
+                    "metric_id": "basic_shares",
+                    "source_concept": "us-gaap:WeightedAverageNumberOfSharesOutstandingBasic",
+                    "value": "4174000000",
+                    "period_start": "2026-04-01",
+                    "period_end": "2026-06-30",
+                    "filing": {
+                      "accession": "0000034088-26-000093",
+                      "form": "10-Q",
+                      "url": "https://www.sec.gov/Archives/edgar/data/2115436/000003408826000093/0000034088-26-000093-index.htm",
+                      "published_at": "2026-08-03T18:55:38Z",
+                      "published_at_precision": "exact"
+                    }
+                  },
+                  {
+                    "metric_id": "eps_diluted",
+                    "source_concept": "us-gaap:EarningsPerShareDiluted",
+                    "value": "3.48",
+                    "period_start": "2026-04-01",
+                    "period_end": "2026-06-30",
+                    "filing": {
+                      "accession": "0000034088-26-000093",
+                      "form": "10-Q",
+                      "url": "https://www.sec.gov/Archives/edgar/data/2115436/000003408826000093/0000034088-26-000093-index.htm",
+                      "published_at": "2026-08-03T18:55:38Z",
+                      "published_at_precision": "exact"
+                    }
+                  },
+                  {
+                    "metric_id": "eps_basic",
+                    "source_concept": "us-gaap:EarningsPerShareBasic",
+                    "value": "3.48",
+                    "period_start": "2026-04-01",
+                    "period_end": "2026-06-30",
+                    "filing": {
+                      "accession": "0000034088-26-000093",
+                      "form": "10-Q",
+                      "url": "https://www.sec.gov/Archives/edgar/data/2115436/000003408826000093/0000034088-26-000093-index.htm",
+                      "published_at": "2026-08-03T18:55:38Z",
+                      "published_at_precision": "exact"
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "diluted_shares",
+                "value": "4331000000",
+                "period_start": "2025-04-01",
+                "period_end": "2025-06-30",
+                "note": "basic weighted shares: diluted EPS equals basic EPS for the period",
+                "sources": [
+                  {
+                    "metric_id": "basic_shares",
+                    "source_concept": "us-gaap:WeightedAverageNumberOfSharesOutstandingBasic",
+                    "value": "4331000000",
+                    "period_start": "2025-04-01",
+                    "period_end": "2025-06-30",
+                    "filing": {
+                      "accession": "0000034088-26-000093",
+                      "form": "10-Q",
+                      "url": "https://www.sec.gov/Archives/edgar/data/2115436/000003408826000093/0000034088-26-000093-index.htm",
+                      "published_at": "2026-08-03T18:55:38Z",
+                      "published_at_precision": "exact"
+                    }
+                  },
+                  {
+                    "metric_id": "eps_diluted",
+                    "source_concept": "us-gaap:EarningsPerShareDiluted",
+                    "value": "1.64",
+                    "period_start": "2025-04-01",
+                    "period_end": "2025-06-30",
+                    "filing": {
+                      "accession": "0000034088-26-000093",
+                      "form": "10-Q",
+                      "url": "https://www.sec.gov/Archives/edgar/data/2115436/000003408826000093/0000034088-26-000093-index.htm",
+                      "published_at": "2026-08-03T18:55:38Z",
+                      "published_at_precision": "exact"
+                    }
+                  },
+                  {
+                    "metric_id": "eps_basic",
+                    "source_concept": "us-gaap:EarningsPerShareBasic",
+                    "value": "1.64",
+                    "period_start": "2025-04-01",
+                    "period_end": "2025-06-30",
+                    "filing": {
+                      "accession": "0000034088-26-000093",
+                      "form": "10-Q",
+                      "url": "https://www.sec.gov/Archives/edgar/data/2115436/000003408826000093/0000034088-26-000093-index.htm",
+                      "published_at": "2026-08-03T18:55:38Z",
+                      "published_at_precision": "exact"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           {
             "metric_id": "diluted_shares_change",
             "unit": "percent",
-            "value": null,
-            "reason": "unavailable",
-            "detail": "not reported: diluted shares, diluted shares a year earlier",
-            "inputs": []
+            "value": "0.16",
+            "reason": null,
+            "detail": null,
+            "inputs": [
+              {
+                "name": "diluted_shares",
+                "value": "4305000000",
+                "period_start": "2025-01-01",
+                "period_end": "2025-12-31",
+                "note": "basic weighted shares: diluted EPS equals basic EPS for the period",
+                "sources": [
+                  {
+                    "metric_id": "basic_shares",
+                    "source_concept": "us-gaap:WeightedAverageNumberOfSharesOutstandingBasic",
+                    "value": "4305000000",
+                    "period_start": "2025-01-01",
+                    "period_end": "2025-12-31",
+                    "filing": {
+                      "accession": "0000034088-26-000045",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408826000045/0000034088-26-000045-index.htm",
+                      "published_at": "2026-02-18T21:06:52Z",
+                      "published_at_precision": "exact"
+                    }
+                  },
+                  {
+                    "metric_id": "eps_diluted",
+                    "source_concept": "us-gaap:EarningsPerShareDiluted",
+                    "value": "6.7",
+                    "period_start": "2025-01-01",
+                    "period_end": "2025-12-31",
+                    "filing": {
+                      "accession": "0000034088-26-000045",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408826000045/0000034088-26-000045-index.htm",
+                      "published_at": "2026-02-18T21:06:52Z",
+                      "published_at_precision": "exact"
+                    }
+                  },
+                  {
+                    "metric_id": "eps_basic",
+                    "source_concept": "us-gaap:EarningsPerShareBasic",
+                    "value": "6.7",
+                    "period_start": "2025-01-01",
+                    "period_end": "2025-12-31",
+                    "filing": {
+                      "accession": "0000034088-26-000045",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408826000045/0000034088-26-000045-index.htm",
+                      "published_at": "2026-02-18T21:06:52Z",
+                      "published_at_precision": "exact"
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "diluted_shares",
+                "value": "4298000000",
+                "period_start": "2024-01-01",
+                "period_end": "2024-12-31",
+                "note": "basic weighted shares: diluted EPS equals basic EPS for the period",
+                "sources": [
+                  {
+                    "metric_id": "basic_shares",
+                    "source_concept": "us-gaap:WeightedAverageNumberOfSharesOutstandingBasic",
+                    "value": "4298000000",
+                    "period_start": "2024-01-01",
+                    "period_end": "2024-12-31",
+                    "filing": {
+                      "accession": "0000034088-25-000010",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408825000010/0000034088-25-000010-index.htm",
+                      "published_at": "2025-02-19T21:39:37Z",
+                      "published_at_precision": "exact"
+                    }
+                  },
+                  {
+                    "metric_id": "eps_diluted",
+                    "source_concept": "us-gaap:EarningsPerShareDiluted",
+                    "value": "7.84",
+                    "period_start": "2024-01-01",
+                    "period_end": "2024-12-31",
+                    "filing": {
+                      "accession": "0000034088-25-000010",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408825000010/0000034088-25-000010-index.htm",
+                      "published_at": "2025-02-19T21:39:37Z",
+                      "published_at_precision": "exact"
+                    }
+                  },
+                  {
+                    "metric_id": "eps_basic",
+                    "source_concept": "us-gaap:EarningsPerShareBasic",
+                    "value": "7.84",
+                    "period_start": "2024-01-01",
+                    "period_end": "2024-12-31",
+                    "filing": {
+                      "accession": "0000034088-25-000010",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408825000010/0000034088-25-000010-index.htm",
+                      "published_at": "2025-02-19T21:39:37Z",
+                      "published_at_precision": "exact"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           {
             "metric_id": "diluted_shares_change",
             "unit": "percent",
-            "value": null,
-            "reason": "unavailable",
-            "detail": "not reported: diluted shares, diluted shares a year earlier",
-            "inputs": []
+            "value": "6.07",
+            "reason": null,
+            "detail": null,
+            "inputs": [
+              {
+                "name": "diluted_shares",
+                "value": "4298000000",
+                "period_start": "2024-01-01",
+                "period_end": "2024-12-31",
+                "note": "basic weighted shares: diluted EPS equals basic EPS for the period",
+                "sources": [
+                  {
+                    "metric_id": "basic_shares",
+                    "source_concept": "us-gaap:WeightedAverageNumberOfSharesOutstandingBasic",
+                    "value": "4298000000",
+                    "period_start": "2024-01-01",
+                    "period_end": "2024-12-31",
+                    "filing": {
+                      "accession": "0000034088-25-000010",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408825000010/0000034088-25-000010-index.htm",
+                      "published_at": "2025-02-19T21:39:37Z",
+                      "published_at_precision": "exact"
+                    }
+                  },
+                  {
+                    "metric_id": "eps_diluted",
+                    "source_concept": "us-gaap:EarningsPerShareDiluted",
+                    "value": "7.84",
+                    "period_start": "2024-01-01",
+                    "period_end": "2024-12-31",
+                    "filing": {
+                      "accession": "0000034088-25-000010",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408825000010/0000034088-25-000010-index.htm",
+                      "published_at": "2025-02-19T21:39:37Z",
+                      "published_at_precision": "exact"
+                    }
+                  },
+                  {
+                    "metric_id": "eps_basic",
+                    "source_concept": "us-gaap:EarningsPerShareBasic",
+                    "value": "7.84",
+                    "period_start": "2024-01-01",
+                    "period_end": "2024-12-31",
+                    "filing": {
+                      "accession": "0000034088-25-000010",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408825000010/0000034088-25-000010-index.htm",
+                      "published_at": "2025-02-19T21:39:37Z",
+                      "published_at_precision": "exact"
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "diluted_shares",
+                "value": "4052000000",
+                "period_start": "2023-01-01",
+                "period_end": "2023-12-31",
+                "note": "basic weighted shares: diluted EPS equals basic EPS for the period",
+                "sources": [
+                  {
+                    "metric_id": "basic_shares",
+                    "source_concept": "us-gaap:WeightedAverageNumberOfSharesOutstandingBasic",
+                    "value": "4052000000",
+                    "period_start": "2023-01-01",
+                    "period_end": "2023-12-31",
+                    "filing": {
+                      "accession": "0000034088-24-000018",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408824000018/0000034088-24-000018-index.htm",
+                      "published_at": "2024-02-28T21:37:18Z",
+                      "published_at_precision": "exact"
+                    }
+                  },
+                  {
+                    "metric_id": "eps_diluted",
+                    "source_concept": "us-gaap:EarningsPerShareDiluted",
+                    "value": "8.89",
+                    "period_start": "2023-01-01",
+                    "period_end": "2023-12-31",
+                    "filing": {
+                      "accession": "0000034088-24-000018",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408824000018/0000034088-24-000018-index.htm",
+                      "published_at": "2024-02-28T21:37:18Z",
+                      "published_at_precision": "exact"
+                    }
+                  },
+                  {
+                    "metric_id": "eps_basic",
+                    "source_concept": "us-gaap:EarningsPerShareBasic",
+                    "value": "8.89",
+                    "period_start": "2023-01-01",
+                    "period_end": "2023-12-31",
+                    "filing": {
+                      "accession": "0000034088-24-000018",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408824000018/0000034088-24-000018-index.htm",
+                      "published_at": "2024-02-28T21:37:18Z",
+                      "published_at_precision": "exact"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           {
             "metric_id": "diluted_shares_change",
             "unit": "percent",
-            "value": null,
-            "reason": "unavailable",
-            "detail": "not reported: diluted shares, diluted shares a year earlier",
-            "inputs": []
+            "value": "-3.64",
+            "reason": null,
+            "detail": null,
+            "inputs": [
+              {
+                "name": "diluted_shares",
+                "value": "4052000000",
+                "period_start": "2023-01-01",
+                "period_end": "2023-12-31",
+                "note": "basic weighted shares: diluted EPS equals basic EPS for the period",
+                "sources": [
+                  {
+                    "metric_id": "basic_shares",
+                    "source_concept": "us-gaap:WeightedAverageNumberOfSharesOutstandingBasic",
+                    "value": "4052000000",
+                    "period_start": "2023-01-01",
+                    "period_end": "2023-12-31",
+                    "filing": {
+                      "accession": "0000034088-24-000018",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408824000018/0000034088-24-000018-index.htm",
+                      "published_at": "2024-02-28T21:37:18Z",
+                      "published_at_precision": "exact"
+                    }
+                  },
+                  {
+                    "metric_id": "eps_diluted",
+                    "source_concept": "us-gaap:EarningsPerShareDiluted",
+                    "value": "8.89",
+                    "period_start": "2023-01-01",
+                    "period_end": "2023-12-31",
+                    "filing": {
+                      "accession": "0000034088-24-000018",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408824000018/0000034088-24-000018-index.htm",
+                      "published_at": "2024-02-28T21:37:18Z",
+                      "published_at_precision": "exact"
+                    }
+                  },
+                  {
+                    "metric_id": "eps_basic",
+                    "source_concept": "us-gaap:EarningsPerShareBasic",
+                    "value": "8.89",
+                    "period_start": "2023-01-01",
+                    "period_end": "2023-12-31",
+                    "filing": {
+                      "accession": "0000034088-24-000018",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408824000018/0000034088-24-000018-index.htm",
+                      "published_at": "2024-02-28T21:37:18Z",
+                      "published_at_precision": "exact"
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "diluted_shares",
+                "value": "4205000000",
+                "period_start": "2022-01-01",
+                "period_end": "2022-12-31",
+                "note": "basic weighted shares: diluted EPS equals basic EPS for the period",
+                "sources": [
+                  {
+                    "metric_id": "basic_shares",
+                    "source_concept": "us-gaap:WeightedAverageNumberOfSharesOutstandingBasic",
+                    "value": "4205000000",
+                    "period_start": "2022-01-01",
+                    "period_end": "2022-12-31",
+                    "filing": {
+                      "accession": "0000034088-23-000020",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408823000020/0000034088-23-000020-index.htm",
+                      "published_at": "2023-02-22T21:37:14Z",
+                      "published_at_precision": "exact"
+                    }
+                  },
+                  {
+                    "metric_id": "eps_diluted",
+                    "source_concept": "us-gaap:EarningsPerShareDiluted",
+                    "value": "13.26",
+                    "period_start": "2022-01-01",
+                    "period_end": "2022-12-31",
+                    "filing": {
+                      "accession": "0000034088-23-000020",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408823000020/0000034088-23-000020-index.htm",
+                      "published_at": "2023-02-22T21:37:14Z",
+                      "published_at_precision": "exact"
+                    }
+                  },
+                  {
+                    "metric_id": "eps_basic",
+                    "source_concept": "us-gaap:EarningsPerShareBasic",
+                    "value": "13.26",
+                    "period_start": "2022-01-01",
+                    "period_end": "2022-12-31",
+                    "filing": {
+                      "accession": "0000034088-23-000020",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408823000020/0000034088-23-000020-index.htm",
+                      "published_at": "2023-02-22T21:37:14Z",
+                      "published_at_precision": "exact"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           {
             "metric_id": "diluted_shares_change",
             "unit": "percent",
-            "value": null,
-            "reason": "unavailable",
-            "detail": "not reported: diluted shares, diluted shares a year earlier",
-            "inputs": []
+            "value": "-1.64",
+            "reason": null,
+            "detail": null,
+            "inputs": [
+              {
+                "name": "diluted_shares",
+                "value": "4205000000",
+                "period_start": "2022-01-01",
+                "period_end": "2022-12-31",
+                "note": "basic weighted shares: diluted EPS equals basic EPS for the period",
+                "sources": [
+                  {
+                    "metric_id": "basic_shares",
+                    "source_concept": "us-gaap:WeightedAverageNumberOfSharesOutstandingBasic",
+                    "value": "4205000000",
+                    "period_start": "2022-01-01",
+                    "period_end": "2022-12-31",
+                    "filing": {
+                      "accession": "0000034088-23-000020",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408823000020/0000034088-23-000020-index.htm",
+                      "published_at": "2023-02-22T21:37:14Z",
+                      "published_at_precision": "exact"
+                    }
+                  },
+                  {
+                    "metric_id": "eps_diluted",
+                    "source_concept": "us-gaap:EarningsPerShareDiluted",
+                    "value": "13.26",
+                    "period_start": "2022-01-01",
+                    "period_end": "2022-12-31",
+                    "filing": {
+                      "accession": "0000034088-23-000020",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408823000020/0000034088-23-000020-index.htm",
+                      "published_at": "2023-02-22T21:37:14Z",
+                      "published_at_precision": "exact"
+                    }
+                  },
+                  {
+                    "metric_id": "eps_basic",
+                    "source_concept": "us-gaap:EarningsPerShareBasic",
+                    "value": "13.26",
+                    "period_start": "2022-01-01",
+                    "period_end": "2022-12-31",
+                    "filing": {
+                      "accession": "0000034088-23-000020",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408823000020/0000034088-23-000020-index.htm",
+                      "published_at": "2023-02-22T21:37:14Z",
+                      "published_at_precision": "exact"
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "diluted_shares",
+                "value": "4275000000",
+                "period_start": "2021-01-01",
+                "period_end": "2021-12-31",
+                "note": "basic weighted shares: diluted EPS equals basic EPS for the period",
+                "sources": [
+                  {
+                    "metric_id": "basic_shares",
+                    "source_concept": "us-gaap:WeightedAverageNumberOfSharesOutstandingBasic",
+                    "value": "4275000000",
+                    "period_start": "2021-01-01",
+                    "period_end": "2021-12-31",
+                    "filing": {
+                      "accession": "0000034088-22-000011",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408822000011/0000034088-22-000011-index.htm",
+                      "published_at": "2022-02-23T21:11:16Z",
+                      "published_at_precision": "exact"
+                    }
+                  },
+                  {
+                    "metric_id": "eps_diluted",
+                    "source_concept": "us-gaap:EarningsPerShareDiluted",
+                    "value": "5.39",
+                    "period_start": "2021-01-01",
+                    "period_end": "2021-12-31",
+                    "filing": {
+                      "accession": "0000034088-22-000011",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408822000011/0000034088-22-000011-index.htm",
+                      "published_at": "2022-02-23T21:11:16Z",
+                      "published_at_precision": "exact"
+                    }
+                  },
+                  {
+                    "metric_id": "eps_basic",
+                    "source_concept": "us-gaap:EarningsPerShareBasic",
+                    "value": "5.39",
+                    "period_start": "2021-01-01",
+                    "period_end": "2021-12-31",
+                    "filing": {
+                      "accession": "0000034088-22-000011",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408822000011/0000034088-22-000011-index.htm",
+                      "published_at": "2022-02-23T21:11:16Z",
+                      "published_at_precision": "exact"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           {
             "metric_id": "diluted_shares_change",
             "unit": "percent",
-            "value": null,
-            "reason": "unavailable",
-            "detail": "not reported: diluted shares, diluted shares a year earlier",
-            "inputs": []
+            "value": "0.09",
+            "reason": null,
+            "detail": null,
+            "inputs": [
+              {
+                "name": "diluted_shares",
+                "value": "4275000000",
+                "period_start": "2021-01-01",
+                "period_end": "2021-12-31",
+                "note": "basic weighted shares: diluted EPS equals basic EPS for the period",
+                "sources": [
+                  {
+                    "metric_id": "basic_shares",
+                    "source_concept": "us-gaap:WeightedAverageNumberOfSharesOutstandingBasic",
+                    "value": "4275000000",
+                    "period_start": "2021-01-01",
+                    "period_end": "2021-12-31",
+                    "filing": {
+                      "accession": "0000034088-22-000011",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408822000011/0000034088-22-000011-index.htm",
+                      "published_at": "2022-02-23T21:11:16Z",
+                      "published_at_precision": "exact"
+                    }
+                  },
+                  {
+                    "metric_id": "eps_diluted",
+                    "source_concept": "us-gaap:EarningsPerShareDiluted",
+                    "value": "5.39",
+                    "period_start": "2021-01-01",
+                    "period_end": "2021-12-31",
+                    "filing": {
+                      "accession": "0000034088-22-000011",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408822000011/0000034088-22-000011-index.htm",
+                      "published_at": "2022-02-23T21:11:16Z",
+                      "published_at_precision": "exact"
+                    }
+                  },
+                  {
+                    "metric_id": "eps_basic",
+                    "source_concept": "us-gaap:EarningsPerShareBasic",
+                    "value": "5.39",
+                    "period_start": "2021-01-01",
+                    "period_end": "2021-12-31",
+                    "filing": {
+                      "accession": "0000034088-22-000011",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408822000011/0000034088-22-000011-index.htm",
+                      "published_at": "2022-02-23T21:11:16Z",
+                      "published_at_precision": "exact"
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "diluted_shares",
+                "value": "4271000000",
+                "period_start": "2020-01-01",
+                "period_end": "2020-12-31",
+                "note": "basic weighted shares: diluted EPS equals basic EPS for the period",
+                "sources": [
+                  {
+                    "metric_id": "basic_shares",
+                    "source_concept": "us-gaap:WeightedAverageNumberOfSharesOutstandingBasic",
+                    "value": "4271000000",
+                    "period_start": "2020-01-01",
+                    "period_end": "2020-12-31",
+                    "filing": {
+                      "accession": "0000034088-21-000012",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408821000012/0000034088-21-000012-index.htm",
+                      "published_at": "2021-02-24T22:01:02Z",
+                      "published_at_precision": "exact"
+                    }
+                  },
+                  {
+                    "metric_id": "eps_diluted",
+                    "source_concept": "us-gaap:EarningsPerShareDiluted",
+                    "value": "-5.25",
+                    "period_start": "2020-01-01",
+                    "period_end": "2020-12-31",
+                    "filing": {
+                      "accession": "0000034088-21-000012",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408821000012/0000034088-21-000012-index.htm",
+                      "published_at": "2021-02-24T22:01:02Z",
+                      "published_at_precision": "exact"
+                    }
+                  },
+                  {
+                    "metric_id": "eps_basic",
+                    "source_concept": "us-gaap:EarningsPerShareBasic",
+                    "value": "-5.25",
+                    "period_start": "2020-01-01",
+                    "period_end": "2020-12-31",
+                    "filing": {
+                      "accession": "0000034088-21-000012",
+                      "form": "10-K",
+                      "url": "https://www.sec.gov/Archives/edgar/data/34088/000003408821000012/0000034088-21-000012-index.htm",
+                      "published_at": "2021-02-24T22:01:02Z",
+                      "published_at_precision": "exact"
+                    }
+                  }
+                ]
+              }
+            ]
           }
         ]
       }

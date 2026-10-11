@@ -1,14 +1,14 @@
 {
-  "recorded_at": "2026-10-06T16:40:01.958383+00:00",
+  "recorded_at": "2026-10-11T03:52:21.952887+00:00",
   "recorded_from": "recorded SEC fixtures replayed into the integration test database (tests/integration/test_instruments.py)",
   "endpoint": "/instruments/META/fundamentals",
   "params": {},
   "response": {
     "ticker": "META",
     "exchange": "XNAS",
-    "known_at": "2026-10-06T16:40:01.845731Z",
+    "known_at": "2026-10-11T03:52:21.887377Z",
     "issuer": {
-      "id": "0339e248-202e-4bb8-a6c6-180d5266f408",
+      "id": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
       "name": "Meta Platforms, Inc.",
       "cik": "0001326801",
       "role": "issuer",
@@ -18,7 +18,7 @@
     },
     "entities": [
       {
-        "id": "0339e248-202e-4bb8-a6c6-180d5266f408",
+        "id": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
         "name": "Meta Platforms, Inc.",
         "cik": "0001326801",
         "role": "issuer",
@@ -64,7 +64,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -85,7 +85,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -106,7 +106,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             }
           ]
@@ -140,7 +140,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -161,7 +161,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -182,7 +182,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             }
           ]
@@ -208,7 +208,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -229,7 +229,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -250,7 +250,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             }
           ]
@@ -276,7 +276,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -297,7 +297,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -318,7 +318,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             }
           ]
@@ -344,7 +344,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -365,7 +365,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -386,7 +386,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             }
           ]
@@ -412,7 +412,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -433,7 +433,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -454,7 +454,75 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
+              "split_adjusted": null
+            }
+          ]
+        },
+        {
+          "metric_id": "eps_basic",
+          "cells": [
+            {
+              "kind": "reported",
+              "value": "23.98",
+              "unit": "USD/shares",
+              "currency": "USD",
+              "period_start": "2025-01-01",
+              "period_end": "2025-12-31",
+              "fiscal_period": "FY-2025",
+              "source_concept": "us-gaap:EarningsPerShareBasic",
+              "filing": {
+                "accession": "0001628280-26-003942",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/1326801/000162828026003942/0001628280-26-003942-index.htm",
+                "published_at": "2026-01-29T00:13:46Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
+              "split_adjusted": null
+            },
+            {
+              "kind": "reported",
+              "value": "24.61",
+              "unit": "USD/shares",
+              "currency": "USD",
+              "period_start": "2024-01-01",
+              "period_end": "2024-12-31",
+              "fiscal_period": "FY-2024",
+              "source_concept": "us-gaap:EarningsPerShareBasic",
+              "filing": {
+                "accession": "0001326801-25-000017",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/1326801/000132680125000017/0001326801-25-000017-index.htm",
+                "published_at": "2025-01-30T01:00:50Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
+              "split_adjusted": null
+            },
+            {
+              "kind": "reported",
+              "value": "15.19",
+              "unit": "USD/shares",
+              "currency": "USD",
+              "period_start": "2023-01-01",
+              "period_end": "2023-12-31",
+              "fiscal_period": "FY-2023",
+              "source_concept": "us-gaap:EarningsPerShareBasic",
+              "filing": {
+                "accession": "0001326801-24-000012",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/1326801/000132680124000012/0001326801-24-000012-index.htm",
+                "published_at": "2024-02-02T00:39:02Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             }
           ]
@@ -480,7 +548,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -501,7 +569,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -522,7 +590,75 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
+              "split_adjusted": null
+            }
+          ]
+        },
+        {
+          "metric_id": "basic_shares",
+          "cells": [
+            {
+              "kind": "reported",
+              "value": "2521000000",
+              "unit": "shares",
+              "currency": null,
+              "period_start": "2025-01-01",
+              "period_end": "2025-12-31",
+              "fiscal_period": "FY-2025",
+              "source_concept": "us-gaap:WeightedAverageNumberOfSharesOutstandingBasic",
+              "filing": {
+                "accession": "0001628280-26-003942",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/1326801/000162828026003942/0001628280-26-003942-index.htm",
+                "published_at": "2026-01-29T00:13:46Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
+              "split_adjusted": null
+            },
+            {
+              "kind": "reported",
+              "value": "2534000000",
+              "unit": "shares",
+              "currency": null,
+              "period_start": "2024-01-01",
+              "period_end": "2024-12-31",
+              "fiscal_period": "FY-2024",
+              "source_concept": "us-gaap:WeightedAverageNumberOfSharesOutstandingBasic",
+              "filing": {
+                "accession": "0001326801-25-000017",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/1326801/000132680125000017/0001326801-25-000017-index.htm",
+                "published_at": "2025-01-30T01:00:50Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
+              "split_adjusted": null
+            },
+            {
+              "kind": "reported",
+              "value": "2574000000",
+              "unit": "shares",
+              "currency": null,
+              "period_start": "2023-01-01",
+              "period_end": "2023-12-31",
+              "fiscal_period": "FY-2023",
+              "source_concept": "us-gaap:WeightedAverageNumberOfSharesOutstandingBasic",
+              "filing": {
+                "accession": "0001326801-24-000012",
+                "form": "10-K",
+                "url": "https://www.sec.gov/Archives/edgar/data/1326801/000132680124000012/0001326801-24-000012-index.htm",
+                "published_at": "2024-02-02T00:39:02Z",
+                "published_at_precision": "exact"
+              },
+              "restated": false,
+              "previous": null,
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             }
           ]
@@ -548,7 +684,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -569,7 +705,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -590,7 +726,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             }
           ]
@@ -616,7 +752,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -637,7 +773,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -658,7 +794,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             }
           ]
@@ -684,7 +820,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -705,7 +841,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -726,7 +862,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             }
           ]
@@ -752,7 +888,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -773,7 +909,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -803,7 +939,7 @@
                   "published_at_precision": "exact"
                 }
               },
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             }
           ]
@@ -829,7 +965,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -850,7 +986,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -871,7 +1007,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             }
           ]
@@ -905,7 +1041,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -926,7 +1062,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -947,7 +1083,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             }
           ]
@@ -973,7 +1109,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -994,7 +1130,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -1015,7 +1151,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             }
           ]
@@ -1184,7 +1320,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -1205,7 +1341,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -1226,7 +1362,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             }
           ]
@@ -1260,7 +1396,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -1281,7 +1417,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -1302,7 +1438,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             }
           ]
@@ -1336,7 +1472,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -1357,7 +1493,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -1378,7 +1514,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             }
           ]
@@ -1404,7 +1540,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -1425,7 +1561,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -1446,7 +1582,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             }
           ]
@@ -1473,7 +1609,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -1494,7 +1630,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             }
           ]
@@ -5726,7 +5862,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -5747,7 +5883,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -5768,7 +5904,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -5789,7 +5925,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -5810,7 +5946,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -5831,7 +5967,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -5852,7 +5988,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -5873,7 +6009,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -5894,7 +6030,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -5915,7 +6051,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -5936,7 +6072,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -5957,7 +6093,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -5978,7 +6114,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -5999,7 +6135,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -6020,7 +6156,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             }
           ]
@@ -6046,7 +6182,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -6067,7 +6203,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -6088,7 +6224,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -6109,7 +6245,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -6130,7 +6266,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -6151,7 +6287,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -6172,7 +6308,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -6193,7 +6329,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -6214,7 +6350,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -6235,7 +6371,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -6256,7 +6392,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -6277,7 +6413,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -6298,7 +6434,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -6319,7 +6455,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             },
             {
@@ -6340,7 +6476,7 @@
               },
               "restated": false,
               "previous": null,
-              "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+              "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
               "split_adjusted": null
             }
           ]
@@ -6369,7 +6505,7 @@
             },
             "restated": false,
             "previous": null,
-            "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+            "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
             "split_adjusted": null
           }
         ]
@@ -6395,13 +6531,13 @@
             },
             "restated": false,
             "previous": null,
-            "reported_by": "0339e248-202e-4bb8-a6c6-180d5266f408",
+            "reported_by": "f3c6a846-3e4d-47cc-8a13-6ef139d69894",
             "split_adjusted": null
           }
         ]
       }
     ],
     "splits": [],
-    "last_refresh_at": "2026-10-06T16:39:37.630023Z"
+    "last_refresh_at": "2026-10-11T03:52:02.047008Z"
   }
 }

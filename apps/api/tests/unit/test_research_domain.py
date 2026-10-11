@@ -272,6 +272,38 @@ def test_ttm_diluted_change_is_the_latest_quarter_against_a_year_earlier() -> No
     )
 
 
+def test_basic_shares_stand_in_only_where_diluted_eps_equals_basic_eps() -> None:
+    # ExxonMobil tags no diluted share count after 2013, and its diluted EPS equals basic EPS.
+    def fy(metric: str, value: str, y: int) -> F:
+        return F(metric, Decimal(value), date(y, 1, 1), date(y, 12, 31), reported(y + 1, 2))
+
+    facts = [
+        *company(),
+        fy("basic_shares", "4298", 2024),
+        fy("basic_shares", "4251", 2025),
+        fy("eps_basic", "7.84", 2024),
+        fy("eps_diluted", "7.84", 2024),
+        fy("eps_basic", "6.70", 2025),
+        fy("eps_diluted", "6.70", 2025),
+    ]
+    change = column(facts, "2025-12-31")["diluted_shares_change"]
+    assert change.value == Decimal("-1.09")  # 4,251 / 4,298 - 1
+    now = change.inputs[0]
+    assert now.note == "basic weighted shares: diluted EPS equals basic EPS for the period"
+    assert [f.metric_id for f in now.sources] == ["basic_shares", "eps_diluted", "eps_basic"]
+
+    diluting = [
+        f for f in facts if not (f.metric_id == "eps_diluted" and f.period_end.year == 2025)
+    ]
+    diluting.append(fy("eps_diluted", "6.69", 2025))
+    assert column(diluting, "2025-12-31")["diluted_shares_change"].detail == (
+        "not reported: diluted shares"
+    )
+    # A tagged diluted count always wins.
+    tagged = [*facts, fy("diluted_shares", "4300", 2024), fy("diluted_shares", "4257", 2025)]
+    assert column(tagged, "2025-12-31")["diluted_shares_change"].inputs[0].note is None
+
+
 def test_a_missing_derived_input_is_explained_by_its_missing_part() -> None:
     bank = [f for f in company() if f.metric_id != "capex"]  # JPMorgan reports no capex
     fy = column(bank, "2025-12-31")

@@ -1240,9 +1240,15 @@
     <us-gaap:NetIncomeLoss contextRef="c-1" decimals="-6" id="f-114" unitRef="usd">112010000000</us-gaap:NetIncomeLoss>
     <us-gaap:NetIncomeLoss contextRef="c-18" decimals="-6" id="f-115" unitRef="usd">93736000000</us-gaap:NetIncomeLoss>
     <us-gaap:NetIncomeLoss contextRef="c-19" decimals="-6" id="f-116" unitRef="usd">96995000000</us-gaap:NetIncomeLoss>
+    <us-gaap:EarningsPerShareBasic contextRef="c-1" decimals="2" id="f-117" unitRef="usdPerShare">7.49</us-gaap:EarningsPerShareBasic>
+    <us-gaap:EarningsPerShareBasic contextRef="c-18" decimals="2" id="f-118" unitRef="usdPerShare">6.11</us-gaap:EarningsPerShareBasic>
+    <us-gaap:EarningsPerShareBasic contextRef="c-19" decimals="2" id="f-119" unitRef="usdPerShare">6.16</us-gaap:EarningsPerShareBasic>
     <us-gaap:EarningsPerShareDiluted contextRef="c-1" decimals="2" id="f-120" unitRef="usdPerShare">7.46</us-gaap:EarningsPerShareDiluted>
     <us-gaap:EarningsPerShareDiluted contextRef="c-18" decimals="2" id="f-121" unitRef="usdPerShare">6.08</us-gaap:EarningsPerShareDiluted>
     <us-gaap:EarningsPerShareDiluted contextRef="c-19" decimals="2" id="f-122" unitRef="usdPerShare">6.13</us-gaap:EarningsPerShareDiluted>
+    <us-gaap:WeightedAverageNumberOfSharesOutstandingBasic contextRef="c-1" decimals="-3" id="f-123" unitRef="shares">14948500000</us-gaap:WeightedAverageNumberOfSharesOutstandingBasic>
+    <us-gaap:WeightedAverageNumberOfSharesOutstandingBasic contextRef="c-18" decimals="-3" id="f-124" unitRef="shares">15343783000</us-gaap:WeightedAverageNumberOfSharesOutstandingBasic>
+    <us-gaap:WeightedAverageNumberOfSharesOutstandingBasic contextRef="c-19" decimals="-3" id="f-125" unitRef="shares">15744231000</us-gaap:WeightedAverageNumberOfSharesOutstandingBasic>
     <us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding contextRef="c-1" decimals="-3" id="f-126" unitRef="shares">15004697000</us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding>
     <us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding contextRef="c-18" decimals="-3" id="f-127" unitRef="shares">15408095000</us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding>
     <us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding contextRef="c-19" decimals="-3" id="f-128" unitRef="shares">15812547000</us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding>
@@ -1334,9 +1340,15 @@
     <us-gaap:NetIncomeLoss contextRef="c-1" decimals="-6" id="f-410" unitRef="usd">112010000000</us-gaap:NetIncomeLoss>
     <us-gaap:NetIncomeLoss contextRef="c-18" decimals="-6" id="f-411" unitRef="usd">93736000000</us-gaap:NetIncomeLoss>
     <us-gaap:NetIncomeLoss contextRef="c-19" decimals="-6" id="f-412" unitRef="usd">96995000000</us-gaap:NetIncomeLoss>
+    <us-gaap:WeightedAverageNumberOfSharesOutstandingBasic contextRef="c-1" decimals="-3" id="f-413" unitRef="shares">14948500000</us-gaap:WeightedAverageNumberOfSharesOutstandingBasic>
+    <us-gaap:WeightedAverageNumberOfSharesOutstandingBasic contextRef="c-18" decimals="-3" id="f-414" unitRef="shares">15343783000</us-gaap:WeightedAverageNumberOfSharesOutstandingBasic>
+    <us-gaap:WeightedAverageNumberOfSharesOutstandingBasic contextRef="c-19" decimals="-3" id="f-415" unitRef="shares">15744231000</us-gaap:WeightedAverageNumberOfSharesOutstandingBasic>
     <us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding contextRef="c-1" decimals="-3" id="f-419" unitRef="shares">15004697000</us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding>
     <us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding contextRef="c-18" decimals="-3" id="f-420" unitRef="shares">15408095000</us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding>
     <us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding contextRef="c-19" decimals="-3" id="f-421" unitRef="shares">15812547000</us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding>
+    <us-gaap:EarningsPerShareBasic contextRef="c-1" decimals="2" id="f-422" unitRef="usdPerShare">7.49</us-gaap:EarningsPerShareBasic>
+    <us-gaap:EarningsPerShareBasic contextRef="c-18" decimals="2" id="f-423" unitRef="usdPerShare">6.11</us-gaap:EarningsPerShareBasic>
+    <us-gaap:EarningsPerShareBasic contextRef="c-19" decimals="2" id="f-424" unitRef="usdPerShare">6.16</us-gaap:EarningsPerShareBasic>
     <us-gaap:EarningsPerShareDiluted contextRef="c-1" decimals="2" id="f-425" unitRef="usdPerShare">7.46</us-gaap:EarningsPerShareDiluted>
     <us-gaap:EarningsPerShareDiluted contextRef="c-18" decimals="2" id="f-426" unitRef="usdPerShare">6.08</us-gaap:EarningsPerShareDiluted>
     <us-gaap:EarningsPerShareDiluted contextRef="c-19" decimals="2" id="f-427" unitRef="usdPerShare">6.13</us-gaap:EarningsPerShareDiluted>

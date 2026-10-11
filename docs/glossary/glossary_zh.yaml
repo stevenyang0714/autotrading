@@ -47,7 +47,7 @@ terms:
   dashboard_market_regime: {name: 市場環境, hint: 總經與市場所處的狀態判斷（Phase 2）。}
   dashboard_opportunity_radar: {name: 機會雷達, hint: 依訊號篩選出的研究候選標的（Phase 2）。}
   dashboard_fundamental_research: {name: 基本面研究, hint: 10 家公司一張表：成長、利潤率、ROIC、資本配置與估值，點公司看研究紀錄。}
-  dashboard_corporate_actions: {name: 公司行動, hint: 買回、股利、分割等公司行動（Phase 1）。}
+  dashboard_corporate_actions: {name: 公司行動, hint: 每家公司的回購狀態、條件對門檻的檢視、狀態歷史與回購時間軸。}
   dashboard_event_transmission: {name: 事件傳導, hint: 事件如何經由產業鏈影響資產（Phase 3）。}
   dashboard_earnings: {name: 財報季, hint: 實際財報與前期比較、財測與市場反應（Phase 1）。}
   dashboard_x_expert_watch: {name: X 專家觀察, hint: 追蹤研究者在 X 上的觀點變化（Phase 4）。}
@@ -89,6 +89,8 @@ terms:
   net_income: {name: 淨利, hint: 歸屬於母公司股東的稅後淨利。}
   eps_diluted: {name: 稀釋每股盈餘, hint: 考慮選擇權與可轉債潛在稀釋後的每股獲利。}
   diluted_shares: {name: 稀釋加權股數, hint: 期間內的加權平均股數，含潛在稀釋股份。}
+  eps_basic: {name: 基本每股盈餘, hint: 只用流通在外股數計算的每股獲利；等於稀釋 EPS 代表沒有稀釋。}
+  basic_shares: {name: 基本加權股數, hint: 期間內的加權平均流通股數，不含潛在稀釋股份。}
   cash: {name: 現金及約當現金, hint: 期末的現金與極短期、高流動性投資。}
   long_term_debt_noncurrent: {name: 長期負債（非流動）, hint: 一年後才到期的借款。}
   long_term_debt_current: {name: 一年內到期長期負債, hint: 長期借款中一年內到期的部分。}
@@ -141,8 +143,38 @@ terms:
   net_debt_to_ebitda: {name: 淨負債 / EBITDA, hint: 期末淨負債 ÷ EBITDA；負值代表淨現金。}
   cash_returned: {name: 回饋股東金額, hint: 庫藏股 + 股利；沒申報股利的期間以 0 計並標示。}
   cash_returned_to_fcf: {name: 回饋股東 / FCF, hint: 回饋股東金額 ÷ 自由現金流；超過 100% 代表動用現金或借錢。}
-  diluted_shares_change: {name: 稀釋股數年增減, hint: 稀釋加權股數 ÷ 一年前 − 1，換算到同一分割基準。}
+  diluted_shares_change: {name: 稀釋股數年增減, hint: 稀釋加權股數 ÷ 一年前 − 1，換算到同一分割基準；沒標稀釋股數且稀釋 EPS = 基本 EPS 時用基本股數。}
   research_record: {name: 研究紀錄, hint: 一家公司近四季與五個財年的成長、品質與資本配置，每個數字附來源申報。}
+
+  # buyback states (M1.4b)
+  buyback_state: {name: 回購狀態, hint: 依版本化規則判定：無、WATCH、ACTIVE、HIGH-CONVICTION 候選；每個條件都存值、門檻與證據。}
+  buyback_state_watch: {name: 觀察 WATCH, hint: 365 天內有新授權、授權增加或每年計畫，或剩餘授權 ≥ 市值 2%。}
+  buyback_state_active: {name: 執行中 ACTIVE, hint: WATCH，且最近一季買回 ≥ 市值 0.5%（超大型股有買回即可）、稀釋股數年減 ≥ 1%。只有公告到不了這一級。}
+  buyback_state_high_conviction: {name: 高信心候選, hint: ACTIVE，且由 FCF 支應、淨負債沒大增，且 FCF 殖利率 ≥ 5 年中位數或股價比 DCF 低 15% 以上。}
+  buyback_state_trade_ready: {name: 可交易 TRADE-READY, hint: 需市場確認與風險檢查；風險檢查在 Phase 2，Phase 1 無法達到。}
+  remaining_to_market_cap: {name: 剩餘授權 ÷ 市值, hint: 公告中最近的剩餘授權額 ÷ T 時市值。}
+  quarter_repurchase_to_market_cap: {name: 單季買回 ÷ 市值, hint: 最近一季買回金額 ÷ 季末市值（季末前最近一筆股數）；沒買回就不通過；超大型股有買回即通過。}
+  fcf_funding: {name: FCF 支應倍數, hint: 近四季買回 ÷ 近四季自由現金流。}
+  net_debt_change_yoy: {name: 淨負債年變動, hint: （期末淨負債 − 一年前）÷ |一年前淨負債|。}
+  fcf_yield_to_median: {name: FCF 殖利率 ÷ 5 年中位數, hint: T 時 FCF 殖利率 ÷ 過去 5 年每月底 FCF 殖利率的中位數。}
+  close_vs_moving_average: {name: 收盤 vs 50 日均線, hint: 最新收盤高於 50 個交易日平均多少。}
+  relative_return_1m: {name: 一個月相對 SPY 報酬, hint: 近 21 個交易日報酬減 SPY 同期報酬（百分點）。}
+  risk_check: {name: 風險檢查, hint: Phase 2 的部位與組合風控；Phase 1 一律無資料。}
+  market_confirmation: {name: 市場確認, hint: 收盤高於 50 日均線，或一個月報酬勝過 SPY。}
+  buyback_quality_score: {name: 回購品質分數, hint: 6 個分項的加權平均（預設權重，未驗證）；任一分項缺資料就不給總分。}
+  buyback_score_undervaluation: {name: 分項：低估, hint: FCF 殖利率 ÷ 5 年中位數，0.8 倍 0 分、1.2 倍 100 分。權重 30。}
+  buyback_score_intensity: {name: 分項：買回強度, hint: 近四季買回 ÷ 市值，0% 0 分、4% 100 分（超大型股 2% 即 100 分）。權重 20。}
+  buyback_score_fcf_quality: {name: 分項：FCF 品質, hint: FCF ÷ 淨利，50% 0 分、100% 100 分。權重 15。}
+  buyback_score_balance_sheet: {name: 分項：資產負債, hint: 淨負債 ÷ 近四季 FCF，4 倍 0 分、0 倍 100 分。權重 10。}
+  buyback_score_discipline: {name: 分項：歷史紀律, hint: 近 5 個財年中買回 ≤ FCF 且股數減少的比例。權重 10。}
+  buyback_score_share_count: {name: 分項：股數淨效果, hint: 近四季淨減少股數 %，0% 0 分、3% 100 分。權重 10。}
+  net_debt_to_fcf: {name: 淨負債 ÷ FCF, hint: 淨負債 ÷ 近四季自由現金流；淨現金為負值。}
+  disciplined_years: {name: 紀律年數比例, hint: 近 5 個財年中，買回 ≤ FCF 且流通股數減少的年數比例（至少 3 年有資料）。}
+  buyback_rule_version: {name: 回購規則版本, hint: 規則檔的版本；內容一改就必須升版，存下的評定保留當時版本。}
+  backfilled_evaluation: {name: 補算評定, hint: 事後用當時已公開的資料算出的月底狀態。}
+  threshold_review: {name: 門檻檢視, hint: 每家公司在目前規則版本下的狀態與所有條件值，供確認或調整門檻。}
+  condition_status: {name: 條件判定, hint: 通過、未通過或無資料；無資料永遠不算通過。}
+  mega_cap: {name: 超大型股, hint: 期末市值 ≥ 5000 億美元；單季只要有實際買回就過 ACTIVE 的買回條件，買回強度 2% 即滿分（規則 0.2.0）。}
 
   # buybacks (M1.4a)
   buyback_record: {name: 回購紀錄, hint: 授權、實際買回、淨減少股數分開看：董事會准了多少、實際花了多少、股東實際多拿到多少。}

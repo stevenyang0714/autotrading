@@ -28,6 +28,9 @@ function trackConsoleErrors(page: Page): string[] {
 }
 
 test("every page loads without console errors", async ({ page }) => {
+  // About thirty pages in one test, several computing every company on load: allow for a
+  // busy stack while the other workers run.
+  test.setTimeout(60_000);
   const errors = trackConsoleErrors(page);
   const pages = [
     "/",
@@ -119,6 +122,8 @@ for (const path of [
   "/system/progress",
   "/dashboards/fundamental-research",
   "/dashboards/fundamental-research?sort=roic&dir=desc",
+  "/dashboards/corporate-actions",
+  "/dashboards/corporate-actions?known_on=2026-04-15",
 ]) {
   test(`numbers on ${path} are all explained`, async ({ page }) => {
     await page.goto(path);
@@ -312,6 +317,37 @@ test("AAPL buybacks keep authorization, repurchase and net share reduction apart
   await expect(latest.getByRole("link").first()).toHaveAttribute("href", /^https:\/\/www\.sec\.gov\//);
   await expect(section.getByRole("table", { name: "Actual repurchase" }).locator('tr[data-row="share_repurchases"]')).toContainText(/\$\d+\.\d{3}B/);
   await expect(section.getByRole("table", { name: "Net share reduction" }).locator('tr[data-row="net_share_reduction"]')).toContainText(/shares/);
+});
+
+test("AAPL buybacks show the stored state with each condition against its threshold (M1.4b)", async ({
+  page,
+}) => {
+  await page.goto("/instruments/AAPL");
+  const card = page.locator('#buybacks [data-block="state"]');
+  // The replay stores states now and at month ends since 2025 (fixture prices: no market cap).
+  await expect(card.locator("[data-state]").first()).toHaveText(/^(No state|WATCH|ACTIVE|HIGH-CONVICTION candidate)$/);
+  await expect(card).toContainText("rule v0.2.0");
+  await expect(card.locator('[data-condition="watch.announcement"]')).toContainText("(within 365 days)");
+  await expect(card.locator('[data-level="trade_ready"]')).toContainText("Unreachable in Phase 1.");
+  await expect(card.locator('[data-block="score"]')).toContainText("default weights, unvalidated");
+  expect(await card.getByRole("list", { name: "State history" }).locator("li").count()).toBeGreaterThan(1);
+});
+
+test("Corporate Actions reviews every company's state and opens its buybacks (M1.4b)", async ({ page }) => {
+  await page.goto("/dashboards/corporate-actions");
+  const table = page.getByRole("table", { name: "Threshold review" });
+  expect(await table.locator("tbody tr[data-ticker]").count()).toBeGreaterThanOrEqual(3);
+  await expect(table.locator('th[data-column="active.quarter_repurchase"]')).toContainText("≥ 0.5%");
+  await expect(page.getByText("Thresholds are defaults, not validated.")).toBeVisible();
+  await expect(page.getByRole("list", { name: "AAPL state history" })).toBeVisible();
+
+  // An earlier date shows the state stored by then.
+  await page.goto("/dashboards/corporate-actions?known_on=2026-04-15");
+  await expect(page.getByText(/Showing the states stored by/)).toContainText("2026-04-15");
+
+  await page.locator('tr[data-ticker="AAPL"]').getByRole("link", { name: "AAPL" }).click();
+  await expect(page).toHaveURL(/\/instruments\/AAPL\?known_on=2026-04-15#buybacks$/, { timeout: 15_000 });
+  await expect(page.locator('#buybacks [data-block="state"]')).toBeVisible();
 });
 
 test("Reconciliation lists Apple's 10-K as pass and opens its items (M1.1)", async ({ page }) => {

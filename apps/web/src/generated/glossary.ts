@@ -11,15 +11,32 @@ export type CompleteTermId =
   | "ask"
   | "audit_action"
   | "audit_actor"
+  | "backfilled_evaluation"
   | "balance_identity"
+  | "basic_shares"
   | "bid"
   | "buyback_intensity"
+  | "buyback_quality_score"
   | "buyback_record"
+  | "buyback_rule_version"
+  | "buyback_score_balance_sheet"
+  | "buyback_score_discipline"
+  | "buyback_score_fcf_quality"
+  | "buyback_score_intensity"
+  | "buyback_score_share_count"
+  | "buyback_score_undervaluation"
+  | "buyback_state"
+  | "buyback_state_active"
+  | "buyback_state_high_conviction"
+  | "buyback_state_trade_ready"
+  | "buyback_state_watch"
   | "capex"
   | "cash"
   | "cash_returned"
   | "cash_returned_to_fcf"
+  | "close_vs_moving_average"
   | "commercial_paper"
+  | "condition_status"
   | "core_pce_inflation_yoy"
   | "cpi_inflation_yoy"
   | "dashboard_alerts_center"
@@ -45,6 +62,7 @@ export type CompleteTermId =
   | "dev_log"
   | "diluted_shares"
   | "diluted_shares_change"
+  | "disciplined_years"
   | "discount_rate"
   | "dividends_paid"
   | "duplicate_group"
@@ -52,6 +70,7 @@ export type CompleteTermId =
   | "ebitda_ttm"
   | "effective_tax_rate"
   | "enterprise_value"
+  | "eps_basic"
   | "eps_diluted"
   | "eps_diluted_ttm"
   | "equity_risk_premium"
@@ -59,7 +78,9 @@ export type CompleteTermId =
   | "ev_to_sales"
   | "fair_value_dcf"
   | "fcf_conversion"
+  | "fcf_funding"
   | "fcf_yield"
+  | "fcf_yield_to_median"
   | "feed_status"
   | "filing_date"
   | "filing_reconciliation"
@@ -92,12 +113,16 @@ export type CompleteTermId =
   | "macro_vix"
   | "margin_of_safety"
   | "market_cap"
+  | "market_confirmation"
   | "market_session"
+  | "mega_cap"
   | "milestone_status"
   | "model_output"
   | "multiple_percentile"
   | "net_debt"
+  | "net_debt_change_yoy"
   | "net_debt_to_ebitda"
+  | "net_debt_to_fcf"
   | "net_income"
   | "net_margin"
   | "net_share_reduction"
@@ -130,11 +155,14 @@ export type CompleteTermId =
   | "price_change_1d"
   | "price_history"
   | "price_to_book"
+  | "quarter_repurchase_to_market_cap"
   | "quarterly_derived_value"
   | "rate_limit"
   | "real_fed_funds_rate"
   | "real_gdp_growth_annualized"
   | "reconciliation_status"
+  | "relative_return_1m"
+  | "remaining_to_market_cap"
   | "reporting_period"
   | "repurchase_announcement"
   | "repurchase_authorized"
@@ -145,6 +173,7 @@ export type CompleteTermId =
   | "revenue"
   | "revenue_growth"
   | "reverse_dcf_growth"
+  | "risk_check"
   | "roe"
   | "roic"
   | "rule_insight"
@@ -162,6 +191,7 @@ export type CompleteTermId =
   | "stockholders_equity"
   | "story_count"
   | "terminal_growth"
+  | "threshold_review"
   | "total_debt"
   | "trailing_twelve_months"
   | "update_cadence"
@@ -348,6 +378,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "操作者",
     "hint_zh": "做出變更的程序：資料擷取工作、設定同步或資料庫使用者。"
   },
+  "backfilled_evaluation": {
+    "term_id": "backfilled_evaluation",
+    "display_name": "Backfilled Evaluation",
+    "category": "methodology",
+    "short_definition": "A state evaluated after its As known on time, from the data public by then.",
+    "full_definition": "Month-end states since 2021 were evaluated later (B6), from the facts, closes and announcements published by each month end as the database held them at the backfill time (system time). They show what the rules say about that date with today's collection of what was public then, not what an evaluation on that date would have seen.",
+    "formula": "known_at < system_time",
+    "unit": "flag",
+    "example": "The 2026-03-31 state of Apple, evaluated on 2026-10-10.",
+    "direction": "N/A",
+    "interpretation": "Use for history and threshold review; read with care for data collected late.",
+    "why_it_matters": "Gives each company a state history from 2021 without waiting.",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "daily (11:00 SGT) and month ends since 2021",
+    "caveats": "Data collected after the month end but published before it counts; restatements published later do not.",
+    "related_terms": [
+      "buyback_state",
+      "point_in_time"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "補算評定",
+    "hint_zh": "事後用當時已公開的資料算出的月底狀態。"
+  },
   "balance_identity": {
     "term_id": "balance_identity",
     "display_name": "Balance Identity",
@@ -371,6 +426,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "資產負債恆等式",
     "hint_zh": "資產總額 = 負債加股東權益；不成立代表讀取或申報有問題。"
+  },
+  "basic_shares": {
+    "term_id": "basic_shares",
+    "display_name": "Basic Shares",
+    "category": "fundamentals",
+    "short_definition": "Average number of shares outstanding in the period, without potential dilution.",
+    "full_definition": "Read from us-gaap WeightedAverageNumberOfSharesOutstandingBasic. A weighted average over the period, not the count on the last day. Used as the diluted count only where the company tags no diluted count and its diluted EPS equals its basic EPS for the same period (ADR-025 B11).",
+    "formula": "reported us-gaap:WeightedAverageNumberOfSharesOutstandingBasic",
+    "unit": "shares",
+    "example": "ExxonMobil reports 4,298,000,000 basic weighted average shares for 2024.",
+    "direction": "Lower over time = more per-share value for holders",
+    "interpretation": "Below the diluted count by the shares options and convertibles could add.",
+    "why_it_matters": "The only weighted share count ExxonMobil tags after 2013.",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), us-gaap:WeightedAverageNumberOfSharesOutstandingBasic",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "Stock splits change past counts in later filings; companies with several share classes may tag only some periods.",
+    "related_terms": [
+      "diluted_shares",
+      "eps_basic"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "基本加權股數",
+    "hint_zh": "期間內的加權平均流通股數，不含潛在稀釋股份。"
   },
   "bid": {
     "term_id": "bid",
@@ -403,7 +483,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "Buyback Intensity",
     "category": "corporate_action",
     "short_definition": "Actual repurchases relative to market cap.",
-    "full_definition": "Dollars paid for share repurchases divided by market capitalization at the period end: the last end-of-day close on or before the end times balance-sheet shares outstanding then, on the close's split basis. Per fiscal year as reported, and for the last four quarters (TTM) from year-to-date 10-Q values, as known at the As known on time. Unavailable without an end-of-day close (fixture prices) or a share count.",
+    "full_definition": "Dollars paid for share repurchases divided by market capitalization at the period end: the last end-of-day close on or before the end times the latest share count dated on or before it, cover page or balance sheet (V2 applied at the period end, ADR-025 B12), on the close's split basis. Per fiscal year as reported, and for the last four quarters (TTM) from year-to-date 10-Q values, as known at the As known on time. Unavailable without an end-of-day close (fixture prices) or a share count.",
     "formula": "share_repurchases / (close at period end x shares_outstanding at period end)",
     "unit": "percent",
     "example": "Apple FY2025: $90.711B / $3.774T (close 2025-09-26 x 14.773B shares) = 2.40%.",
@@ -412,17 +492,47 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "why_it_matters": "Separates real buyback activity from announcements.",
     "source": "Derived from SEC XBRL filings and daily closes (domain/buyback.py)",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback.py",
-    "as_of": "2026-10-10",
+    "as_of": "2026-10-11",
     "update_cadence": "per filing",
-    "caveats": "Does not by itself imply undervaluation or future outperformance; repurchases / FCF shows the funding side.",
+    "caveats": "Does not by itself imply undervaluation or future outperformance; repurchases / FCF shows the funding side. A company that tags shares only at year ends (AutoZone, NVIDIA, JPMorgan) uses its latest cover-page count, which can be up to a quarter older than the period end.",
     "related_terms": [
       "net_share_reduction",
       "repurchase_to_fcf",
       "market_cap"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "回購強度",
     "hint_zh": "買回金額 ÷ 期末市值。"
+  },
+  "buyback_quality_score": {
+    "term_id": "buyback_quality_score",
+    "display_name": "Buyback Quality Score",
+    "category": "corporate_action",
+    "short_definition": "A 0-100 score of how good a company's buybacks look, with default weights, unvalidated.",
+    "full_definition": "The 02 §5 weights without management/insider alignment (no data in Phase 1), rescaled by 1/95 (B3): undervaluation 30, repurchase intensity 20, FCF quality 15, balance sheet 10, historical discipline 10, net share count 10. Each component maps one measure linearly from a 0 point to a 100 point, clamped. When any component is unavailable the total is unavailable and the components are still shown (B8).",
+    "formula": "sum(weight x component) / 95",
+    "unit": "score 0-100",
+    "example": "Apple as known on 2026-10-06 (recorded SEC filings and closes): unavailable (undervaluation needs five years of FCF yields); intensity 49.5, FCF quality 100, balance sheet 91.8, discipline 100, share count 55.7.",
+    "direction": "Higher = better buyback quality",
+    "interpretation": "Summarizes the buyback record; read the components, not only the total.",
+    "why_it_matters": "Ranks buyback quality across companies; it never decides a state.",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "daily (11:00 SGT) and month ends since 2021",
+    "caveats": "Default weights, unvalidated: must be validated out of sample (02 §5, OD-7).",
+    "related_terms": [
+      "buyback_state",
+      "buyback_score_undervaluation",
+      "buyback_score_intensity",
+      "buyback_score_fcf_quality",
+      "buyback_score_balance_sheet",
+      "buyback_score_discipline",
+      "buyback_score_share_count"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "回購品質分數",
+    "hint_zh": "6 個分項的加權平均（預設權重，未驗證）；任一分項缺資料就不給總分。"
   },
   "buyback_record": {
     "term_id": "buyback_record",
@@ -450,6 +560,314 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "回購紀錄",
     "hint_zh": "授權、實際買回、淨減少股數分開看：董事會准了多少、實際花了多少、股東實際多拿到多少。"
+  },
+  "buyback_rule_version": {
+    "term_id": "buyback_rule_version",
+    "display_name": "Buyback Rule Version",
+    "category": "methodology",
+    "short_definition": "The version of the buyback state rules an assignment used.",
+    "full_definition": "Each rule set of config/buyback_rules.yaml has a rule_version. A released version never changes: `make migrate` registers it with the sha256 of its content and refuses a change under the same version, and a unit test pins the hash (B4). Tuning a threshold means a new version through a pull request; stored assignments keep theirs.",
+    "formula": "not a calculation; config/buyback_rules.yaml",
+    "unit": "version",
+    "example": "0.1.0: the M1.4 plan's default thresholds, approved 2026-10-10. 0.2.0 (2026-10-11, after the threshold review): period-end market cap on the latest dated share count (B12), mega caps pass ACTIVE's quarter test on any repurchase (B13) and score intensity 100 at 2% (B14).",
+    "direction": "N/A",
+    "interpretation": "Two assignments compare only under the same rule version.",
+    "why_it_matters": "Makes every state reproducible and every threshold change visible.",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/buyback_rules.yaml",
+    "as_of": "2026-10-11",
+    "update_cadence": "per rule change",
+    "caveats": "Only the active version is evaluated daily.",
+    "related_terms": [
+      "buyback_state",
+      "threshold_review"
+    ],
+    "methodology_version": "0.2.0",
+    "name_zh": "回購規則版本",
+    "hint_zh": "規則檔的版本；內容一改就必須升版，存下的評定保留當時版本。"
+  },
+  "buyback_score_balance_sheet": {
+    "term_id": "buyback_score_balance_sheet",
+    "display_name": "Score: Balance Sheet",
+    "category": "corporate_action",
+    "short_definition": "Score component (weight 10): net debt as a multiple of free cash flow.",
+    "full_definition": "Net debt at the latest period end / its TTM free cash flow: 4x scores 0, 0x (or net cash) scores 100; unavailable when free cash flow is not positive.",
+    "formula": "clamp((4 - x) / 4) x 100",
+    "unit": "score 0-100",
+    "example": "Apple as known on 2026-10-06 (recorded SEC filings and closes): 0.33x scores 91.8.",
+    "direction": "Higher = stronger balance sheet",
+    "interpretation": "Low debt leaves room to keep buying back stock.",
+    "why_it_matters": "Debt-funded buybacks raise risk.",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "daily (11:00 SGT) and month ends since 2021",
+    "caveats": "Uses free cash flow, not EBITDA, because four universe companies lack D&A or operating income.",
+    "related_terms": [
+      "buyback_quality_score",
+      "net_debt_to_fcf"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "分項：資產負債",
+    "hint_zh": "淨負債 ÷ 近四季 FCF，4 倍 0 分、0 倍 100 分。權重 10。"
+  },
+  "buyback_score_discipline": {
+    "term_id": "buyback_score_discipline",
+    "display_name": "Score: Historical Discipline",
+    "category": "corporate_action",
+    "short_definition": "Score component (weight 10): share of recent fiscal years with funded buybacks and fewer shares.",
+    "full_definition": "Disciplined years: of the last five fiscal years with repurchases, free cash flow and share counts known (at least three), the share in which repurchases stayed within free cash flow and shares outstanding fell. 0% scores 0, 100% scores 100.",
+    "formula": "disciplined years / known years x 100",
+    "unit": "score 0-100",
+    "example": "ExxonMobil as known on 2026-10-06 (recorded SEC filings and closes): 3 of 5 years scores 60.",
+    "direction": "Higher = more consistent",
+    "interpretation": "A record of buying back within means, with a real effect on the share count.",
+    "why_it_matters": "Past discipline is the best available evidence of future discipline.",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "daily (11:00 SGT) and month ends since 2021",
+    "caveats": "Does not judge whether purchases were made at good prices.",
+    "related_terms": [
+      "buyback_quality_score",
+      "disciplined_years"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "分項：歷史紀律",
+    "hint_zh": "近 5 個財年中買回 ≤ FCF 且股數減少的比例。權重 10。"
+  },
+  "buyback_score_fcf_quality": {
+    "term_id": "buyback_score_fcf_quality",
+    "display_name": "Score: FCF Quality",
+    "category": "corporate_action",
+    "short_definition": "Score component (weight 15): free cash flow / net income of the latest period.",
+    "full_definition": "FCF conversion of the latest period: 50% scores 0, 100% scores 100; n/m (unavailable) when net income is not positive.",
+    "formula": "clamp((x - 50%) / 50%) x 100",
+    "unit": "score 0-100",
+    "example": "Apple as known on 2026-10-06 (recorded SEC filings and closes): 106.01% scores 100.",
+    "direction": "Higher = earnings backed by cash",
+    "interpretation": "Buybacks are sustainable when earnings turn into cash.",
+    "why_it_matters": "Low conversion makes buybacks harder to keep up.",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "daily (11:00 SGT) and month ends since 2021",
+    "caveats": "One heavy capex year lowers it.",
+    "related_terms": [
+      "buyback_quality_score",
+      "fcf_conversion"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "分項：FCF 品質",
+    "hint_zh": "FCF ÷ 淨利，50% 0 分、100% 100 分。權重 15。"
+  },
+  "buyback_score_intensity": {
+    "term_id": "buyback_score_intensity",
+    "display_name": "Score: Repurchase Intensity",
+    "category": "corporate_action",
+    "short_definition": "Score component (weight 20): repurchases of the latest period / market cap.",
+    "full_definition": "Buyback intensity of the latest period (TTM repurchases / market cap at its end): 0% scores 0, 4% scores 100; for a mega cap (market cap at the period end >= $500 billion), 2% scores 100 (rule 0.2.0, B14).",
+    "formula": "clamp(x / 4%) x 100; mega cap: clamp(x / 2%) x 100",
+    "unit": "score 0-100",
+    "example": "Apple as known on 2026-10-06 (recorded SEC filings and closes): 1.98% scores 49.5.",
+    "direction": "Higher = more buying",
+    "interpretation": "Actual repurchases, not announcements.",
+    "why_it_matters": "Rewards executed buybacks.",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
+    "as_of": "2026-10-11",
+    "update_cadence": "daily (11:00 SGT) and month ends since 2021",
+    "caveats": "Does not by itself mean the buybacks were well timed. The mega-cap point keeps the largest companies, whose buybacks are a smaller share of a far larger value, on the same 0-100 scale.",
+    "related_terms": [
+      "buyback_quality_score",
+      "buyback_intensity"
+    ],
+    "methodology_version": "0.2.0",
+    "name_zh": "分項：買回強度",
+    "hint_zh": "近四季買回 ÷ 市值，0% 0 分、4% 100 分（超大型股 2% 即 100 分）。權重 20。"
+  },
+  "buyback_score_share_count": {
+    "term_id": "buyback_score_share_count",
+    "display_name": "Score: Net Share Count",
+    "category": "corporate_action",
+    "short_definition": "Score component (weight 10): net share reduction of the latest period.",
+    "full_definition": "Net share reduction % of the latest period (shares outstanding a year earlier - now, over the earlier count): 0% scores 0, 3% scores 100.",
+    "formula": "clamp(x / 3%) x 100",
+    "unit": "score 0-100",
+    "example": "Apple as known on 2026-10-06 (recorded SEC filings and closes): 1.67% scores 55.7.",
+    "direction": "Higher = fewer shares",
+    "interpretation": "What the buyback left for shareholders after all issuance.",
+    "why_it_matters": "Gross buybacks can hide dilution.",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "daily (11:00 SGT) and month ends since 2021",
+    "caveats": "Period-end counts; acquisitions paid in stock reduce it.",
+    "related_terms": [
+      "buyback_quality_score",
+      "net_share_reduction_pct"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "分項：股數淨效果",
+    "hint_zh": "近四季淨減少股數 %，0% 0 分、3% 100 分。權重 10。"
+  },
+  "buyback_score_undervaluation": {
+    "term_id": "buyback_score_undervaluation",
+    "display_name": "Score: Undervaluation",
+    "category": "corporate_action",
+    "short_definition": "Score component (weight 30): FCF yield against its five-year median.",
+    "full_definition": "FCF yield / its 5-year month-end median: 0.8x scores 0, 1.2x scores 100, linear between.",
+    "formula": "clamp((x - 0.8) / 0.4) x 100",
+    "unit": "score 0-100",
+    "example": "Apple as known on 2026-10-06 (recorded SEC filings and closes): unavailable.",
+    "direction": "Higher = cheaper than usual",
+    "interpretation": "Buybacks add more value when the stock is cheap.",
+    "why_it_matters": "The largest weight in the score.",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "daily (11:00 SGT) and month ends since 2021",
+    "caveats": "Needs 36 month ends with an end-of-day close.",
+    "related_terms": [
+      "buyback_quality_score",
+      "fcf_yield_to_median"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "分項：低估",
+    "hint_zh": "FCF 殖利率 ÷ 5 年中位數，0.8 倍 0 分、1.2 倍 100 分。權重 30。"
+  },
+  "buyback_state": {
+    "term_id": "buyback_state",
+    "display_name": "Buyback State",
+    "category": "corporate_action",
+    "short_definition": "Where a company stands under the versioned buyback rules: none, WATCH, ACTIVE or HIGH-CONVICTION candidate.",
+    "full_definition": "A deterministic rule set (rule_version, config/buyback_rules.yaml) assigns each universe company the highest state whose conditions, and those of every state below it, pass (errata E7). Each condition is pass, fail or unavailable with what is missing; missing data never passes. Evaluated daily at 11:00 SGT and at every month end since 2021 (backfilled), and stored with the rule version, every input, threshold and piece of evidence, so recomputing with the same times reproduces it (ADR-025). TRADE-READY is unreachable in Phase 1.",
+    "formula": "highest level L such that every condition rule of WATCH..L passes",
+    "unit": "state",
+    "example": "Apple as known on 2026-10-06 (recorded SEC filings and closes): ACTIVE (a $100 billion increase on 2026-04-30, 0.61% of market cap repurchased in the June quarter, diluted shares -1.56%); not HIGH-CONVICTION, because the price is above the base DCF value and five years of FCF yields are not in the test data.",
+    "direction": "N/A",
+    "interpretation": "A label for where to look, not a recommendation: none of the states triggers a trade.",
+    "why_it_matters": "Separates announced, executed and well-funded buybacks with fixed, reviewable rules.",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "daily (11:00 SGT) and month ends since 2021",
+    "caveats": "Thresholds are rule v0.1.0 defaults, not validated (OD-7). No state ever triggers a buy (02 §5); an announcement alone reaches WATCH at most.",
+    "related_terms": [
+      "buyback_record",
+      "buyback_rule_version",
+      "buyback_quality_score",
+      "condition_status"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "回購狀態",
+    "hint_zh": "依版本化規則判定：無、WATCH、ACTIVE、HIGH-CONVICTION 候選；每個條件都存值、門檻與證據。"
+  },
+  "buyback_state_active": {
+    "term_id": "buyback_state_active",
+    "display_name": "ACTIVE",
+    "category": "corporate_action",
+    "short_definition": "WATCH, and the company is actually buying back stock and its diluted share count is falling.",
+    "full_definition": "WATCH, and both: (1) repurchases in the latest reported quarter (ended at most 200 days before T) of at least 0.5% of market cap at the quarter end, or, for a mega cap (market cap then >= $500 billion, rule 0.2.0, B13), any repurchase; a quarter without repurchases fails; (2) weighted diluted shares of the latest period at least 1% below a year earlier.",
+    "formula": "WATCH AND quarter repurchases / market cap >= 0.5% AND diluted share change <= -1%",
+    "unit": "state",
+    "example": "ExxonMobil as known on 2026-10-06 (recorded SEC filings and closes): ACTIVE (0.91% of market cap repurchased in the June quarter, diluted shares -3.63%).",
+    "direction": "N/A",
+    "interpretation": "Money is being spent on buybacks and the share count is shrinking.",
+    "why_it_matters": "Turns an announcement into evidence from the 10-Q/10-K: an announcement alone never reaches ACTIVE (E7).",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
+    "as_of": "2026-10-11",
+    "update_cadence": "daily (11:00 SGT) and month ends since 2021",
+    "caveats": "Thresholds are rule v0.2.0 defaults after Steven's first review, not validated (OD-7). Quarterly repurchases are differenced from year-to-date filings; market cap needs an end-of-day close near the quarter end.",
+    "related_terms": [
+      "buyback_state",
+      "quarter_repurchase_to_market_cap",
+      "diluted_shares_change"
+    ],
+    "methodology_version": "0.2.0",
+    "name_zh": "執行中 ACTIVE",
+    "hint_zh": "WATCH，且最近一季買回 ≥ 市值 0.5%（超大型股有買回即可）、稀釋股數年減 ≥ 1%。只有公告到不了這一級。"
+  },
+  "buyback_state_high_conviction": {
+    "term_id": "buyback_state_high_conviction",
+    "display_name": "HIGH-CONVICTION Candidate",
+    "category": "corporate_action",
+    "short_definition": "ACTIVE, paid from free cash flow without much new debt, and the stock looks cheap by its own history or the DCF.",
+    "full_definition": "ACTIVE, and: funded by FCF (TTM repurchases at most 1.2 x TTM free cash flow, and net debt up by at most 10% of |net debt a year earlier|, B7), and valuation context (FCF yield at least its own month-end median over five years, B10, or the price at least 15% below the base DCF value with the assumption version saved by T).",
+    "formula": "ACTIVE AND fcf_funding <= 1.2x AND net debt change <= 10% AND (fcf_yield_to_median >= 1.0 OR margin_of_safety >= 15%)",
+    "unit": "state",
+    "example": "ExxonMobil as known on 2026-10-06 (recorded SEC filings and closes): not a candidate, because net debt rose 12.61% of a year earlier's.",
+    "direction": "N/A",
+    "interpretation": "A candidate for research, not a trade: Phase 2 risk checks come before any trade.",
+    "why_it_matters": "Buybacks that are affordable and done when the stock is not expensive tend to add value.",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "daily (11:00 SGT) and month ends since 2021",
+    "caveats": "Thresholds are rule v0.1.0 defaults, not validated (OD-7). Banks have no comparable free cash flow or net debt: unavailable for them.",
+    "related_terms": [
+      "buyback_state",
+      "fcf_funding",
+      "net_debt_change_yoy",
+      "fcf_yield_to_median",
+      "margin_of_safety"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "高信心候選",
+    "hint_zh": "ACTIVE，且由 FCF 支應、淨負債沒大增，且 FCF 殖利率 ≥ 5 年中位數或股價比 DCF 低 15% 以上。"
+  },
+  "buyback_state_trade_ready": {
+    "term_id": "buyback_state_trade_ready",
+    "display_name": "TRADE-READY",
+    "category": "corporate_action",
+    "short_definition": "HIGH-CONVICTION, the market confirms, and a risk check passed. Unreachable in Phase 1.",
+    "full_definition": "HIGH-CONVICTION, market confirmation (the close above its 50-session average, or a 21-session return above SPY's) and a passed risk check. The risk check arrives in Phase 2, so the rule set marks this state unreachable and the database refuses it (P1-4). Market confirmation is computed and shown.",
+    "formula": "HIGH-CONVICTION AND (close > 50-session average OR return - SPY return > 0) AND risk check passed",
+    "unit": "state",
+    "example": "Apple as known on 2026-10-06 (recorded SEC filings and closes): market confirmation passes (close 3.25% above its average), the risk check is unavailable: not TRADE-READY.",
+    "direction": "N/A",
+    "interpretation": "Not used in Phase 1.",
+    "why_it_matters": "Keeps the ladder complete without implying a trade.",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "daily (11:00 SGT) and month ends since 2021",
+    "caveats": "Even in Phase 2 a state alone never places an order (02 §5).",
+    "related_terms": [
+      "buyback_state",
+      "market_confirmation",
+      "risk_check"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "可交易 TRADE-READY",
+    "hint_zh": "需市場確認與風險檢查；風險檢查在 Phase 2，Phase 1 無法達到。"
+  },
+  "buyback_state_watch": {
+    "term_id": "buyback_state_watch",
+    "display_name": "WATCH",
+    "category": "corporate_action",
+    "short_definition": "A buyback was recently authorized or planned, or a large authorization remains.",
+    "full_definition": "Either condition passes: (1) a new or increased authorization or a yearly plan (B9) announced in an 8-K or issuer press release within the last 365 days; (2) a remaining authorization stated in such an announcement within that window, at least 2% of market cap at T. Before 2022 a missing announcement is unavailable, since 8-Ks are read from 2021-01-01 only.",
+    "formula": "announcement within 365 days OR remaining authorization / market cap >= 2%",
+    "unit": "state",
+    "example": "NVIDIA as known on 2026-10-06 (recorded SEC filings and closes): WATCH from its 2026-09-28 release (a $150 billion increase, $235 billion remaining).",
+    "direction": "N/A",
+    "interpretation": "The board allowed buybacks; nothing says any were made.",
+    "why_it_matters": "The first step of the ladder: evidence of intent.",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "daily (11:00 SGT) and month ends since 2021",
+    "caveats": "Thresholds are rule v0.1.0 defaults, not validated (OD-7). XBRL-tagged authorizations only corroborate (B1); they never qualify on their own.",
+    "related_terms": [
+      "buyback_state",
+      "repurchase_announcement",
+      "remaining_to_market_cap"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "觀察 WATCH",
+    "hint_zh": "365 天內有新授權、授權增加或每年計畫，或剩餘授權 ≥ 市值 2%。"
   },
   "capex": {
     "term_id": "capex",
@@ -551,6 +969,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "回饋股東 / FCF",
     "hint_zh": "回饋股東金額 ÷ 自由現金流；超過 100% 代表動用現金或借錢。"
   },
+  "close_vs_moving_average": {
+    "term_id": "close_vs_moving_average",
+    "display_name": "Close vs 50-Session Average",
+    "category": "corporate_action",
+    "short_definition": "How far the latest close is above its 50-session average.",
+    "full_definition": "The latest end-of-day close / the mean of the last 50 end-of-day closes - 1, every close moved to T's split basis. Unavailable without a valuation price.",
+    "formula": "close / mean(last 50 closes) - 1",
+    "unit": "percent",
+    "example": "Apple as known on 2026-10-06 (recorded SEC filings and closes): +3.25%.",
+    "direction": "Above 0 = trending up",
+    "interpretation": "The stock trades above its recent average.",
+    "why_it_matters": "Half of TRADE-READY's market confirmation.",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "daily (11:00 SGT) and month ends since 2021",
+    "caveats": "Trend measures lag; shown for completeness while TRADE-READY is unreachable.",
+    "related_terms": [
+      "market_confirmation",
+      "relative_return_1m"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "收盤 vs 50 日均線",
+    "hint_zh": "最新收盤高於 50 個交易日平均多少。"
+  },
   "commercial_paper": {
     "term_id": "commercial_paper",
     "display_name": "Commercial Paper",
@@ -576,6 +1019,30 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "商業本票",
     "hint_zh": "短期無擔保借款，通常 270 天內到期。"
+  },
+  "condition_status": {
+    "term_id": "condition_status",
+    "display_name": "Condition Status",
+    "category": "methodology",
+    "short_definition": "Whether one rule condition passes, fails or cannot be judged.",
+    "full_definition": "pass: the value meets the threshold; fail: it does not, or the rule fails it outright (a quarter without repurchases); unavailable: an input is missing, with what is missing. Unavailable never counts as a pass. A state's conditions combine with all (ACTIVE) or any (WATCH, the valuation context).",
+    "formula": "value compared with the threshold",
+    "unit": "pass / fail / unavailable",
+    "example": "Apple's FCF-yield condition: unavailable (12 month ends; 36 needed).",
+    "direction": "N/A",
+    "interpretation": "Unavailable means the data is not there, not that the company failed.",
+    "why_it_matters": "Keeps missing data from looking like a signal.",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "daily (11:00 SGT) and month ends since 2021",
+    "caveats": "N/A",
+    "related_terms": [
+      "buyback_state"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "條件判定",
+    "hint_zh": "通過、未通過或無資料；無資料永遠不算通過。"
   },
   "core_pce_inflation_yoy": {
     "term_id": "core_pce_inflation_yoy",
@@ -679,25 +1146,27 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "term_id": "dashboard_corporate_actions",
     "display_name": "Corporate Actions",
     "category": "navigation",
-    "short_definition": "Buybacks, dividends, M&A, equity issuance, convertibles and insider activity.",
-    "full_definition": "Capital-allocation events, with buyback authorization kept apart from actual repurchase and net share reduction (02 §5). Insider (Form 4) activity is added in Phase 4.",
-    "formula": "not a calculation; dashboard defined in build spec 02 §21",
+    "short_definition": "Buyback states, their history and timeline for every universe company.",
+    "full_definition": "Live from M1.4b (ADR-025): the threshold review (each company's buyback state under the active rule version, every condition's value against its threshold, the Buyback Quality Score), each company's month-end state history since 2021 (backfilled marked) and its buyback timeline of announcements and state changes, as known on the chosen date. Dividends, M&A, issuance and insider activity come later.",
+    "formula": "not a calculation; reads GET /buybacks",
     "unit": "page",
-    "example": "A buyback announcement alone stays on watch until filings show actual repurchases.",
+    "example": "As known on 2026-10-06 (test data): Apple and ExxonMobil ACTIVE, NVIDIA WATCH, Meta none.",
     "direction": "N/A",
-    "interpretation": "Planned for Phase 1; until then the page shows no data, live or simulated.",
+    "interpretation": "Read a company's state with its conditions; open the company for the full record.",
     "why_it_matters": "Capital allocation is a strong signal only when actions match announcements.",
-    "source": "Build spec 02 §21; research report 01 §21; ROADMAP dashboard map",
+    "source": "Build spec 02 §5 and §21; ADR-025",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/spec/02_master_build_prompt_v2.md",
-    "as_of": "2026-10-05",
-    "update_cadence": "per release",
-    "caveats": "Contents arrive with Phase 1; scope can change through a roadmap update.",
+    "as_of": "2026-10-10",
+    "update_cadence": "daily (11:00 SGT)",
+    "caveats": "States are stored daily and at month ends; a date in between shows the latest stored before it. Thresholds are defaults, not validated.",
     "related_terms": [
-      "planned_phase"
+      "buyback_state",
+      "threshold_review",
+      "buyback_quality_score"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "公司行動",
-    "hint_zh": "買回、股利、分割等公司行動（Phase 1）。"
+    "hint_zh": "每家公司的回購狀態、條件對門檻的檢視、狀態歷史與回購時間軸。"
   },
   "dashboard_earnings": {
     "term_id": "dashboard_earnings",
@@ -1172,7 +1641,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "Diluted Share Change",
     "category": "fundamentals",
     "short_definition": "Change in weighted diluted shares against a year earlier.",
-    "full_definition": "Weighted average diluted shares of the period divided by those of the period a year earlier, minus one, both moved to the split basis of the As known on time (ADR-021). For TTM: the latest reported quarter against the same quarter a year earlier. Per fiscal year as reported in the 10-K, and for the last four quarters (TTM) from year-to-date 10-Q values (ADR-021), each with the facts known at the As known on time.",
+    "full_definition": "Weighted average diluted shares of the period divided by those of the period a year earlier, minus one, both moved to the split basis of the As known on time (ADR-021). For TTM: the latest reported quarter against the same quarter a year earlier. A company that tags no diluted count but reports diluted EPS equal to basic EPS for the period uses its basic weighted shares, labelled (ADR-025 B11; ExxonMobil since 2014). Per fiscal year as reported in the 10-K, and for the last four quarters (TTM) from year-to-date 10-Q values (ADR-021), each with the facts known at the As known on time.",
     "formula": "diluted_shares / diluted_shares a year earlier - 1 (split-adjusted)",
     "unit": "percent",
     "example": "Apple FY2025: 15.005B / 15.408B - 1 = -2.62%.",
@@ -1181,17 +1650,44 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "why_it_matters": "Per-share value grows faster than the business when the share count falls.",
     "source": "Derived from SEC XBRL filings (domain/research.py)",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/research.py",
-    "as_of": "2026-10-09",
+    "as_of": "2026-10-10",
     "update_cadence": "per filing",
-    "caveats": "Not net share reduction (M1.4); ExxonMobil reports no diluted shares after 2013.",
+    "caveats": "Not net share reduction (M1.4). A weighted average over the period, so a buyback late in the year shows fully only in the next one.",
     "related_terms": [
       "diluted_shares",
+      "basic_shares",
       "share_repurchases",
       "stock_based_compensation"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "稀釋股數年增減",
-    "hint_zh": "稀釋加權股數 ÷ 一年前 − 1，換算到同一分割基準。"
+    "hint_zh": "稀釋加權股數 ÷ 一年前 − 1，換算到同一分割基準；沒標稀釋股數且稀釋 EPS = 基本 EPS 時用基本股數。"
+  },
+  "disciplined_years": {
+    "term_id": "disciplined_years",
+    "display_name": "Disciplined Years",
+    "category": "corporate_action",
+    "short_definition": "Share of recent fiscal years with repurchases within free cash flow and fewer shares.",
+    "full_definition": "Of the last five fiscal years with repurchases, free cash flow and share counts known, those in which repurchases <= free cash flow and shares outstanding fell, as a percent. Unavailable with fewer than three known years.",
+    "formula": "years(repurchases <= FCF AND net share reduction > 0) / known years",
+    "unit": "percent",
+    "example": "Apple as known on 2026-10-06 (recorded SEC filings and closes): 5 of 5 = 100%.",
+    "direction": "Higher = more consistent",
+    "interpretation": "Whether buybacks have been affordable and effective year after year.",
+    "why_it_matters": "The discipline measure of the buyback score.",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "daily (11:00 SGT) and month ends since 2021",
+    "caveats": "Meta reports share counts per class only before 2019: fewer known years.",
+    "related_terms": [
+      "buyback_score_discipline",
+      "repurchase_to_fcf",
+      "net_share_reduction"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "紀律年數比例",
+    "hint_zh": "近 5 個財年中，買回 ≤ FCF 且流通股數減少的年數比例（至少 3 年有資料）。"
   },
   "discount_rate": {
     "term_id": "discount_rate",
@@ -1372,6 +1868,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "企業價值（EV）",
     "hint_zh": "市值加淨負債，包含債權人的部分。"
+  },
+  "eps_basic": {
+    "term_id": "eps_basic",
+    "display_name": "Basic EPS",
+    "category": "fundamentals",
+    "short_definition": "Net income per share, counting only shares outstanding.",
+    "full_definition": "Read from us-gaap EarningsPerShareBasic in USD per share as reported. Values tagged with another unit are ignored. Used to tell whether anything dilutes: where diluted EPS equals basic EPS for a period, the basic share count stands in for a diluted count the company does not tag (ADR-025 B11).",
+    "formula": "reported us-gaap:EarningsPerShareBasic (net income / basic weighted average shares)",
+    "unit": "USD per share",
+    "example": "ExxonMobil's FY2025 10-K reports basic and diluted EPS of $6.70.",
+    "direction": "Higher = more profit per share",
+    "interpretation": "Equal to diluted EPS when options and convertibles add no shares.",
+    "why_it_matters": "The gap to diluted EPS shows how much potential dilution there is.",
+    "source": "SEC EDGAR XBRL company facts (data.sec.gov), us-gaap:EarningsPerShareBasic",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/adapters/sec/concepts.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "per filing (10-Q, 10-K)",
+    "caveats": "Stock splits change past EPS in later filings; such changes are stored as new versions and adjusted to the As known on basis where compared.",
+    "related_terms": [
+      "eps_diluted",
+      "basic_shares"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "基本每股盈餘",
+    "hint_zh": "只用流通在外股數計算的每股獲利；等於稀釋 EPS 代表沒有稀釋。"
   },
   "eps_diluted": {
     "term_id": "eps_diluted",
@@ -1555,6 +2076,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "FCF 轉換率",
     "hint_zh": "自由現金流 ÷ 淨利，看獲利有沒有變成現金。"
   },
+  "fcf_funding": {
+    "term_id": "fcf_funding",
+    "display_name": "FCF Funding",
+    "category": "corporate_action",
+    "short_definition": "Repurchases of the last four quarters as a multiple of free cash flow.",
+    "full_definition": "TTM share repurchases / TTM free cash flow (operating cash flow - capex), the latest period of the buyback record. With free cash flow not positive it passes only without repurchases.",
+    "formula": "TTM share_repurchases / TTM free_cash_flow",
+    "unit": "x",
+    "example": "Apple as known on 2026-10-06 (recorded SEC filings and closes): 0.60x.",
+    "direction": "Lower = better funded",
+    "interpretation": "Up to 1.0x the buyback is paid from what the business generated.",
+    "why_it_matters": "HIGH-CONVICTION needs <= 1.2x: buybacks funded by borrowing can create a false signal (01 §4).",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "daily (11:00 SGT) and month ends since 2021",
+    "caveats": "Same measure as Repurchases / FCF, shown as a multiple.",
+    "related_terms": [
+      "buyback_state_high_conviction",
+      "repurchase_to_fcf",
+      "free_cash_flow"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "FCF 支應倍數",
+    "hint_zh": "近四季買回 ÷ 近四季自由現金流。"
+  },
   "fcf_yield": {
     "term_id": "fcf_yield",
     "display_name": "Free Cash Flow Yield",
@@ -1579,6 +2126,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "自由現金流殖利率",
     "hint_zh": "近四季自由現金流 ÷ 市值。"
+  },
+  "fcf_yield_to_median": {
+    "term_id": "fcf_yield_to_median",
+    "display_name": "FCF Yield / 5-Year Median",
+    "category": "corporate_action",
+    "short_definition": "The FCF yield at T against its own median over the five years before (B10).",
+    "full_definition": "FCF yield at T divided by the median of the FCF yield at each month end of the last five years, each month from the facts and the end-of-day close known then (as the relative valuation). Needs 36 month ends.",
+    "formula": "fcf_yield / median(month-end fcf_yield, last 5 years)",
+    "unit": "x",
+    "example": "Apple as known on 2026-10-06 (recorded SEC filings and closes): unavailable (12 month ends of closes in the test data).",
+    "direction": "Higher = cheaper than usual",
+    "interpretation": "Above 1.0x the stock yields more free cash flow than it usually has.",
+    "why_it_matters": "One way to the HIGH-CONVICTION valuation context (>= 1.0x); the undervaluation score component (0.8x to 1.2x).",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "daily (11:00 SGT) and month ends since 2021",
+    "caveats": "Compares a company with its own past, not with peers; a falling FCF trend lowers it.",
+    "related_terms": [
+      "fcf_yield",
+      "multiple_percentile",
+      "buyback_score_undervaluation"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "FCF 殖利率 ÷ 5 年中位數",
+    "hint_zh": "T 時 FCF 殖利率 ÷ 過去 5 年每月底 FCF 殖利率的中位數。"
   },
   "feed_status": {
     "term_id": "feed_status",
@@ -2388,6 +2961,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "市值",
     "hint_zh": "股價 × 最新流通股數（依分割換算到股價日）。"
   },
+  "market_confirmation": {
+    "term_id": "market_confirmation",
+    "display_name": "Market Confirmation",
+    "category": "signal",
+    "short_definition": "Whether the market's own behavior supports a thesis.",
+    "full_definition": "In the buyback rules (v0.1.0): the latest close above its 50-session average, or a 21-session return above SPY's (either passes). Computed from end-of-day closes known at T; part of TRADE-READY, which is unreachable in Phase 1. Other theses define their own versioned rules.",
+    "formula": "close > 50-session average OR 21-session return - SPY return > 0",
+    "unit": "pass / fail",
+    "example": "Apple as known on 2026-10-06 (recorded SEC filings and closes): passes (+3.25% above its average, +1.21 points over SPY).",
+    "direction": "N/A",
+    "interpretation": "The market is behaving consistently with the thesis.",
+    "why_it_matters": "Required for L3 trade candidates.",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "daily",
+    "caveats": "Strong confirmation may mean the move is already priced in.",
+    "related_terms": [
+      "close_vs_moving_average",
+      "relative_return_1m",
+      "buyback_state_trade_ready"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "市場確認",
+    "hint_zh": "收盤高於 50 日均線，或一個月報酬勝過 SPY。"
+  },
   "market_session": {
     "term_id": "market_session",
     "display_name": "Market Session",
@@ -2412,6 +3011,33 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "交易時段",
     "hint_zh": "美股是否開盤（紐約時間 09:30–16:00，扣除假日與提早收盤）。"
+  },
+  "mega_cap": {
+    "term_id": "mega_cap",
+    "display_name": "Mega Cap",
+    "category": "corporate_action",
+    "short_definition": "A company with a market cap of at least $500 billion at the period end, in the buyback rules.",
+    "full_definition": "In buyback rule 0.2.0 (B13, B14): market cap at the quarter or period end (the last end-of-day close by then x the latest share count dated by then) of at least $500 billion. A mega cap passes ACTIVE's quarter test on any repurchase, since even large buybacks are a small share of its value, and its repurchase intensity scores 100 at 2% instead of 4%.",
+    "formula": "market cap at the period end >= $500 billion",
+    "unit": "flag",
+    "example": "NVIDIA ($5.0T), Apple ($4.1T), Microsoft ($2.8T), JPMorgan ($870B) and ExxonMobil ($562B) at their June 2026 quarter ends.",
+    "direction": "N/A",
+    "interpretation": "Judged per period, so a company can move across the line.",
+    "why_it_matters": "A share-of-market-cap test alone would hold back the largest buyers in dollars.",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/buyback_rules.yaml",
+    "as_of": "2026-10-11",
+    "update_cadence": "per evaluation",
+    "caveats": "The line is a default, not validated (OD-7); diluted shares must still fall at least 1% for ACTIVE.",
+    "related_terms": [
+      "buyback_state_active",
+      "quarter_repurchase_to_market_cap",
+      "buyback_score_intensity",
+      "market_cap"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "超大型股",
+    "hint_zh": "期末市值 ≥ 5000 億美元；單季只要有實際買回就過 ACTIVE 的買回條件，買回強度 2% 即滿分（規則 0.2.0）。"
   },
   "milestone_status": {
     "term_id": "milestone_status",
@@ -2513,6 +3139,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "淨負債",
     "hint_zh": "總負債減現金；負值代表現金多於負債。"
   },
+  "net_debt_change_yoy": {
+    "term_id": "net_debt_change_yoy",
+    "display_name": "Net Debt Change",
+    "category": "corporate_action",
+    "short_definition": "The change in net debt over the latest period, as a share of |net debt a year earlier|.",
+    "full_definition": "(Net debt at the period end - net debt a year earlier) / |net debt a year earlier| (B7: the absolute value, so it works for net-cash companies too). With no net debt a year earlier it passes only if net debt did not rise.",
+    "formula": "(net_debt_end - net_debt_start) / |net_debt_start|",
+    "unit": "percent",
+    "example": "ExxonMobil as known on 2026-10-06 (recorded SEC filings and closes): +12.61%; Apple: -31.53%.",
+    "direction": "Lower = less borrowing",
+    "interpretation": "Whether buybacks are being financed by debt.",
+    "why_it_matters": "HIGH-CONVICTION allows at most +10%.",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "daily (11:00 SGT) and month ends since 2021",
+    "caveats": "Net debt can rise for reasons other than buybacks, such as an acquisition.",
+    "related_terms": [
+      "buyback_state_high_conviction",
+      "net_debt",
+      "debt_funded_buyback"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "淨負債年變動",
+    "hint_zh": "（期末淨負債 − 一年前）÷ |一年前淨負債|。"
+  },
   "net_debt_to_ebitda": {
     "term_id": "net_debt_to_ebitda",
     "display_name": "Net Debt / EBITDA",
@@ -2538,6 +3190,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "淨負債 / EBITDA",
     "hint_zh": "期末淨負債 ÷ EBITDA；負值代表淨現金。"
+  },
+  "net_debt_to_fcf": {
+    "term_id": "net_debt_to_fcf",
+    "display_name": "Net Debt / FCF",
+    "category": "corporate_action",
+    "short_definition": "Net debt as a multiple of the last four quarters' free cash flow.",
+    "full_definition": "Net debt at the latest period end / its TTM free cash flow. Net cash gives a negative multiple. Not meaningful when free cash flow is not positive.",
+    "formula": "net_debt / TTM free_cash_flow",
+    "unit": "x",
+    "example": "Apple as known on 2026-10-06 (recorded SEC filings and closes): 0.33x.",
+    "direction": "Lower = less leveraged",
+    "interpretation": "Years of free cash flow it would take to repay net debt.",
+    "why_it_matters": "The balance-sheet measure of the buyback score.",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "daily (11:00 SGT) and month ends since 2021",
+    "caveats": "Banks have no comparable net debt or free cash flow.",
+    "related_terms": [
+      "net_debt",
+      "free_cash_flow",
+      "buyback_score_balance_sheet"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "淨負債 ÷ FCF",
+    "hint_zh": "淨負債 ÷ 近四季自由現金流；淨現金為負值。"
   },
   "net_income": {
     "term_id": "net_income",
@@ -3354,6 +4032,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "股價淨值比",
     "hint_zh": "市值 ÷ 股東權益；權益為負時無意義。"
   },
+  "quarter_repurchase_to_market_cap": {
+    "term_id": "quarter_repurchase_to_market_cap",
+    "display_name": "Quarter Repurchases / Market Cap",
+    "category": "corporate_action",
+    "short_definition": "Dollars repurchased in the latest reported quarter as a share of market cap at its end.",
+    "full_definition": "Share repurchases of the latest quarter (reported three months, or differenced from year-to-date 10-Q/10-K values) divided by market cap at the quarter end (the last end-of-day close on or before it x the latest share count dated on or before it, cover page or balance sheet, B12). The quarter must end at most 200 days before T; no repurchases fails. Rule 0.2.0: for a mega cap (market cap at the quarter end >= $500 billion) any repurchase passes and the share is shown only (B13).",
+    "formula": "quarter share_repurchases / (close at quarter end x shares outstanding)",
+    "unit": "percent",
+    "example": "AutoZone, quarter ended 2026-05-09: $580.7M / $57.6B (close $3,496.19 x 16,476,820 cover-page shares of 2026-03-13) = 1.01%. NVIDIA, quarter ended 2026-07-26: $19.7B is 0.39% of $5.0T: a mega cap, so it passes.",
+    "direction": "Higher = more buying",
+    "interpretation": "How much stock the company bought in its last quarter.",
+    "why_it_matters": "The ACTIVE condition that needs actual repurchases (>= 0.5%).",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
+    "as_of": "2026-10-11",
+    "update_cadence": "daily (11:00 SGT) and month ends since 2021",
+    "caveats": "One quarter can be lumpy; the TTM intensity is in the score. Rule 0.1.0 used only the balance-sheet count on the quarter end.",
+    "related_terms": [
+      "buyback_state_active",
+      "share_repurchases",
+      "buyback_intensity"
+    ],
+    "methodology_version": "0.2.0",
+    "name_zh": "單季買回 ÷ 市值",
+    "hint_zh": "最近一季買回金額 ÷ 季末市值（季末前最近一筆股數）；沒買回就不通過；超大型股有買回即通過。"
+  },
   "quarterly_derived_value": {
     "term_id": "quarterly_derived_value",
     "display_name": "Quarterly Value (from year to date)",
@@ -3476,6 +4180,57 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "對帳結果",
     "hint_zh": "pass 全部一致；warn 只有提醒；fail 有數字不一致、缺漏或多存。"
+  },
+  "relative_return_1m": {
+    "term_id": "relative_return_1m",
+    "display_name": "1-Month Return vs SPY",
+    "category": "corporate_action",
+    "short_definition": "The stock's return over the last 21 sessions minus SPY's over the same days.",
+    "full_definition": "(Close / close 21 sessions earlier - 1) - (SPY's close / its close on or before that day - 1), in percentage points, split-adjusted end-of-day closes.",
+    "formula": "stock return (21 sessions) - SPY return",
+    "unit": "percentage points",
+    "example": "Apple as known on 2026-10-06 (recorded SEC filings and closes): +1.21 points (2026-09-03 to 2026-10-05).",
+    "direction": "Above 0 = outperforming",
+    "interpretation": "Whether the stock beat the market lately.",
+    "why_it_matters": "Half of TRADE-READY's market confirmation.",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "daily (11:00 SGT) and month ends since 2021",
+    "caveats": "Price returns only, without dividends.",
+    "related_terms": [
+      "market_confirmation",
+      "close_vs_moving_average"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "一個月相對 SPY 報酬",
+    "hint_zh": "近 21 個交易日報酬減 SPY 同期報酬（百分點）。"
+  },
+  "remaining_to_market_cap": {
+    "term_id": "remaining_to_market_cap",
+    "display_name": "Remaining Authorization / Market Cap",
+    "category": "corporate_action",
+    "short_definition": "The remaining buyback authorization an issuer stated, as a share of market cap at T.",
+    "full_definition": "The latest remaining amount stated within 365 days in an 8-K or press release (a 'remaining' sentence, or an increase that states the total remaining) divided by market cap at T (the valuation price x shares outstanding).",
+    "formula": "stated remaining authorization / market cap at T",
+    "unit": "percent",
+    "example": "NVIDIA as known on 2026-10-06 (recorded SEC filings and closes): $235 billion remaining; market cap unavailable in the test data, so the condition is unavailable.",
+    "direction": "Higher = more buyback capacity",
+    "interpretation": "Room for future buybacks relative to the company's size.",
+    "why_it_matters": "One way into WATCH (remaining >= 2% of market cap).",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
+    "as_of": "2026-10-10",
+    "update_cadence": "daily (11:00 SGT) and month ends since 2021",
+    "caveats": "A remaining amount is permission, not a commitment.",
+    "related_terms": [
+      "buyback_state_watch",
+      "repurchase_remaining",
+      "market_cap"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "剩餘授權 ÷ 市值",
+    "hint_zh": "公告中最近的剩餘授權額 ÷ T 時市值。"
   },
   "reporting_period": {
     "term_id": "reporting_period",
@@ -3732,6 +4487,30 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "反向 DCF 隱含成長率",
     "hint_zh": "讓 base 價值等於股價所需的前 5 年年成長率，也就是市場在假設的成長。"
+  },
+  "risk_check": {
+    "term_id": "risk_check",
+    "display_name": "Risk Check",
+    "category": "corporate_action",
+    "short_definition": "The Phase 2 portfolio and position checks a candidate must pass before any trade.",
+    "full_definition": "Not built in Phase 1 (P1-4): always unavailable, which keeps TRADE-READY unreachable.",
+    "formula": "not a calculation in Phase 1",
+    "unit": "N/A",
+    "example": "Every company in Phase 1: unavailable.",
+    "direction": "N/A",
+    "interpretation": "Phase 1 never reaches a trade decision.",
+    "why_it_matters": "Separates research signals from trading.",
+    "source": "Build spec 02 §5 and §8; Phase 1 decision P1-4",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M1_fundamentals.md",
+    "as_of": "2026-10-10",
+    "update_cadence": "Phase 2",
+    "caveats": "Arrives with the risk engine in Phase 2.",
+    "related_terms": [
+      "buyback_state_trade_ready"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "風險檢查",
+    "hint_zh": "Phase 2 的部位與組合風控；Phase 1 一律無資料。"
   },
   "roe": {
     "term_id": "roe",
@@ -4157,6 +4936,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "永續成長率",
     "hint_zh": "第 10 年後永遠的成長率；至少要比折現率低 1 個百分點。"
+  },
+  "threshold_review": {
+    "term_id": "threshold_review",
+    "display_name": "Threshold Review",
+    "category": "methodology",
+    "short_definition": "The table of every universe company's state and inputs under the current rule version.",
+    "full_definition": "On the Corporate Actions dashboard: each company's state, every condition's value against its threshold (pass, fail, unavailable) and the score components, as known on the chosen date, so Steven can confirm or tune the defaults (P1-9). A change becomes a new rule version.",
+    "formula": "not a calculation; reads GET /buybacks",
+    "unit": "table",
+    "example": "Rule 0.1.0 on 2026-10-10 left AutoZone, JPMorgan and NVIDIA at WATCH: two tag shares only at year ends, and NVIDIA's $19.7B quarter was 0.39% of a $5T market cap. Rule 0.2.0 answers both (B12, B13).",
+    "direction": "N/A",
+    "interpretation": "Look for thresholds that every company passes or none can.",
+    "why_it_matters": "The thresholds are defaults until reviewed against real companies.",
+    "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
+    "as_of": "2026-10-11",
+    "update_cadence": "per page load",
+    "caveats": "Review on enough history; one date can mislead.",
+    "related_terms": [
+      "buyback_rule_version",
+      "buyback_state"
+    ],
+    "methodology_version": "0.2.0",
+    "name_zh": "門檻檢視",
+    "hint_zh": "每家公司在目前規則版本下的狀態與所有條件值，供確認或調整門檻。"
   },
   "total_debt": {
     "term_id": "total_debt",

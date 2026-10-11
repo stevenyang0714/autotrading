@@ -274,13 +274,19 @@ class FairValueOut(BaseModel):
 
 
 def chosen_version(
-    session: Session, instrument_id: object, requested: str | None, at: datetime
+    session: Session,
+    instrument_id: object,
+    requested: str | None,
+    at: datetime,
+    system_time: datetime | None = None,
 ) -> AssumptionVersion:
+    """The requested version; by default the latest saved by `at` (and by `system_time`)."""
     if requested == "default":
         return DEFAULT_VERSION
     saved = _saved(session, instrument_id)
     if requested is None:
-        known = [row for row in saved if row.created_at <= at]
+        by = at if system_time is None else min(at, system_time)
+        known = [row for row in saved if row.created_at <= by]
         return _version_out(known[0]) if known else DEFAULT_VERSION
     row = next((r for r in saved if r.version == int(requested)), None)
     if row is None:
@@ -288,9 +294,12 @@ def chosen_version(
     return _version_out(row)
 
 
-def risk_free_at(session: Session, at: datetime) -> RiskFreeOut | None:
-    """The latest 10-year Treasury yield observation public at `at`."""
-    known = as_of_query(MacroObservation, known_at=at).where(
+def risk_free_at(
+    session: Session, at: datetime, system_time: datetime | None = None
+) -> RiskFreeOut | None:
+    """The latest 10-year Treasury yield observation public at `at`, as this database held
+    it at `system_time` (default: now)."""
+    known = as_of_query(MacroObservation, known_at=at, system_time=system_time).where(
         MacroObservation.series_id == RISK_FREE_SERIES
     )
     shown = aliased(MacroObservation, known.subquery())

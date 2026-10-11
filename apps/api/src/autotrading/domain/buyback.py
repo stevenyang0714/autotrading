@@ -5,7 +5,8 @@ splits known at T and the buyback statements published by then.
 Per period (TTM when later than the last fiscal year, then five fiscal years; domain/research):
 - repurchases: dollars paid and shares bought, as reported (shares on T's split basis);
 - intensity: repurchases / market cap at the period end (the last end-of-day close on or before
-  it x balance-sheet shares outstanding then, on the close's split basis);
+  it x the latest share count dated by then, cover page or balance sheet, on the close's split
+  basis: V2 at the period end, B12);
 - repurchases / free cash flow; SBC offset = SBC / repurchases;
 - debt-funded flag: net debt up over the period while repurchases exceed free cash flow;
 - net share reduction (B5) = shares outstanding a year earlier - now, both on T's split basis,
@@ -36,6 +37,7 @@ from autotrading.domain.valuation import (
     Unit,
     Valued,
     close_basis,
+    share_count,
 )
 
 EVENT_DAYS = 30
@@ -43,6 +45,9 @@ REPEAT_DAYS = 120  # an identical sentence in the next quarter's filing restates
 CLOSE_WITHIN = timedelta(days=7)  # a period may end on a weekend or holiday
 
 Section = Literal["repurchase", "shares"]
+# The share count of a period end's market cap: the latest dated by then, cover page or balance
+# sheet (B12), or the balance-sheet count on that day only (M1.4a, buyback rule 0.1.0).
+SharesAt = Literal["latest_dated", "balance_sheet"]
 
 ROWS: tuple[tuple[Section, str, Unit], ...] = (
     ("repurchase", "share_repurchases", "USD"),
@@ -64,7 +69,11 @@ BUYBACK_METRICS = (
     "shares_repurchased",
     "stock_based_compensation",
     "shares_outstanding",
+    "shares_outstanding_cover",
     "diluted_shares",
+    "basic_shares",
+    "eps_diluted",
+    "eps_basic",
     "cash",
     "long_term_debt_noncurrent",
     "long_term_debt_current",
@@ -114,10 +123,37 @@ def _on_basis[FactT: DatedFact](
 
 
 def market_cap_at[FactT: DatedFact](
-    book: Book[FactT], closes: Sequence[Close], day: date
+    book: Book[FactT], closes: Sequence[Close], day: date, shares_at: SharesAt = "latest_dated"
 ) -> tuple[Input[FactT] | None, list[str]]:
-    """Close x shares outstanding at a period end, or what is missing."""
+    """Close x shares outstanding at a period end, or what is missing. The count is the latest
+    dated by the period end, cover page or balance sheet (V2 at the period end, B12), or with
+    `balance_sheet` only the balance-sheet count on the period end (rule 0.1.0)."""
     close = close_on(closes, day)
+    if shares_at == "latest_dated":
+        basis = close_basis(close) if close else book.at
+        dated = share_count(book.facts, basis, book.splits, on_or_before=day)
+        if close is None or dated is None or dated.value is None:
+            return None, [
+                label
+                for label, value in (
+                    (f"end-of-day close by {day}", close),
+                    (f"shares outstanding by {day}", dated),
+                )
+                if value is None
+            ]
+        kind = "cover page" if dated.name == "shares_outstanding_cover" else "balance sheet"
+        return (
+            Input(
+                "market_cap",
+                (close.close * dated.value).quantize(Decimal(1)),
+                None,
+                day,
+                dated.sources,
+                f"close {close.day} ${close.close} x {dated.value} shares outstanding "
+                f"({kind}, {dated.period_end})" + (f"; {dated.note}" if dated.note else ""),
+            ),
+            [],
+        )
     shares = book.instant("shares_outstanding", day)
     missing = [
         label
@@ -146,14 +182,14 @@ def market_cap_at[FactT: DatedFact](
 
 
 def _period_values[FactT: DatedFact](
-    book: Book[FactT], window: Window, closes: Sequence[Close]
+    book: Book[FactT], window: Window, closes: Sequence[Close], shares_at: SharesAt
 ) -> dict[str, Valued[FactT]]:
     out: dict[str, Valued[FactT]] = {}
     paid = book.flow("share_repurchases", window)
     bought = _on_basis(book, "shares_repurchased", book.flow("shares_repurchased", window), book.at)
     fcf, fcf_missing = book.free_cash_flow(window)
     sbc = book.flow("stock_based_compensation", window)
-    cap, cap_missing = market_cap_at(book, closes, window.end)
+    cap, cap_missing = market_cap_at(book, closes, window.end, shares_at)
 
     out["share_repurchases"] = valued(
         "share_repurchases", "USD", [("share repurchases", paid)], lambda v: v[0]
@@ -243,12 +279,16 @@ def _period_values[FactT: DatedFact](
 
 
 def buyback_record[FactT: DatedFact](
-    facts: Sequence[FactT], closes: Sequence[Close], at: datetime, splits: Sequence[Split]
+    facts: Sequence[FactT],
+    closes: Sequence[Close],
+    at: datetime,
+    splits: Sequence[Split],
+    shares_at: SharesAt = "latest_dated",
 ) -> Record[FactT]:
     """Every row for every period, as known at `at` (facts and closes already filtered)."""
     book = Book(facts, at, splits)
     shown = periods(book)
-    by_period = [_period_values(book, w, closes) for w in shown]
+    by_period = [_period_values(book, w, closes, shares_at) for w in shown]
     return Record(
         periods=shown,
         rows=[

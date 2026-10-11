@@ -43,11 +43,24 @@ SEC_XBRL_METRICS = (
     "interest_expense",
     "income_tax_expense",
     "pretax_income",
+    # M1.4b (ADR-025 B11)
+    "eps_basic",
+    "basic_shares",
 )
 
-# Reported metrics whose definition changed since 0.1.0: repurchase_authorized only corroborates
-# the 8-K announcements since M1.4a (ADR-025).
-XBRL_METHODOLOGY = {"repurchase_authorized": "0.2.0"}
+# Metrics whose definition changed since 0.1.0 (ADR-025): repurchase_authorized only corroborates
+# the 8-K announcements since M1.4a; diluted_shares_change falls back to basic shares where
+# nothing dilutes (B11).
+METHODOLOGY = {
+    "repurchase_authorized": "0.2.0",
+    "diluted_shares_change": "0.2.0",
+    # B12-B14 (buyback rule 0.2.0): a period end's market cap on the latest dated share count;
+    # mega caps pass ACTIVE's quarter test on any repurchase and score intensity 100 at 2%.
+    "buyback_intensity": "0.2.0",
+    "quarter_repurchase_to_market_cap": "0.2.0",
+    "buyback_state_active": "0.2.0",
+    "buyback_score_intensity": "0.2.0",
+}
 
 # FRED series shown on the Macro page (M0.6): reported values with vintages, one term per
 # series in config/macro_series.yaml (a test keeps the two in step).
@@ -88,7 +101,7 @@ METRICS: tuple[MetricDefinition, ...] = (
     *(
         MetricDefinition(
             term_id=metric_id,
-            methodology_version=XBRL_METHODOLOGY.get(metric_id, "0.1.0"),
+            methodology_version=METHODOLOGY.get(metric_id, "0.1.0"),
             computed_by="autotrading.adapters.sec.concepts.METRIC_MAPPINGS",
         )
         for metric_id in SEC_XBRL_METRICS
@@ -113,7 +126,7 @@ METRICS: tuple[MetricDefinition, ...] = (
     *(
         MetricDefinition(
             term_id=term_id,
-            methodology_version="0.1.0",
+            methodology_version=METHODOLOGY.get(term_id, "0.1.0"),
             computed_by=f"autotrading.domain.{function}",
         )
         for term_id, function in {
@@ -177,6 +190,35 @@ METRICS: tuple[MetricDefinition, ...] = (
                 )
             },
             "repurchase_announcement": "buyback_announcements.statement",
+            # M1.4b (ADR-025): states and score under a rule version, from evidence known at T.
+            **{
+                term_id: "buyback_states.assess"
+                for term_id in (
+                    "buyback_state",
+                    "buyback_state_watch",
+                    "buyback_state_active",
+                    "buyback_state_high_conviction",
+                    "buyback_state_trade_ready",
+                    "remaining_to_market_cap",
+                    "quarter_repurchase_to_market_cap",
+                    "fcf_funding",
+                    "net_debt_change_yoy",
+                    "fcf_yield_to_median",
+                    "close_vs_moving_average",
+                    "relative_return_1m",
+                    "market_confirmation",
+                    "buyback_quality_score",
+                    "buyback_score_undervaluation",
+                    "buyback_score_intensity",
+                    "buyback_score_fcf_quality",
+                    "buyback_score_balance_sheet",
+                    "buyback_score_discipline",
+                    "buyback_score_share_count",
+                    "net_debt_to_fcf",
+                    "disciplined_years",
+                    "mega_cap",
+                )
+            },
         }.items()
     ),
     MetricDefinition(

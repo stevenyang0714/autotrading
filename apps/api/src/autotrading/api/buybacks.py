@@ -1,26 +1,32 @@
 """Buyback API (M1.4a, ADR-025): a universe equity's authorizations, actual repurchases and net
 share reduction, kept apart (02 §5), as known at a time. Read-only.
 
-- Announcements: authorization, plan and remaining-amount statements from 8-Ks (stored by
-  `sec.eight_k`, current extractor version) and from the issuer's press releases (title and
-  snippet, read on request), grouped into events (domain/buyback.py). Each keeps its sentence
-  and link as evidence.
+- Announcements: authorization, plan and remaining-amount statements from 8-Ks and press
+  releases, grouped into events, each with its sentence and link (api/buyback_announcements).
 - As tagged: the latest XBRL repurchase_authorized and repurchase_remaining of 10-Q/10-K, which
   only corroborate (they are known at filing acceptance and mean different things per company).
 - Per period: repurchases, intensity, funding, SBC offset, debt-funded flag, net share reduction
   and diluted share change, each with its inputs and filings.
+- State (M1.4b): the latest stored assignment at or before T and the state history
+  (api/buyback_states).
 """
 
-from datetime import UTC, date, datetime
-from decimal import Decimal
-from typing import Literal
-from uuid import UUID
+from datetime import UTC, datetime
 
 from fastapi import APIRouter
 from pydantic import BaseModel
-from sqlalchemy import select
-from sqlalchemy.orm import Session
 
+from autotrading.api.buyback_announcements import (
+    AnnouncementEvent,
+    announcement_sources,
+    event_out,
+)
+from autotrading.api.buyback_states import (
+    StateAssignmentOut,
+    StatePoint,
+    active_rule_version,
+    stored_states,
+)
 from autotrading.api.data_health import SessionDep
 from autotrading.api.instruments import FactView, issuer_chain
 from autotrading.api.research import KnownAt, ResearchPeriod
@@ -34,41 +40,19 @@ from autotrading.api.valuation import (
     metric_out,
     universe_equity,
 )
-from autotrading.db.models import FilingBuybackStatement, Instrument, NewsItem, NewsMention
 from autotrading.domain.buyback import (
     BUYBACK_METRICS,
-    AnnouncementSource,
     Section,
     buyback_record,
     events,
 )
-from autotrading.domain.buyback_announcements import EXTRACTOR_VERSION, statement
+from autotrading.domain.buyback_announcements import EXTRACTOR_VERSION
 from autotrading.domain.valuation import Input, Unit
 
 router = APIRouter(tags=["buybacks"])
 
 TAGGED_METRICS = ("repurchase_authorized", "repurchase_remaining")
 HISTORY_YEARS = 6  # closes for five fiscal year ends and the latest quarter
-
-
-class AnnouncementSourceOut(BaseModel):
-    channel: Literal["sec_8k", "press_release"]
-    sentence: str  # the issuer's words, at most 300 characters
-    url: str
-    published_at: datetime
-    stated_date: date | None
-    accession: str | None
-    document_type: str | None  # 8-K, EX-99.1, ...
-    title: str | None  # press release
-
-
-class AnnouncementEvent(BaseModel):
-    kind: Literal["new", "increase", "plan", "remaining"]
-    amount: Decimal  # USD
-    remaining_amount: Decimal | None
-    day: date  # stated, else the first publication day in New York
-    first_published_at: datetime
-    sources: list[AnnouncementSourceOut]
 
 
 class BuybackRow(BaseModel):
@@ -82,66 +66,14 @@ class BuybacksOut(BaseModel):
     ticker: str
     known_at: datetime
     extractor_version: str
+    rule_version: str  # of the state below: the active rule set (M1.4b)
+    state: StateAssignmentOut | None  # the latest stored at or before T
+    state_history: list[StatePoint]  # oldest first
     announcements: list[AnnouncementEvent]  # newest first
     tagged_authorized: InputOut | None  # latest XBRL authorization, as the filing tags it
     tagged_remaining: InputOut | None
     periods: list[ResearchPeriod]
     rows: list[BuybackRow]
-
-
-def announcement_sources(
-    session: Session, instrument: Instrument, chain: list[UUID], at: datetime
-) -> list[AnnouncementSource]:
-    """Statements of 8-Ks by the issuer chain and of the issuer's press releases, known at T."""
-    filed = [
-        AnnouncementSource(
-            channel="sec_8k",
-            kind=row.kind,
-            amount=row.amount,
-            remaining_amount=row.remaining_amount,
-            stated_date=row.stated_date,
-            sentence=row.sentence,
-            url=row.source_url,
-            published_at=row.published_at,
-            accession=row.accession_number,
-            document_type=row.document_type,
-        )
-        for row in session.scalars(
-            select(FilingBuybackStatement).where(
-                FilingBuybackStatement.entity_id.in_(chain),
-                FilingBuybackStatement.published_at <= at,
-                FilingBuybackStatement.extractor_version == EXTRACTOR_VERSION,
-            )
-        )
-    ]
-    released = []
-    for item in session.scalars(
-        select(NewsItem)
-        .join(NewsMention, NewsMention.news_item_id == NewsItem.id)
-        .where(
-            NewsMention.instrument_id == instrument.id,
-            NewsItem.kind == "press_release",
-            NewsItem.published_at <= at,
-        )
-        .distinct()
-    ):
-        for text in (item.title, item.snippet):
-            found = statement(text) if text else None
-            if found is not None:
-                released.append(
-                    AnnouncementSource(
-                        channel="press_release",
-                        kind=found.kind,
-                        amount=found.amount,
-                        remaining_amount=found.remaining_amount,
-                        stated_date=found.stated_date,
-                        sentence=found.sentence,
-                        url=item.url,
-                        published_at=item.published_at,
-                        title=item.title,
-                    )
-                )
-    return filed + released
 
 
 def _latest(facts: list[FactView], metric: str) -> Input[FactView] | None:
@@ -178,33 +110,16 @@ def instrument_buybacks(ticker: str, session: SessionDep, known_at: KnownAt = No
             *(f for i in tagged.values() if i is not None for f in i.sources),
         ],
     )
+    rule_version = active_rule_version()
+    state, history = stored_states(session, instrument.id, at, rule_version)
     return BuybacksOut(
         ticker=ticker.upper(),
         known_at=at,
         extractor_version=EXTRACTOR_VERSION,
-        announcements=[
-            AnnouncementEvent(
-                kind=e.kind,  # type: ignore[arg-type]
-                amount=e.amount,
-                remaining_amount=e.remaining_amount,
-                day=e.day,
-                first_published_at=e.first_published_at,
-                sources=[
-                    AnnouncementSourceOut(
-                        channel=s.channel,
-                        sentence=s.sentence,
-                        url=s.url,
-                        published_at=s.published_at,
-                        stated_date=s.stated_date,
-                        accession=s.accession,
-                        document_type=s.document_type,
-                        title=s.title,
-                    )
-                    for s in e.sources
-                ],
-            )
-            for e in found_events
-        ],
+        rule_version=rule_version,
+        state=state,
+        state_history=history,
+        announcements=[event_out(e) for e in found_events],
         tagged_authorized=input_out(i, forms) if (i := tagged["repurchase_authorized"]) else None,
         tagged_remaining=input_out(i, forms) if (i := tagged["repurchase_remaining"]) else None,
         periods=[

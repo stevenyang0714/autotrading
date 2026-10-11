@@ -13,6 +13,7 @@ from apscheduler.triggers.cron import CronTrigger
 from autotrading.infra.heartbeat import HEARTBEAT_INTERVAL_SECONDS, write_heartbeat
 from autotrading.infra.redis_client import make_redis
 from autotrading.ingestion.schedule import (
+    BUYBACK_STATES,
     DAILY_BARS,
     FRED,
     GDELT,
@@ -73,6 +74,19 @@ def main() -> None:
             timezone=REFRESH_TIMEZONE,
         ),
         id="fred_refresh",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=12 * 3600,
+    )
+    # Buyback states (M1.4b): daily at 11:00 SGT, after the SEC and FRED refreshes.
+    scheduler.add_job(
+        lambda: actors.start_buyback_evaluation(manual=False),
+        CronTrigger(
+            hour=BUYBACK_STATES.hour,
+            minute=BUYBACK_STATES.minute,
+            timezone=REFRESH_TIMEZONE,
+        ),
+        id="buyback_states",
         max_instances=1,
         coalesce=True,
         misfire_grace_time=12 * 3600,

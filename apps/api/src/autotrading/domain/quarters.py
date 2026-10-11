@@ -26,7 +26,7 @@ from autotrading.domain.fundamentals import FISCAL_YEAR_DAYS
 # quarters (90/181/272 days), a 14-week quarter, and AutoZone's 12/12/12/16-week year
 # (83/167/251 days). The ranges do not overlap.
 YTD_DAYS = {1: range(80, 101), 2: range(160, 197), 3: range(245, 288)}
-NON_ADDITIVE = frozenset({"eps_diluted", "diluted_shares"})
+NON_ADDITIVE = frozenset({"eps_diluted", "diluted_shares", "eps_basic", "basic_shares"})
 TTM_QUARTERS = 4
 
 

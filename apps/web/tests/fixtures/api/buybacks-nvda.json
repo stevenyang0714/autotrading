@@ -1,0 +1,425 @@
+{
+  "recorded_at": "2026-10-11T03:51:50.329463+00:00",
+  "recorded_from": "recorded SEC, Alpaca, FRED and news fixtures replayed into the integration test database (tests/integration/test_buyback_states.py)",
+  "endpoint": "/instruments/NVDA/buybacks",
+  "params": {
+    "known_at": "2026-10-06T12:00:00+00:00"
+  },
+  "response": {
+    "ticker": "NVDA",
+    "known_at": "2026-10-06T12:00:00Z",
+    "extractor_version": "0.1.3",
+    "rule_version": "0.2.0",
+    "state": {
+      "ticker": "NVDA",
+      "known_at": "2026-10-06T12:00:00Z",
+      "system_time": "2026-10-11T03:51:48.501185Z",
+      "rule_version": "0.2.0",
+      "backfilled": true,
+      "trigger": "manual",
+      "recorded_at": "2026-10-11T03:51:49.408722Z",
+      "assessment": {
+        "state": "watch",
+        "levels": [
+          {
+            "level": "watch",
+            "status": "pass",
+            "rule": "any condition"
+          },
+          {
+            "level": "active",
+            "status": "unavailable",
+            "rule": "every condition"
+          },
+          {
+            "level": "high_conviction",
+            "status": "unavailable",
+            "rule": "FCF funding and net debt, and FCF yield or DCF discount"
+          },
+          {
+            "level": "trade_ready",
+            "status": "unavailable",
+            "rule": "market confirmation (either) and the risk check"
+          }
+        ],
+        "conditions": [
+          {
+            "condition_id": "watch.announcement",
+            "level": "watch",
+            "status": "pass",
+            "value": "8",
+            "unit": "days",
+            "threshold": "365",
+            "comparison": "at_most",
+            "detail": "authorization increase announced 2026-09-28",
+            "inputs": [],
+            "announcements": [
+              {
+                "kind": "increase",
+                "amount": "150000000000",
+                "remaining_amount": "235000000000",
+                "day": "2026-09-28",
+                "first_published_at": "2026-09-28T11:00:00Z",
+                "sources": [
+                  {
+                    "channel": "press_release",
+                    "sentence": "NVIDIA Announces a $150 Billion Share Repurchase Authorization Increase",
+                    "url": "https://nvidianews.nvidia.com/news/nvidia-announces-a-150-billion-share-repurchase-authorization-increase",
+                    "published_at": "2026-09-28T11:00:00Z",
+                    "stated_date": null,
+                    "accession": null,
+                    "document_type": null,
+                    "title": "NVIDIA Announces a $150 Billion Share Repurchase Authorization Increase"
+                  },
+                  {
+                    "channel": "press_release",
+                    "sentence": "NVIDIA today announced that its Board of Directors has authorized an additional $150 billion under the company\u2019s existing share repurchase program, increasing the total remaining amount authorized to $235 billion.",
+                    "url": "https://nvidianews.nvidia.com/news/nvidia-announces-a-150-billion-share-repurchase-authorization-increase",
+                    "published_at": "2026-09-28T11:00:00Z",
+                    "stated_date": null,
+                    "accession": null,
+                    "document_type": null,
+                    "title": "NVIDIA Announces a $150 Billion Share Repurchase Authorization Increase"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "condition_id": "watch.remaining",
+            "level": "watch",
+            "status": "unavailable",
+            "value": null,
+            "unit": "percent",
+            "threshold": "2",
+            "comparison": "at_least",
+            "detail": "market cap: no valuation price: no daily close known at this time",
+            "inputs": [],
+            "announcements": [
+              {
+                "kind": "increase",
+                "amount": "150000000000",
+                "remaining_amount": "235000000000",
+                "day": "2026-09-28",
+                "first_published_at": "2026-09-28T11:00:00Z",
+                "sources": [
+                  {
+                    "channel": "press_release",
+                    "sentence": "NVIDIA Announces a $150 Billion Share Repurchase Authorization Increase",
+                    "url": "https://nvidianews.nvidia.com/news/nvidia-announces-a-150-billion-share-repurchase-authorization-increase",
+                    "published_at": "2026-09-28T11:00:00Z",
+                    "stated_date": null,
+                    "accession": null,
+                    "document_type": null,
+                    "title": "NVIDIA Announces a $150 Billion Share Repurchase Authorization Increase"
+                  },
+                  {
+                    "channel": "press_release",
+                    "sentence": "NVIDIA today announced that its Board of Directors has authorized an additional $150 billion under the company\u2019s existing share repurchase program, increasing the total remaining amount authorized to $235 billion.",
+                    "url": "https://nvidianews.nvidia.com/news/nvidia-announces-a-150-billion-share-repurchase-authorization-increase",
+                    "published_at": "2026-09-28T11:00:00Z",
+                    "stated_date": null,
+                    "accession": null,
+                    "document_type": null,
+                    "title": "NVIDIA Announces a $150 Billion Share Repurchase Authorization Increase"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "condition_id": "active.quarter_repurchase",
+            "level": "active",
+            "status": "unavailable",
+            "value": null,
+            "unit": "percent",
+            "threshold": "0.5",
+            "comparison": "at_least",
+            "detail": "not reported: share repurchases",
+            "inputs": [],
+            "announcements": []
+          },
+          {
+            "condition_id": "active.diluted_shares",
+            "level": "active",
+            "status": "unavailable",
+            "value": null,
+            "unit": "percent",
+            "threshold": "-1",
+            "comparison": "at_most",
+            "detail": "no reported period",
+            "inputs": [],
+            "announcements": []
+          },
+          {
+            "condition_id": "high_conviction.fcf_funding",
+            "level": "high_conviction",
+            "status": "unavailable",
+            "value": null,
+            "unit": "x",
+            "threshold": "1.2",
+            "comparison": "at_most",
+            "detail": "no reported period",
+            "inputs": [],
+            "announcements": []
+          },
+          {
+            "condition_id": "high_conviction.net_debt",
+            "level": "high_conviction",
+            "status": "unavailable",
+            "value": null,
+            "unit": "percent",
+            "threshold": "10",
+            "comparison": "at_most",
+            "detail": "no reported period",
+            "inputs": [],
+            "announcements": []
+          },
+          {
+            "condition_id": "high_conviction.fcf_yield",
+            "level": "high_conviction",
+            "status": "unavailable",
+            "value": null,
+            "unit": "x",
+            "threshold": "1.0",
+            "comparison": "at_least",
+            "detail": "FCF yield: no valuation price: no daily close known at this time",
+            "inputs": [],
+            "announcements": []
+          },
+          {
+            "condition_id": "high_conviction.dcf_discount",
+            "level": "high_conviction",
+            "status": "unavailable",
+            "value": null,
+            "unit": "percent",
+            "threshold": "15",
+            "comparison": "at_least",
+            "detail": "no fair value: not reported: net debt, shares outstanding; owner free cash flow: not reported for the last four quarters: operating cash flow, capex, stock-based compensation",
+            "inputs": [],
+            "announcements": []
+          },
+          {
+            "condition_id": "trade_ready.above_average",
+            "level": "trade_ready",
+            "status": "unavailable",
+            "value": null,
+            "unit": "percent",
+            "threshold": "0",
+            "comparison": "above",
+            "detail": "no valuation price: no daily close known at this time",
+            "inputs": [],
+            "announcements": []
+          },
+          {
+            "condition_id": "trade_ready.relative_return",
+            "level": "trade_ready",
+            "status": "unavailable",
+            "value": null,
+            "unit": "percentage points",
+            "threshold": "0",
+            "comparison": "above",
+            "detail": "no valuation price: no daily close known at this time",
+            "inputs": [],
+            "announcements": []
+          },
+          {
+            "condition_id": "trade_ready.risk_check",
+            "level": "trade_ready",
+            "status": "unavailable",
+            "value": null,
+            "unit": "",
+            "threshold": null,
+            "comparison": null,
+            "detail": "the risk check arrives in Phase 2: TRADE-READY is unreachable in Phase 1",
+            "inputs": [],
+            "announcements": []
+          }
+        ],
+        "score": {
+          "total": null,
+          "detail": "unavailable: undervaluation, intensity, fcf quality, balance sheet, discipline, share count",
+          "label": "default weights, unvalidated",
+          "components": [
+            {
+              "component": "undervaluation",
+              "weight": 30,
+              "measure": "fcf_yield_to_median",
+              "zero": "0.8",
+              "full": "1.2",
+              "value": null,
+              "score": null,
+              "detail": "FCF yield: no valuation price: no daily close known at this time",
+              "inputs": []
+            },
+            {
+              "component": "intensity",
+              "weight": 20,
+              "measure": "buyback_intensity",
+              "zero": "0",
+              "full": "4",
+              "value": null,
+              "score": null,
+              "detail": "no reported period",
+              "inputs": []
+            },
+            {
+              "component": "fcf_quality",
+              "weight": 15,
+              "measure": "fcf_conversion",
+              "zero": "50",
+              "full": "100",
+              "value": null,
+              "score": null,
+              "detail": "no reported period",
+              "inputs": []
+            },
+            {
+              "component": "balance_sheet",
+              "weight": 10,
+              "measure": "net_debt_to_fcf",
+              "zero": "4",
+              "full": "0",
+              "value": null,
+              "score": null,
+              "detail": "no reported period",
+              "inputs": []
+            },
+            {
+              "component": "discipline",
+              "weight": 10,
+              "measure": "disciplined_years",
+              "zero": "0",
+              "full": "100",
+              "value": null,
+              "score": null,
+              "detail": "0 fiscal years with repurchases, free cash flow and share counts; 3 needed",
+              "inputs": []
+            },
+            {
+              "component": "share_count",
+              "weight": 10,
+              "measure": "net_share_reduction_pct",
+              "zero": "0",
+              "full": "3",
+              "value": null,
+              "score": null,
+              "detail": "no reported period",
+              "inputs": []
+            }
+          ]
+        },
+        "period": null,
+        "assumption_version": null,
+        "extractor_version": "0.1.3",
+        "issuers": [
+          "5c33c040-9b40-4644-b119-676a356c5ba9"
+        ]
+      }
+    },
+    "state_history": [
+      {
+        "known_at": "2026-04-01T03:59:59.999999Z",
+        "state": "none",
+        "score": null,
+        "backfilled": true
+      },
+      {
+        "known_at": "2026-10-06T12:00:00Z",
+        "state": "watch",
+        "score": null,
+        "backfilled": true
+      }
+    ],
+    "announcements": [
+      {
+        "kind": "increase",
+        "amount": "150000000000",
+        "remaining_amount": "235000000000",
+        "day": "2026-09-28",
+        "first_published_at": "2026-09-28T11:00:00Z",
+        "sources": [
+          {
+            "channel": "press_release",
+            "sentence": "NVIDIA Announces a $150 Billion Share Repurchase Authorization Increase",
+            "url": "https://nvidianews.nvidia.com/news/nvidia-announces-a-150-billion-share-repurchase-authorization-increase",
+            "published_at": "2026-09-28T11:00:00Z",
+            "stated_date": null,
+            "accession": null,
+            "document_type": null,
+            "title": "NVIDIA Announces a $150 Billion Share Repurchase Authorization Increase"
+          },
+          {
+            "channel": "press_release",
+            "sentence": "NVIDIA today announced that its Board of Directors has authorized an additional $150 billion under the company\u2019s existing share repurchase program, increasing the total remaining amount authorized to $235 billion.",
+            "url": "https://nvidianews.nvidia.com/news/nvidia-announces-a-150-billion-share-repurchase-authorization-increase",
+            "published_at": "2026-09-28T11:00:00Z",
+            "stated_date": null,
+            "accession": null,
+            "document_type": null,
+            "title": "NVIDIA Announces a $150 Billion Share Repurchase Authorization Increase"
+          }
+        ]
+      }
+    ],
+    "tagged_authorized": null,
+    "tagged_remaining": null,
+    "periods": [],
+    "rows": [
+      {
+        "metric_id": "share_repurchases",
+        "section": "repurchase",
+        "unit": "USD",
+        "cells": []
+      },
+      {
+        "metric_id": "shares_repurchased",
+        "section": "repurchase",
+        "unit": "shares",
+        "cells": []
+      },
+      {
+        "metric_id": "buyback_intensity",
+        "section": "repurchase",
+        "unit": "percent",
+        "cells": []
+      },
+      {
+        "metric_id": "repurchase_to_fcf",
+        "section": "repurchase",
+        "unit": "percent",
+        "cells": []
+      },
+      {
+        "metric_id": "sbc_offset",
+        "section": "repurchase",
+        "unit": "percent",
+        "cells": []
+      },
+      {
+        "metric_id": "debt_funded_buyback",
+        "section": "repurchase",
+        "unit": "flag",
+        "cells": []
+      },
+      {
+        "metric_id": "net_share_reduction",
+        "section": "shares",
+        "unit": "shares",
+        "cells": []
+      },
+      {
+        "metric_id": "net_share_reduction_pct",
+        "section": "shares",
+        "unit": "percent",
+        "cells": []
+      },
+      {
+        "metric_id": "diluted_shares_change",
+        "section": "shares",
+        "unit": "percent",
+        "cells": []
+      }
+    ]
+  }
+}

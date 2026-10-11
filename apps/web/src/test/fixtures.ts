@@ -16,6 +16,8 @@ import valuationAapl from "../../tests/fixtures/api/valuation-aapl.json";
 import assumptionsAapl from "../../tests/fixtures/api/assumptions-aapl.json";
 import buybacksAapl from "../../tests/fixtures/api/buybacks-aapl.json";
 import buybacksXom from "../../tests/fixtures/api/buybacks-xom.json";
+import buybacksNvda from "../../tests/fixtures/api/buybacks-nvda.json";
+import buybackStates from "../../tests/fixtures/api/buyback-states.json";
 import researchAapl from "../../tests/fixtures/api/research-aapl.json";
 import researchDashboardStale from "../../tests/fixtures/api/research-dashboard-stale.json";
 import researchDashboard from "../../tests/fixtures/api/research-dashboard.json";
@@ -47,6 +49,7 @@ import progress from "../../tests/fixtures/api/progress.json";
 import type {
   AssumptionList,
   AuditLogPage,
+  BuybackStates,
   Buybacks,
   DataHealthData,
   DataHealthReport,
@@ -177,4 +180,9 @@ export const recordedAudit = {
 export const recordedBuybacks = {
   aapl: buybacksAapl.response as Buybacks,
   xom: buybacksXom.response as Buybacks,
+  nvda: buybacksNvda.response as Buybacks,
 };
+
+/** Buyback states as known on 2026-10-06 (M1.4b), evaluated then and at 2026-03-31 under rule
+ * 0.1.0: Apple and ExxonMobil ACTIVE, NVIDIA WATCH (its press release only), Meta none. */
+export const recordedBuybackStates = buybackStates.response as BuybackStates;

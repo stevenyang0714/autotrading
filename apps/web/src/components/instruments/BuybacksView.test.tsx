@@ -44,6 +44,50 @@ describe("BuybacksView with recorded API responses", () => {
     );
   });
 
+  it("shows the stored buyback state with every condition, its threshold and evidence", () => {
+    render(<BuybacksView result={{ status: "ok", data: recordedBuybacks.aapl }} />);
+    const card = block("state");
+    expect(card.querySelector("[data-state]")?.textContent).toBe("ACTIVE");
+    expect(card.textContent).toContain("rule v0.2.0");
+    expect(card.textContent).toContain("backfilled on");
+    const quarter = card.querySelector('[data-condition="active.quarter_repurchase"]');
+    expect(quarter?.textContent).toContain("0.61%");
+    expect(quarter?.textContent).toContain("(> 0%)"); // a mega cap: any repurchase (B13)
+    expect(quarter?.textContent).toContain("mega cap (market cap at the quarter end >= $500 billion)");
+    expect(quarter?.querySelector("[data-status]")?.textContent).toBe("pass");
+    expect(within(quarter as HTMLElement).getAllByRole("link", { hidden: true }).some((a) => a.textContent?.startsWith("10-Q "))).toBe(
+      true,
+    );
+    const announced = card.querySelector('[data-condition="watch.announcement"]');
+    expect(announced?.textContent).toContain("159 days ago");
+    expect(announced?.querySelector("q[data-quoted]")?.textContent).toContain("$100 billion");
+    expect(card.querySelector('[data-level="trade_ready"]')?.textContent).toContain("Unreachable in Phase 1.");
+    const score = block("score");
+    expect(score.textContent).toContain("default weights, unvalidated");
+    expect(score.querySelector("[data-score]")?.textContent).toBe("Data unavailable");
+    expect(score.querySelector('[data-component="discipline"]')?.textContent).toContain("100.0 / 100");
+    expect(score.querySelector('[data-component="intensity"]')?.textContent).toContain("100 at 2");
+    expect(screen.getByRole("list", { name: "State history" }).children).toHaveLength(2);
+  });
+
+  it("keeps a company with only an announcement at WATCH (NVIDIA)", () => {
+    render(<BuybacksView result={{ status: "ok", data: recordedBuybacks.nvda }} />);
+    const card = block("state");
+    expect(card.querySelector("[data-state]")?.textContent).toBe("WATCH");
+    const quarter = card.querySelector('[data-condition="active.quarter_repurchase"]');
+    expect(quarter?.textContent).toContain("not reported: share repurchases");
+    expect(quarter?.querySelector("[data-status]")?.textContent).toBe("unavailable");
+    const announced = card.querySelector('[data-condition="watch.announcement"]');
+    expect(announced?.textContent).toContain("Press release");
+  });
+
+  it("says when no state was stored by the date", () => {
+    render(
+      <BuybacksView result={{ status: "ok", data: { ...recordedBuybacks.aapl, state: null, state_history: [] } }} />,
+    );
+    expect(block("state").textContent).toContain("Not evaluated by this date.");
+  });
+
   it.each(Object.entries(recordedBuybacks))("%s renders no unexplained number", (_name, data) => {
     const { container } = render(<BuybacksView result={{ status: "ok", data }} />);
     expect(unexplainedNumbers(container)).toEqual([]);
