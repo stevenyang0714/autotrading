@@ -1038,6 +1038,181 @@ class BuybackStateAssignment(Base):
     )
 
 
+# ---------- paper journal (M1.6) ----------
+
+SIGNAL_DIRECTIONS = ("long", "short", "neutral")
+DECISIONS = ("trade", "no_trade")
+SIDES = ("buy", "sell")
+ORDER_TYPES = ("market", "limit")
+NO_TRADE_REASONS = ("priced_in", "insufficient_evidence", "excessive_risk", "other")
+JOURNAL_USER = "steven"  # one user, kept per errata E1
+
+
+class SignalRecord(Base):
+    """A rule's signal (ADR-027 J1; 02 §28, errata E1): family, strategy, rule version, score,
+    direction and the observations behind it, as of the time it was generated (T) and the
+    database's system time. Phase 1 signals are paper_only. Append-only."""
+
+    __tablename__ = "signals"
+    __table_args__ = (
+        CheckConstraint(sql_in("direction", SIGNAL_DIRECTIONS), name="direction"),
+        CheckConstraint("execution_eligibility = 'paper_only'", name="paper_only"),
+        CheckConstraint("source_quality BETWEEN 1 AND 4", name="source_quality_range"),
+        CheckConstraint("evidence_independence >= 0", name="evidence_independence_positive"),
+        CheckConstraint("system_time >= generated_at", name="system_time_after_generated_at"),
+        UniqueConstraint(
+            "instrument_id",
+            "family_id",
+            "generated_at",
+            "rule_version",
+            name="uq_signals_instrument_family_time_rule",
+        ),
+        Index("ix_signals_generated_at", "generated_at"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    family_id: Mapped[int] = mapped_column(SmallInteger, ForeignKey("signal_families.id"))
+    strategy_id: Mapped[str | None] = mapped_column(Text, ForeignKey("strategies.id"))
+    instrument_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("instruments.id"))
+    ticker: Mapped[str] = mapped_column(Text)
+    rule_version: Mapped[str] = mapped_column(Text)
+    score: Mapped[Decimal | None] = mapped_column(Numeric)
+    direction: Mapped[str] = mapped_column(Text)
+    generated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    valid_from: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    system_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    observation_ids: Mapped[list[dict[str, str]]] = mapped_column(JSONB)
+    source_quality: Mapped[int] = mapped_column(SmallInteger)
+    evidence_independence: Mapped[int] = mapped_column(SmallInteger)
+    execution_eligibility: Mapped[str] = mapped_column(Text)
+    backfilled: Mapped[bool] = mapped_column(Boolean)
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class ThesisCard(Base):
+    """One version of a Thesis Card (ADR-027; 02 §17): thesis, 3-7 evidence items (each a
+    snapshot of a system row as known at T, J2), catalysts, invalidation and the valuation it
+    relies on, written at T = system time. A change is a new version of the same card_id.
+    Append-only and audited."""
+
+    __tablename__ = "thesis_cards"
+    __table_args__ = (
+        CheckConstraint("version >= 1", name="version_positive"),
+        CheckConstraint("length(thesis) BETWEEN 1 AND 400", name="thesis_length"),
+        CheckConstraint("length(invalidation) BETWEEN 1 AND 500", name="invalidation_length"),
+        CheckConstraint("notes IS NULL OR length(notes) <= 2000", name="notes_length"),
+        CheckConstraint("jsonb_array_length(evidence) BETWEEN 3 AND 7", name="evidence_count"),
+        CheckConstraint("jsonb_array_length(catalysts) <= 5", name="catalyst_count"),
+        CheckConstraint("system_time >= known_at", name="system_time_after_known_at"),
+        CheckConstraint(f"user_id = '{JOURNAL_USER}'", name="single_user"),
+        UniqueConstraint("card_id", "version", name="uq_thesis_cards_card_id_version"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    card_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    version: Mapped[int] = mapped_column(Integer)
+    instrument_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("instruments.id"))
+    ticker: Mapped[str] = mapped_column(Text)
+    known_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    system_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    thesis: Mapped[str] = mapped_column(Text)
+    evidence: Mapped[list[dict[str, Any]]] = mapped_column(JSONB)
+    catalysts: Mapped[list[dict[str, Any]]] = mapped_column(JSONB)
+    invalidation: Mapped[str] = mapped_column(Text)
+    valuation: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    signal_ids: Mapped[list[str]] = mapped_column(JSONB)
+    notes: Mapped[str | None] = mapped_column(Text)
+    author: Mapped[str] = mapped_column(Text)
+    user_id: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class TradeDecision(Base):
+    """A decision on a Thesis Card (ADR-027; 02 §28, errata E1): a paper TRADE or an explicit NO
+    TRADE, recorded alike. A TRADE stores the last end-of-day close known at T (the paper entry
+    or exit price; nothing is ever sent). Phase 1 limits are checks (P1-6): paper mode, no broker,
+    risk check or portfolio snapshot, approval state `recorded`. An exit is a new decision that
+    points at its entry. Append-only and audited."""
+
+    __tablename__ = "trade_decisions"
+    __table_args__ = (
+        CheckConstraint(sql_in("decision", DECISIONS), name="decision"),
+        CheckConstraint(f"side IS NULL OR {sql_in('side', SIDES)}", name="side"),
+        CheckConstraint(
+            f"order_type IS NULL OR {sql_in('order_type', ORDER_TYPES)}", name="order_type"
+        ),
+        CheckConstraint(
+            f"no_trade_reason IS NULL OR {sql_in('no_trade_reason', NO_TRADE_REASONS)}",
+            name="no_trade_reason",
+        ),
+        CheckConstraint(
+            "(decision = 'trade' AND side IS NOT NULL AND quantity > 0 AND order_type IS NOT NULL"
+            " AND no_trade_reason IS NULL AND entry_close IS NOT NULL)"
+            " OR (decision = 'no_trade' AND side IS NULL AND quantity IS NULL"
+            " AND order_type IS NULL AND exits_decision_id IS NULL"
+            " AND no_trade_reason IS NOT NULL)",
+            name="decision_fields",
+        ),
+        CheckConstraint("(order_type = 'limit') = (limit_price IS NOT NULL)", name="limit_price"),
+        CheckConstraint("limit_price IS NULL OR limit_price > 0", name="limit_price_positive"),
+        CheckConstraint("max_loss IS NULL OR max_loss > 0", name="max_loss_positive"),
+        CheckConstraint("no_trade_reason <> 'other' OR note IS NOT NULL", name="other_reason_note"),
+        CheckConstraint("note IS NULL OR length(note) <= 1000", name="note_length"),
+        CheckConstraint("mode = 'paper'", name="paper_mode"),
+        CheckConstraint("broker IS NULL", name="no_broker"),
+        CheckConstraint("risk_check_id IS NULL", name="no_risk_check"),
+        CheckConstraint("portfolio_snapshot_id IS NULL", name="no_portfolio_snapshot"),
+        CheckConstraint("approval_state = 'recorded'", name="approval_state"),
+        CheckConstraint("system_time >= known_at", name="system_time_after_known_at"),
+        CheckConstraint(f"user_id = '{JOURNAL_USER}'", name="single_user"),
+        Index(
+            "uq_trade_decisions_exits_decision_id",
+            "exits_decision_id",
+            unique=True,
+            postgresql_where=text("exits_decision_id IS NOT NULL"),
+        ),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    thesis_card_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("thesis_cards.id"))
+    instrument_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("instruments.id"))
+    ticker: Mapped[str] = mapped_column(Text)
+    strategy_id: Mapped[str | None] = mapped_column(Text, ForeignKey("strategies.id"))
+    signal_ids: Mapped[list[str]] = mapped_column(JSONB)
+    decision: Mapped[str] = mapped_column(Text)
+    side: Mapped[str | None] = mapped_column(Text)
+    quantity: Mapped[Decimal | None] = mapped_column(Numeric)
+    order_type: Mapped[str | None] = mapped_column(Text)
+    limit_price: Mapped[Decimal | None] = mapped_column(Numeric)
+    max_loss: Mapped[Decimal | None] = mapped_column(Numeric)
+    no_trade_reason: Mapped[str | None] = mapped_column(Text)
+    note: Mapped[str | None] = mapped_column(Text)
+    exits_decision_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("trade_decisions.id")
+    )
+    entry_close: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    mode: Mapped[str] = mapped_column(Text)
+    broker: Mapped[str | None] = mapped_column(Text)
+    risk_check_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    portfolio_snapshot_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    approval_state: Mapped[str] = mapped_column(Text)
+    known_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    system_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    user_id: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
 # ---------- filing reconciliation (M1.1) ----------
 
 RECONCILIATION_CHECKS = ("fact", "identity", "quarter", "split")

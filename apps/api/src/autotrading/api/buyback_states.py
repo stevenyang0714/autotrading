@@ -82,9 +82,11 @@ from autotrading.domain.buyback_states import (
 )
 from autotrading.domain.fair_value import month_ends, multiple_history, snapshots
 from autotrading.domain.fundamentals import merge_by_precedence
+from autotrading.domain.signals import buyback_signal
 from autotrading.domain.valuation import Close, Input
 from autotrading.repositories.facts import row_key, visible_in_system_time
 from autotrading.repositories.prices import daily_bars, instruments_by_symbol
+from autotrading.repositories.signals import record_signal
 from autotrading.settings import get_settings
 
 router = APIRouter(tags=["buyback-states"])
@@ -412,7 +414,8 @@ def record_assignment(
     rule_set: RuleSet,
     trigger: Trigger,
 ) -> bool:
-    """Evaluate and store; False when this company, T and rule version are stored already."""
+    """Evaluate and store, with its signal when the state qualifies; False when this company, T
+    and rule version are stored already."""
     exists = session.scalar(
         select(BuybackStateAssignment.id).where(
             BuybackStateAssignment.instrument_id == instrument.id,
@@ -423,6 +426,7 @@ def record_assignment(
     if exists is not None:
         return False
     found = evaluate(session, instrument, at, system_time, rule_set)
+    assessment = found.model_dump(mode="json")
     inserted = session.execute(
         insert(BuybackStateAssignment)
         .values(
@@ -434,14 +438,27 @@ def record_assignment(
             extractor_version=found.extractor_version,
             state=found.state,
             score=found.score.total,
-            assessment=found.model_dump(mode="json"),
+            assessment=assessment,
             backfilled=system_time > at,
             trigger=trigger,
         )
         .on_conflict_do_nothing(constraint="uq_buyback_state_assignments_instrument_known_at_rule")
         .returning(BuybackStateAssignment.id)
-    ).first()
-    return inserted is not None
+    ).scalar()
+    if inserted is None:
+        return False
+    signal = buyback_signal(
+        str(inserted),
+        found.state,
+        found.score.total,
+        assessment,
+        rule_set.rule_version,
+        at,
+        system_time,
+    )
+    if signal is not None:  # ACTIVE or HIGH-CONVICTION (ADR-027 J1), same transaction
+        record_signal(session, instrument.id, ticker, signal)
+    return True
 
 
 def evaluate_universe(
