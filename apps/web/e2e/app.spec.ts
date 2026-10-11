@@ -124,6 +124,8 @@ for (const path of [
   "/dashboards/fundamental-research?sort=roic&dir=desc",
   "/dashboards/corporate-actions",
   "/dashboards/corporate-actions?known_on=2026-04-15",
+  "/dashboards/earnings",
+  "/dashboards/earnings?known_on=2026-05-01",
 ]) {
   test(`numbers on ${path} are all explained`, async ({ page }) => {
     await page.goto(path);
@@ -348,6 +350,28 @@ test("Corporate Actions reviews every company's state and opens its buybacks (M1
   await page.locator('tr[data-ticker="AAPL"]').getByRole("link", { name: "AAPL" }).click();
   await expect(page).toHaveURL(/\/instruments\/AAPL\?known_on=2026-04-15#buybacks$/, { timeout: 15_000 });
   await expect(page.locator('#buybacks [data-block="state"]')).toBeVisible();
+});
+
+test("AAPL earnings show each release at its acceptance time with actuals (M1.5)", async ({ page }) => {
+  await page.goto("/instruments/AAPL");
+  const section = page.locator("#earnings");
+  const latest = section.locator("[data-event]").first();
+  await expect(latest).toContainText(/\d{2}:\d{2} ET/);
+  await expect(latest).toContainText(/after the close|before the open|during the session/);
+  await expect(latest.getByRole("table", { name: "Quarter actuals" })).toBeVisible();
+  await expect(latest.locator('tr[data-row="revenue"]')).toContainText(/\$\d+\.\d{3}B/);
+  await expect(latest.locator("[data-consensus]")).toContainText("Consensus estimate: Data unavailable");
+  await expect(latest.locator("[data-guidance]")).toBeVisible();
+});
+
+test("Earnings dashboard lists each company's latest release and opens it (M1.5)", async ({ page }) => {
+  await page.goto("/dashboards/earnings");
+  const latest = page.getByRole("table", { name: "Latest releases" });
+  expect(await latest.locator("tbody tr[data-ticker]").count()).toBeGreaterThanOrEqual(3);
+  await expect(latest.locator('tr[data-ticker="AAPL"]')).toContainText("Data unavailable");
+  await latest.locator('tr[data-ticker="AAPL"]').getByRole("link", { name: "AAPL" }).click();
+  await expect(page).toHaveURL(/\/instruments\/AAPL#earnings$/, { timeout: 15_000 });
+  await expect(page.locator("#earnings [data-event]").first()).toBeVisible();
 });
 
 test("Reconciliation lists Apple's 10-K as pass and opens its items (M1.1)", async ({ page }) => {

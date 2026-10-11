@@ -92,6 +92,7 @@ export const DASHBOARDS: readonly DashboardDef[] = [
     purpose: "Calendar, results against expectations, guidance, revisions and market reaction.",
     plannedPhase: 1,
     group: "dashboards",
+    live: true,
   },
   {
     id: "x_expert_watch",

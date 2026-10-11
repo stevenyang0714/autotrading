@@ -489,6 +489,50 @@ export async function loadBuybackStates(knownAt?: string): Promise<BuybackStates
   }
 }
 
+// ---------- earnings (M1.5, ADR-026) ----------
+
+export type Earnings = components["schemas"]["EarningsOut"];
+export type EarningsEvent = components["schemas"]["EarningsEventOut"];
+export type EarningsActual = components["schemas"]["ActualOut"];
+export type EarningsGuidance = components["schemas"]["GuidanceOut"];
+export type EarningsReaction = components["schemas"]["ReactionOut"];
+export type EarningsDashboard = components["schemas"]["EarningsDashboard"];
+export type EarningsSummary = components["schemas"]["EarningsSummary"];
+
+export type EarningsResult =
+  | { status: "ok"; data: Earnings }
+  | { status: "not_found" }
+  | { status: "unavailable" };
+
+/** Earnings events (8-K Item 2.02) as known at `knownAt`, newest first. */
+export async function loadEarnings(ticker: string, knownAt?: string): Promise<EarningsResult> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data, response } = await client.GET("/instruments/{ticker}/earnings", {
+      params: { path: { ticker }, query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    if (data) return { status: "ok", data };
+    return response.status === 404 ? { status: "not_found" } : { status: "unavailable" };
+  } catch {
+    return { status: "unavailable" };
+  }
+}
+
+/** Every universe company's latest release and the last two years of releases. */
+export async function loadEarningsDashboard(knownAt?: string): Promise<EarningsDashboard | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/earnings", {
+      params: { query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
 // ---------- news (M0.8, ADR-018) ----------
 
 export type NewsFeed = components["schemas"]["NewsFeed"];
