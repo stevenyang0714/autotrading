@@ -19,6 +19,7 @@ from autotrading.ingestion.schedule import (
     GDELT,
     NEWS_FEEDS,
     REFRESH_TIMEZONE,
+    REGIME,
     SEC_EDGAR,
     SNAPSHOT_SECONDS,
 )
@@ -74,6 +75,15 @@ def main() -> None:
             timezone=REFRESH_TIMEZONE,
         ),
         id="fred_refresh",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=12 * 3600,
+    )
+    # Macro regime (M2.1): daily at 10:55 SGT, after FRED and the daily closes.
+    scheduler.add_job(
+        lambda: actors.start_regime_evaluation(manual=False),
+        CronTrigger(hour=REGIME.hour, minute=REGIME.minute, timezone=REFRESH_TIMEZONE),
+        id="regime",
         max_instances=1,
         coalesce=True,
         misfire_grace_time=12 * 3600,

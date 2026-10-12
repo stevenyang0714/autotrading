@@ -26,7 +26,10 @@ ACTIVE = RULES.active()
 T = datetime(2026, 10, 9, 3, tzinfo=UTC)
 # A released version never changes (ADR-028): a new rule_version is the only way to edit one.
 BASIS = {"table": "buyback_state_assignments", "id": "a1", "label": "Buyback state NONE"}
-PINNED = {"0.1.0": "9257f4512f7c5976dcbfd732adb95444a85b71ecb2983f63fe52560971163f7e"}
+PINNED = {
+    "0.1.0": "9257f4512f7c5976dcbfd732adb95444a85b71ecb2983f63fe52560971163f7e",
+    "0.2.0": "e1bcb09d496f9d5277b271ebedf7219b7869587c48d72104f753775216dcbff5",
+}
 
 
 def buyback(state: str = "active", **statuses: str) -> BuybackReading:
@@ -56,9 +59,14 @@ def event(kind: str, days_ago: float, source: str, row: str = "r") -> Event:
     )
 
 
-def test_the_active_rule_set_is_pinned() -> None:
-    assert ACTIVE.rule_version == "0.1.0"
-    assert ACTIVE.content_sha256() == PINNED["0.1.0"]
+def test_every_released_rule_set_is_pinned() -> None:
+    # 0.2.0 added market events with defaults that keep 0.1.0's content and hash (ADR-029).
+    assert {r.rule_version: r.rule_set().content_sha256() for r in RULES.rule_sets} == PINNED
+    assert (ACTIVE.rule_version, ACTIVE.market_events, ACTIVE.regime_rule_version) == (
+        "0.2.0",
+        ["stress_change"],
+        "0.1.0",
+    )
 
 
 def test_nothing_in_the_window_is_no_level() -> None:

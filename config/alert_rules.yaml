@@ -14,8 +14,30 @@
 # 5 Price / Trend (market confirmation).
 version: 0.1.0
 rule_sets:
-  - rule_version: 0.1.0
+  - rule_version: 0.2.0
     status: active  # active: evaluated with each buyback state assignment; retired: kept for history
+    released: "2026-10-12"
+    note: >-
+      0.1.0 (A1-A4, still Claude's defaults to confirm) plus market-wide alerts: a change of the
+      stress state under regime rules 0.1.0 raises an alert (ADR-029 R4).
+    buyback_rule_version: 0.2.0
+    event_kinds: [earnings_release, periodic_report, buyback_statement, buyback_state_change]
+    buyback_statement_kinds: [new, increase]
+    event_lookback_days: 30
+    levels:
+      watch:
+        window_days: 30
+        min_items: 2
+        min_signals: 1
+      thesis:
+        buyback_states: [active, high_conviction]
+        valuation_conditions: [high_conviction.dcf_discount, high_conviction.fcf_yield]
+      trade_candidate:
+        market_conditions: [trade_ready.above_average, trade_ready.relative_return]
+    market_events: [stress_change]
+    regime_rule_version: 0.1.0
+  - rule_version: 0.1.0
+    status: retired
     released: "2026-10-12"
     note: >-
       Claude's defaults A1-A4 (ADR-028), released overnight for Steven's review: a change is a

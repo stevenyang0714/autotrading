@@ -36,10 +36,12 @@ from autotrading.db.models import (
     AlertRuleSet as AlertRuleSetRow,
 )
 from autotrading.domain.convergence import Item, LevelCheck, level_name
+from autotrading.domain.regime import STRESS_ORDER
 from autotrading.repositories.audit import set_actor
 from autotrading.repositories.convergence import active_alert_version, load_alert_rules
 
 router = APIRouter(tags=["alerts"])
+STRESS_NAMES = {order: name.upper() for name, order in STRESS_ORDER.items()}  # regime alerts
 
 IN_APP_ONLY = (
     "In-app alerts only (P1-1). Levels are deterministic rules; none places an order, and L4 "
@@ -63,8 +65,8 @@ class AcknowledgementOut(BaseModel):
 class AlertOut(BaseModel):
     id: UUID
     rule_version: str
-    ticker: str
-    kind: Literal["event", "level_change"]
+    ticker: str | None  # None: a market-wide alert (kind regime)
+    kind: Literal["event", "level_change", "regime"]
     level: int
     level_name: str
     previous_level: int | None
@@ -154,7 +156,7 @@ def alert_out(
         ticker=row.ticker,
         kind=row.kind,  # type: ignore[arg-type]
         level=row.level,
-        level_name=level_name(row.level),
+        level_name=STRESS_NAMES[row.level] if row.kind == "regime" else level_name(row.level),
         previous_level=row.previous_level,
         direction=row.direction,  # type: ignore[arg-type]
         title=row.title,

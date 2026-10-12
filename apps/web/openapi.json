@@ -226,7 +226,8 @@
           "kind": {
             "enum": [
               "event",
-              "level_change"
+              "level_change",
+              "regime"
             ],
             "title": "Kind",
             "type": "string"
@@ -265,8 +266,15 @@
             "type": "string"
           },
           "ticker": {
-            "title": "Ticker",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ticker"
           },
           "title": {
             "title": "Title",
@@ -387,7 +395,8 @@
           "kind": {
             "enum": [
               "event",
-              "level_change"
+              "level_change",
+              "regime"
             ],
             "title": "Kind",
             "type": "string"
@@ -426,8 +435,15 @@
             "type": "string"
           },
           "ticker": {
-            "title": "Ticker",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ticker"
           },
           "title": {
             "title": "Title",
@@ -2538,6 +2554,48 @@
         "title": "DerivedInput",
         "type": "object"
       },
+      "Dimension": {
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "dimension": {
+            "title": "Dimension",
+            "type": "string"
+          },
+          "readings": {
+            "items": {
+              "$ref": "#/components/schemas/Reading"
+            },
+            "title": "Readings",
+            "type": "array"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          },
+          "trend": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trend"
+          }
+        },
+        "required": [
+          "dimension",
+          "state",
+          "detail",
+          "readings"
+        ],
+        "title": "Dimension",
+        "type": "object"
+      },
       "DisciplineRule": {
         "additionalProperties": false,
         "properties": {
@@ -3432,6 +3490,65 @@
         "title": "FirstRelease",
         "type": "object"
       },
+      "Flag": {
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "flag_id": {
+            "title": "Flag Id",
+            "type": "string"
+          },
+          "inputs": {
+            "items": {
+              "$ref": "#/components/schemas/autotrading__domain__regime__InputRef"
+            },
+            "title": "Inputs",
+            "type": "array"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "on",
+              "off",
+              "unavailable"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "threshold": {
+            "title": "Threshold",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "flag_id",
+          "label",
+          "status",
+          "value",
+          "threshold",
+          "detail",
+          "inputs"
+        ],
+        "title": "Flag",
+        "type": "object"
+      },
       "Fundamentals": {
         "properties": {
           "annual": {
@@ -3950,36 +4067,11 @@
         "title": "InputOut",
         "type": "object"
       },
-      "InputRef": {
-        "properties": {
-          "observation_date": {
-            "format": "date",
-            "title": "Observation Date",
-            "type": "string"
-          },
-          "series_id": {
-            "title": "Series Id",
-            "type": "string"
-          },
-          "vintage": {
-            "format": "date",
-            "title": "Vintage",
-            "type": "string"
-          }
-        },
-        "required": [
-          "series_id",
-          "observation_date",
-          "vintage"
-        ],
-        "title": "InputRef",
-        "type": "object"
-      },
       "Insight": {
         "properties": {
           "inputs": {
             "items": {
-              "$ref": "#/components/schemas/InputRef"
+              "$ref": "#/components/schemas/autotrading__api__overview__InputRef"
             },
             "title": "Inputs",
             "type": "array"
@@ -6748,6 +6840,61 @@
         "title": "ReactionWindowOut",
         "type": "object"
       },
+      "Reading": {
+        "properties": {
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "inputs": {
+            "items": {
+              "$ref": "#/components/schemas/autotrading__domain__regime__InputRef"
+            },
+            "title": "Inputs",
+            "type": "array"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "reading_id": {
+            "title": "Reading Id",
+            "type": "string"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "reading_id",
+          "label",
+          "value",
+          "unit",
+          "inputs"
+        ],
+        "title": "Reading",
+        "type": "object"
+      },
       "ReconciliationDetail": {
         "properties": {
           "filing": {
@@ -6906,6 +7053,230 @@
           "recorded_at"
         ],
         "title": "ReconciliationOut",
+        "type": "object"
+      },
+      "Regime": {
+        "description": "Everything a regime assessment stores: recomputing it gives the same document.",
+        "properties": {
+          "dimensions": {
+            "items": {
+              "$ref": "#/components/schemas/Dimension"
+            },
+            "title": "Dimensions",
+            "type": "array"
+          },
+          "flags": {
+            "items": {
+              "$ref": "#/components/schemas/Flag"
+            },
+            "title": "Flags",
+            "type": "array"
+          },
+          "flags_available": {
+            "title": "Flags Available",
+            "type": "integer"
+          },
+          "flags_on": {
+            "title": "Flags On",
+            "type": "integer"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "quadrant": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quadrant"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          },
+          "stress": {
+            "anyOf": [
+              {
+                "enum": [
+                  "normal",
+                  "elevated",
+                  "high",
+                  "crisis"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stress"
+          },
+          "stress_detail": {
+            "title": "Stress Detail",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rule_version",
+          "known_at",
+          "dimensions",
+          "quadrant",
+          "flags",
+          "flags_on",
+          "flags_available",
+          "stress",
+          "stress_detail"
+        ],
+        "title": "Regime",
+        "type": "object"
+      },
+      "RegimeOut": {
+        "properties": {
+          "current": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StoredRegime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "detail": {
+            "default": "Deterministic rules on data known at the date: a description of conditions, not a forecast. Thresholds are defaults, unvalidated (OD-7).",
+            "title": "Detail",
+            "type": "string"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/RegimePoint"
+            },
+            "title": "History",
+            "type": "array"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "known_at",
+          "rule_version",
+          "current",
+          "history"
+        ],
+        "title": "RegimeOut",
+        "type": "object"
+      },
+      "RegimePoint": {
+        "properties": {
+          "backfilled": {
+            "title": "Backfilled",
+            "type": "boolean"
+          },
+          "flags_available": {
+            "title": "Flags Available",
+            "type": "integer"
+          },
+          "flags_on": {
+            "title": "Flags On",
+            "type": "integer"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "quadrant": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quadrant"
+          },
+          "states": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "States",
+            "type": "object"
+          },
+          "stress": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stress"
+          }
+        },
+        "required": [
+          "known_at",
+          "stress",
+          "quadrant",
+          "states",
+          "flags_on",
+          "flags_available",
+          "backfilled"
+        ],
+        "title": "RegimePoint",
+        "type": "object"
+      },
+      "RegimeRuleSetOut": {
+        "properties": {
+          "content": {
+            "additionalProperties": true,
+            "title": "Content",
+            "type": "object"
+          },
+          "content_sha256": {
+            "title": "Content Sha256",
+            "type": "string"
+          },
+          "released": {
+            "format": "date",
+            "title": "Released",
+            "type": "string"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "retired"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rule_version",
+          "status",
+          "released",
+          "content",
+          "content_sha256"
+        ],
+        "title": "RegimeRuleSetOut",
         "type": "object"
       },
       "RelativeOut": {
@@ -8656,6 +9027,41 @@
         "title": "StateRules",
         "type": "object"
       },
+      "StoredRegime": {
+        "properties": {
+          "backfilled": {
+            "title": "Backfilled",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "regime": {
+            "$ref": "#/components/schemas/Regime"
+          },
+          "system_time": {
+            "format": "date-time",
+            "title": "System Time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "known_at",
+          "system_time",
+          "backfilled",
+          "regime"
+        ],
+        "title": "StoredRegime",
+        "type": "object"
+      },
       "TradeReadyRule": {
         "additionalProperties": false,
         "properties": {
@@ -8918,6 +9324,69 @@
           "remaining_to_market_cap_min"
         ],
         "title": "WatchRule",
+        "type": "object"
+      },
+      "autotrading__api__overview__InputRef": {
+        "properties": {
+          "observation_date": {
+            "format": "date",
+            "title": "Observation Date",
+            "type": "string"
+          },
+          "series_id": {
+            "title": "Series Id",
+            "type": "string"
+          },
+          "vintage": {
+            "format": "date",
+            "title": "Vintage",
+            "type": "string"
+          }
+        },
+        "required": [
+          "series_id",
+          "observation_date",
+          "vintage"
+        ],
+        "title": "InputRef",
+        "type": "object"
+      },
+      "autotrading__domain__regime__InputRef": {
+        "properties": {
+          "observation_date": {
+            "format": "date",
+            "title": "Observation Date",
+            "type": "string"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "value": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Value",
+            "type": "string"
+          },
+          "vintage": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vintage"
+          }
+        },
+        "required": [
+          "source",
+          "observation_date",
+          "vintage",
+          "value"
+        ],
+        "title": "InputRef",
         "type": "object"
       }
     }
@@ -11338,6 +11807,83 @@
         "summary": "Reconciliation",
         "tags": [
           "reconciliation"
+        ]
+      }
+    },
+    "/regime": {
+      "get": {
+        "operationId": "regime_regime_get",
+        "parameters": [
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegimeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Regime",
+        "tags": [
+          "regime"
+        ]
+      }
+    },
+    "/regime/rules": {
+      "get": {
+        "operationId": "regime_rules_regime_rules_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RegimeRuleSetOut"
+                  },
+                  "title": "Response Regime Rules Regime Rules Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Regime Rules",
+        "tags": [
+          "regime"
         ]
       }
     },
