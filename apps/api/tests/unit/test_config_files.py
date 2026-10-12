@@ -68,6 +68,7 @@ def test_macro_series_are_registered_with_complete_glossary_terms() -> None:
     assert [s.id for s in series] == [
         "CPIAUCSL", "PCEPILFE", "UNRATE", "PAYEMS", "GDPC1", "FEDFUNDS",
         "DGS2", "DGS10", "T10Y2Y", "BAMLH0A0HYM2", "VIXCLS",
+        "VXVCLS", "NFCI", "NFCICREDIT", "STLFSI4", "DCOILWTICO", "DTWEXBGS",
     ]  # fmt: skip
 
 
@@ -98,3 +99,20 @@ def test_news_config_files_agree_with_the_source_registry() -> None:
     assert {p.tier for p in publishers.publishers.values()} == {2, 3}
     tiers = publishers.tiers()
     assert tiers.is_blocked("dhal3.com") and not tiers.is_blocked("reuters.com")
+
+
+def test_the_fred_recorder_merges_only_the_named_series() -> None:
+    # M2.1: re-recording a few series keeps every other fixture (and the values tests pin).
+    from tests.fixtures.fred.record import merged, selected
+
+    assert list(selected("NFCI, STLFSI4")) == ["NFCI", "STLFSI4"]
+    old = {
+        "recorded_at": "x",
+        "observation_start": {"PAYEMS": "2023-01-01", "NFCI": "2020-01-01"},
+        "files": {"u1": "PAYEMS_00_series.json", "u2": "NFCI_00_series.json"},
+        "revision_case": {"series_id": "PAYEMS"},
+    }
+    new = merged(old, {"u3": "NFCI_00_series.json"}, {"NFCI": "2025-01-01"})
+    assert new["files"] == {"u1": "PAYEMS_00_series.json", "u3": "NFCI_00_series.json"}
+    assert new["observation_start"] == {"PAYEMS": "2023-01-01", "NFCI": "2025-01-01"}
+    assert new["revision_case"] == {"series_id": "PAYEMS"}

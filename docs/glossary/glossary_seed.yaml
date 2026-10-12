@@ -3842,6 +3842,126 @@ terms:
     methodology_version: 0.1.0
     status: complete
 
+  - term_id: macro_vix_3m
+    display_name: "VIX 3-Month"
+    category: macro
+    short_definition: "Cboe S&P 500 3-Month Volatility Index: implied volatility of S&P 500 options over the next 3 months."
+    full_definition: "Daily closing level of the VIX3M (formerly VXV), computed by Cboe from S&P 500 option prices. Compared with VIX it shows the volatility term structure."
+    formula: "FRED series VXVCLS, value as published in the vintage shown"
+    unit: "Index"
+    example: "When VIX rises above this 3-month measure, near-term fear exceeds longer-term fear (an inverted term structure)."
+    direction: "Higher = more expected volatility"
+    interpretation: "VIX above VIX3M (an inverted term structure) is a stress sign."
+    why_it_matters: "The term structure separates short-lived scares from lasting stress."
+    source: "Chicago Board Options Exchange via FRED (VXVCLS)"
+    source_url: https://fred.stlouisfed.org/series/VXVCLS
+    as_of: "2026-10-12"
+    update_cadence: "daily (business days)"
+    caveats: "Third-party copyright, personal use only; ALFRED vintages from 2014."
+    related_terms: [macro_vix]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: macro_nfci
+    display_name: "Chicago Fed NFCI"
+    category: macro
+    short_definition: "National Financial Conditions Index: weekly measure of US money, debt and equity market conditions."
+    full_definition: "A weighted average of 105 measures of risk, credit and leverage, standardized so that zero is the average since 1971. Re-estimated every week, so its whole history is revised."
+    formula: "FRED series NFCI, value as published in the vintage shown"
+    unit: "Index (standard deviations)"
+    example: "A reading above zero means financial conditions are tighter than their average since 1971."
+    direction: "Higher = tighter conditions"
+    interpretation: "Positive readings mean tighter-than-average financial conditions."
+    why_it_matters: "A broad, long-running gauge of financial conditions for the policy and liquidity dimension."
+    source: "Federal Reserve Bank of Chicago via FRED (NFCI)"
+    source_url: https://fred.stlouisfed.org/series/NFCI
+    as_of: "2026-10-12"
+    update_cadence: "weekly"
+    caveats: "Revised every week; stored from 2015 only (ADR-029); ALFRED vintages from 2011."
+    related_terms: [macro_nfci_credit, macro_stlfsi]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: macro_nfci_credit
+    display_name: "NFCI Credit Subindex"
+    category: macro
+    short_definition: "The credit part of the Chicago Fed NFCI: measures of credit conditions."
+    full_definition: "The NFCI subindex built from credit conditions (household and business credit, spreads and lending standards), standardized like the NFCI. Used for the credit dimension before the high-yield spread is available."
+    formula: "FRED series NFCICREDIT, value as published in the vintage shown"
+    unit: "Index (standard deviations)"
+    example: "A rising reading means credit conditions are tightening relative to their history."
+    direction: "Higher = tighter credit"
+    interpretation: "Positive readings mean tighter-than-average credit."
+    why_it_matters: "Gives the credit dimension a point-in-time input back to 2016."
+    source: "Federal Reserve Bank of Chicago via FRED (NFCICREDIT)"
+    source_url: https://fred.stlouisfed.org/series/NFCICREDIT
+    as_of: "2026-10-12"
+    update_cadence: "weekly"
+    caveats: "Revised every week; stored from 2015 only (ADR-029); ALFRED vintages from 2012."
+    related_terms: [macro_nfci, macro_hy_oas]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: macro_stlfsi
+    display_name: "St. Louis Fed Financial Stress Index"
+    category: macro
+    short_definition: "STLFSI4: weekly index of financial market stress from 18 indicators."
+    full_definition: "Constructed from 18 weekly series (interest rates, yield spreads and other indicators); zero is normal stress, positive is above normal."
+    formula: "FRED series STLFSI4, value as published in the vintage shown"
+    unit: "Index"
+    example: "A reading above zero means more financial stress than average; spikes mark stress episodes."
+    direction: "Higher = more stress"
+    interpretation: "Readings above 1 are treated as a stress flag by the regime rules."
+    why_it_matters: "An independent stress measure next to the NFCI and the high-yield spread."
+    source: "Federal Reserve Bank of St. Louis via FRED (STLFSI4)"
+    source_url: https://fred.stlouisfed.org/series/STLFSI4
+    as_of: "2026-10-12"
+    update_cadence: "weekly"
+    caveats: "Revised when re-estimated; stored from 2015 only; ALFRED vintages start 2022-11-10, so it is unavailable as known before then."
+    related_terms: [macro_nfci, macro_hy_oas]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: macro_wti_oil
+    display_name: "WTI Crude Oil"
+    category: macro
+    short_definition: "West Texas Intermediate crude oil spot price at Cushing, Oklahoma."
+    full_definition: "Daily spot price of WTI crude oil in US dollars per barrel, published by the US Energy Information Administration."
+    formula: "FRED series DCOILWTICO, value as published in the vintage shown"
+    unit: "$ per barrel"
+    example: "A move of more than 30% in a month is treated as an oil shock by the regime rules."
+    direction: "N/A"
+    interpretation: "Large one-month moves signal a commodity shock."
+    why_it_matters: "Oil shocks feed inflation and growth and are one of the stress flags."
+    source: "US Energy Information Administration via FRED (DCOILWTICO)"
+    source_url: https://fred.stlouisfed.org/series/DCOILWTICO
+    as_of: "2026-10-12"
+    update_cadence: "daily (business days)"
+    caveats: "Spot price; the April 2020 negative print is real."
+    related_terms: [macro_cpi]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: macro_dollar_index
+    display_name: "Broad Dollar Index"
+    category: macro
+    short_definition: "Nominal broad US dollar index against a trade-weighted basket of currencies."
+    full_definition: "The Federal Reserve's nominal broad trade-weighted dollar index (goods and services), January 2006 = 100."
+    formula: "FRED series DTWEXBGS, value as published in the vintage shown"
+    unit: "Index Jan 2006 = 100"
+    example: "A rise of more than 3% in a month is treated as dollar stress by the regime rules."
+    direction: "Higher = stronger dollar"
+    interpretation: "A sharp rise in the dollar often accompanies global funding stress."
+    why_it_matters: "Dollar surges are one of the stress flags."
+    source: "Board of Governors of the Federal Reserve System via FRED (DTWEXBGS)"
+    source_url: https://fred.stlouisfed.org/series/DTWEXBGS
+    as_of: "2026-10-12"
+    update_cadence: "daily (business days)"
+    caveats: "ALFRED vintages start 2019-02-04, so it is unavailable as known before then."
+    related_terms: [macro_nfci]
+    methodology_version: 0.1.0
+    status: complete
+
   - term_id: page_macro
     display_name: Macro
     category: navigation

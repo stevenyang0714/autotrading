@@ -199,9 +199,9 @@ def test_series_list_shows_the_registry_with_latest_values(client: TestClient) -
     body = client.get("/macro/series").json()
     by_id = {s["series"]["id"]: s for s in body["series"]}
     assert list(by_id)[:2] == ["CPIAUCSL", "PCEPILFE"]  # registry order
-    assert len(by_id) == 11
+    assert len(by_id) == 17  # 11 since M0.6, 6 regime inputs since M2.1
     assert by_id["PAYEMS"]["latest"]["observation_date"] == "2026-09-01"
-    assert all(s["latest"] is not None for s in by_id.values())  # all 11 are recorded
+    assert all(s["latest"] is not None for s in by_id.values())  # all 17 are recorded
     assert body["last_refresh_at"] is not None
 
 

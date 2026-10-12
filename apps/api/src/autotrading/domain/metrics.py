@@ -76,6 +76,12 @@ MACRO_SERIES_TERMS = (
     "macro_curve_10y_2y",
     "macro_hy_oas",
     "macro_vix",
+    "macro_vix_3m",
+    "macro_nfci",
+    "macro_nfci_credit",
+    "macro_stlfsi",
+    "macro_wti_oil",
+    "macro_dollar_index",
 )
 
 # Indicators computed on the overview (M0.6, ADR-016): term id -> function in domain/indicators.

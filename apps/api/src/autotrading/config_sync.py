@@ -11,6 +11,7 @@
 """
 
 from dataclasses import dataclass, field
+from datetime import date
 from decimal import Decimal
 from pathlib import Path
 from typing import Literal
@@ -113,6 +114,9 @@ class MacroSeriesConfig(BaseModel):
     term_id: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
     position: int = Field(ge=0)
     enabled: bool = True
+    # Earliest observation read: for series that re-estimate their whole history every week
+    # (NFCI, STLFSI4), whose every vintage would otherwise be read daily (M2.1, ADR-029).
+    observation_start: date | None = None
 
 
 class MacroSeriesFile(BaseModel):

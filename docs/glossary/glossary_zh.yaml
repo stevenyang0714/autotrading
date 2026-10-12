@@ -249,6 +249,12 @@ terms:
   macro_curve_10y_2y: {name: 10 年減 2 年利差, hint: 殖利率曲線斜率；負值即「倒掛」。}
   macro_hy_oas: {name: 高收益債利差, hint: 高收益公司債相對美債的額外殖利率（OAS）。}
   macro_vix: {name: VIX 恐慌指數, hint: S&P 500 選擇權隱含的未來 30 天波動率。}
+  macro_vix_3m: {name: VIX 3 個月, hint: S&P 500 選擇權隱含的未來 3 個月波動率；VIX 高於它代表期限結構倒掛。}
+  macro_nfci: {name: 芝加哥聯儲金融情勢指數, hint: 每週的整體金融情勢；高於 0 代表比 1971 年以來的平均更緊。}
+  macro_nfci_credit: {name: NFCI 信用子指數, hint: NFCI 中的信用部分；高於 0 代表信用比平均更緊。}
+  macro_stlfsi: {name: 聖路易聯儲金融壓力指數, hint: 由 18 個每週指標組成；高於 0 代表壓力高於正常。}
+  macro_wti_oil: {name: WTI 原油, hint: 美國西德州原油現貨價（每桶美元）。}
+  macro_dollar_index: {name: 美元廣義指數, hint: 聯準會的貿易加權美元指數；急升常伴隨全球資金壓力。}
 
   # overview indicators
   cpi_inflation_yoy: {name: CPI 年增率, hint: CPI 與 12 個月前相比的變動百分比。}

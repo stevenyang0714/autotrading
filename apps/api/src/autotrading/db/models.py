@@ -529,6 +529,7 @@ class MacroSeries(MutableRowMixin, Base):
     position: Mapped[int] = mapped_column(SmallInteger, server_default=text("100"))
     enabled: Mapped[bool] = mapped_column(Boolean, server_default=text("true"))
     source_id: Mapped[str] = mapped_column(Text, ForeignKey("sources.id"))
+    observation_start: Mapped[date | None] = mapped_column(Date)  # earliest observation read
     # From FRED's series endpoint; empty until the first fred.series run.
     title: Mapped[str | None] = mapped_column(Text)
     units: Mapped[str | None] = mapped_column(Text)

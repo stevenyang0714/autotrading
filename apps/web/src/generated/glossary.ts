@@ -130,14 +130,20 @@ export type CompleteTermId =
   | "macro_core_pce"
   | "macro_cpi"
   | "macro_curve_10y_2y"
+  | "macro_dollar_index"
   | "macro_fed_funds"
   | "macro_hy_oas"
+  | "macro_nfci"
+  | "macro_nfci_credit"
   | "macro_nonfarm_payrolls"
   | "macro_real_gdp"
+  | "macro_stlfsi"
   | "macro_treasury_10y"
   | "macro_treasury_2y"
   | "macro_unemployment_rate"
   | "macro_vix"
+  | "macro_vix_3m"
+  | "macro_wti_oil"
   | "margin_of_safety"
   | "market_cap"
   | "market_confirmation"
@@ -3450,6 +3456,30 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "10 年減 2 年利差",
     "hint_zh": "殖利率曲線斜率；負值即「倒掛」。"
   },
+  "macro_dollar_index": {
+    "term_id": "macro_dollar_index",
+    "display_name": "Broad Dollar Index",
+    "category": "macro",
+    "short_definition": "Nominal broad US dollar index against a trade-weighted basket of currencies.",
+    "full_definition": "The Federal Reserve's nominal broad trade-weighted dollar index (goods and services), January 2006 = 100.",
+    "formula": "FRED series DTWEXBGS, value as published in the vintage shown",
+    "unit": "Index Jan 2006 = 100",
+    "example": "A rise of more than 3% in a month is treated as dollar stress by the regime rules.",
+    "direction": "Higher = stronger dollar",
+    "interpretation": "A sharp rise in the dollar often accompanies global funding stress.",
+    "why_it_matters": "Dollar surges are one of the stress flags.",
+    "source": "Board of Governors of the Federal Reserve System via FRED (DTWEXBGS)",
+    "source_url": "https://fred.stlouisfed.org/series/DTWEXBGS",
+    "as_of": "2026-10-12",
+    "update_cadence": "daily (business days)",
+    "caveats": "ALFRED vintages start 2019-02-04, so it is unavailable as known before then.",
+    "related_terms": [
+      "macro_nfci"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "美元廣義指數",
+    "hint_zh": "聯準會的貿易加權美元指數；急升常伴隨全球資金壓力。"
+  },
   "macro_fed_funds": {
     "term_id": "macro_fed_funds",
     "display_name": "Fed Funds Rate",
@@ -3497,6 +3527,56 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "高收益債利差",
     "hint_zh": "高收益公司債相對美債的額外殖利率（OAS）。"
+  },
+  "macro_nfci": {
+    "term_id": "macro_nfci",
+    "display_name": "Chicago Fed NFCI",
+    "category": "macro",
+    "short_definition": "National Financial Conditions Index: weekly measure of US money, debt and equity market conditions.",
+    "full_definition": "A weighted average of 105 measures of risk, credit and leverage, standardized so that zero is the average since 1971. Re-estimated every week, so its whole history is revised.",
+    "formula": "FRED series NFCI, value as published in the vintage shown",
+    "unit": "Index (standard deviations)",
+    "example": "A reading above zero means financial conditions are tighter than their average since 1971.",
+    "direction": "Higher = tighter conditions",
+    "interpretation": "Positive readings mean tighter-than-average financial conditions.",
+    "why_it_matters": "A broad, long-running gauge of financial conditions for the policy and liquidity dimension.",
+    "source": "Federal Reserve Bank of Chicago via FRED (NFCI)",
+    "source_url": "https://fred.stlouisfed.org/series/NFCI",
+    "as_of": "2026-10-12",
+    "update_cadence": "weekly",
+    "caveats": "Revised every week; stored from 2015 only (ADR-029); ALFRED vintages from 2011.",
+    "related_terms": [
+      "macro_nfci_credit",
+      "macro_stlfsi"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "芝加哥聯儲金融情勢指數",
+    "hint_zh": "每週的整體金融情勢；高於 0 代表比 1971 年以來的平均更緊。"
+  },
+  "macro_nfci_credit": {
+    "term_id": "macro_nfci_credit",
+    "display_name": "NFCI Credit Subindex",
+    "category": "macro",
+    "short_definition": "The credit part of the Chicago Fed NFCI: measures of credit conditions.",
+    "full_definition": "The NFCI subindex built from credit conditions (household and business credit, spreads and lending standards), standardized like the NFCI. Used for the credit dimension before the high-yield spread is available.",
+    "formula": "FRED series NFCICREDIT, value as published in the vintage shown",
+    "unit": "Index (standard deviations)",
+    "example": "A rising reading means credit conditions are tightening relative to their history.",
+    "direction": "Higher = tighter credit",
+    "interpretation": "Positive readings mean tighter-than-average credit.",
+    "why_it_matters": "Gives the credit dimension a point-in-time input back to 2016.",
+    "source": "Federal Reserve Bank of Chicago via FRED (NFCICREDIT)",
+    "source_url": "https://fred.stlouisfed.org/series/NFCICREDIT",
+    "as_of": "2026-10-12",
+    "update_cadence": "weekly",
+    "caveats": "Revised every week; stored from 2015 only (ADR-029); ALFRED vintages from 2012.",
+    "related_terms": [
+      "macro_nfci",
+      "macro_hy_oas"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "NFCI 信用子指數",
+    "hint_zh": "NFCI 中的信用部分；高於 0 代表信用比平均更緊。"
   },
   "macro_nonfarm_payrolls": {
     "term_id": "macro_nonfarm_payrolls",
@@ -3546,6 +3626,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "實質 GDP",
     "hint_zh": "扣除物價因素後的國內生產毛額，季調年率。"
+  },
+  "macro_stlfsi": {
+    "term_id": "macro_stlfsi",
+    "display_name": "St. Louis Fed Financial Stress Index",
+    "category": "macro",
+    "short_definition": "STLFSI4: weekly index of financial market stress from 18 indicators.",
+    "full_definition": "Constructed from 18 weekly series (interest rates, yield spreads and other indicators); zero is normal stress, positive is above normal.",
+    "formula": "FRED series STLFSI4, value as published in the vintage shown",
+    "unit": "Index",
+    "example": "A reading above zero means more financial stress than average; spikes mark stress episodes.",
+    "direction": "Higher = more stress",
+    "interpretation": "Readings above 1 are treated as a stress flag by the regime rules.",
+    "why_it_matters": "An independent stress measure next to the NFCI and the high-yield spread.",
+    "source": "Federal Reserve Bank of St. Louis via FRED (STLFSI4)",
+    "source_url": "https://fred.stlouisfed.org/series/STLFSI4",
+    "as_of": "2026-10-12",
+    "update_cadence": "weekly",
+    "caveats": "Revised when re-estimated; stored from 2015 only; ALFRED vintages start 2022-11-10, so it is unavailable as known before then.",
+    "related_terms": [
+      "macro_nfci",
+      "macro_hy_oas"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "聖路易聯儲金融壓力指數",
+    "hint_zh": "由 18 個每週指標組成；高於 0 代表壓力高於正常。"
   },
   "macro_treasury_10y": {
     "term_id": "macro_treasury_10y",
@@ -3645,6 +3750,54 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "VIX 恐慌指數",
     "hint_zh": "S&P 500 選擇權隱含的未來 30 天波動率。"
+  },
+  "macro_vix_3m": {
+    "term_id": "macro_vix_3m",
+    "display_name": "VIX 3-Month",
+    "category": "macro",
+    "short_definition": "Cboe S&P 500 3-Month Volatility Index: implied volatility of S&P 500 options over the next 3 months.",
+    "full_definition": "Daily closing level of the VIX3M (formerly VXV), computed by Cboe from S&P 500 option prices. Compared with VIX it shows the volatility term structure.",
+    "formula": "FRED series VXVCLS, value as published in the vintage shown",
+    "unit": "Index",
+    "example": "When VIX rises above this 3-month measure, near-term fear exceeds longer-term fear (an inverted term structure).",
+    "direction": "Higher = more expected volatility",
+    "interpretation": "VIX above VIX3M (an inverted term structure) is a stress sign.",
+    "why_it_matters": "The term structure separates short-lived scares from lasting stress.",
+    "source": "Chicago Board Options Exchange via FRED (VXVCLS)",
+    "source_url": "https://fred.stlouisfed.org/series/VXVCLS",
+    "as_of": "2026-10-12",
+    "update_cadence": "daily (business days)",
+    "caveats": "Third-party copyright, personal use only; ALFRED vintages from 2014.",
+    "related_terms": [
+      "macro_vix"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "VIX 3 個月",
+    "hint_zh": "S&P 500 選擇權隱含的未來 3 個月波動率；VIX 高於它代表期限結構倒掛。"
+  },
+  "macro_wti_oil": {
+    "term_id": "macro_wti_oil",
+    "display_name": "WTI Crude Oil",
+    "category": "macro",
+    "short_definition": "West Texas Intermediate crude oil spot price at Cushing, Oklahoma.",
+    "full_definition": "Daily spot price of WTI crude oil in US dollars per barrel, published by the US Energy Information Administration.",
+    "formula": "FRED series DCOILWTICO, value as published in the vintage shown",
+    "unit": "$ per barrel",
+    "example": "A move of more than 30% in a month is treated as an oil shock by the regime rules.",
+    "direction": "N/A",
+    "interpretation": "Large one-month moves signal a commodity shock.",
+    "why_it_matters": "Oil shocks feed inflation and growth and are one of the stress flags.",
+    "source": "US Energy Information Administration via FRED (DCOILWTICO)",
+    "source_url": "https://fred.stlouisfed.org/series/DCOILWTICO",
+    "as_of": "2026-10-12",
+    "update_cadence": "daily (business days)",
+    "caveats": "Spot price; the April 2020 negative print is real.",
+    "related_terms": [
+      "macro_cpi"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "WTI 原油",
+    "hint_zh": "美國西德州原油現貨價（每桶美元）。"
   },
   "margin_of_safety": {
     "term_id": "margin_of_safety",
