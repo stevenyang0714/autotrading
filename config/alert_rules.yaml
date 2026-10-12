@@ -1,0 +1,40 @@
+# Signal convergence and alert rules (M1.7, ADR-028; build spec 02 §16, research report 01 §15).
+#
+# Each rule set is deterministic and versioned like config/buyback_rules.yaml: a released
+# rule_version is immutable (`make migrate` refuses changed content under an existing version,
+# and a unit test pins each version's sha256). Every convergence assessment and alert stores the
+# rule_version it used.
+#
+# Levels (01 §15): L0 Information, L1 Watch, L2 Thesis, L3 Trade Candidate, L4 Execution Ready.
+# L4 needs a risk check, liquidity, sizing and compliance, none of which exist before Phase 2, so
+# it is unreachable in Phase 1 (P1-4). No level places an order (ADR-008).
+#
+# Families (02 §2): 2 Corporate Actions (buyback states and statements), 3 Fundamental &
+# Valuation (10-K/10-Q filings, valuation support), 4 Earnings (8-K Item 2.02 releases),
+# 5 Price / Trend (market confirmation).
+version: 0.1.0
+rule_sets:
+  - rule_version: 0.1.0
+    status: active  # active: evaluated with each buyback state assignment; retired: kept for history
+    released: "2026-10-12"
+    note: >-
+      Claude's defaults A1-A4 (ADR-028), released overnight for Steven's review: a change is a
+      new rule_version.
+    # The buyback state assignments the levels read (their states and condition readings).
+    buyback_rule_version: 0.2.0
+    # A1: the events that are L0 alerts and count as items.
+    event_kinds: [earnings_release, periodic_report, buyback_statement, buyback_state_change]
+    buyback_statement_kinds: [new, increase]
+    # A3: live evaluations raise event alerts for events since the previous assessment, at most
+    # this many days back; backfilled assessments raise none.
+    event_lookback_days: 30
+    levels:
+      watch:  # L1: multiple related signals
+        window_days: 30
+        min_items: 2
+        min_signals: 1
+      thesis:  # L2: independent signals + the S1 causal chain (buybacks + value)
+        buyback_states: [active, high_conviction]
+        valuation_conditions: [high_conviction.dcf_discount, high_conviction.fcf_yield]
+      trade_candidate:  # L3: thesis + market confirmation + the S1 strategy trigger
+        market_conditions: [trade_ready.above_average, trade_ready.relative_return]

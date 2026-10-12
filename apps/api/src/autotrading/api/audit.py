@@ -20,6 +20,9 @@ from sqlalchemy.orm import Session
 
 from autotrading.api.data_health import SessionDep
 from autotrading.db.models import (
+    Alert,
+    AlertAcknowledgement,
+    AlertRuleSet,
     AuditLog,
     DeadLetter,
     Entity,
@@ -172,6 +175,22 @@ def _labels(session: Session, table: str, ids: list[str]) -> dict[str, str]:
         "thesis_cards": lambda: [
             (row.id, f"{row.ticker} thesis card v{row.version}")
             for row in session.scalars(select(ThesisCard).where(ThesisCard.id.in_(_uuids(ids))))
+        ],
+        "alerts": lambda: [
+            (row.id, f"alert: {row.title}")
+            for row in session.scalars(select(Alert).where(Alert.id.in_(_uuids(ids))))
+        ],
+        "alert_acknowledgements": lambda: [
+            (row.id, f"acknowledged: {title}")
+            for row, title in session.execute(
+                select(AlertAcknowledgement, Alert.title)
+                .join(Alert, Alert.id == AlertAcknowledgement.alert_id)
+                .where(AlertAcknowledgement.id.in_(_uuids(ids)))
+            )
+        ],
+        "alert_rule_sets": lambda: [
+            (row.id, f"alert rules {row.rule_version}")
+            for row in session.scalars(select(AlertRuleSet).where(AlertRuleSet.id.in_(_uuids(ids))))
         ],
         "trade_decisions": lambda: [
             (row.id, f"{row.ticker} {_decision_label(row)}")

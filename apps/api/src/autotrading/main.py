@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from sqlalchemy.orm import Session, sessionmaker
 
+from autotrading.api.alerts import router as alerts_router
 from autotrading.api.audit import router as audit_router
 from autotrading.api.buyback_states import router as buyback_states_router
 from autotrading.api.buybacks import router as buybacks_router
@@ -83,6 +84,7 @@ def create_app(
     app.include_router(earnings_router)
     app.include_router(signals_router)
     app.include_router(journal_router)
+    app.include_router(alerts_router)
     return app
 
 

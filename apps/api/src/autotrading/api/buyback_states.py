@@ -84,6 +84,11 @@ from autotrading.domain.fair_value import month_ends, multiple_history, snapshot
 from autotrading.domain.fundamentals import merge_by_precedence
 from autotrading.domain.signals import buyback_signal
 from autotrading.domain.valuation import Close, Input
+from autotrading.repositories.convergence import (
+    buyback_reading,
+    convergence_rules,
+    record_convergence,
+)
 from autotrading.repositories.facts import row_key, visible_in_system_time
 from autotrading.repositories.prices import daily_bars, instruments_by_symbol
 from autotrading.repositories.signals import record_signal
@@ -414,8 +419,9 @@ def record_assignment(
     rule_set: RuleSet,
     trigger: Trigger,
 ) -> bool:
-    """Evaluate and store, with its signal when the state qualifies; False when this company, T
-    and rule version are stored already."""
+    """Evaluate and store, with its signal when the state qualifies and the company's
+    convergence level and alerts; False when this company, T and rule version are stored
+    already."""
     exists = session.scalar(
         select(BuybackStateAssignment.id).where(
             BuybackStateAssignment.instrument_id == instrument.id,
@@ -458,6 +464,19 @@ def record_assignment(
     )
     if signal is not None:  # ACTIVE or HIGH-CONVICTION (ADR-027 J1), same transaction
         record_signal(session, instrument.id, ticker, signal)
+    alert_rules = convergence_rules(session)
+    if alert_rules is not None:  # the company's convergence level and alerts (ADR-028)
+        record_convergence(
+            session,
+            alert_rules,
+            instrument.id,
+            ticker,
+            [UUID(issuer) for issuer in found.issuers],
+            buyback_reading(inserted, found.state, at, rule_set.rule_version, assessment),
+            at,
+            system_time,
+            trigger,
+        )
     return True
 
 
