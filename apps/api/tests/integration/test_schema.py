@@ -64,6 +64,10 @@ APP_TABLES = {
     "signals",
     "thesis_cards",
     "trade_decisions",
+    "alert_rule_sets",
+    "convergence_assessments",
+    "alerts",
+    "alert_acknowledgements",
 }
 FEB = datetime(2025, 2, 1, 21, 5, tzinfo=UTC)
 AUG = datetime(2025, 8, 1, 20, 30, tzinfo=UTC)
@@ -203,6 +207,15 @@ def test_guardrails_exist(engine: Engine) -> None:
         "trade_decisions_append_only",
         "trade_decisions_no_truncate",
         "trade_decisions_audit",
+        "alert_rule_sets_append_only",
+        "alert_rule_sets_audit",
+        "convergence_assessments_append_only",
+        "convergence_assessments_no_truncate",
+        "alerts_append_only",
+        "alerts_no_truncate",
+        "alerts_audit",
+        "alert_acknowledgements_append_only",
+        "alert_acknowledgements_audit",
     } <= triggers
     assert exclusions == {"ex_identifiers_value_period", "ex_identifiers_subject_period"}
 

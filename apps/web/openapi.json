@@ -1,6 +1,51 @@
 {
   "components": {
     "schemas": {
+      "AcknowledgeIn": {
+        "additionalProperties": false,
+        "properties": {
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "title": "AcknowledgeIn",
+        "type": "object"
+      },
+      "AcknowledgementOut": {
+        "properties": {
+          "acknowledged_at": {
+            "format": "date-time",
+            "title": "Acknowledged At",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "required": [
+          "acknowledged_at",
+          "note"
+        ],
+        "title": "AcknowledgementOut",
+        "type": "object"
+      },
       "ActiveRule": {
         "additionalProperties": false,
         "properties": {
@@ -111,6 +156,391 @@
           "change_unit"
         ],
         "title": "ActualOut",
+        "type": "object"
+      },
+      "AlertDetail": {
+        "properties": {
+          "acknowledgement": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AcknowledgementOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "assessment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CompanyLevel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "assessment_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assessment Id"
+          },
+          "backfilled": {
+            "title": "Backfilled",
+            "type": "boolean"
+          },
+          "direction": {
+            "anyOf": [
+              {
+                "enum": [
+                  "up",
+                  "down"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Direction"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/AlertEvidenceOut"
+            },
+            "title": "Evidence",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "event",
+              "level_change"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "level": {
+            "title": "Level",
+            "type": "integer"
+          },
+          "level_name": {
+            "title": "Level Name",
+            "type": "string"
+          },
+          "previous_level": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Level"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          },
+          "system_time": {
+            "format": "date-time",
+            "title": "System Time",
+            "type": "string"
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "rule_version",
+          "ticker",
+          "kind",
+          "level",
+          "level_name",
+          "previous_level",
+          "direction",
+          "title",
+          "known_at",
+          "system_time",
+          "backfilled",
+          "evidence",
+          "assessment_id",
+          "acknowledgement",
+          "assessment"
+        ],
+        "title": "AlertDetail",
+        "type": "object"
+      },
+      "AlertEvidenceOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "table": {
+            "title": "Table",
+            "type": "string"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "required": [
+          "table",
+          "id",
+          "label",
+          "url"
+        ],
+        "title": "AlertEvidenceOut",
+        "type": "object"
+      },
+      "AlertOut": {
+        "properties": {
+          "acknowledgement": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AcknowledgementOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "assessment_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assessment Id"
+          },
+          "backfilled": {
+            "title": "Backfilled",
+            "type": "boolean"
+          },
+          "direction": {
+            "anyOf": [
+              {
+                "enum": [
+                  "up",
+                  "down"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Direction"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/AlertEvidenceOut"
+            },
+            "title": "Evidence",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "event",
+              "level_change"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "level": {
+            "title": "Level",
+            "type": "integer"
+          },
+          "level_name": {
+            "title": "Level Name",
+            "type": "string"
+          },
+          "previous_level": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Level"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          },
+          "system_time": {
+            "format": "date-time",
+            "title": "System Time",
+            "type": "string"
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "rule_version",
+          "ticker",
+          "kind",
+          "level",
+          "level_name",
+          "previous_level",
+          "direction",
+          "title",
+          "known_at",
+          "system_time",
+          "backfilled",
+          "evidence",
+          "assessment_id",
+          "acknowledgement"
+        ],
+        "title": "AlertOut",
+        "type": "object"
+      },
+      "AlertRuleSetOut": {
+        "properties": {
+          "content": {
+            "additionalProperties": true,
+            "title": "Content",
+            "type": "object"
+          },
+          "content_sha256": {
+            "title": "Content Sha256",
+            "type": "string"
+          },
+          "released": {
+            "format": "date",
+            "title": "Released",
+            "type": "string"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "retired"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rule_version",
+          "status",
+          "released",
+          "content",
+          "content_sha256"
+        ],
+        "title": "AlertRuleSetOut",
+        "type": "object"
+      },
+      "AlertsOut": {
+        "properties": {
+          "detail": {
+            "default": "In-app alerts only (P1-1). Levels are deterministic rules; none places an order, and L4 is unreachable before the Phase 2 risk check.",
+            "title": "Detail",
+            "type": "string"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/AlertOut"
+            },
+            "title": "Entries",
+            "type": "array"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "open_by_level": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Open By Level",
+            "type": "object"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "open",
+              "acknowledged",
+              "all"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "known_at",
+          "rule_version",
+          "status",
+          "open_by_level",
+          "entries"
+        ],
+        "title": "AlertsOut",
         "type": "object"
       },
       "AnnouncementEvent": {
@@ -1327,6 +1757,71 @@
         "title": "Closes",
         "type": "object"
       },
+      "CompanyLevel": {
+        "properties": {
+          "backfilled": {
+            "title": "Backfilled",
+            "type": "boolean"
+          },
+          "independent_families": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Independent Families",
+            "type": "array"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level"
+          },
+          "level_name": {
+            "title": "Level Name",
+            "type": "string"
+          },
+          "levels": {
+            "items": {
+              "$ref": "#/components/schemas/LevelCheck"
+            },
+            "title": "Levels",
+            "type": "array"
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticker",
+          "known_at",
+          "level",
+          "level_name",
+          "backfilled",
+          "levels",
+          "items",
+          "independent_families"
+        ],
+        "title": "CompanyLevel",
+        "type": "object"
+      },
       "CompanyStates": {
         "properties": {
           "announcements": {
@@ -1620,6 +2115,38 @@
           }
         },
         "title": "ConsensusOut",
+        "type": "object"
+      },
+      "ConvergenceOut": {
+        "properties": {
+          "companies": {
+            "items": {
+              "$ref": "#/components/schemas/CompanyLevel"
+            },
+            "title": "Companies",
+            "type": "array"
+          },
+          "detail": {
+            "default": "In-app alerts only (P1-1). Levels are deterministic rules; none places an order, and L4 is unreachable before the Phase 2 risk check.",
+            "title": "Detail",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "known_at",
+          "rule_version",
+          "companies"
+        ],
+        "title": "ConvergenceOut",
         "type": "object"
       },
       "DataAsOf": {
@@ -3682,6 +4209,65 @@
         "title": "InstrumentSummary",
         "type": "object"
       },
+      "Item": {
+        "properties": {
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "family_id": {
+            "title": "Family Id",
+            "type": "integer"
+          },
+          "kind": {
+            "enum": [
+              "reading",
+              "event"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "row_id": {
+            "title": "Row Id",
+            "type": "string"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "table": {
+            "title": "Table",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "family_id",
+          "label",
+          "table",
+          "row_id",
+          "source",
+          "known_at"
+        ],
+        "title": "Item",
+        "type": "object"
+      },
       "ItemOut": {
         "properties": {
           "check": {
@@ -4259,6 +4845,39 @@
           "vintage"
         ],
         "title": "LatestValue",
+        "type": "object"
+      },
+      "LevelCheck": {
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "level": {
+            "title": "Level",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pass",
+              "fail",
+              "unavailable"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "level",
+          "name",
+          "status",
+          "detail"
+        ],
+        "title": "LevelCheck",
         "type": "object"
       },
       "LevelOut": {
@@ -8309,6 +8928,245 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/alerts": {
+      "get": {
+        "operationId": "alerts_alerts_get",
+        "parameters": [
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "default": "open",
+              "enum": [
+                "open",
+                "acknowledged",
+                "all"
+              ],
+              "title": "Status",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "level_min",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "maximum": 3,
+              "minimum": 0,
+              "title": "Level Min",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "ticker",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Ticker"
+            }
+          },
+          {
+            "in": "query",
+            "name": "include_backfilled",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Include Backfilled",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 500,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Alerts",
+        "tags": [
+          "alerts"
+        ]
+      }
+    },
+    "/alerts/rules": {
+      "get": {
+        "operationId": "alert_rules_alerts_rules_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AlertRuleSetOut"
+                  },
+                  "title": "Response Alert Rules Alerts Rules Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Alert Rules",
+        "tags": [
+          "alerts"
+        ]
+      }
+    },
+    "/alerts/{alert_id}": {
+      "get": {
+        "operationId": "alert_alerts__alert_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "alert_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Alert Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Alert",
+        "tags": [
+          "alerts"
+        ]
+      }
+    },
+    "/alerts/{alert_id}/acknowledge": {
+      "post": {
+        "description": "Acknowledge once (ADR-028 A4); the alert itself never changes. Audited.",
+        "operationId": "acknowledge_alerts__alert_id__acknowledge_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "alert_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Alert Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcknowledgeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Acknowledge",
+        "tags": [
+          "alerts"
+        ]
+      }
+    },
     "/audit-log": {
       "get": {
         "operationId": "audit_log_audit_log_get",
@@ -8557,6 +9415,59 @@
         "summary": "Buyback Rules",
         "tags": [
           "buyback-states"
+        ]
+      }
+    },
+    "/convergence": {
+      "get": {
+        "description": "Each universe company's latest assessment at or before T.",
+        "operationId": "convergence_convergence_get",
+        "parameters": [
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConvergenceOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Convergence",
+        "tags": [
+          "alerts"
         ]
       }
     },

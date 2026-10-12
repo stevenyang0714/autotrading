@@ -683,6 +683,83 @@ export async function exitPaperTrade(decisionId: string, note: string | null): P
   );
 }
 
+// ---------- alerts (M1.7, ADR-028) ----------
+
+export type Alerts = components["schemas"]["AlertsOut"];
+export type AlertEntry = components["schemas"]["AlertOut"];
+export type AlertDetail = components["schemas"]["AlertDetail"];
+export type Convergence = components["schemas"]["ConvergenceOut"];
+export type CompanyLevel = components["schemas"]["CompanyLevel"];
+export type AlertStatus = Alerts["status"];
+
+export interface AlertQuery {
+  knownAt?: string;
+  status?: AlertStatus;
+  levelMin?: number;
+  ticker?: string;
+  includeBackfilled?: boolean;
+}
+
+/** Alerts known at `knownAt`, newest first (open ones by default), or null when the API is down. */
+export async function loadAlerts(query: AlertQuery = {}): Promise<Alerts | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/alerts", {
+      params: {
+        query: {
+          ...(query.knownAt ? { known_at: query.knownAt } : {}),
+          ...(query.status ? { status: query.status } : {}),
+          ...(query.levelMin ? { level_min: query.levelMin } : {}),
+          ...(query.ticker ? { ticker: query.ticker } : {}),
+          ...(query.includeBackfilled ? { include_backfilled: true } : {}),
+        },
+      },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Each company's convergence level at `knownAt`. */
+export async function loadConvergence(knownAt?: string): Promise<Convergence | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/convergence", {
+      params: { query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export type AcknowledgeResult =
+  | { status: "ok"; data: AlertDetail }
+  | { status: "invalid"; errors: string[] }
+  | { status: "unavailable" };
+
+/** Acknowledge an alert once, with an optional note (audited). */
+export async function acknowledgeAlert(alertId: string, note: string | null): Promise<AcknowledgeResult> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data, error, response } = await client.POST("/alerts/{alert_id}/acknowledge", {
+      params: { path: { alert_id: alertId } },
+      body: { note },
+      cache: "no-store",
+    });
+    if (data) return { status: "ok", data };
+    if ([404, 409, 422].includes(response.status)) {
+      return { status: "invalid", errors: validationMessages(error, "The API refused the acknowledgement.") };
+    }
+    return { status: "unavailable" };
+  } catch {
+    return { status: "unavailable" };
+  }
+}
+
 // ---------- news (M0.8, ADR-018) ----------
 
 export type NewsFeed = components["schemas"]["NewsFeed"];

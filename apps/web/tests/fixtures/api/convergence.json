@@ -1,0 +1,199 @@
+{
+  "recorded_at": "2026-10-12T03:07:57.771024+00:00",
+  "recorded_from": "recorded SEC filings, Alpaca closes, FRED yields and news replayed into the integration test database (tests/integration/test_alerts.py)",
+  "endpoint": "/convergence",
+  "params": {
+    "known_at": "2026-10-06T12:00:00Z"
+  },
+  "response": {
+    "known_at": "2026-10-06T12:00:00Z",
+    "rule_version": "0.1.0",
+    "companies": [
+      {
+        "ticker": "AAPL",
+        "known_at": "2026-10-06T12:00:00Z",
+        "level": 1,
+        "level_name": "L1 Watch",
+        "backfilled": true,
+        "levels": [
+          {
+            "level": 0,
+            "name": "Information",
+            "status": "pass",
+            "detail": "2 items"
+          },
+          {
+            "level": 1,
+            "name": "Watch",
+            "status": "pass",
+            "detail": "2 items, 2 readings (needs 2 and 1)"
+          },
+          {
+            "level": 2,
+            "name": "Thesis",
+            "status": "fail",
+            "detail": "no valuation support"
+          },
+          {
+            "level": 3,
+            "name": "Trade Candidate",
+            "status": "fail",
+            "detail": "needs L2 first (market confirmation passes)"
+          },
+          {
+            "level": 4,
+            "name": "Execution Ready",
+            "status": "unavailable",
+            "detail": "needs the Phase 2 risk check, liquidity, sizing and compliance (P1-4)"
+          }
+        ],
+        "items": [
+          {
+            "kind": "reading",
+            "family_id": 2,
+            "label": "Buyback state ACTIVE",
+            "table": "buyback_state_assignments",
+            "row_id": "3a4ffc44-7460-4aab-8367-1b05ad427b33",
+            "source": "buyback_state_assignments:3a4ffc44-7460-4aab-8367-1b05ad427b33",
+            "known_at": "2026-10-06T12:00:00Z",
+            "detail": "rules 0.2.0"
+          },
+          {
+            "kind": "reading",
+            "family_id": 5,
+            "label": "Market confirmation",
+            "table": "buyback_state_assignments",
+            "row_id": "3a4ffc44-7460-4aab-8367-1b05ad427b33",
+            "source": "market:3a4ffc44-7460-4aab-8367-1b05ad427b33",
+            "known_at": "2026-10-06T12:00:00Z",
+            "detail": "trade_ready.above_average, trade_ready.relative_return"
+          }
+        ],
+        "independent_families": [
+          2,
+          5
+        ]
+      },
+      {
+        "ticker": "XOM",
+        "known_at": "2026-10-06T12:00:00Z",
+        "level": 1,
+        "level_name": "L1 Watch",
+        "backfilled": true,
+        "levels": [
+          {
+            "level": 0,
+            "name": "Information",
+            "status": "pass",
+            "detail": "2 items"
+          },
+          {
+            "level": 1,
+            "name": "Watch",
+            "status": "pass",
+            "detail": "2 items, 2 readings (needs 2 and 1)"
+          },
+          {
+            "level": 2,
+            "name": "Thesis",
+            "status": "unavailable",
+            "detail": "no valuation reading"
+          },
+          {
+            "level": 3,
+            "name": "Trade Candidate",
+            "status": "fail",
+            "detail": "needs L2 first (market confirmation passes)"
+          },
+          {
+            "level": 4,
+            "name": "Execution Ready",
+            "status": "unavailable",
+            "detail": "needs the Phase 2 risk check, liquidity, sizing and compliance (P1-4)"
+          }
+        ],
+        "items": [
+          {
+            "kind": "reading",
+            "family_id": 2,
+            "label": "Buyback state ACTIVE",
+            "table": "buyback_state_assignments",
+            "row_id": "16e8d69e-19b5-4a9f-9893-ae6a8fbc2599",
+            "source": "buyback_state_assignments:16e8d69e-19b5-4a9f-9893-ae6a8fbc2599",
+            "known_at": "2026-10-06T12:00:00Z",
+            "detail": "rules 0.2.0"
+          },
+          {
+            "kind": "reading",
+            "family_id": 5,
+            "label": "Market confirmation",
+            "table": "buyback_state_assignments",
+            "row_id": "16e8d69e-19b5-4a9f-9893-ae6a8fbc2599",
+            "source": "market:16e8d69e-19b5-4a9f-9893-ae6a8fbc2599",
+            "known_at": "2026-10-06T12:00:00Z",
+            "detail": "trade_ready.above_average, trade_ready.relative_return"
+          }
+        ],
+        "independent_families": [
+          2,
+          5
+        ]
+      },
+      {
+        "ticker": "META",
+        "known_at": "2026-10-06T12:00:00Z",
+        "level": 0,
+        "level_name": "L0 Information",
+        "backfilled": true,
+        "levels": [
+          {
+            "level": 0,
+            "name": "Information",
+            "status": "pass",
+            "detail": "1 item"
+          },
+          {
+            "level": 1,
+            "name": "Watch",
+            "status": "fail",
+            "detail": "1 item, 1 reading (needs 2 and 1)"
+          },
+          {
+            "level": 2,
+            "name": "Thesis",
+            "status": "fail",
+            "detail": "buyback state NONE: not executing"
+          },
+          {
+            "level": 3,
+            "name": "Trade Candidate",
+            "status": "fail",
+            "detail": "needs L2 first (market confirmation passes)"
+          },
+          {
+            "level": 4,
+            "name": "Execution Ready",
+            "status": "unavailable",
+            "detail": "needs the Phase 2 risk check, liquidity, sizing and compliance (P1-4)"
+          }
+        ],
+        "items": [
+          {
+            "kind": "reading",
+            "family_id": 5,
+            "label": "Market confirmation",
+            "table": "buyback_state_assignments",
+            "row_id": "358be4af-1846-4e7a-b3de-03edfbc23ff7",
+            "source": "market:358be4af-1846-4e7a-b3de-03edfbc23ff7",
+            "known_at": "2026-10-06T12:00:00Z",
+            "detail": "trade_ready.above_average, trade_ready.relative_return"
+          }
+        ],
+        "independent_families": [
+          5
+        ]
+      }
+    ],
+    "detail": "In-app alerts only (P1-1). Levels are deterministic rules; none places an order, and L4 is unreachable before the Phase 2 risk check."
+  }
+}

@@ -1213,6 +1213,152 @@ class TradeDecision(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
+# ---------- alerts (M1.7) ----------
+
+ALERT_KINDS = ("event", "level_change")
+ALERT_DIRECTIONS = ("up", "down")
+ASSESSMENT_TRIGGERS = ("schedule", "manual", "backfill", "replay")
+
+
+class AlertRuleSet(Base):
+    """One released rule_version of config/alert_rules.yaml (ADR-028), loaded by `make migrate`
+    with the sha256 of its content. Append-only and audited, like the buyback rule sets."""
+
+    __tablename__ = "alert_rule_sets"
+    __table_args__ = (
+        CheckConstraint(r"rule_version ~ '^\d+\.\d+\.\d+$'", name="rule_version_format"),
+        CheckConstraint("content_sha256 ~ '^[0-9a-f]{64}$'", name="content_sha256_format"),
+        UniqueConstraint("rule_version", name="uq_alert_rule_sets_rule_version"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    rule_version: Mapped[str] = mapped_column(Text)
+    content: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    content_sha256: Mapped[str] = mapped_column(Text)
+    released: Mapped[date] = mapped_column(Date)
+    loaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class ConvergenceAssessment(Base):
+    """One company's signal convergence level at a time T (known_at) as the database held it at
+    system_time, under one alert rule version (ADR-028; 02 §16): the level and the whole
+    assessment (every level's check and the items behind it). One row per company, T and rule
+    version, made with the buyback state assignment it reads. L4 is refused: it is unreachable
+    in Phase 1 (P1-4). Append-only."""
+
+    __tablename__ = "convergence_assessments"
+    __table_args__ = (
+        CheckConstraint("level IS NULL OR level BETWEEN 0 AND 3", name="level_phase1"),
+        CheckConstraint(sql_in("trigger", ASSESSMENT_TRIGGERS), name="trigger"),
+        CheckConstraint("system_time >= known_at", name="system_time_after_known_at"),
+        UniqueConstraint(
+            "instrument_id",
+            "known_at",
+            "rule_version",
+            name="uq_convergence_assessments_instrument_known_at_rule",
+        ),
+        Index("ix_convergence_assessments_rule_version_known_at", "rule_version", "known_at"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    instrument_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("instruments.id"))
+    ticker: Mapped[str] = mapped_column(Text)
+    known_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    system_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    rule_version: Mapped[str] = mapped_column(Text, ForeignKey("alert_rule_sets.rule_version"))
+    buyback_assignment_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid,
+        ForeignKey(
+            "buyback_state_assignments.id", name="fk_convergence_assessments_buyback_assignment_id"
+        ),
+    )
+    level: Mapped[int | None] = mapped_column(SmallInteger)
+    assessment: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    backfilled: Mapped[bool] = mapped_column(Boolean)
+    trigger: Mapped[str] = mapped_column(Text)
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class Alert(Base):
+    """An in-app alert (ADR-028; P1-1): a Phase 1 event (L0) or a change of a company's
+    convergence level, with the rule version and the evidence behind it. One row per rule
+    version and source. Append-only and audited; acknowledging is a separate row."""
+
+    __tablename__ = "alerts"
+    __table_args__ = (
+        CheckConstraint(sql_in("kind", ALERT_KINDS), name="kind"),
+        CheckConstraint("level BETWEEN 0 AND 3", name="level_phase1"),
+        CheckConstraint(
+            "previous_level IS NULL OR previous_level BETWEEN 0 AND 3", name="previous_level"
+        ),
+        CheckConstraint(
+            f"direction IS NULL OR {sql_in('direction', ALERT_DIRECTIONS)}", name="direction"
+        ),
+        CheckConstraint(
+            "(kind = 'level_change' AND direction IS NOT NULL AND assessment_id IS NOT NULL)"
+            " OR (kind = 'event' AND direction IS NULL AND level = 0)",
+            name="kind_fields",
+        ),
+        CheckConstraint("jsonb_array_length(evidence) >= 1", name="evidence_present"),
+        CheckConstraint("system_time >= known_at", name="system_time_after_known_at"),
+        UniqueConstraint("rule_version", "source_key", name="uq_alerts_rule_version_source_key"),
+        Index("ix_alerts_known_at", "known_at"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    rule_version: Mapped[str] = mapped_column(Text, ForeignKey("alert_rule_sets.rule_version"))
+    instrument_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("instruments.id"))
+    ticker: Mapped[str] = mapped_column(Text)
+    kind: Mapped[str] = mapped_column(Text)
+    level: Mapped[int] = mapped_column(SmallInteger)
+    previous_level: Mapped[int | None] = mapped_column(SmallInteger)
+    direction: Mapped[str | None] = mapped_column(Text)
+    title: Mapped[str] = mapped_column(Text)
+    source_key: Mapped[str] = mapped_column(Text)
+    known_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    system_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    assessment_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("convergence_assessments.id")
+    )
+    evidence: Mapped[list[dict[str, str]]] = mapped_column(JSONB)
+    backfilled: Mapped[bool] = mapped_column(Boolean)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class AlertAcknowledgement(Base):
+    """Acknowledging an alert (ADR-028 A4): once per alert, with an optional note. Append-only
+    and audited (actor `web`)."""
+
+    __tablename__ = "alert_acknowledgements"
+    __table_args__ = (
+        CheckConstraint("note IS NULL OR length(note) <= 500", name="note_length"),
+        CheckConstraint(f"user_id = '{JOURNAL_USER}'", name="single_user"),
+        UniqueConstraint("alert_id", name="uq_alert_acknowledgements_alert_id"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    alert_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("alerts.id"))
+    note: Mapped[str | None] = mapped_column(Text)
+    user_id: Mapped[str] = mapped_column(Text)
+    acknowledged_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
 # ---------- filing reconciliation (M1.1) ----------
 
 RECONCILIATION_CHECKS = ("fact", "identity", "quarter", "split")

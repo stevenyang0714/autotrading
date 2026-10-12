@@ -233,6 +233,20 @@ METRICS: tuple[MetricDefinition, ...] = (
             "execution_eligibility": "signals.buyback_signal",
             "paper_return": "journal.paper_return",
             "journal_replay": "journal.compare",
+            # M1.7 (ADR-028): convergence levels from buyback readings and Phase 1 events.
+            **{
+                term_id: "convergence.assess"
+                for term_id in (
+                    "convergence_level",
+                    "convergence_l0",
+                    "convergence_l1",
+                    "convergence_l2",
+                    "convergence_l3",
+                    "convergence_l4",
+                    "independent_evidence",
+                    "valuation_support",
+                )
+            },
         }.items()
     ),
     MetricDefinition(

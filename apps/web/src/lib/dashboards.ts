@@ -147,6 +147,7 @@ export const DASHBOARDS: readonly DashboardDef[] = [
     purpose: "Signal convergence alerts, rules and acknowledgement.",
     plannedPhase: 1,
     group: "dashboards",
+    live: true,
   },
   {
     id: "strategy_lab",

@@ -20,8 +20,15 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from autotrading.db.models import BuybackRuleSet, GlossaryTermRow, MacroSeries, Source
+from autotrading.db.models import (
+    AlertRuleSet,
+    BuybackRuleSet,
+    GlossaryTermRow,
+    MacroSeries,
+    Source,
+)
 from autotrading.domain.buyback_states import RulesFile
+from autotrading.domain.convergence import AlertRulesFile
 from autotrading.domain.glossary import GlossaryFile
 from autotrading.domain.provenance import LicenseStatus
 from autotrading.infra.db import make_engine
@@ -225,6 +232,46 @@ def sync_buyback_rules(session: Session, rules: RulesFile) -> GlossarySyncResult
     return result
 
 
+class AlertRulesVersionError(ValueError):
+    """A released alert rule set's content changed without a new rule_version."""
+
+
+def load_alert_rules(path: Path) -> AlertRulesFile:
+    return AlertRulesFile.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
+
+
+def sync_alert_rules(session: Session, rules: AlertRulesFile) -> GlossarySyncResult:
+    """Register each alert rule_version once; the same version with other content is refused
+    (ADR-028, as the buyback rules)."""
+    set_actor(session, "config:alert_rules.yaml")
+    result = GlossarySyncResult()
+    for entry in rules.rule_sets:
+        rule_set = entry.rule_set()
+        sha = rule_set.content_sha256()
+        existing = session.scalars(
+            select(AlertRuleSet).where(AlertRuleSet.rule_version == rule_set.rule_version)
+        ).first()
+        if existing is not None:
+            if existing.content_sha256 != sha:
+                raise AlertRulesVersionError(
+                    f"alert rule set {rule_set.rule_version} changed but its rule_version "
+                    "was not bumped"
+                )
+            result.unchanged.append(rule_set.rule_version)
+            continue
+        session.add(
+            AlertRuleSet(
+                rule_version=rule_set.rule_version,
+                content=rule_set.content(),
+                content_sha256=sha,
+                released=rule_set.released,
+            )
+        )
+        result.created.append(rule_set.rule_version)
+    session.flush()
+    return result
+
+
 def main() -> None:
     settings = get_settings()
     sources_path = settings.resolved_config_dir() / "sources.yaml"
@@ -238,6 +285,9 @@ def main() -> None:
             glossary = sync_glossary(session, load_glossary(glossary_path))
             rules = sync_buyback_rules(
                 session, load_buyback_rules(settings.resolved_config_dir() / "buyback_rules.yaml")
+            )
+            alerts = sync_alert_rules(
+                session, load_alert_rules(settings.resolved_config_dir() / "alert_rules.yaml")
             )
             session.commit()
     finally:
@@ -255,6 +305,7 @@ def main() -> None:
         f"unchanged={len(glossary.unchanged)}"
     )
     print(f"buyback_rules.yaml synced: new rule versions={rules.created}")
+    print(f"alert_rules.yaml synced: new rule versions={alerts.created}")
 
 
 if __name__ == "__main__":

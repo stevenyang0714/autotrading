@@ -4,6 +4,77 @@
  */
 
 export interface paths {
+    "/alerts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Alerts */
+        get: operations["alerts_alerts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/alerts/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Alert Rules */
+        get: operations["alert_rules_alerts_rules_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/alerts/{alert_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Alert */
+        get: operations["alert_alerts__alert_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/alerts/{alert_id}/acknowledge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Acknowledge
+         * @description Acknowledge once (ADR-028 A4); the alert itself never changes. Audited.
+         */
+        post: operations["acknowledge_alerts__alert_id__acknowledge_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/audit-log": {
         parameters: {
             query?: never;
@@ -47,6 +118,26 @@ export interface paths {
         };
         /** Buyback Rules */
         get: operations["buyback_rules_buybacks_rules_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/convergence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Convergence
+         * @description Each universe company's latest assessment at or before T.
+         */
+        get: operations["convergence_convergence_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -641,6 +732,21 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AcknowledgeIn */
+        AcknowledgeIn: {
+            /** Note */
+            note?: string | null;
+        };
+        /** AcknowledgementOut */
+        AcknowledgementOut: {
+            /**
+             * Acknowledged At
+             * Format: date-time
+             */
+            acknowledged_at: string;
+            /** Note */
+            note: string | null;
+        };
         /** ActiveRule */
         ActiveRule: {
             /** Diluted Shares Change Max */
@@ -673,6 +779,153 @@ export interface components {
             /** Unit */
             unit: string;
             year_ago: components["schemas"]["QuarterValueOut"];
+        };
+        /** AlertDetail */
+        AlertDetail: {
+            acknowledgement: components["schemas"]["AcknowledgementOut"] | null;
+            assessment: components["schemas"]["CompanyLevel"] | null;
+            /** Assessment Id */
+            assessment_id: string | null;
+            /** Backfilled */
+            backfilled: boolean;
+            /** Direction */
+            direction: ("up" | "down") | null;
+            /** Evidence */
+            evidence: components["schemas"]["AlertEvidenceOut"][];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "event" | "level_change";
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Level */
+            level: number;
+            /** Level Name */
+            level_name: string;
+            /** Previous Level */
+            previous_level: number | null;
+            /** Rule Version */
+            rule_version: string;
+            /**
+             * System Time
+             * Format: date-time
+             */
+            system_time: string;
+            /** Ticker */
+            ticker: string;
+            /** Title */
+            title: string;
+        };
+        /** AlertEvidenceOut */
+        AlertEvidenceOut: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Table */
+            table: string;
+            /** Url */
+            url: string | null;
+        };
+        /** AlertOut */
+        AlertOut: {
+            acknowledgement: components["schemas"]["AcknowledgementOut"] | null;
+            /** Assessment Id */
+            assessment_id: string | null;
+            /** Backfilled */
+            backfilled: boolean;
+            /** Direction */
+            direction: ("up" | "down") | null;
+            /** Evidence */
+            evidence: components["schemas"]["AlertEvidenceOut"][];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "event" | "level_change";
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Level */
+            level: number;
+            /** Level Name */
+            level_name: string;
+            /** Previous Level */
+            previous_level: number | null;
+            /** Rule Version */
+            rule_version: string;
+            /**
+             * System Time
+             * Format: date-time
+             */
+            system_time: string;
+            /** Ticker */
+            ticker: string;
+            /** Title */
+            title: string;
+        };
+        /** AlertRuleSetOut */
+        AlertRuleSetOut: {
+            /** Content */
+            content: {
+                [key: string]: unknown;
+            };
+            /** Content Sha256 */
+            content_sha256: string;
+            /**
+             * Released
+             * Format: date
+             */
+            released: string;
+            /** Rule Version */
+            rule_version: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "active" | "retired";
+        };
+        /** AlertsOut */
+        AlertsOut: {
+            /**
+             * Detail
+             * @default In-app alerts only (P1-1). Levels are deterministic rules; none places an order, and L4 is unreachable before the Phase 2 risk check.
+             */
+            detail: string;
+            /** Entries */
+            entries: components["schemas"]["AlertOut"][];
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Open By Level */
+            open_by_level: {
+                [key: string]: number;
+            };
+            /** Rule Version */
+            rule_version: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "open" | "acknowledged" | "all";
         };
         /** AnnouncementEvent */
         AnnouncementEvent: {
@@ -1082,6 +1335,28 @@ export interface components {
             benchmark: components["schemas"]["CloseOut"] | null;
             stock: components["schemas"]["CloseOut"] | null;
         };
+        /** CompanyLevel */
+        CompanyLevel: {
+            /** Backfilled */
+            backfilled: boolean;
+            /** Independent Families */
+            independent_families: number[];
+            /** Items */
+            items: components["schemas"]["Item"][];
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Level */
+            level: number | null;
+            /** Level Name */
+            level_name: string;
+            /** Levels */
+            levels: components["schemas"]["LevelCheck"][];
+            /** Ticker */
+            ticker: string;
+        };
         /** CompanyStates */
         CompanyStates: {
             /** Announcements */
@@ -1172,6 +1447,23 @@ export interface components {
             revenue?: null;
             /** Surprise */
             surprise?: null;
+        };
+        /** ConvergenceOut */
+        ConvergenceOut: {
+            /** Companies */
+            companies: components["schemas"]["CompanyLevel"][];
+            /**
+             * Detail
+             * @default In-app alerts only (P1-1). Levels are deterministic rules; none places an order, and L4 is unreachable before the Phase 2 risk check.
+             */
+            detail: string;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Rule Version */
+            rule_version: string;
         };
         /** DataAsOf */
         DataAsOf: {
@@ -1865,6 +2157,31 @@ export interface components {
             /** Ticker */
             ticker: string;
         };
+        /** Item */
+        Item: {
+            /** Detail */
+            detail?: string | null;
+            /** Family Id */
+            family_id: number;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "reading" | "event";
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Label */
+            label: string;
+            /** Row Id */
+            row_id: string;
+            /** Source */
+            source: string;
+            /** Table */
+            table: string;
+        };
         /** ItemOut */
         ItemOut: {
             /**
@@ -2046,6 +2363,20 @@ export interface components {
              * Format: date
              */
             vintage: string;
+        };
+        /** LevelCheck */
+        LevelCheck: {
+            /** Detail */
+            detail: string;
+            /** Level */
+            level: number;
+            /** Name */
+            name: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pass" | "fail" | "unavailable";
         };
         /** LevelOut */
         LevelOut: {
@@ -3325,6 +3656,129 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    alerts_alerts_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+                status?: "open" | "acknowledged" | "all";
+                level_min?: number;
+                ticker?: string | null;
+                include_backfilled?: boolean;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    alert_rules_alerts_rules_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertRuleSetOut"][];
+                };
+            };
+        };
+    };
+    alert_alerts__alert_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                alert_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    acknowledge_alerts__alert_id__acknowledge_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                alert_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcknowledgeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     audit_log_audit_log_get: {
         parameters: {
             query?: {
@@ -3415,6 +3869,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RuleSetOut"][];
+                };
+            };
+        };
+    };
+    convergence_convergence_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConvergenceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

@@ -170,6 +170,17 @@ terms:
   journal_replay: {name: 日誌重放, hint: 以卡片當時的時點重讀每筆依據、估值與收盤，逐筆確認與存下的相同。}
   catalyst: {name: 催化劑, hint: 可能讓市場重新定價的未來事件，可附預期日期；不算依據。}
   invalidation: {name: 看錯條件, hint: 發生就代表論點錯了的可觀察條件；每張卡必填。}
+  convergence_level: {name: 收斂等級, hint: 公司的訊號對齊到什麼程度：L0 資訊到 L4 可執行；依版本化規則每日計算。}
+  convergence_l0: {name: L0 資訊, hint: 至少一項事件或讀數；只記錄。}
+  convergence_l1: {name: L1 觀察, hint: 至少兩項相關訊號或事件、其中至少一項是讀數；放進觀察名單。}
+  convergence_l2: {name: L2 論點, hint: 回購已執行（ACTIVE 以上）且有估值支持，兩個獨立家族；可寫論點。}
+  convergence_l3: {name: L3 交易候選, hint: L2 加上市場確認與 S1 訊號；在模擬日誌中檢討。}
+  convergence_l4: {name: L4 可執行, hint: L3 加上風險、流動性、部位與合規檢查；Phase 1 不可達。}
+  independent_evidence: {name: 獨立依據, hint: 依來源去重；同一份申報的多列只算一次。}
+  valuation_support: {name: 估值支持, hint: base DCF 折價為正或 FCF 殖利率高於自身中位數。}
+  alert: {name: 警示, hint: App 內通知；一則事件（L0）或公司收斂等級變化，附規則版本與依據。}
+  alert_acknowledgement: {name: 確認, hint: 標記已看過，每則一次、可附備註；寫入稽核紀錄。}
+  alert_rule_set: {name: 警示規則版本, hint: 每個收斂評定與警示所用的規則版本；已發布的版本不會改。}
 
   # buyback states (M1.4b)
   buyback_state: {name: 回購狀態, hint: 依版本化規則判定：無、WATCH、ACTIVE、HIGH-CONVICTION 候選；每個條件都存值、門檻與證據。}
