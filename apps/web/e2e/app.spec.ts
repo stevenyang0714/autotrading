@@ -457,7 +457,7 @@ test("Market Regime shows the stress state, five dimensions, nine flags and the 
   expect(await page.locator('tr[data-row="stress"] [data-state]').count()).toBeGreaterThanOrEqual(2);
   // As known on an earlier date: that date's assessment, never a later one.
   await page.goto("/dashboards/market-regime?known_on=2026-09-15");
-  await expect(page.getByText(/Showing what was known by 2026-09-15/)).toBeVisible();
+  await expect(page.getByText(/Showing what was known by/)).toContainText("2026-09-15");
   const assessed = await page.locator("[data-stress]").textContent();
   expect(assessed ?? "").not.toMatch(/Assessed for 2026-(09-(1[6-9]|2\d|30)|1[0-2])/);
 });

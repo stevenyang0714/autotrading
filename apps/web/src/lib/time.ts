@@ -37,6 +37,11 @@ export function formatDuration(seconds: number): string {
   return `${seconds} s`;
 }
 
+/** The calendar day of an instant in a time zone, as YYYY-MM-DD. */
+export function dayIn(iso: string, timeZone: "Asia/Singapore" | "America/New_York"): string {
+  return new Date(iso).toLocaleDateString("en-CA", { timeZone });
+}
+
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 /** "As known on" a date = the end of that day in Singapore (ADR-005); null if not a real date. */

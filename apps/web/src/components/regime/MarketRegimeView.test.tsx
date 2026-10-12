@@ -43,7 +43,10 @@ describe("MarketRegimeView with recorded API responses", () => {
   it("draws the monthly history and an earlier date shows only what was known then", () => {
     render(<MarketRegimeView data={recordedRegime} />);
     const stress = document.querySelector('tr[data-row="stress"]');
-    expect(stress?.querySelectorAll("[data-state]")).toHaveLength(2); // August and October
+    const cells = stress?.querySelectorAll("[data-state]");
+    expect(cells).toHaveLength(2); // August and October
+    // The end of August in New York is 1 September in UTC: still August's cell.
+    expect(cells?.[0].getAttribute("title")).toMatch(/^2026-08-31: /);
     render(<MarketRegimeView data={recordedRegimeEarlier} knownOn="2026-09-15" />);
     expect(recordedRegimeEarlier.history).toHaveLength(1);
   });

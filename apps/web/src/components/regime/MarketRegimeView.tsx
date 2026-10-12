@@ -2,7 +2,7 @@ import { AsKnownOnForm } from "@/components/AsKnownOnForm";
 import { Metric } from "@/components/Metric";
 import type { RegimeDimension, RegimeFlag, RegimeInput, RegimePoint, RegimeResponse, StoredRegime } from "@/lib/api";
 import { DIMENSIONS, FLAGS, QUADRANTS, STRESS, stateText, toneOf, trimDecimal } from "@/lib/regime";
-import { formatSgtEt } from "@/lib/time";
+import { dayIn, formatSgtEt } from "@/lib/time";
 
 const HREF = "/dashboards/market-regime";
 const HISTORY_ROWS = ["stress", "growth", "inflation", "policy", "credit", "volatility"] as const;
@@ -113,17 +113,22 @@ function FlagRow({ flag }: { flag: RegimeFlag }) {
   );
 }
 
-/** One cell per month (the month's last assessment), oldest first. */
+/** The New York day of an assessment: month ends are the end of the month's last day there. */
+function day(point: RegimePoint): string {
+  return dayIn(point.known_at, "America/New_York");
+}
+
+/** One cell per calendar month (New York; the month's last assessment), oldest first. */
 function months(history: RegimePoint[]): RegimePoint[] {
   const byMonth = new Map<string, RegimePoint>();
-  for (const point of history) byMonth.set(point.known_at.slice(0, 7), point);
+  for (const point of history) byMonth.set(day(point).slice(0, 7), point);
   return [...byMonth.values()];
 }
 
 function History({ history }: { history: RegimePoint[] }) {
   const cells = months(history);
   if (cells.length === 0) return null;
-  const years = [...new Set(cells.map((c) => c.known_at.slice(0, 4)))];
+  const years = [...new Set(cells.map((c) => day(c).slice(0, 4)))];
   return (
     <div className="space-y-2" data-block="history">
       <h2 className="text-lg font-medium">
@@ -146,7 +151,7 @@ function History({ history }: { history: RegimePoint[] }) {
                     return (
                       <td key={cell.known_at} className="p-px">
                         <span
-                          title={`${cell.known_at.slice(0, 10)}: ${state ?? "unavailable"}${cell.backfilled ? " (backfilled)" : ""}`}
+                          title={`${day(cell)}: ${state ?? "unavailable"}${cell.backfilled ? " (backfilled)" : ""}`}
                           data-state={state ?? "unavailable"}
                           className={`block h-3 w-2 ${toneOf(state)} ${cell.backfilled ? "opacity-80" : ""}`}
                         />

@@ -3,6 +3,7 @@
  */
 
 import type { CompleteTermId } from "@/generated/glossary";
+import { dayIn } from "@/lib/time";
 
 export const LEVEL_TERMS: CompleteTermId[] = [
   "convergence_l0",
@@ -42,10 +43,11 @@ export const FAMILY_NAMES: Record<number, string> = {
 };
 
 /** Where an evidence row is shown: EDGAR for filings, the company page for a buyback state,
- * the Market Regime page as known on the alert's day for a regime assessment. */
+ * the Market Regime page as known on the alert's day for a regime assessment (its Singapore
+ * day, so that day's end includes the assessment). */
 export function evidenceHref(table: string, url: string | null, ticker: string | null, knownAt: string): string | null {
   if (url) return url;
   if (table === "buyback_state_assignments" && ticker) return `/instruments/${ticker}#buybacks`;
-  if (table === "regime_assessments") return `/dashboards/market-regime?known_on=${knownAt.slice(0, 10)}`;
+  if (table === "regime_assessments") return `/dashboards/market-regime?known_on=${dayIn(knownAt, "Asia/Singapore")}`;
   return null;
 }

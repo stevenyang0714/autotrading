@@ -64,7 +64,8 @@ describe("AlertsCenterView with recorded API responses", () => {
     const market = screen.getByRole("list", { name: "Alerts" }).querySelector('[data-kind="regime"]');
     expect(market?.textContent).toContain("Market stress eased to NORMAL (was ELEVATED)");
     expect(market?.textContent).toContain("NORMAL");
-    expect(market?.querySelector('a[href^="/dashboards/market-regime?known_on=2026-10-06"]')).not.toBeNull();
+    // Assessed 2026-10-06 18:00 UTC = 10-07 02:00 SGT: As known on 10-07 is the first day that includes it.
+    expect(market?.querySelector('a[href="/dashboards/market-regime?known_on=2026-10-07"]')).not.toBeNull();
   });
 
   it.each([
