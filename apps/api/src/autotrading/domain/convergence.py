@@ -370,10 +370,15 @@ class AlertIn:
 
 
 def level_alert(
-    ticker: str, current: Convergence, previous: int | None, source_key: str
+    ticker: str,
+    current: Convergence,
+    previous: int | None,
+    source_key: str,
+    basis: dict[str, str],
 ) -> AlertIn | None:
     """An alert when the level changes and either side is L1 or above (moves between none and
-    L0 are covered by the event alerts)."""
+    L0 are covered by the event alerts). `basis` (the buyback assignment read) is the evidence
+    when the window has no item."""
     now = current.level
     if now == previous or max(now if now is not None else -1, previous or -1) < 1:
         return None
@@ -390,7 +395,9 @@ def level_alert(
         title=title,
         source_key=source_key,
         known_at=current.known_at,
-        evidence=[{"table": i.table, "id": i.row_id, "label": i.label} for i in current.items],
+        # A fall to no level has no items: the assessment's own reading is the evidence.
+        evidence=[{"table": i.table, "id": i.row_id, "label": i.label} for i in current.items]
+        or [basis],
     )
 
 

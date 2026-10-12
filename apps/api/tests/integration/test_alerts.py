@@ -279,9 +279,10 @@ def test_every_alert_links_its_rule_version_and_evidence(client: TestClient) -> 
             assessment = detail["assessment"]
             # A fall to no level is stored as level 0 on the alert.
             assert (assessment["level"] or 0) == entry["level"]
-            assert {e["id"] for e in entry["evidence"]} == {
-                i["row_id"] for i in assessment["items"]
-            }
+            cited = {e["id"] for e in entry["evidence"]}
+            items = {i["row_id"] for i in assessment["items"]}
+            # A fall to no level cites the buyback assignment it read.
+            assert cited == items or (not items and len(cited) == 1)
         else:
             assert (entry["level"], entry["level_name"]) == (0, "L0 Information")
     # Event alerts come from the 30 days before each live assessment.

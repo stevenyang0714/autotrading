@@ -25,6 +25,7 @@ RULES = AlertRulesFile.model_validate(
 ACTIVE = RULES.active()
 T = datetime(2026, 10, 9, 3, tzinfo=UTC)
 # A released version never changes (ADR-028): a new rule_version is the only way to edit one.
+BASIS = {"table": "buyback_state_assignments", "id": "a1", "label": "Buyback state NONE"}
 PINNED = {"0.1.0": "9257f4512f7c5976dcbfd732adb95444a85b71ecb2983f63fe52560971163f7e"}
 
 
@@ -120,7 +121,7 @@ def test_trade_candidate_adds_market_confirmation_and_l4_is_unreachable() -> Non
 
 def test_level_changes_raise_alerts_above_information() -> None:
     thesis = assess(ACTIVE, T, buyback("active", high_conviction__fcf_yield="pass"), [])
-    up = level_alert("AAPL", thesis, 1, "level:x")
+    up = level_alert("AAPL", thesis, 1, "level:x", BASIS)
     assert up is not None
     assert (up.title, up.level, up.direction, up.previous_level) == (
         "AAPL reached L2 Thesis",
@@ -129,11 +130,12 @@ def test_level_changes_raise_alerts_above_information() -> None:
         1,
     )
     assert {e["label"] for e in up.evidence} == {"Buyback state ACTIVE", "Valuation support"}
-    down = level_alert("AAPL", assess(ACTIVE, T, buyback("none"), []), 2, "level:y")
+    down = level_alert("AAPL", assess(ACTIVE, T, buyback("none"), []), 2, "level:y", BASIS)
     assert down is not None and down.title == "AAPL fell to none from L2 Thesis"
-    assert level_alert("AAPL", thesis, 2, "level:z") is None  # unchanged
+    assert down.evidence == [BASIS]  # nothing in the window: the reading it fell on
+    assert level_alert("AAPL", thesis, 2, "level:z", BASIS) is None  # unchanged
     info = assess(ACTIVE, T, buyback("none"), [event("periodic_report", 1, "x")])
-    assert level_alert("AAPL", info, None, "level:w") is None  # none -> L0: event alerts
+    assert level_alert("AAPL", info, None, "level:w", BASIS) is None  # none -> L0: event alerts
 
 
 def test_event_alerts_since_the_previous_assessment() -> None:

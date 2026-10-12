@@ -213,7 +213,7 @@
           },
           "evidence": {
             "items": {
-              "$ref": "#/components/schemas/autotrading__api__alerts__EvidenceOut"
+              "$ref": "#/components/schemas/AlertEvidenceOut"
             },
             "title": "Evidence",
             "type": "array"
@@ -294,6 +294,41 @@
         "title": "AlertDetail",
         "type": "object"
       },
+      "AlertEvidenceOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "table": {
+            "title": "Table",
+            "type": "string"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "required": [
+          "table",
+          "id",
+          "label",
+          "url"
+        ],
+        "title": "AlertEvidenceOut",
+        "type": "object"
+      },
       "AlertOut": {
         "properties": {
           "acknowledgement": {
@@ -339,7 +374,7 @@
           },
           "evidence": {
             "items": {
-              "$ref": "#/components/schemas/autotrading__api__alerts__EvidenceOut"
+              "$ref": "#/components/schemas/AlertEvidenceOut"
             },
             "title": "Evidence",
             "type": "array"
@@ -1349,7 +1384,7 @@
         "properties": {
           "candidates": {
             "items": {
-              "$ref": "#/components/schemas/autotrading__api__journal__EvidenceOut"
+              "$ref": "#/components/schemas/EvidenceOut"
             },
             "title": "Candidates",
             "type": "array"
@@ -1459,7 +1494,7 @@
           },
           "evidence": {
             "items": {
-              "$ref": "#/components/schemas/autotrading__api__journal__EvidenceOut"
+              "$ref": "#/components/schemas/EvidenceOut"
             },
             "title": "Evidence",
             "type": "array"
@@ -2917,6 +2952,82 @@
           "role"
         ],
         "title": "EntityOut",
+        "type": "object"
+      },
+      "EvidenceOut": {
+        "properties": {
+          "kind": {
+            "enum": [
+              "financial_fact",
+              "filing",
+              "buyback_statement",
+              "guidance_statement",
+              "buyback_state",
+              "news",
+              "price_close"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "published_at": {
+            "format": "date-time",
+            "title": "Published At",
+            "type": "string"
+          },
+          "ref": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Ref",
+            "type": "object"
+          },
+          "snapshot": {
+            "additionalProperties": true,
+            "title": "Snapshot",
+            "type": "object"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "ref",
+          "label",
+          "summary",
+          "note",
+          "published_at",
+          "source_url",
+          "snapshot"
+        ],
+        "title": "EvidenceOut",
         "type": "object"
       },
       "EvidenceRef": {
@@ -8807,117 +8918,6 @@
           "remaining_to_market_cap_min"
         ],
         "title": "WatchRule",
-        "type": "object"
-      },
-      "autotrading__api__alerts__EvidenceOut": {
-        "properties": {
-          "id": {
-            "title": "Id",
-            "type": "string"
-          },
-          "label": {
-            "title": "Label",
-            "type": "string"
-          },
-          "table": {
-            "title": "Table",
-            "type": "string"
-          },
-          "url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Url"
-          }
-        },
-        "required": [
-          "table",
-          "id",
-          "label",
-          "url"
-        ],
-        "title": "EvidenceOut",
-        "type": "object"
-      },
-      "autotrading__api__journal__EvidenceOut": {
-        "properties": {
-          "kind": {
-            "enum": [
-              "financial_fact",
-              "filing",
-              "buyback_statement",
-              "guidance_statement",
-              "buyback_state",
-              "news",
-              "price_close"
-            ],
-            "title": "Kind",
-            "type": "string"
-          },
-          "label": {
-            "title": "Label",
-            "type": "string"
-          },
-          "note": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Note"
-          },
-          "published_at": {
-            "format": "date-time",
-            "title": "Published At",
-            "type": "string"
-          },
-          "ref": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "title": "Ref",
-            "type": "object"
-          },
-          "snapshot": {
-            "additionalProperties": true,
-            "title": "Snapshot",
-            "type": "object"
-          },
-          "source_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Source Url"
-          },
-          "summary": {
-            "title": "Summary",
-            "type": "string"
-          }
-        },
-        "required": [
-          "kind",
-          "ref",
-          "label",
-          "summary",
-          "note",
-          "published_at",
-          "source_url",
-          "snapshot"
-        ],
-        "title": "EvidenceOut",
         "type": "object"
       }
     }

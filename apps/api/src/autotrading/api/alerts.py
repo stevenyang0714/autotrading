@@ -48,7 +48,7 @@ IN_APP_ONLY = (
 URLS: dict[str, Any] = {"filings": Filing, "filing_buyback_statements": FilingBuybackStatement}
 
 
-class EvidenceOut(BaseModel):
+class AlertEvidenceOut(BaseModel):
     table: str
     id: str
     label: str
@@ -73,7 +73,7 @@ class AlertOut(BaseModel):
     known_at: datetime
     system_time: datetime
     backfilled: bool
-    evidence: list[EvidenceOut]
+    evidence: list[AlertEvidenceOut]
     assessment_id: UUID | None
     acknowledgement: AcknowledgementOut | None
 
@@ -162,7 +162,7 @@ def alert_out(
         system_time=row.system_time,
         backfilled=row.backfilled,
         evidence=[
-            EvidenceOut(
+            AlertEvidenceOut(
                 table=e["table"],
                 id=e["id"],
                 label=e["label"],

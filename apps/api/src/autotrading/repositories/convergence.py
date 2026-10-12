@@ -4,7 +4,8 @@ company as known at (T, S), and the rows they produce, in the caller's transacti
 `record_convergence` runs with each buyback state assignment under the alert rules' buyback
 rule version: it stores the company's level at the assignment's T, an alert when the level
 changes (L1 or above on either side), and, unless backfilling, an L0 alert for each event since
-the previous assessment (at most `event_lookback_days` back). Re-running is harmless: one
+the previous assessment (at most `event_lookback_days` back; marked backfilled when replaying
+recorded history). Re-running is harmless: one
 assessment per company, T and rule version, one alert per rule version and source.
 """
 
@@ -296,14 +297,20 @@ def record_convergence(
     ).scalar()
     if assessment_id is None:
         return None
+    basis = {
+        "table": "buyback_state_assignments",
+        "id": reading.assignment_id,
+        "label": f"Buyback state {_state(reading.state)} under rules {reading.rule_version}",
+    }
     change = level_alert(
-        ticker, result, previous.level if previous else None, f"level:{assessment_id}"
+        ticker, result, previous.level if previous else None, f"level:{assessment_id}", basis
     )
     if change is not None:
         _insert_alert(
             session, rules, instrument_id, ticker, change, system_time, assessment_id, backfilled
         )
     if trigger != "backfill":
+        # Events since the previous assessment; replaying recorded history marks them so.
         since = previous.known_at if previous else None
         for event in new_events(events, since, at, rules.event_lookback_days):
             _insert_alert(
@@ -314,7 +321,7 @@ def record_convergence(
                 event_alert(ticker, event),
                 system_time,
                 None,
-                False,
+                trigger == "replay",
             )
     return assessment_id
 

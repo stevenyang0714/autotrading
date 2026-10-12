@@ -1,5 +1,9 @@
 /** Recorded real API responses (tests/fixtures/api, see recorded_from in each file). */
+import alertDetail from "../../tests/fixtures/api/alert-detail.json";
+import alertsOpen from "../../tests/fixtures/api/alerts-open.json";
+import alerts from "../../tests/fixtures/api/alerts.json";
 import auditDeletes from "../../tests/fixtures/api/audit-log-deletes.json";
+import convergence from "../../tests/fixtures/api/convergence.json";
 import auditSourceUpdates from "../../tests/fixtures/api/audit-log-sources-updates.json";
 import auditLog from "../../tests/fixtures/api/audit-log.json";
 import dataHealthSources from "../../tests/fixtures/api/data-health-sources.json";
@@ -56,7 +60,10 @@ import pricesLatest from "../../tests/fixtures/api/prices-latest.json";
 import progress from "../../tests/fixtures/api/progress.json";
 
 import type {
+  AlertDetail,
+  Alerts,
   AssumptionList,
+  Convergence,
   EvidenceCandidates,
   Journal,
   JournalCard,
@@ -223,3 +230,11 @@ export const recordedJournalCard = journalCard.response as unknown as JournalCar
 export const recordedReplay = journalReplay.response as unknown as Replay;
 export const recordedEvidence = evidenceAapl.response as unknown as EvidenceCandidates;
 export const recordedSignals = signals.response as unknown as Signals;
+
+/** The Alerts Center (M1.7) from tests/integration/test_alerts.py, as known on 2026-10-06:
+ * every alert (level changes are backfilled: evaluated after their date), the open live ones,
+ * each company's level (Apple and ExxonMobil L1 Watch, Meta L0) and one level change. */
+export const recordedAlerts = alerts.response as unknown as Alerts;
+export const recordedOpenAlerts = alertsOpen.response as unknown as Alerts;
+export const recordedConvergence = convergence.response as unknown as Convergence;
+export const recordedAlertDetail = alertDetail.response as unknown as AlertDetail;

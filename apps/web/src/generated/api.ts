@@ -791,7 +791,7 @@ export interface components {
             /** Direction */
             direction: ("up" | "down") | null;
             /** Evidence */
-            evidence: components["schemas"]["autotrading__api__alerts__EvidenceOut"][];
+            evidence: components["schemas"]["AlertEvidenceOut"][];
             /**
              * Id
              * Format: uuid
@@ -825,6 +825,17 @@ export interface components {
             /** Title */
             title: string;
         };
+        /** AlertEvidenceOut */
+        AlertEvidenceOut: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Table */
+            table: string;
+            /** Url */
+            url: string | null;
+        };
         /** AlertOut */
         AlertOut: {
             acknowledgement: components["schemas"]["AcknowledgementOut"] | null;
@@ -835,7 +846,7 @@ export interface components {
             /** Direction */
             direction: ("up" | "down") | null;
             /** Evidence */
-            evidence: components["schemas"]["autotrading__api__alerts__EvidenceOut"][];
+            evidence: components["schemas"]["AlertEvidenceOut"][];
             /**
              * Id
              * Format: uuid
@@ -1181,7 +1192,7 @@ export interface components {
         /** CandidatesOut */
         CandidatesOut: {
             /** Candidates */
-            candidates: components["schemas"]["autotrading__api__journal__EvidenceOut"][];
+            candidates: components["schemas"]["EvidenceOut"][];
             /**
              * Known At
              * Format: date-time
@@ -1222,7 +1233,7 @@ export interface components {
              */
             created_at: string;
             /** Evidence */
-            evidence: components["schemas"]["autotrading__api__journal__EvidenceOut"][];
+            evidence: components["schemas"]["EvidenceOut"][];
             /**
              * Id
              * Format: uuid
@@ -1723,6 +1734,35 @@ export interface components {
             role: "issuer" | "predecessor";
             /** Succeeded At */
             succeeded_at?: string | null;
+        };
+        /** EvidenceOut */
+        EvidenceOut: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "financial_fact" | "filing" | "buyback_statement" | "guidance_statement" | "buyback_state" | "news" | "price_close";
+            /** Label */
+            label: string;
+            /** Note */
+            note: string | null;
+            /**
+             * Published At
+             * Format: date-time
+             */
+            published_at: string;
+            /** Ref */
+            ref: {
+                [key: string]: string;
+            };
+            /** Snapshot */
+            snapshot: {
+                [key: string]: unknown;
+            };
+            /** Source Url */
+            source_url: string | null;
+            /** Summary */
+            summary: string;
         };
         /**
          * EvidenceRef
@@ -3606,46 +3646,6 @@ export interface components {
             announcement_kinds: ("new" | "increase" | "plan")[];
             /** Remaining To Market Cap Min */
             remaining_to_market_cap_min: string;
-        };
-        /** EvidenceOut */
-        autotrading__api__alerts__EvidenceOut: {
-            /** Id */
-            id: string;
-            /** Label */
-            label: string;
-            /** Table */
-            table: string;
-            /** Url */
-            url: string | null;
-        };
-        /** EvidenceOut */
-        autotrading__api__journal__EvidenceOut: {
-            /**
-             * Kind
-             * @enum {string}
-             */
-            kind: "financial_fact" | "filing" | "buyback_statement" | "guidance_statement" | "buyback_state" | "news" | "price_close";
-            /** Label */
-            label: string;
-            /** Note */
-            note: string | null;
-            /**
-             * Published At
-             * Format: date-time
-             */
-            published_at: string;
-            /** Ref */
-            ref: {
-                [key: string]: string;
-            };
-            /** Snapshot */
-            snapshot: {
-                [key: string]: unknown;
-            };
-            /** Source Url */
-            source_url: string | null;
-            /** Summary */
-            summary: string;
         };
     };
     responses: never;

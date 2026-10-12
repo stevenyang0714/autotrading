@@ -1,0 +1,129 @@
+{
+  "recorded_at": "2026-10-12T03:07:57.760148+00:00",
+  "recorded_from": "recorded SEC filings, Alpaca closes, FRED yields and news replayed into the integration test database (tests/integration/test_alerts.py)",
+  "endpoint": "/alerts",
+  "params": {
+    "known_at": "2026-10-06T12:00:00Z",
+    "status": "all",
+    "include_backfilled": true
+  },
+  "response": {
+    "known_at": "2026-10-06T12:00:00Z",
+    "rule_version": "0.1.0",
+    "status": "all",
+    "open_by_level": {
+      "L0 Information": 2
+    },
+    "entries": [
+      {
+        "id": "9e7baf59-d013-4ea4-902e-d5aab8d07c10",
+        "rule_version": "0.1.0",
+        "ticker": "AAPL",
+        "kind": "level_change",
+        "level": 1,
+        "level_name": "L1 Watch",
+        "previous_level": 0,
+        "direction": "up",
+        "title": "AAPL reached L1 Watch",
+        "known_at": "2026-10-06T12:00:00Z",
+        "system_time": "2026-10-12T03:07:56.312311Z",
+        "backfilled": true,
+        "evidence": [
+          {
+            "table": "buyback_state_assignments",
+            "id": "3a4ffc44-7460-4aab-8367-1b05ad427b33",
+            "label": "Buyback state ACTIVE",
+            "url": null
+          },
+          {
+            "table": "buyback_state_assignments",
+            "id": "3a4ffc44-7460-4aab-8367-1b05ad427b33",
+            "label": "Market confirmation",
+            "url": null
+          }
+        ],
+        "assessment_id": "7ab3a8b8-6c28-42e0-930c-59a3a45bd1aa",
+        "acknowledgement": null
+      },
+      {
+        "id": "b81b55a1-a486-484d-a56a-735738051adb",
+        "rule_version": "0.1.0",
+        "ticker": "AAPL",
+        "kind": "event",
+        "level": 0,
+        "level_name": "L0 Information",
+        "previous_level": null,
+        "direction": null,
+        "title": "AAPL: Buyback state ACTIVE (was NONE)",
+        "known_at": "2026-10-06T12:00:00Z",
+        "system_time": "2026-10-12T03:07:56.312311Z",
+        "backfilled": false,
+        "evidence": [
+          {
+            "table": "buyback_state_assignments",
+            "id": "3a4ffc44-7460-4aab-8367-1b05ad427b33",
+            "label": "Buyback state ACTIVE (was NONE)",
+            "url": null
+          }
+        ],
+        "assessment_id": null,
+        "acknowledgement": null
+      },
+      {
+        "id": "3936d257-850f-45e0-bdf0-ccbf4d697ca0",
+        "rule_version": "0.1.0",
+        "ticker": "XOM",
+        "kind": "event",
+        "level": 0,
+        "level_name": "L0 Information",
+        "previous_level": null,
+        "direction": null,
+        "title": "XOM: Buyback state ACTIVE (was WATCH)",
+        "known_at": "2026-10-06T12:00:00Z",
+        "system_time": "2026-10-12T03:07:56.312311Z",
+        "backfilled": false,
+        "evidence": [
+          {
+            "table": "buyback_state_assignments",
+            "id": "16e8d69e-19b5-4a9f-9893-ae6a8fbc2599",
+            "label": "Buyback state ACTIVE (was WATCH)",
+            "url": null
+          }
+        ],
+        "assessment_id": null,
+        "acknowledgement": null
+      },
+      {
+        "id": "36b59c7b-ddf0-4c87-8351-54508aa27ef0",
+        "rule_version": "0.1.0",
+        "ticker": "XOM",
+        "kind": "level_change",
+        "level": 1,
+        "level_name": "L1 Watch",
+        "previous_level": null,
+        "direction": "up",
+        "title": "XOM reached L1 Watch",
+        "known_at": "2026-04-01T03:59:59.999999Z",
+        "system_time": "2026-10-12T03:07:56.312311Z",
+        "backfilled": true,
+        "evidence": [
+          {
+            "table": "buyback_state_assignments",
+            "id": "2d1c8119-018b-4e8d-b010-7331226387e5",
+            "label": "Buyback state WATCH",
+            "url": null
+          },
+          {
+            "table": "buyback_state_assignments",
+            "id": "2d1c8119-018b-4e8d-b010-7331226387e5",
+            "label": "Market confirmation",
+            "url": null
+          }
+        ],
+        "assessment_id": "6dc746a0-95d8-4f98-9412-cb97f74238ae",
+        "acknowledgement": null
+      }
+    ],
+    "detail": "In-app alerts only (P1-1). Levels are deterministic rules; none places an order, and L4 is unreachable before the Phase 2 risk check."
+  }
+}

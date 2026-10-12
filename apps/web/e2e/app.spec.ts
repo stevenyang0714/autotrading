@@ -127,6 +127,8 @@ for (const path of [
   "/dashboards/corporate-actions?known_on=2026-04-15",
   "/dashboards/earnings",
   "/dashboards/earnings?known_on=2026-05-01",
+  "/dashboards/strategy-lab",
+  "/dashboards/alerts-center?status=all&backfilled=1",
 ]) {
   test(`numbers on ${path} are all explained`, async ({ page }) => {
     await page.goto(path);
@@ -440,6 +442,39 @@ test("A NO TRADE and a paper TRADE are recorded alike, replay identical, and the
   const table = page.getByRole("table", { name: "Journal entries" });
   await expect(table.locator('tr[data-decision="no_trade"]').first()).toContainText("NO TRADE: Priced in");
   await expect(table.locator('tr[data-decision="trade"]').first()).toContainText("exited");
+});
+
+test("Alerts Center shows each company's level and alerts with their rules and evidence (M1.7)", async ({
+  page,
+}) => {
+  await page.goto("/dashboards/alerts-center?status=all&backfilled=1");
+  await expect(page.locator("[data-in-app]")).toContainText("IN-APP ONLY");
+  const levels = page.getByRole("list", { name: "Convergence by company" });
+  await expect(levels.locator("[data-company]").first()).toBeVisible();
+  await expect(levels.locator('[data-check="4"]').first()).toHaveAttribute("data-status", "unavailable");
+  const first = page.getByRole("list", { name: "Alerts" }).locator("[data-alert]").first();
+  await expect(first).toContainText(/alert rules \d+\.\d+\.\d+/);
+  await expect(first.getByRole("list", { name: "Evidence" }).locator("li").first()).toBeVisible();
+  // The filter keeps its choices in the URL.
+  await page.getByRole("form", { name: "Filter alerts" }).locator('select[name="status"]').selectOption("open");
+  await page.getByRole("form", { name: "Filter alerts" }).getByRole("button", { name: "Filter" }).click();
+  await expect(page).toHaveURL(/status=open/, { timeout: 15_000 });
+});
+
+test("Acknowledging an alert is recorded once and audited (M1.7)", async ({ page, isMobile }) => {
+  // Acknowledgements are append-only, so this writes only to CI's throwaway database, and once.
+  test.skip(!process.env.CI, "writes a permanent acknowledgement; CI database only");
+  test.skip(isMobile, "one writer");
+  await page.goto("/dashboards/alerts-center?backfilled=1");
+  const open = page.locator('[data-alert][data-acknowledged="no"]').first();
+  const id = await open.getAttribute("data-alert");
+  await open.getByLabel("Note (optional)").fill("e2e: seen");
+  await open.getByRole("button", { name: "Acknowledge" }).click();
+  await expect(page.locator(`[data-alert="${id}"]`)).toHaveCount(0, { timeout: 20_000 });
+  await page.goto("/dashboards/alerts-center?status=acknowledged&backfilled=1");
+  await expect(page.locator(`[data-alert="${id}"]`)).toContainText("e2e: seen");
+  await page.goto("/system/audit-log?table=alert_acknowledgements");
+  await expect(page.getByText(/acknowledged: /).first()).toBeVisible();
 });
 
 test("Reconciliation lists Apple's 10-K as pass and opens its items (M1.1)", async ({ page }) => {

@@ -185,7 +185,7 @@ Plan approved 2026-10-11 with decisions E1–E4 (ADR-026). Done (#22).
 - [x] Consensus fields show `Data unavailable` and are never estimated (errata E6). (Consensus and surprise always null with the reason; integration test over every event; the UI shows Data unavailable.)
 
 ## M1.6 Paper journal, signals and the Thesis Card
-Plan approved 2026-10-11 with decisions J1–J4 (ADR-027). Done (PR pending).
+Plan approved 2026-10-11 with decisions J1–J4 (ADR-027). Done (#23).
 
 **Build**
 - **Signal and TradeDecision records** per 02 §28 and errata E1 (`strategy_id` nullable, `valid_from`, `created_at`, `user_id`). `mode = paper` only; broker fields null (P1-6).
@@ -203,13 +203,15 @@ Plan approved 2026-10-11 with decisions J1–J4 (ADR-027). Done (PR pending).
 - [x] NO TRADE decisions are recorded like any other decision. (Same table, same audit trail and the same journal rows as a TRADE; integration test over both; live: the AAPL NO TRADE in the Audit Log as `web`.)
 
 ## M1.7 Alerts Center (in-app)
+Built overnight 2026-10-12 at Steven's request with Claude's default decisions A1–A4 (ADR-028, proposed: to confirm). Done (PR pending).
+
 **Build**
 - **Convergence levels L0–L4** (02 §16) as deterministic rules. Inputs are the Phase 1 events: buyback state changes, earnings events, filings. L4 needs the Phase 2 risk check, so it is unreachable in Phase 1.
 - **Alerts Center:** in-app, with acknowledgement. Delivery outside the app waits for OD-2.
 
 **Acceptance**
-- [ ] Every alert links to the rule version and the evidence that triggered it.
-- [ ] Acknowledging an alert is audited.
+- [x] Every alert links to the rule version and the evidence that triggered it. (Each alert stores its alert rule version and its evidence rows; filings link to EDGAR, buyback states to the company page; a level change links to the assessment behind it. Integration test over every alert; live: 268 alerts under rules 0.1.0.)
+- [x] Acknowledging an alert is audited. (A separate append-only row, once per alert, written as `web` and shown in the Audit Log; a second acknowledgement is refused (409). Integration test; the e2e acknowledgement runs on CI's database.)
 
 ## M1.8 Phase 1 exit report
 Write `docs/reports/phase1_exit.md` in the format of `phase0_exit.md`. Then propose `docs/milestones/M2_*.md` for approval.

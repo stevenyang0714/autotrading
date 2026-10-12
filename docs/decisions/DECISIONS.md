@@ -660,6 +660,25 @@ M1.6, one PR.
 
 ---
 
+## ADR-028 Alerts Center: convergence levels and acknowledgement — Proposed (2026-10-12, Claude's defaults pending Steven's review)
+M1.7, one PR. Steven asked on 2026-10-12 for the work to continue overnight without stopping for plan approval; the decisions below are the options Claude would have recommended, recorded for Steven to confirm or change. Changing them is a new alert rule version (the stored assessments and alerts keep theirs).
+- **Decisions (defaults, to confirm):**
+  - A1 Events: earnings releases (8-K Item 2.02), 10-K and 10-Q filings, buyback announcements (authorization and increase statements) and buyback state changes. Other 8-Ks and news are not alerts (news has its own page).
+  - A2 Levels (02 §16, 01 §15), from the buyback state assignment at T and the events of the last 30 days, one item per source: L0 Information = at least one item; L1 Watch = at least two items, one of them a reading; L2 Thesis = the S1 causal chain from two independent families, buybacks executed (ACTIVE or HIGH-CONVICTION) and valuation support (base DCF discount positive or FCF yield above its own median); L3 Trade Candidate = L2 and market confirmation (close above the 50-day average or a positive 1-month return against SPY) with the S1 signal; L4 Execution Ready = unreachable (no risk check, liquidity, sizing or compliance before Phase 2, P1-4).
+  - A3 History: every buyback state assignment under rules 0.2.0 has its assessment (daily, and the month ends since 2021 by `make alerts-backfill`); level changes found that way are backfilled alerts, hidden by default. Event alerts start at go-live, 30 days back; replays of recorded data mark theirs backfilled.
+  - A4 Acknowledgement: once per alert, optional note (500 characters), append-only and audited as `web`; the alert itself never changes. The default view is open (unacknowledged), live alerts.
+- **Technical defaults:**
+  - Rules: `config/alert_rules.yaml` 0.1.0, loaded into `alert_rule_sets` by `make migrate` with its sha256 (a changed released version is refused; hash pinned in a unit test). The rule set names the buyback rule version it reads (0.2.0).
+  - Readings come from the stored buyback assignment's conditions (`high_conviction.dcf_discount`, `high_conviction.fcf_yield`, `trade_ready.above_average`, `trade_ready.relative_return`), so nothing is recomputed. A state reading and that assignment's own state change are one item; rows of one filing are one item.
+  - Storage (migration 0019): `convergence_assessments` (one per company, T and rule version, the whole assessment; the database refuses L4), `alerts` (one per rule version and source: `event:<table>:<id>` or `level:<assessment>`), `alert_acknowledgements` (one per alert); all append-only, alerts and acknowledgements audited.
+  - Timing: the assessment is written in the buyback assignment's transaction, at its T and system time; filings and statements count when recorded by then. A level change raises an alert when either side is L1 or above (moves between none and L0 are covered by event alerts); a fall to no level cites the assignment it read.
+  - As known on: alerts with `known_at` up to the date; an acknowledgement counts from its own time.
+- **API and web:** `GET /alerts` (status, level, company, backfilled filters), `GET /alerts/{id}`, `POST /alerts/{id}/acknowledge`, `GET /convergence`, `GET /alerts/rules`; `/dashboards/alerts-center` live (levels by company with every check, alerts with rule version, evidence links and acknowledgement); Audit Log labels.
+- **Live check 2026-10-12:** 710 assessments (164 L0, 409 L1, 33 L2, 75 L3, 29 none); 267 backfilled level-change alerts (49 at L2 or L3, e.g. Apple L3 Trade Candidate 2024-05-01, Alphabet L3 2025-05-01); one open event alert (AutoZone's 2026-09-22 earnings release). Now: Apple, AutoZone, NVIDIA and ExxonMobil L1 Watch (no valuation support), the rest L0. 60 random assessments recompute identically. Endpoints 0.01-0.04 s.
+- **Known gaps:** thresholds and windows are defaults, unvalidated (OD-7); families are coarse (two filings of one company are not fully independent); no delivery outside the app (OD-2); the earnings family counts releases, not their direction (no consensus, OD-3).
+
+---
+
 ## Open decisions (owner: Steven)
 
 | ID | Decision | Needed by | Default until decided |

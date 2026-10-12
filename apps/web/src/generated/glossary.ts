@@ -7,6 +7,9 @@ export const GLOSSARY_VERSION = "0.1.0";
 export type CompleteTermId =
   | "access_status"
   | "accession_number"
+  | "alert"
+  | "alert_acknowledgement"
+  | "alert_rule_set"
   | "as_of"
   | "ask"
   | "audit_action"
@@ -41,6 +44,12 @@ export type CompleteTermId =
   | "commercial_paper"
   | "condition_status"
   | "consensus_estimate"
+  | "convergence_l0"
+  | "convergence_l1"
+  | "convergence_l2"
+  | "convergence_l3"
+  | "convergence_l4"
+  | "convergence_level"
   | "core_pce_inflation_yoy"
   | "cpi_inflation_yoy"
   | "dashboard_alerts_center"
@@ -106,6 +115,7 @@ export type CompleteTermId =
   | "hy_oas_percentile"
   | "implied_upside"
   | "income_tax_expense"
+  | "independent_evidence"
   | "ingestion_note"
   | "ingestion_status"
   | "interest_expense"
@@ -220,6 +230,7 @@ export type CompleteTermId =
   | "update_cadence"
   | "valuation_assumptions"
   | "valuation_price"
+  | "valuation_support"
   | "vintage"
   | "vix_percentile_1y"
   | "volume"
@@ -299,6 +310,82 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "申報編號",
     "hint_zh": "SEC 為每份申報指定的唯一編號，可連到原始文件。"
+  },
+  "alert": {
+    "term_id": "alert",
+    "display_name": "Alert",
+    "category": "alerts",
+    "short_definition": "An in-app notice: a Phase 1 event (L0) or a change of a company's convergence level.",
+    "full_definition": "Each alert stores its rule version and the evidence behind it (links to the filings or the buyback assignment). Level changes raise one when either side is L1 or above; each new event since the previous assessment raises an L0 alert. Alerts never change; acknowledging is a separate record. In-app only (P1-1).",
+    "formula": "event or level change under one rule version",
+    "unit": "alert",
+    "example": "AAPL reached L1 Watch (alert rules 0.1.0).",
+    "direction": "N/A",
+    "interpretation": "Something needs a look.",
+    "why_it_matters": "A short queue instead of every page.",
+    "source": "Alert rules 0.1.0; api/alerts.py",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/alert_rules.yaml",
+    "as_of": "2026-10-12",
+    "update_cadence": "daily, with the buyback states",
+    "caveats": "Backfilled alerts (computed after their date) are hidden by default.",
+    "related_terms": [
+      "convergence_level",
+      "alert_acknowledgement",
+      "alert_rule_set"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "警示",
+    "hint_zh": "App 內通知；一則事件（L0）或公司收斂等級變化，附規則版本與依據。"
+  },
+  "alert_acknowledgement": {
+    "term_id": "alert_acknowledgement",
+    "display_name": "Acknowledgement",
+    "category": "alerts",
+    "short_definition": "Marking an alert as seen, once, with an optional note. Audited.",
+    "full_definition": "A separate append-only record (the alert is never edited), written as actor web and shown in the Audit Log. As known on an earlier date, the alert shows as open.",
+    "formula": "one per alert",
+    "unit": "record",
+    "example": "Acknowledged: seen, no action.",
+    "direction": "N/A",
+    "interpretation": "Seen and dealt with.",
+    "why_it_matters": "Leaves a trace of what was reviewed and when.",
+    "source": "api/alerts.py; migration 0019",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/api/alerts.py",
+    "as_of": "2026-10-12",
+    "update_cadence": "per action",
+    "caveats": "An acknowledgement cannot be undone.",
+    "related_terms": [
+      "alert"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "確認",
+    "hint_zh": "標記已看過，每則一次、可附備註；寫入稽核紀錄。"
+  },
+  "alert_rule_set": {
+    "term_id": "alert_rule_set",
+    "display_name": "Alert Rules Version",
+    "category": "alerts",
+    "short_definition": "The released version of the convergence and alert rules every assessment and alert used.",
+    "full_definition": "config/alert_rules.yaml, loaded by make migrate with the sha256 of its content; a released version never changes, so a change is a new version (ADR-028).",
+    "formula": "rule_version + sha256",
+    "unit": "version",
+    "example": "0.1.0 (released 2026-10-12, Claude's defaults for review).",
+    "direction": "N/A",
+    "interpretation": "Which rules produced an alert.",
+    "why_it_matters": "Alerts stay reproducible when rules change.",
+    "source": "config/alert_rules.yaml",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/alert_rules.yaml",
+    "as_of": "2026-10-12",
+    "update_cadence": "per release",
+    "caveats": "0.1.0 thresholds are defaults, unvalidated.",
+    "related_terms": [
+      "alert",
+      "convergence_level",
+      "buyback_rule_version"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "警示規則版本",
+    "hint_zh": "每個收斂評定與警示所用的規則版本；已發布的版本不會改。"
   },
   "as_of": {
     "term_id": "as_of",
@@ -1168,6 +1255,163 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "共識預估",
     "hint_zh": "分析師預期；沒有資料來源（OD-3），一律 Data unavailable，不估算。"
   },
+  "convergence_l0": {
+    "term_id": "convergence_l0",
+    "display_name": "L0 Information",
+    "category": "alerts",
+    "short_definition": "At least one item: a single event or reading. Recorded only.",
+    "full_definition": "Any Phase 1 event in the last 30 days (earnings release, 10-K/10-Q, buyback announcement, buyback state change) or a passing reading of the buyback assignment. Each new event is also an L0 alert.",
+    "formula": "items >= 1",
+    "unit": "level",
+    "example": "Meta at 2026-10-06: only market confirmation.",
+    "direction": "N/A",
+    "interpretation": "Something happened; no pattern yet.",
+    "why_it_matters": "Keeps a record without asking for attention.",
+    "source": "Alert rules 0.1.0",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/convergence.py",
+    "as_of": "2026-10-12",
+    "update_cadence": "daily",
+    "caveats": "An event counts once however many rows its filing produced.",
+    "related_terms": [
+      "convergence_level",
+      "convergence_l1"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "L0 資訊",
+    "hint_zh": "至少一項事件或讀數；只記錄。"
+  },
+  "convergence_l1": {
+    "term_id": "convergence_l1",
+    "display_name": "L1 Watch",
+    "category": "alerts",
+    "short_definition": "Multiple related signals: at least 2 items, at least 1 of them a reading. Watchlist.",
+    "full_definition": "At least two items in the window, at least one a reading of the buyback assignment (buyback state WATCH or above, valuation support or market confirmation).",
+    "formula": "items >= 2 and readings >= 1",
+    "unit": "level",
+    "example": "Apple at 2026-10-06: buyback state ACTIVE and market confirmation.",
+    "direction": "N/A",
+    "interpretation": "Worth watching.",
+    "why_it_matters": "Separates repeated activity from noise.",
+    "source": "Alert rules 0.1.0",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/convergence.py",
+    "as_of": "2026-10-12",
+    "update_cadence": "daily",
+    "caveats": "Two events of one filing count once.",
+    "related_terms": [
+      "convergence_level",
+      "convergence_l2"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "L1 觀察",
+    "hint_zh": "至少兩項相關訊號或事件、其中至少一項是讀數；放進觀察名單。"
+  },
+  "convergence_l2": {
+    "term_id": "convergence_l2",
+    "display_name": "L2 Thesis",
+    "category": "alerts",
+    "short_definition": "Independent signals with a causal chain: buybacks executed and valuation support (strategy S1).",
+    "full_definition": "The S1 causal chain from two independent families: the buyback state is ACTIVE or HIGH-CONVICTION (repurchases executed, family 2) and the valuation supports it (the base DCF discount is positive or the FCF yield is above its own median, family 3).",
+    "formula": "buyback state in (ACTIVE, HIGH-CONVICTION) and valuation support",
+    "unit": "level",
+    "example": "A company that keeps buying back shares while its FCF yield is above its five-year median.",
+    "direction": "N/A",
+    "interpretation": "A research thesis can be written.",
+    "why_it_matters": "Requires evidence from independent sources, not repeated headlines.",
+    "source": "Alert rules 0.1.0",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/convergence.py",
+    "as_of": "2026-10-12",
+    "update_cadence": "daily",
+    "caveats": "Without a DCF or FCF yield history the check is unavailable, not failed.",
+    "related_terms": [
+      "convergence_l1",
+      "convergence_l3",
+      "valuation_support",
+      "thesis_card"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "L2 論點",
+    "hint_zh": "回購已執行（ACTIVE 以上）且有估值支持，兩個獨立家族；可寫論點。"
+  },
+  "convergence_l3": {
+    "term_id": "convergence_l3",
+    "display_name": "L3 Trade Candidate",
+    "category": "alerts",
+    "short_definition": "Thesis plus market confirmation and the S1 strategy trigger. Paper review only.",
+    "full_definition": "L2 and market confirmation (the close above its 50-day average or a positive 1-month return against SPY, family 5); the ACTIVE or HIGH-CONVICTION state is the S1 signal. In Phase 1 a candidate is reviewed in the paper journal.",
+    "formula": "L2 and market confirmation",
+    "unit": "level",
+    "example": "Illustration: buybacks executed, FCF yield above its median and the stock above its 50-day average.",
+    "direction": "N/A",
+    "interpretation": "Review it; a paper decision can be recorded.",
+    "why_it_matters": "The market agreeing with the thesis lowers the risk of being early.",
+    "source": "Alert rules 0.1.0",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/convergence.py",
+    "as_of": "2026-10-12",
+    "update_cadence": "daily",
+    "caveats": "Paper only (ADR-008).",
+    "related_terms": [
+      "convergence_l2",
+      "convergence_l4",
+      "market_confirmation"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "L3 交易候選",
+    "hint_zh": "L2 加上市場確認與 S1 訊號；在模擬日誌中檢討。"
+  },
+  "convergence_l4": {
+    "term_id": "convergence_l4",
+    "display_name": "L4 Execution Ready",
+    "category": "alerts",
+    "short_definition": "L3 plus risk, liquidity, sizing and compliance checks. Unreachable in Phase 1.",
+    "full_definition": "Needs the Phase 2 risk check, liquidity, sizing and compliance (P1-4); the database refuses L4 in Phase 1 and the Alerts Center shows it as unavailable.",
+    "formula": "L3 and passed risk, liquidity, sizing and compliance checks",
+    "unit": "level",
+    "example": "Every company shows L4 unavailable in Phase 1.",
+    "direction": "N/A",
+    "interpretation": "Would allow preparing an order; not in Phase 1.",
+    "why_it_matters": "Execution only after risk controls exist.",
+    "source": "Build spec 02 §16; P1-4",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/convergence.py",
+    "as_of": "2026-10-12",
+    "update_cadence": "per phase",
+    "caveats": "No order path exists in Phase 1.",
+    "related_terms": [
+      "convergence_l3",
+      "paper_mode"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "L4 可執行",
+    "hint_zh": "L3 加上風險、流動性、部位與合規檢查；Phase 1 不可達。"
+  },
+  "convergence_level": {
+    "term_id": "convergence_level",
+    "display_name": "Convergence Level",
+    "category": "alerts",
+    "short_definition": "How far a company's signals line up: L0 Information to L4 Execution Ready (02 §16).",
+    "full_definition": "Deterministic and versioned (alert rules 0.1.0, ADR-028): computed with each buyback state assignment from what was known at its time, from the assignment's readings (buyback state, valuation support, market confirmation) and the Phase 1 events of the last 30 days, one item per source. The level is the highest one passing with every level below it.",
+    "formula": "highest level whose rule and every lower rule pass",
+    "unit": "level",
+    "example": "Apple at 2026-10-06: L1 Watch (buyback state ACTIVE and market confirmation, but no valuation support).",
+    "direction": "Higher = more independent evidence lines up",
+    "interpretation": "A triage of attention, not a recommendation.",
+    "why_it_matters": "Turns many signals into a short list that needs a decision.",
+    "source": "Alert rules 0.1.0; buyback state assignments; SEC filings",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/convergence.py",
+    "as_of": "2026-10-12",
+    "update_cadence": "daily, with the buyback states",
+    "caveats": "Default rules, unvalidated; no level places an order.",
+    "related_terms": [
+      "convergence_l0",
+      "convergence_l1",
+      "convergence_l2",
+      "convergence_l3",
+      "convergence_l4",
+      "independent_evidence"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "收斂等級",
+    "hint_zh": "公司的訊號對齊到什麼程度：L0 資訊到 L4 可執行；依版本化規則每日計算。"
+  },
   "core_pce_inflation_yoy": {
     "term_id": "core_pce_inflation_yoy",
     "display_name": "Core PCE Inflation (y/y)",
@@ -1228,17 +1472,19 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "unit": "page",
     "example": "A thesis that reaches L3 raises an alert for review.",
     "direction": "N/A",
-    "interpretation": "Planned for Phase 1; until then the page shows no data, live or simulated.",
+    "interpretation": "Live from M1.7: each company's convergence level and the open alerts, with their rule version and evidence; acknowledge to clear.",
     "why_it_matters": "Turns many signals into a short list that needs a decision.",
-    "source": "Build spec 02 §21; research report 01 §21; ROADMAP dashboard map",
+    "source": "Build spec 02 §21; research report 01 §21; ROADMAP dashboard map; ADR-028",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/spec/02_master_build_prompt_v2.md",
-    "as_of": "2026-10-05",
+    "as_of": "2026-10-12",
     "update_cadence": "per release",
-    "caveats": "Contents arrive with Phase 1; scope can change through a roadmap update.",
+    "caveats": "In-app only (OD-2). L4 is unreachable until the Phase 2 risk check.",
     "related_terms": [
-      "planned_phase"
+      "planned_phase",
+      "convergence_level",
+      "alert"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "警示中心",
     "hint_zh": "所有警示與通知（Phase 1）。"
   },
@@ -2821,6 +3067,30 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "所得稅費用",
     "hint_zh": "期間內認列的所得稅（含遞延），不等於實際繳納的稅。"
+  },
+  "independent_evidence": {
+    "term_id": "independent_evidence",
+    "display_name": "Independent Evidence",
+    "category": "alerts",
+    "short_definition": "Items from different sources and families; copies of one source count once.",
+    "full_definition": "Items are deduplicated by source: rows of one filing (its 8-K, exhibit and buyback statement) are one item, and a buyback state reading and that assignment's state change are one item. The assessment lists the families its items come from.",
+    "formula": "distinct sources; families listed",
+    "unit": "count",
+    "example": "Apple's earnings 8-K that also announced a buyback increase counts once.",
+    "direction": "Higher = stronger",
+    "interpretation": "How much really lines up.",
+    "why_it_matters": "Article or row counts are not evidence counts (01 §15).",
+    "source": "Research report 01 §15; alert rules 0.1.0",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/convergence.py",
+    "as_of": "2026-10-12",
+    "update_cadence": "daily",
+    "caveats": "Families are coarse; two filings of one company are not fully independent.",
+    "related_terms": [
+      "convergence_level"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "獨立依據",
+    "hint_zh": "依來源去重；同一份申報的多列只算一次。"
   },
   "ingestion_note": {
     "term_id": "ingestion_note",
@@ -5714,6 +5984,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "估值股價",
     "hint_zh": "當時已公開的最後一個每日收盤價；fixture、過期或盤中報價都不用。"
+  },
+  "valuation_support": {
+    "term_id": "valuation_support",
+    "display_name": "Valuation Support",
+    "category": "alerts",
+    "short_definition": "The base DCF discount is positive, or the FCF yield is above its own median.",
+    "full_definition": "Read from the buyback state assignment: its HIGH-CONVICTION conditions dcf_discount (margin of safety > 0) or fcf_yield (FCF yield above its month-end median). Either passing is support; both unavailable means no valuation reading.",
+    "formula": "dcf_discount passes or fcf_yield passes",
+    "unit": "pass / fail / unavailable",
+    "example": "Apple at 2026-10-06: none (price far above the base DCF, FCF yield below its median).",
+    "direction": "N/A",
+    "interpretation": "The price leaves room for the buybacks to add value.",
+    "why_it_matters": "Buybacks above value destroy it; the S1 thesis needs both.",
+    "source": "Buyback state assignments (rules 0.2.0)",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/convergence.py",
+    "as_of": "2026-10-12",
+    "update_cadence": "daily",
+    "caveats": "Model output on default assumptions (ADR-023).",
+    "related_terms": [
+      "convergence_l2",
+      "margin_of_safety",
+      "fcf_yield_to_median"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "估值支持",
+    "hint_zh": "base DCF 折價為正或 FCF 殖利率高於自身中位數。"
   },
   "vintage": {
     "term_id": "vintage",
