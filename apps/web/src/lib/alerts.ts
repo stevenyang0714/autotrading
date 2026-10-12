@@ -41,8 +41,11 @@ export const FAMILY_NAMES: Record<number, string> = {
   5: "Price / Trend",
 };
 
-/** Where an evidence row is shown: EDGAR for filings, the company page for a buyback state. */
-export function evidenceHref(table: string, url: string | null, ticker: string): string | null {
+/** Where an evidence row is shown: EDGAR for filings, the company page for a buyback state,
+ * the Market Regime page as known on the alert's day for a regime assessment. */
+export function evidenceHref(table: string, url: string | null, ticker: string | null, knownAt: string): string | null {
   if (url) return url;
-  return table === "buyback_state_assignments" ? `/instruments/${ticker}#buybacks` : null;
+  if (table === "buyback_state_assignments" && ticker) return `/instruments/${ticker}#buybacks`;
+  if (table === "regime_assessments") return `/dashboards/market-regime?known_on=${knownAt.slice(0, 10)}`;
+  return null;
 }

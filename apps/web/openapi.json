@@ -3502,7 +3502,7 @@
           },
           "inputs": {
             "items": {
-              "$ref": "#/components/schemas/autotrading__domain__regime__InputRef"
+              "$ref": "#/components/schemas/RegimeInput"
             },
             "title": "Inputs",
             "type": "array"
@@ -4067,11 +4067,36 @@
         "title": "InputOut",
         "type": "object"
       },
+      "InputRef": {
+        "properties": {
+          "observation_date": {
+            "format": "date",
+            "title": "Observation Date",
+            "type": "string"
+          },
+          "series_id": {
+            "title": "Series Id",
+            "type": "string"
+          },
+          "vintage": {
+            "format": "date",
+            "title": "Vintage",
+            "type": "string"
+          }
+        },
+        "required": [
+          "series_id",
+          "observation_date",
+          "vintage"
+        ],
+        "title": "InputRef",
+        "type": "object"
+      },
       "Insight": {
         "properties": {
           "inputs": {
             "items": {
-              "$ref": "#/components/schemas/autotrading__api__overview__InputRef"
+              "$ref": "#/components/schemas/InputRef"
             },
             "title": "Inputs",
             "type": "array"
@@ -6855,7 +6880,7 @@
           },
           "inputs": {
             "items": {
-              "$ref": "#/components/schemas/autotrading__domain__regime__InputRef"
+              "$ref": "#/components/schemas/RegimeInput"
             },
             "title": "Inputs",
             "type": "array"
@@ -7134,6 +7159,44 @@
           "stress_detail"
         ],
         "title": "Regime",
+        "type": "object"
+      },
+      "RegimeInput": {
+        "properties": {
+          "observation_date": {
+            "format": "date",
+            "title": "Observation Date",
+            "type": "string"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "value": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Value",
+            "type": "string"
+          },
+          "vintage": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vintage"
+          }
+        },
+        "required": [
+          "source",
+          "observation_date",
+          "vintage",
+          "value"
+        ],
+        "title": "RegimeInput",
         "type": "object"
       },
       "RegimeOut": {
@@ -9324,69 +9387,6 @@
           "remaining_to_market_cap_min"
         ],
         "title": "WatchRule",
-        "type": "object"
-      },
-      "autotrading__api__overview__InputRef": {
-        "properties": {
-          "observation_date": {
-            "format": "date",
-            "title": "Observation Date",
-            "type": "string"
-          },
-          "series_id": {
-            "title": "Series Id",
-            "type": "string"
-          },
-          "vintage": {
-            "format": "date",
-            "title": "Vintage",
-            "type": "string"
-          }
-        },
-        "required": [
-          "series_id",
-          "observation_date",
-          "vintage"
-        ],
-        "title": "InputRef",
-        "type": "object"
-      },
-      "autotrading__domain__regime__InputRef": {
-        "properties": {
-          "observation_date": {
-            "format": "date",
-            "title": "Observation Date",
-            "type": "string"
-          },
-          "source": {
-            "title": "Source",
-            "type": "string"
-          },
-          "value": {
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-            "title": "Value",
-            "type": "string"
-          },
-          "vintage": {
-            "anyOf": [
-              {
-                "format": "date",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Vintage"
-          }
-        },
-        "required": [
-          "source",
-          "observation_date",
-          "vintage",
-          "value"
-        ],
-        "title": "InputRef",
         "type": "object"
       }
     }

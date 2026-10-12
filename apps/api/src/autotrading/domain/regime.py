@@ -176,7 +176,7 @@ class Bar:
 # ---------- result ----------
 
 
-class InputRef(BaseModel):
+class RegimeInput(BaseModel):
     source: str  # FRED series id, or a symbol for a close
     observation_date: date
     vintage: date | None  # None for a close
@@ -189,7 +189,7 @@ class Reading(BaseModel):
     value: Decimal | None
     unit: str
     detail: str | None = None
-    inputs: list[InputRef]
+    inputs: list[RegimeInput]
 
 
 class Dimension(BaseModel):
@@ -207,7 +207,7 @@ class Flag(BaseModel):
     value: Decimal | None
     threshold: str
     detail: str
-    inputs: list[InputRef]
+    inputs: list[RegimeInput]
 
 
 class Regime(BaseModel):
@@ -231,12 +231,12 @@ def _round(value: Decimal) -> Decimal:
     return value.quantize(TWO, rounding=ROUND_HALF_UP)
 
 
-def _ref(source: str, o: Obs) -> InputRef:
-    return InputRef(source=source, observation_date=o.day, vintage=o.vintage, value=o.value)
+def _ref(source: str, o: Obs) -> RegimeInput:
+    return RegimeInput(source=source, observation_date=o.day, vintage=o.vintage, value=o.value)
 
 
-def _close_ref(symbol: str, b: Bar) -> InputRef:
-    return InputRef(source=symbol, observation_date=b.day, vintage=None, value=b.close)
+def _close_ref(symbol: str, b: Bar) -> RegimeInput:
+    return RegimeInput(source=symbol, observation_date=b.day, vintage=None, value=b.close)
 
 
 def _points(obs: Sequence[Obs]) -> list[ind.Point]:
@@ -570,7 +570,7 @@ def _flag(
     value: Decimal | None,
     threshold: str,
     detail: str,
-    inputs: list[InputRef],
+    inputs: list[RegimeInput],
 ) -> Flag:
     status: FlagStatus = "unavailable" if on is None else ("on" if on else "off")
     return Flag(

@@ -1957,7 +1957,7 @@ export interface components {
             /** Flag Id */
             flag_id: string;
             /** Inputs */
-            inputs: components["schemas"]["autotrading__domain__regime__InputRef"][];
+            inputs: components["schemas"]["RegimeInput"][];
             /** Label */
             label: string;
             /**
@@ -2152,10 +2152,25 @@ export interface components {
             /** Value */
             value: string | null;
         };
+        /** InputRef */
+        InputRef: {
+            /**
+             * Observation Date
+             * Format: date
+             */
+            observation_date: string;
+            /** Series Id */
+            series_id: string;
+            /**
+             * Vintage
+             * Format: date
+             */
+            vintage: string;
+        };
         /** Insight */
         Insight: {
             /** Inputs */
-            inputs: components["schemas"]["autotrading__api__overview__InputRef"][];
+            inputs: components["schemas"]["InputRef"][];
             /** Text */
             text: string;
         };
@@ -2955,7 +2970,7 @@ export interface components {
             /** Detail */
             detail?: string | null;
             /** Inputs */
-            inputs: components["schemas"]["autotrading__domain__regime__InputRef"][];
+            inputs: components["schemas"]["RegimeInput"][];
             /** Label */
             label: string;
             /** Reading Id */
@@ -3052,6 +3067,20 @@ export interface components {
             stress: ("normal" | "elevated" | "high" | "crisis") | null;
             /** Stress Detail */
             stress_detail: string;
+        };
+        /** RegimeInput */
+        RegimeInput: {
+            /**
+             * Observation Date
+             * Format: date
+             */
+            observation_date: string;
+            /** Source */
+            source: string;
+            /** Value */
+            value: string;
+            /** Vintage */
+            vintage: string | null;
         };
         /** RegimeOut */
         RegimeOut: {
@@ -3822,35 +3851,6 @@ export interface components {
             announcement_kinds: ("new" | "increase" | "plan")[];
             /** Remaining To Market Cap Min */
             remaining_to_market_cap_min: string;
-        };
-        /** InputRef */
-        autotrading__api__overview__InputRef: {
-            /**
-             * Observation Date
-             * Format: date
-             */
-            observation_date: string;
-            /** Series Id */
-            series_id: string;
-            /**
-             * Vintage
-             * Format: date
-             */
-            vintage: string;
-        };
-        /** InputRef */
-        autotrading__domain__regime__InputRef: {
-            /**
-             * Observation Date
-             * Format: date
-             */
-            observation_date: string;
-            /** Source */
-            source: string;
-            /** Value */
-            value: string;
-            /** Vintage */
-            vintage: string | null;
         };
     };
     responses: never;

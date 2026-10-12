@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { recordedAlerts, recordedConvergence, recordedOpenAlerts } from "@/test/fixtures";
+import { recordedAlerts, recordedConvergence, recordedOpenAlerts, recordedRegimeAlerts } from "@/test/fixtures";
 import { unexplainedNumbers } from "@/test/numbers";
 
 import { type AlertFilters, AlertsCenterView } from "./AlertsCenterView";
@@ -26,7 +26,7 @@ describe("AlertsCenterView with recorded API responses", () => {
     const list = screen.getByRole("list", { name: "Alerts" });
     const level = list.querySelector('[data-kind="level_change"]');
     expect(level?.textContent).toContain("AAPL reached L1 Watch");
-    expect(level?.textContent).toContain("alert rules 0.1.0");
+    expect(level?.textContent).toContain("alert rules 0.2.0");
     expect(level?.textContent).toContain("backfilled");
     const link = level?.querySelector('a[href="/instruments/AAPL#buybacks"]');
     expect(link?.textContent).toBe("Buyback state ACTIVE");
@@ -59,7 +59,16 @@ describe("AlertsCenterView with recorded API responses", () => {
     expect(document.querySelector("[data-open]")?.textContent).toContain("L0 Information");
   });
 
+  it("shows a market-wide stress alert with its state and a link to the regime then", () => {
+    render(<AlertsCenterView alerts={recordedRegimeAlerts} convergence={recordedConvergence} filters={ALL} />);
+    const market = screen.getByRole("list", { name: "Alerts" }).querySelector('[data-kind="regime"]');
+    expect(market?.textContent).toContain("Market stress eased to NORMAL (was ELEVATED)");
+    expect(market?.textContent).toContain("NORMAL");
+    expect(market?.querySelector('a[href^="/dashboards/market-regime?known_on=2026-10-06"]')).not.toBeNull();
+  });
+
   it.each([
+    ["regime", recordedRegimeAlerts],
     ["all", recordedAlerts],
     ["open", recordedOpenAlerts],
   ] as const)("%s renders no unexplained number", (_name, alerts) => {

@@ -1,0 +1,43 @@
+{
+  "recorded_at": "2026-10-12T16:06:30.006091+00:00",
+  "recorded_from": "recorded FRED vintages and Alpaca closes replayed into the integration test database (tests/integration/test_regime.py)",
+  "endpoint": "/alerts",
+  "params": {
+    "status": "all",
+    "include_backfilled": true,
+    "known_at": "2026-10-06T18:00:00Z"
+  },
+  "response": {
+    "known_at": "2026-10-06T18:00:00Z",
+    "rule_version": "0.2.0",
+    "status": "all",
+    "open_by_level": {},
+    "entries": [
+      {
+        "id": "e8d8f38e-e3a1-4277-b08b-7b32851d722e",
+        "rule_version": "0.2.0",
+        "ticker": null,
+        "kind": "regime",
+        "level": 0,
+        "level_name": "NORMAL",
+        "previous_level": 1,
+        "direction": "down",
+        "title": "Market stress eased to NORMAL (was ELEVATED)",
+        "known_at": "2026-10-06T18:00:00Z",
+        "system_time": "2026-10-12T16:06:29.781893Z",
+        "backfilled": true,
+        "evidence": [
+          {
+            "table": "regime_assessments",
+            "id": "3e19b942-54c5-4a34-8d9a-b29dd8d7bd8e",
+            "label": "Stress NORMAL: 0 of 9 available flags on",
+            "url": null
+          }
+        ],
+        "assessment_id": null,
+        "acknowledgement": null
+      }
+    ],
+    "detail": "In-app alerts only (P1-1). Levels are deterministic rules; none places an order, and L4 is unreachable before the Phase 2 risk check."
+  }
+}
