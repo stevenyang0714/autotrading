@@ -215,3 +215,5 @@ Built overnight 2026-10-12 at Steven's request with Claude's default decisions A
 
 ## M1.8 Phase 1 exit report
 Write `docs/reports/phase1_exit.md` in the format of `phase0_exit.md`. Then propose `docs/milestones/M2_*.md` for approval.
+
+Done 2026-10-12 (PR pending, after M1.7): `docs/reports/phase1_exit.md` (every exit criterion met, evidence run twice) and `docs/milestones/M2_regime_risk.md` (proposed, with decisions P2-1 to P2-8).
