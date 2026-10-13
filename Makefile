@@ -15,7 +15,7 @@ export NEXT_TELEMETRY_DISABLED := 1
 export COREPACK_ENABLE_DOWNLOAD_PROMPT := 0
 
 .DEFAULT_GOAL := help
-.PHONY: help setup up down ps logs migrate sec-refresh fred-refresh prices-refresh prices-backfill news-refresh news-backfill buyback-evaluate buyback-backfill buyback-verify signals-backfill alerts-backfill replay-fixtures gen test test-unit test-integration e2e lint lint-api lint-web fmt dev-web
+.PHONY: help setup up down ps logs migrate sec-refresh fred-refresh prices-refresh prices-backfill news-refresh news-backfill buyback-evaluate buyback-backfill buyback-verify signals-backfill alerts-backfill regime-evaluate regime-backfill regime-verify replay-fixtures gen test test-unit test-integration e2e lint lint-api lint-web fmt dev-web
 
 help: ## Show available targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  %-18s %s\n", $$1, $$2}'
@@ -72,6 +72,15 @@ signals-backfill: ## Store the signals of buyback state assignments made before 
 
 alerts-backfill: ## Store convergence levels and alerts for buyback assignments made before M1.7 (run once)
 	$(COMPOSE) exec -T api python -m autotrading.jobs.alerts_backfill
+
+regime-evaluate: ## Queue a macro regime assessment now (M2.1)
+	$(COMPOSE) exec -T api python -m autotrading.jobs.regime_evaluate
+
+regime-backfill: ## Queue regime assessments at every month end since 2016, marked backfilled (run once)
+	$(COMPOSE) exec -T api python -m autotrading.jobs.regime_evaluate --backfill
+
+regime-verify: ## Recompute the latest 20 stored regime assessments and report any that differ
+	$(COMPOSE) exec -T api python -m autotrading.jobs.regime_evaluate --verify 20
 
 replay-fixtures: ## CI only: load the recorded SEC, FRED, Alpaca and news fixtures into the stack database
 	cd $(API) && uv run python -m tests.replay

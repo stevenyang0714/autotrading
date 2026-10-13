@@ -15,3 +15,11 @@ series:
   - {id: T10Y2Y, term_id: macro_curve_10y_2y, position: 90}
   - {id: BAMLH0A0HYM2, term_id: macro_hy_oas, position: 100}
   - {id: VIXCLS, term_id: macro_vix, position: 110}
+  # Regime inputs (M2.1, ADR-029). NFCI, NFCICREDIT and STLFSI4 re-estimate their whole history
+  # every week, so they are read from 2015 only (observation_start).
+  - {id: VXVCLS, term_id: macro_vix_3m, position: 120}
+  - {id: NFCI, term_id: macro_nfci, position: 130, observation_start: 2015-01-01}
+  - {id: NFCICREDIT, term_id: macro_nfci_credit, position: 140, observation_start: 2015-01-01}
+  - {id: STLFSI4, term_id: macro_stlfsi, position: 150, observation_start: 2015-01-01}
+  - {id: DCOILWTICO, term_id: macro_wti_oil, position: 160}
+  - {id: DTWEXBGS, term_id: macro_dollar_index, position: 170}

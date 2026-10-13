@@ -130,14 +130,20 @@ export type CompleteTermId =
   | "macro_core_pce"
   | "macro_cpi"
   | "macro_curve_10y_2y"
+  | "macro_dollar_index"
   | "macro_fed_funds"
   | "macro_hy_oas"
+  | "macro_nfci"
+  | "macro_nfci_credit"
   | "macro_nonfarm_payrolls"
   | "macro_real_gdp"
+  | "macro_stlfsi"
   | "macro_treasury_10y"
   | "macro_treasury_2y"
   | "macro_unemployment_rate"
   | "macro_vix"
+  | "macro_vix_3m"
+  | "macro_wti_oil"
   | "margin_of_safety"
   | "market_cap"
   | "market_confirmation"
@@ -191,6 +197,14 @@ export type CompleteTermId =
   | "real_fed_funds_rate"
   | "real_gdp_growth_annualized"
   | "reconciliation_status"
+  | "regime"
+  | "regime_credit"
+  | "regime_growth"
+  | "regime_inflation"
+  | "regime_policy"
+  | "regime_quadrant"
+  | "regime_rule_set"
+  | "regime_volatility"
   | "relative_return_1m"
   | "remaining_to_market_cap"
   | "reporting_period"
@@ -221,6 +235,20 @@ export type CompleteTermId =
   | "stock_based_compensation"
   | "stockholders_equity"
   | "story_count"
+  | "stress_crisis"
+  | "stress_elevated"
+  | "stress_flag_credit"
+  | "stress_flag_dollar"
+  | "stress_flag_drawdown"
+  | "stress_flag_nfci"
+  | "stress_flag_oil"
+  | "stress_flag_stlfsi"
+  | "stress_flag_stock_bond"
+  | "stress_flag_vix_term"
+  | "stress_flag_volatility"
+  | "stress_high"
+  | "stress_normal"
+  | "stress_state"
   | "terminal_growth"
   | "thesis_card"
   | "threshold_review"
@@ -315,8 +343,8 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "term_id": "alert",
     "display_name": "Alert",
     "category": "alerts",
-    "short_definition": "An in-app notice: a Phase 1 event (L0) or a change of a company's convergence level.",
-    "full_definition": "Each alert stores its rule version and the evidence behind it (links to the filings or the buyback assignment). Level changes raise one when either side is L1 or above; each new event since the previous assessment raises an L0 alert. Alerts never change; acknowledging is a separate record. In-app only (P1-1).",
+    "short_definition": "An in-app notice: a company event (L0), a change of a company's convergence level, or a change of the market's stress state.",
+    "full_definition": "Each alert stores its rule version and the evidence behind it (links to the filings or the buyback assignment). Level changes raise one when either side is L1 or above; each new event since the previous assessment raises an L0 alert. Since M2.1 a change of the market stress state is a market-wide alert with no company, under alert rules 0.2.0. Alerts never change; acknowledging is a separate record. In-app only (P1-1).",
     "formula": "event or level change under one rule version",
     "unit": "alert",
     "example": "AAPL reached L1 Watch (alert rules 0.1.0).",
@@ -333,7 +361,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "alert_acknowledgement",
       "alert_rule_set"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "警示",
     "hint_zh": "App 內通知；一則事件（L0）或公司收斂等級變化，附規則版本與依據。"
   },
@@ -1472,7 +1500,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "unit": "page",
     "example": "A thesis that reaches L3 raises an alert for review.",
     "direction": "N/A",
-    "interpretation": "Live from M1.7: each company's convergence level and the open alerts, with their rule version and evidence; acknowledge to clear.",
+    "interpretation": "Live from M1.7: each company's convergence level and the open alerts (company and, since M2.1, market stress), with their rule version and evidence; acknowledge to clear.",
     "why_it_matters": "Turns many signals into a short list that needs a decision.",
     "source": "Build spec 02 §21; research report 01 §21; ROADMAP dashboard map; ADR-028",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/spec/02_master_build_prompt_v2.md",
@@ -1484,7 +1512,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "convergence_level",
       "alert"
     ],
-    "methodology_version": "0.2.0",
+    "methodology_version": "0.3.0",
     "name_zh": "警示中心",
     "hint_zh": "所有警示與通知（Phase 1）。"
   },
@@ -1674,19 +1702,21 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "unit": "page",
     "example": "A rising credit spread with falling liquidity moves the regime towards elevated stress.",
     "direction": "N/A",
-    "interpretation": "Planned for Phase 2; until then the page shows no data, live or simulated.",
+    "interpretation": "Live from M2.1: the stress state and five dimensions as known on a date, each with its inputs and vintages, and the history since 2016.",
     "why_it_matters": "Regime decides which strategies are allowed and how much risk to take.",
-    "source": "Build spec 02 §21; research report 01 §21; ROADMAP dashboard map",
+    "source": "Build spec 02 §21; research report 01 §21; ROADMAP dashboard map; ADR-029",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/spec/02_master_build_prompt_v2.md",
-    "as_of": "2026-10-05",
+    "as_of": "2026-10-13",
     "update_cadence": "per release",
-    "caveats": "Contents arrive with Phase 2; scope can change through a roadmap update.",
+    "caveats": "Thresholds are defaults, unvalidated (OD-7); a description of conditions, not a forecast.",
     "related_terms": [
-      "planned_phase"
+      "planned_phase",
+      "regime",
+      "stress_state"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "市場環境",
-    "hint_zh": "總經與市場所處的狀態判斷（Phase 2）。"
+    "hint_zh": "壓力狀態與五個總經面向，依當時已知的資料，含 2016 年起的歷史。"
   },
   "dashboard_opportunity_radar": {
     "term_id": "dashboard_opportunity_radar",
@@ -3450,6 +3480,30 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "10 年減 2 年利差",
     "hint_zh": "殖利率曲線斜率；負值即「倒掛」。"
   },
+  "macro_dollar_index": {
+    "term_id": "macro_dollar_index",
+    "display_name": "Broad Dollar Index",
+    "category": "macro",
+    "short_definition": "Nominal broad US dollar index against a trade-weighted basket of currencies.",
+    "full_definition": "The Federal Reserve's nominal broad trade-weighted dollar index (goods and services), January 2006 = 100.",
+    "formula": "FRED series DTWEXBGS, value as published in the vintage shown",
+    "unit": "Index Jan 2006 = 100",
+    "example": "A rise of more than 3% in a month is treated as dollar stress by the regime rules.",
+    "direction": "Higher = stronger dollar",
+    "interpretation": "A sharp rise in the dollar often accompanies global funding stress.",
+    "why_it_matters": "Dollar surges are one of the stress flags.",
+    "source": "Board of Governors of the Federal Reserve System via FRED (DTWEXBGS)",
+    "source_url": "https://fred.stlouisfed.org/series/DTWEXBGS",
+    "as_of": "2026-10-12",
+    "update_cadence": "daily (business days)",
+    "caveats": "ALFRED vintages start 2019-02-04, so it is unavailable as known before then.",
+    "related_terms": [
+      "macro_nfci"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "美元廣義指數",
+    "hint_zh": "聯準會的貿易加權美元指數；急升常伴隨全球資金壓力。"
+  },
   "macro_fed_funds": {
     "term_id": "macro_fed_funds",
     "display_name": "Fed Funds Rate",
@@ -3497,6 +3551,56 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "高收益債利差",
     "hint_zh": "高收益公司債相對美債的額外殖利率（OAS）。"
+  },
+  "macro_nfci": {
+    "term_id": "macro_nfci",
+    "display_name": "Chicago Fed NFCI",
+    "category": "macro",
+    "short_definition": "National Financial Conditions Index: weekly measure of US money, debt and equity market conditions.",
+    "full_definition": "A weighted average of 105 measures of risk, credit and leverage, standardized so that zero is the average since 1971. Re-estimated every week, so its whole history is revised.",
+    "formula": "FRED series NFCI, value as published in the vintage shown",
+    "unit": "Index (standard deviations)",
+    "example": "A reading above zero means financial conditions are tighter than their average since 1971.",
+    "direction": "Higher = tighter conditions",
+    "interpretation": "Positive readings mean tighter-than-average financial conditions.",
+    "why_it_matters": "A broad, long-running gauge of financial conditions for the policy and liquidity dimension.",
+    "source": "Federal Reserve Bank of Chicago via FRED (NFCI)",
+    "source_url": "https://fred.stlouisfed.org/series/NFCI",
+    "as_of": "2026-10-12",
+    "update_cadence": "weekly",
+    "caveats": "Revised every week; stored from 2015 only (ADR-029); ALFRED vintages from 2011.",
+    "related_terms": [
+      "macro_nfci_credit",
+      "macro_stlfsi"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "芝加哥聯儲金融情勢指數",
+    "hint_zh": "每週的整體金融情勢；高於 0 代表比 1971 年以來的平均更緊。"
+  },
+  "macro_nfci_credit": {
+    "term_id": "macro_nfci_credit",
+    "display_name": "NFCI Credit Subindex",
+    "category": "macro",
+    "short_definition": "The credit part of the Chicago Fed NFCI: measures of credit conditions.",
+    "full_definition": "The NFCI subindex built from credit conditions (household and business credit, spreads and lending standards), standardized like the NFCI. Used for the credit dimension before the high-yield spread is available.",
+    "formula": "FRED series NFCICREDIT, value as published in the vintage shown",
+    "unit": "Index (standard deviations)",
+    "example": "A rising reading means credit conditions are tightening relative to their history.",
+    "direction": "Higher = tighter credit",
+    "interpretation": "Positive readings mean tighter-than-average credit.",
+    "why_it_matters": "Gives the credit dimension a point-in-time input back to 2016.",
+    "source": "Federal Reserve Bank of Chicago via FRED (NFCICREDIT)",
+    "source_url": "https://fred.stlouisfed.org/series/NFCICREDIT",
+    "as_of": "2026-10-12",
+    "update_cadence": "weekly",
+    "caveats": "Revised every week; stored from 2015 only (ADR-029); ALFRED vintages from 2012.",
+    "related_terms": [
+      "macro_nfci",
+      "macro_hy_oas"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "NFCI 信用子指數",
+    "hint_zh": "NFCI 中的信用部分；高於 0 代表信用比平均更緊。"
   },
   "macro_nonfarm_payrolls": {
     "term_id": "macro_nonfarm_payrolls",
@@ -3546,6 +3650,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "實質 GDP",
     "hint_zh": "扣除物價因素後的國內生產毛額，季調年率。"
+  },
+  "macro_stlfsi": {
+    "term_id": "macro_stlfsi",
+    "display_name": "St. Louis Fed Financial Stress Index",
+    "category": "macro",
+    "short_definition": "STLFSI4: weekly index of financial market stress from 18 indicators.",
+    "full_definition": "Constructed from 18 weekly series (interest rates, yield spreads and other indicators); zero is normal stress, positive is above normal.",
+    "formula": "FRED series STLFSI4, value as published in the vintage shown",
+    "unit": "Index",
+    "example": "A reading above zero means more financial stress than average; spikes mark stress episodes.",
+    "direction": "Higher = more stress",
+    "interpretation": "Readings above 1 are treated as a stress flag by the regime rules.",
+    "why_it_matters": "An independent stress measure next to the NFCI and the high-yield spread.",
+    "source": "Federal Reserve Bank of St. Louis via FRED (STLFSI4)",
+    "source_url": "https://fred.stlouisfed.org/series/STLFSI4",
+    "as_of": "2026-10-12",
+    "update_cadence": "weekly",
+    "caveats": "Revised when re-estimated; stored from 2015 only; ALFRED vintages start 2022-11-10, so it is unavailable as known before then.",
+    "related_terms": [
+      "macro_nfci",
+      "macro_hy_oas"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "聖路易聯儲金融壓力指數",
+    "hint_zh": "由 18 個每週指標組成；高於 0 代表壓力高於正常。"
   },
   "macro_treasury_10y": {
     "term_id": "macro_treasury_10y",
@@ -3645,6 +3774,54 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "VIX 恐慌指數",
     "hint_zh": "S&P 500 選擇權隱含的未來 30 天波動率。"
+  },
+  "macro_vix_3m": {
+    "term_id": "macro_vix_3m",
+    "display_name": "VIX 3-Month",
+    "category": "macro",
+    "short_definition": "Cboe S&P 500 3-Month Volatility Index: implied volatility of S&P 500 options over the next 3 months.",
+    "full_definition": "Daily closing level of the VIX3M (formerly VXV), computed by Cboe from S&P 500 option prices. Compared with VIX it shows the volatility term structure.",
+    "formula": "FRED series VXVCLS, value as published in the vintage shown",
+    "unit": "Index",
+    "example": "When VIX rises above this 3-month measure, near-term fear exceeds longer-term fear (an inverted term structure).",
+    "direction": "Higher = more expected volatility",
+    "interpretation": "VIX above VIX3M (an inverted term structure) is a stress sign.",
+    "why_it_matters": "The term structure separates short-lived scares from lasting stress.",
+    "source": "Chicago Board Options Exchange via FRED (VXVCLS)",
+    "source_url": "https://fred.stlouisfed.org/series/VXVCLS",
+    "as_of": "2026-10-12",
+    "update_cadence": "daily (business days)",
+    "caveats": "Third-party copyright, personal use only; ALFRED vintages from 2014.",
+    "related_terms": [
+      "macro_vix"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "VIX 3 個月",
+    "hint_zh": "S&P 500 選擇權隱含的未來 3 個月波動率；VIX 高於它代表期限結構倒掛。"
+  },
+  "macro_wti_oil": {
+    "term_id": "macro_wti_oil",
+    "display_name": "WTI Crude Oil",
+    "category": "macro",
+    "short_definition": "West Texas Intermediate crude oil spot price at Cushing, Oklahoma.",
+    "full_definition": "Daily spot price of WTI crude oil in US dollars per barrel, published by the US Energy Information Administration.",
+    "formula": "FRED series DCOILWTICO, value as published in the vintage shown",
+    "unit": "$ per barrel",
+    "example": "A move of more than 30% in a month is treated as an oil shock by the regime rules.",
+    "direction": "N/A",
+    "interpretation": "Large one-month moves signal a commodity shock.",
+    "why_it_matters": "Oil shocks feed inflation and growth and are one of the stress flags.",
+    "source": "US Energy Information Administration via FRED (DCOILWTICO)",
+    "source_url": "https://fred.stlouisfed.org/series/DCOILWTICO",
+    "as_of": "2026-10-12",
+    "update_cadence": "daily (business days)",
+    "caveats": "Spot price; the April 2020 negative print is real.",
+    "related_terms": [
+      "macro_cpi"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "WTI 原油",
+    "hint_zh": "美國西德州原油現貨價（每桶美元）。"
   },
   "margin_of_safety": {
     "term_id": "margin_of_safety",
@@ -4994,6 +5171,212 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "對帳結果",
     "hint_zh": "pass 全部一致；warn 只有提醒；fail 有數字不一致、缺漏或多存。"
   },
+  "regime": {
+    "term_id": "regime",
+    "display_name": "Regime",
+    "category": "macro",
+    "short_definition": "Current macro and market stress state.",
+    "full_definition": "Five dimensions (growth, inflation, policy and liquidity, credit, volatility), the growth x inflation quadrant and the stress state, computed daily and at month ends since 2016 from data known at each date, under a versioned rule set (ADR-029). A stored regime always recomputes the same.",
+    "formula": "state machine: NORMAL | ELEVATED | HIGH | CRISIS",
+    "unit": "state",
+    "example": "As known on 2026-10-06: stress normal; growth slowing, inflation above target (stagflation quadrant).",
+    "direction": "N/A",
+    "interpretation": "Higher-stress states reduce new risk and raise hedging.",
+    "why_it_matters": "Changes position sizing and strategy eligibility.",
+    "source": "Regime rules (config/regime_rules.yaml); FRED vintages and Alpaca closes",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily",
+    "caveats": "Detects fragility, does not predict black swans. Thresholds are defaults, unvalidated (OD-7).",
+    "related_terms": [
+      "tail_risk",
+      "stress_state",
+      "regime_quadrant"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "市場體制",
+    "hint_zh": "五個總經面向、成長×通膨象限與壓力狀態，依版本化規則與當時已知的資料。"
+  },
+  "regime_credit": {
+    "term_id": "regime_credit",
+    "display_name": "Credit",
+    "category": "regime",
+    "short_definition": "Calm, normal, stressed or distressed, from the high-yield spread (or the NFCI credit subindex before it is available).",
+    "full_definition": "High-yield spread: calm below 3.5%, normal below 5%, stressed below 8% or after a 1-point rise in a month, distressed from 8%. Before the spread is known (FRED keeps about three years), the NFCI credit subindex: calm up to -0.25, normal up to 0.25, stressed up to 1, distressed above.",
+    "formula": "thresholds on the high-yield spread level and monthly change; else the NFCI credit subindex",
+    "unit": "state",
+    "example": "As known on 2026-10-06: calm (spread 3.1%).",
+    "direction": "N/A",
+    "interpretation": "Credit usually cracks before equities.",
+    "why_it_matters": "Credit stress is the core of most crises.",
+    "source": "Regime rules 0.1.0 (config/regime_rules.yaml); FRED vintages and Alpaca closes",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily or weekly",
+    "caveats": "Thresholds are defaults, unvalidated (OD-7); a description of conditions, not a forecast. The two inputs are not on the same scale; the detail names the one used.",
+    "related_terms": [
+      "macro_hy_oas",
+      "macro_nfci_credit",
+      "stress_flag_credit"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "信用",
+    "hint_zh": "平靜／正常／緊張／困境：高收益債利差（之前用 NFCI 信用子指數）。"
+  },
+  "regime_growth": {
+    "term_id": "regime_growth",
+    "display_name": "Growth",
+    "category": "regime",
+    "short_definition": "Expanding, slowing or contracting, from the Sahm rule, payrolls and real GDP.",
+    "full_definition": "Contracting when the Sahm rule reaches 0.50, the 3-month average payroll change is below 0 or annualized real GDP growth is below 0; slowing at Sahm 0.30, payrolls below 100,000 a month or GDP below 1%; otherwise expanding. Each input is the value known at the date.",
+    "formula": "thresholds on Sahm rule, payrolls (3-month average change) and GDP (annualized)",
+    "unit": "state",
+    "example": "As known on 2026-10-06: slowing (payrolls up about 51,000 a month on average).",
+    "direction": "N/A",
+    "interpretation": "Where the economy is in the cycle.",
+    "why_it_matters": "Growth drives earnings and policy.",
+    "source": "Regime rules 0.1.0 (config/regime_rules.yaml); FRED vintages and Alpaca closes",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "monthly and quarterly releases",
+    "caveats": "Thresholds are defaults, unvalidated (OD-7); a description of conditions, not a forecast.",
+    "related_terms": [
+      "regime_inflation",
+      "sahm_rule_indicator",
+      "regime_quadrant"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "成長",
+    "hint_zh": "擴張／放緩／收縮：看 Sahm 指標、非農就業與實質 GDP。"
+  },
+  "regime_inflation": {
+    "term_id": "regime_inflation",
+    "display_name": "Inflation",
+    "category": "regime",
+    "short_definition": "Core PCE against the Fed's 2% target: below, near, above target or hot, and its direction.",
+    "full_definition": "Near target within 0.5 point of 2%, above beyond that, hot above 3.5%; the direction compares the 3-month annualized rate with the year-on-year rate (rising or falling beyond 0.25 point).",
+    "formula": "core PCE year on year against 2% ± 0.5; hot above 3.5; 3-month annualized for direction",
+    "unit": "state",
+    "example": "As known on 2026-10-06: above target (3.01%), falling (3-month annualized 2.05%).",
+    "direction": "N/A",
+    "interpretation": "Whether inflation is a constraint on policy.",
+    "why_it_matters": "Inflation shapes rates and valuations.",
+    "source": "Regime rules 0.1.0 (config/regime_rules.yaml); FRED vintages and Alpaca closes",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "monthly releases",
+    "caveats": "Thresholds are defaults, unvalidated (OD-7); a description of conditions, not a forecast.",
+    "related_terms": [
+      "regime_growth",
+      "regime_policy",
+      "regime_quadrant"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "通膨",
+    "hint_zh": "核心 PCE 對 2% 目標：低於／接近／高於／過熱，附方向。"
+  },
+  "regime_policy": {
+    "term_id": "regime_policy",
+    "display_name": "Policy and Liquidity",
+    "category": "regime",
+    "short_definition": "Easy, neutral or tight, from the real fed funds rate, the NFCI and the yield curve.",
+    "full_definition": "Tight when the real fed funds rate (fed funds minus core PCE) is above 1.5%, the NFCI is above 0 or the 10y-2y curve has been inverted for 60 observations; easy when the real rate is below 0 and the NFCI below -0.5; otherwise neutral.",
+    "formula": "thresholds on real rate, NFCI and inversion streak",
+    "unit": "state",
+    "example": "As known on 2026-10-06: neutral (real rate 0.74%, NFCI below 0).",
+    "direction": "N/A",
+    "interpretation": "How restrictive money and financial conditions are.",
+    "why_it_matters": "Tight conditions precede stress and slow growth.",
+    "source": "Regime rules 0.1.0 (config/regime_rules.yaml); FRED vintages and Alpaca closes",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily to monthly",
+    "caveats": "Thresholds are defaults, unvalidated (OD-7); a description of conditions, not a forecast.",
+    "related_terms": [
+      "macro_nfci",
+      "real_fed_funds_rate",
+      "regime_credit"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "政策與流動性",
+    "hint_zh": "寬鬆／中性／緊縮：實質聯邦基金利率、NFCI、殖利率曲線。"
+  },
+  "regime_quadrant": {
+    "term_id": "regime_quadrant",
+    "display_name": "Growth x Inflation",
+    "category": "regime",
+    "short_definition": "Goldilocks, reflation, stagflation or disinflationary slowdown, from the growth and inflation states.",
+    "full_definition": "Expanding growth with inflation near or below target is goldilocks; expanding with above-target or hot inflation is reflation; slowing or contracting with above-target inflation is stagflation; slowing or contracting with inflation near or below target is a disinflationary slowdown.",
+    "formula": "growth state x inflation state",
+    "unit": "label",
+    "example": "As known on 2026-10-06: stagflation (growth slowing, inflation above target).",
+    "direction": "N/A",
+    "interpretation": "A shorthand for the macro mix, not a forecast.",
+    "why_it_matters": "Asset classes behave differently in each mix.",
+    "source": "Regime rules 0.1.0 (config/regime_rules.yaml); FRED vintages and Alpaca closes",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "with growth and inflation",
+    "caveats": "A label from two states; slowing growth with 3% inflation already reads stagflation.",
+    "related_terms": [
+      "regime_growth",
+      "regime_inflation"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "成長×通膨象限",
+    "hint_zh": "金髮女孩／再通膨／停滯性通膨／通縮放緩；是標籤，不是預測。"
+  },
+  "regime_rule_set": {
+    "term_id": "regime_rule_set",
+    "display_name": "Regime Rules Version",
+    "category": "regime",
+    "short_definition": "The released version of the regime rules every assessment used.",
+    "full_definition": "config/regime_rules.yaml, loaded by make migrate with the sha256 of its content; a released version never changes, so a change is a new version (ADR-029).",
+    "formula": "rule_version + sha256",
+    "unit": "version",
+    "example": "0.1.0 (released 2026-10-12, defaults for review).",
+    "direction": "N/A",
+    "interpretation": "Which rules produced a regime.",
+    "why_it_matters": "Past regimes stay reproducible when rules change.",
+    "source": "config/regime_rules.yaml",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "per release",
+    "caveats": "0.1.0 thresholds are defaults, unvalidated.",
+    "related_terms": [
+      "regime",
+      "stress_state"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "體制規則版本",
+    "hint_zh": "每個體制評定所用的規則版本；已發布的版本不會改。"
+  },
+  "regime_volatility": {
+    "term_id": "regime_volatility",
+    "display_name": "Volatility",
+    "category": "regime",
+    "short_definition": "Calm, normal, elevated or stressed, from the VIX and its term structure.",
+    "full_definition": "Stressed from VIX 30, elevated from 20 or when VIX is above VIX 3-month (an inverted term structure), normal from 15, calm below.",
+    "formula": "thresholds on VIX; VIX / VIX 3-month above 1",
+    "unit": "state",
+    "example": "As known on 2026-10-06: normal (VIX 15.31, term ratio 0.85).",
+    "direction": "N/A",
+    "interpretation": "How much turbulence options price.",
+    "why_it_matters": "Volatility sets position sizes and hedging costs.",
+    "source": "Regime rules 0.1.0 (config/regime_rules.yaml); FRED vintages and Alpaca closes",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily (business days)",
+    "caveats": "Thresholds are defaults, unvalidated (OD-7); a description of conditions, not a forecast.",
+    "related_terms": [
+      "macro_vix",
+      "macro_vix_3m",
+      "stress_flag_volatility"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "波動",
+    "hint_zh": "平靜／正常／升高／緊張：VIX 與期限結構。"
+  },
   "relative_return_1m": {
     "term_id": "relative_return_1m",
     "display_name": "1-Month Return vs SPY",
@@ -5751,6 +6134,355 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "報導數",
     "hint_zh": "不重複的新聞則數（以轉載群組計），不是文章數。"
+  },
+  "stress_crisis": {
+    "term_id": "stress_crisis",
+    "display_name": "Crisis",
+    "category": "regime",
+    "short_definition": "Liquidity and volatility dislocation: credit distressed, VIX above 40 and SPY more than 20% off its high.",
+    "full_definition": "Execution first; stop nonessential new trades (02 §15).",
+    "formula": "credit distressed and VIX > 40 and drawdown > 20%",
+    "unit": "state",
+    "example": "Illustration: March 2020-type conditions.",
+    "direction": "N/A",
+    "interpretation": "Markets are dislocated.",
+    "why_it_matters": "Only risk reduction matters.",
+    "source": "Regime rules 0.1.0 (config/regime_rules.yaml); FRED vintages and Alpaca closes",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily",
+    "caveats": "Thresholds are defaults, unvalidated (OD-7); a description of conditions, not a forecast.",
+    "related_terms": [
+      "stress_state"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "危機",
+    "hint_zh": "信用困境、VIX 超過 40 且 SPY 回撤超過 20%；只做風險降低。"
+  },
+  "stress_elevated": {
+    "term_id": "stress_elevated",
+    "display_name": "Elevated",
+    "category": "regime",
+    "short_definition": "Some stress metrics deteriorate together: 2 or 3 flags on.",
+    "full_definition": "Reduce new high-beta exposure (02 §15).",
+    "formula": "flags on 2-3",
+    "unit": "state",
+    "example": "NFCI above 0 and VIX term structure inverted.",
+    "direction": "N/A",
+    "interpretation": "Stress is building.",
+    "why_it_matters": "An early warning.",
+    "source": "Regime rules 0.1.0 (config/regime_rules.yaml); FRED vintages and Alpaca closes",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily",
+    "caveats": "Thresholds are defaults, unvalidated (OD-7); a description of conditions, not a forecast.",
+    "related_terms": [
+      "stress_state"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "升高",
+    "hint_zh": "2–3 個旗標；減少新的高 beta 部位。"
+  },
+  "stress_flag_credit": {
+    "term_id": "stress_flag_credit",
+    "display_name": "Credit Stress Flag",
+    "category": "regime",
+    "short_definition": "On when the credit state is stressed or distressed.",
+    "full_definition": "On when the credit state is stressed or distressed. Without its inputs at the date the flag is unavailable and not counted.",
+    "formula": "credit state in (stressed, distressed)",
+    "unit": "on / off / unavailable",
+    "example": "As known on 2026-10-06: off.",
+    "direction": "On = stress",
+    "interpretation": "One of nine stress signals (02 §15).",
+    "why_it_matters": "Several flags together are what matters, not any single one.",
+    "source": "Regime rules 0.1.0 (config/regime_rules.yaml); FRED vintages and Alpaca closes",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily or weekly",
+    "caveats": "Thresholds are defaults, unvalidated (OD-7); a description of conditions, not a forecast.",
+    "related_terms": [
+      "regime_credit",
+      "stress_state"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "信用旗標",
+    "hint_zh": "信用狀態為緊張或困境。"
+  },
+  "stress_flag_dollar": {
+    "term_id": "stress_flag_dollar",
+    "display_name": "Dollar Surge Flag",
+    "category": "regime",
+    "short_definition": "On when the broad dollar index rises more than 3% in a month.",
+    "full_definition": "On when the broad dollar index rises more than 3% in a month. Without its inputs at the date the flag is unavailable and not counted.",
+    "formula": "DTWEXBGS change over 30 days > 3%",
+    "unit": "on / off / unavailable",
+    "example": "As known on 2026-10-06: off.",
+    "direction": "On = stress",
+    "interpretation": "One of nine stress signals (02 §15).",
+    "why_it_matters": "Several flags together are what matters, not any single one.",
+    "source": "Regime rules 0.1.0 (config/regime_rules.yaml); FRED vintages and Alpaca closes",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily or weekly",
+    "caveats": "Thresholds are defaults, unvalidated (OD-7); a description of conditions, not a forecast.",
+    "related_terms": [
+      "macro_dollar_index",
+      "stress_state"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "美元急升旗標",
+    "hint_zh": "美元廣義指數一個月內升逾 3%。"
+  },
+  "stress_flag_drawdown": {
+    "term_id": "stress_flag_drawdown",
+    "display_name": "Drawdown Flag",
+    "category": "regime",
+    "short_definition": "On when SPY closes more than 10% below its highest close of the last 252 sessions.",
+    "full_definition": "On when SPY closes more than 10% below its highest close of the last 252 sessions. Without its inputs at the date the flag is unavailable and not counted.",
+    "formula": "1 - SPY close / 252-session high > 10%",
+    "unit": "on / off / unavailable",
+    "example": "As known on 2026-10-06: off.",
+    "direction": "On = stress",
+    "interpretation": "One of nine stress signals (02 §15).",
+    "why_it_matters": "Several flags together are what matters, not any single one.",
+    "source": "Regime rules 0.1.0 (config/regime_rules.yaml); FRED vintages and Alpaca closes",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily or weekly",
+    "caveats": "Thresholds are defaults, unvalidated (OD-7); a description of conditions, not a forecast.",
+    "related_terms": [
+      "stress_state",
+      "stress_state"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "回撤旗標",
+    "hint_zh": "SPY 低於 252 個交易日最高收盤 10% 以上。"
+  },
+  "stress_flag_nfci": {
+    "term_id": "stress_flag_nfci",
+    "display_name": "Financial Conditions Flag",
+    "category": "regime",
+    "short_definition": "On when the Chicago Fed NFCI is above 0 (tighter than average).",
+    "full_definition": "On when the Chicago Fed NFCI is above 0 (tighter than average). Without its inputs at the date the flag is unavailable and not counted.",
+    "formula": "NFCI > 0",
+    "unit": "on / off / unavailable",
+    "example": "As known on 2026-10-06: off.",
+    "direction": "On = stress",
+    "interpretation": "One of nine stress signals (02 §15).",
+    "why_it_matters": "Several flags together are what matters, not any single one.",
+    "source": "Regime rules 0.1.0 (config/regime_rules.yaml); FRED vintages and Alpaca closes",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily or weekly",
+    "caveats": "Thresholds are defaults, unvalidated (OD-7); a description of conditions, not a forecast.",
+    "related_terms": [
+      "macro_nfci",
+      "stress_state"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "金融情勢旗標",
+    "hint_zh": "NFCI 高於 0（比平均更緊）。"
+  },
+  "stress_flag_oil": {
+    "term_id": "stress_flag_oil",
+    "display_name": "Oil Shock Flag",
+    "category": "regime",
+    "short_definition": "On when WTI crude moves more than 30% either way in a month.",
+    "full_definition": "On when WTI crude moves more than 30% either way in a month. Without its inputs at the date the flag is unavailable and not counted.",
+    "formula": "|DCOILWTICO change over 30 days| > 30%",
+    "unit": "on / off / unavailable",
+    "example": "As known on 2026-10-06: off.",
+    "direction": "On = stress",
+    "interpretation": "One of nine stress signals (02 §15).",
+    "why_it_matters": "Several flags together are what matters, not any single one.",
+    "source": "Regime rules 0.1.0 (config/regime_rules.yaml); FRED vintages and Alpaca closes",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily or weekly",
+    "caveats": "Thresholds are defaults, unvalidated (OD-7); a description of conditions, not a forecast.",
+    "related_terms": [
+      "macro_wti_oil",
+      "stress_state"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "原油衝擊旗標",
+    "hint_zh": "WTI 一個月內漲跌逾 30%。"
+  },
+  "stress_flag_stlfsi": {
+    "term_id": "stress_flag_stlfsi",
+    "display_name": "Financial Stress Flag",
+    "category": "regime",
+    "short_definition": "On when the St. Louis Fed Financial Stress Index is above 1.",
+    "full_definition": "On when the St. Louis Fed Financial Stress Index is above 1. Without its inputs at the date the flag is unavailable and not counted.",
+    "formula": "STLFSI4 > 1",
+    "unit": "on / off / unavailable",
+    "example": "As known on 2026-10-06: off.",
+    "direction": "On = stress",
+    "interpretation": "One of nine stress signals (02 §15).",
+    "why_it_matters": "Several flags together are what matters, not any single one.",
+    "source": "Regime rules 0.1.0 (config/regime_rules.yaml); FRED vintages and Alpaca closes",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily or weekly",
+    "caveats": "Thresholds are defaults, unvalidated (OD-7); a description of conditions, not a forecast.",
+    "related_terms": [
+      "macro_stlfsi",
+      "stress_state"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "金融壓力旗標",
+    "hint_zh": "聖路易壓力指數高於 1。"
+  },
+  "stress_flag_stock_bond": {
+    "term_id": "stress_flag_stock_bond",
+    "display_name": "Stock-Bond Flag",
+    "category": "regime",
+    "short_definition": "On when SPY and TLT daily returns are positively correlated over 60 sessions while SPY fell over 21 sessions.",
+    "full_definition": "On when SPY and TLT daily returns are positively correlated over 60 sessions while SPY fell over 21 sessions. Without its inputs at the date the flag is unavailable and not counted.",
+    "formula": "corr(SPY, TLT, 60 sessions) > 0 and SPY 21-session return < 0",
+    "unit": "on / off / unavailable",
+    "example": "As known on 2026-10-06: off.",
+    "direction": "On = stress",
+    "interpretation": "One of nine stress signals (02 §15).",
+    "why_it_matters": "Several flags together are what matters, not any single one.",
+    "source": "Regime rules 0.1.0 (config/regime_rules.yaml); FRED vintages and Alpaca closes",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily or weekly",
+    "caveats": "Thresholds are defaults, unvalidated (OD-7); a description of conditions, not a forecast.",
+    "related_terms": [
+      "stress_state",
+      "stress_state"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "股債同跌旗標",
+    "hint_zh": "SPY 與 TLT 60 日報酬正相關且 SPY 近 21 日下跌。"
+  },
+  "stress_flag_vix_term": {
+    "term_id": "stress_flag_vix_term",
+    "display_name": "VIX Term Structure Flag",
+    "category": "regime",
+    "short_definition": "On when VIX is above VIX 3-month (inverted term structure).",
+    "full_definition": "On when VIX is above VIX 3-month (inverted term structure). Without its inputs at the date the flag is unavailable and not counted.",
+    "formula": "VIX / VIX 3-month > 1",
+    "unit": "on / off / unavailable",
+    "example": "As known on 2026-10-06: off.",
+    "direction": "On = stress",
+    "interpretation": "One of nine stress signals (02 §15).",
+    "why_it_matters": "Several flags together are what matters, not any single one.",
+    "source": "Regime rules 0.1.0 (config/regime_rules.yaml); FRED vintages and Alpaca closes",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily or weekly",
+    "caveats": "Thresholds are defaults, unvalidated (OD-7); a description of conditions, not a forecast.",
+    "related_terms": [
+      "macro_vix_3m",
+      "stress_state"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "VIX 期限旗標",
+    "hint_zh": "VIX 高於 VIX 3 個月（期限結構倒掛）。"
+  },
+  "stress_flag_volatility": {
+    "term_id": "stress_flag_volatility",
+    "display_name": "Volatility Flag",
+    "category": "regime",
+    "short_definition": "On when the volatility state is elevated or stressed.",
+    "full_definition": "On when the volatility state is elevated or stressed. Without its inputs at the date the flag is unavailable and not counted.",
+    "formula": "volatility state in (elevated, stressed)",
+    "unit": "on / off / unavailable",
+    "example": "As known on 2026-10-06: off.",
+    "direction": "On = stress",
+    "interpretation": "One of nine stress signals (02 §15).",
+    "why_it_matters": "Several flags together are what matters, not any single one.",
+    "source": "Regime rules 0.1.0 (config/regime_rules.yaml); FRED vintages and Alpaca closes",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily or weekly",
+    "caveats": "Thresholds are defaults, unvalidated (OD-7); a description of conditions, not a forecast.",
+    "related_terms": [
+      "regime_volatility",
+      "stress_state"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "波動旗標",
+    "hint_zh": "波動狀態為升高或緊張。"
+  },
+  "stress_high": {
+    "term_id": "stress_high",
+    "display_name": "High",
+    "category": "regime",
+    "short_definition": "Multi-asset stress converges: 4 or more flags on, credit distressed or VIX above 30.",
+    "full_definition": "Increase hedges and reduce gross exposure (02 §15).",
+    "formula": "flags on >= 4, or credit distressed, or VIX > 30",
+    "unit": "state",
+    "example": "Illustration: credit stressed, VIX 32, stocks 12% off their high and the dollar surging.",
+    "direction": "N/A",
+    "interpretation": "Broad stress.",
+    "why_it_matters": "Risk limits tighten.",
+    "source": "Regime rules 0.1.0 (config/regime_rules.yaml); FRED vintages and Alpaca closes",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily",
+    "caveats": "Thresholds are defaults, unvalidated (OD-7); a description of conditions, not a forecast.",
+    "related_terms": [
+      "stress_state"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "高",
+    "hint_zh": "4 個以上旗標、信用困境或 VIX 超過 30；加避險、降總部位。"
+  },
+  "stress_normal": {
+    "term_id": "stress_normal",
+    "display_name": "Normal",
+    "category": "regime",
+    "short_definition": "Stress indicators mostly normal: 0 or 1 flag on.",
+    "full_definition": "Normal strategy eligibility (02 §15).",
+    "formula": "flags on <= 1",
+    "unit": "state",
+    "example": "0 of 9 flags on.",
+    "direction": "N/A",
+    "interpretation": "No broad stress.",
+    "why_it_matters": "The default state.",
+    "source": "Regime rules 0.1.0 (config/regime_rules.yaml); FRED vintages and Alpaca closes",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily",
+    "caveats": "Thresholds are defaults, unvalidated (OD-7); a description of conditions, not a forecast.",
+    "related_terms": [
+      "stress_state"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "正常",
+    "hint_zh": "0–1 個旗標；一般策略資格。"
+  },
+  "stress_state": {
+    "term_id": "stress_state",
+    "display_name": "Stress State",
+    "category": "regime",
+    "short_definition": "Normal, elevated, high or crisis: how many stress flags are on together (02 §15).",
+    "full_definition": "Normal with 0-1 flags; elevated with 2-3; high with 4 or more, credit distressed or VIX above 30; crisis when credit is distressed, VIX is above 40 and SPY is more than 20% below its 52-week high. Flags without inputs are not counted, and the detail says how many were judged. A change raises a market-wide alert.",
+    "formula": "count of the nine flags, with high and crisis overrides",
+    "unit": "state",
+    "example": "As known on 2026-10-06: normal (0 of 9 flags).",
+    "direction": "Higher = more stress",
+    "interpretation": "Higher states call for less new risk and more hedging (02 §15).",
+    "why_it_matters": "Detects fragility; it does not predict black swans.",
+    "source": "Regime rules 0.1.0 (config/regime_rules.yaml); FRED vintages and Alpaca closes",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily",
+    "caveats": "Thresholds are defaults, unvalidated (OD-7); a description of conditions, not a forecast.",
+    "related_terms": [
+      "stress_normal",
+      "stress_elevated",
+      "stress_high",
+      "stress_crisis",
+      "regime"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "壓力狀態",
+    "hint_zh": "正常／升高／高／危機：同時亮起幾個壓力旗標。"
   },
   "terminal_growth": {
     "term_id": "terminal_growth",

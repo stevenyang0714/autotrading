@@ -679,6 +679,50 @@ M1.7, one PR. Steven asked on 2026-10-12 for the work to continue overnight with
 
 ---
 
+## ADR-029 Phase 2 entry and the macro regime engine — Accepted (2026-10-12, approved by Steven with the M2.1 plan)
+M2.1, one PR.
+- **Phase 2 entry (Steven, 2026-10-12):**
+  - The Phase 1 exit report (`docs/reports/phase1_exit.md`) is accepted; Phase 2 starts with M2.1.
+  - P2-1: Massive (ADR-004) is not activated. Regime, factors, risk and backtests run on Alpaca's end-of-day SIP bars; live quotes stay IEX `live_single_venue`. Revisit before Phase 5 (orders).
+  - OD-7: compare commercial survivorship-free datasets (not WRDS). The comparison is `docs/reports/od7_datasets.md` (first choice Sharadar Prices, USD 299 a year, bought directly). **Steven decided on 2026-10-13 not to buy for now**; the problems this leaves are recorded in `docs/KNOWN_ISSUES.md` (KI-1, KI-2). Backtests stay on the current universe and do not report performance (P2-2 default).
+- **M2.1 decisions (Steven, 2026-10-12):**
+  - R1 Scope: the five macro dimensions (growth, inflation, policy and liquidity, credit, volatility) of signal family 1 and the stress state of family 10 (02 §15, 01 §14), with a growth x inflation quadrant as a label.
+  - R2 New FRED series: NFCI, NFCICREDIT and STLFSI4 (weekly) read only from 2015 (`macro_series.observation_start`, migration 0020: each weekly vintage re-estimates the whole history, NFCI has 799), and VXVCLS, DCOILWTICO and DTWEXBGS (daily) in full. VXVCLS is Cboe data, personal use like VIX.
+  - R3 History: assessments at every month end since 2016, marked backfilled.
+  - R4 A change of the stress state raises a market-wide alert in the Alerts Center (alert rules 0.2.0).
+  - R5 Thresholds: Claude's defaults (regime rules 0.1.0), reviewed by Steven against the history since 2016; a change is a new rule version.
+- **Technical defaults:**
+  - Rules: `config/regime_rules.yaml` 0.1.0, loaded into `regime_rule_sets` by `make migrate` with its sha256 (a changed released version is refused; hash pinned in a unit test).
+  - Dimensions (`domain/regime.py`, pure, mypy --strict; a dimension without inputs is `unavailable`, never guessed):
+    - growth: contracting when the Sahm rule reaches 0.50, the 3-month average payroll change is below 0 or real GDP's annualized growth is below 0; slowing at 0.30, 100 thousand or 1.0%; else expanding;
+    - inflation: core PCE year on year against 2% (near within 0.5 points, hot above 3.5%), its direction from the 3-month annualized rate (0.25 points either way), CPI shown;
+    - policy and liquidity: tight when the real fed funds rate (minus core PCE) is above 1.5, NFCI above 0, or the 10y–2y curve has been inverted for 60 observations; easy when the real rate is below 0 and NFCI below −0.5; else neutral;
+    - credit: the high-yield spread when known (calm below 3.5, normal below 5, stressed below 8 or after a 1-point jump in a month, else distressed); before its vintages (2023-10) the NFCI credit subindex (−0.25 / 0.25 / 1.0), named on the card;
+    - volatility: VIX calm below 15, normal below 20, elevated below 30 or when VIX is above VIX 3-month, else stressed.
+  - Stress flags (nine; one without inputs is `unavailable` and not counted): credit stressed or worse; volatility elevated or worse; NFCI above 0; STLFSI4 above 1; VIX above VIX 3-month; SPY more than 10% below its 252-session high; the broad dollar up more than 3% in a month; WTI moving more than 30% in a month; SPY and TLT daily returns positively correlated over 60 sessions while SPY fell over 21.
+  - Stress state: crisis when credit is distressed, VIX is above 40 and SPY is more than 20% below its high; high at 4 flags, distressed credit or VIX above 30; elevated at 2 flags; else normal. The state says how many flags it judged ("N of M available flags on").
+  - Point in time: every macro input is read with `as_of_query` at (T, S) from the ALFRED vintage public at T, and the SPY and TLT closes with `daily_bars` at (T, S); unlike the Phase 1 pages, the system time is always passed, so a stored regime recomputes exactly.
+  - Storage (migration 0021): `regime_assessments`, append-only, one per T and rule version, with S, stress, quadrant, flag counts, the whole assessment (each reading, threshold and input with its observation date and vintage), backfilled and trigger.
+  - Alerts: `alerts.instrument_id` and `ticker` become nullable for the new kind `regime` (CHECK: no company, a direction, no convergence assessment). Alert rules 0.2.0 = 0.1.0 (A1–A4 unchanged) plus `market_events: [stress_change]` and `regime_rule_version: 0.1.0`; settings added after 0.1.0 default to its behaviour and stay out of its content, so 0.1.0's hash is unchanged; 0.1.0 retired. A stress alert's level is the state's order (normal 0 to crisis 3) and is shown by name; its evidence is the assessment, linked to the Market Regime page as known that day. Alerts found by the backfill are marked backfilled (hidden by default).
+  - Schedule: daily at 10:55 SGT after FRED (10:15) and the daily closes (06:30), T = S = now; `make regime-evaluate`, `make regime-backfill`, `make regime-verify` (recomputes the latest 20). The CI replay stores the regime at the same points as the buyback states.
+- **API and web:** `GET /regime` (the latest assessment at or before T under the active rule version, and the history of states), `GET /regime/rules`; `/dashboards/market-regime` live (stress banner, five dimension cards with every input and vintage, the nine flags, the monthly history since 2016, As known on). The Alerts Center shows market-wide stress alerts. Audit Log label for regime rule sets.
+- **Live check 2026-10-13:**
+  - FRED: the six new series loaded (NFCI 140,984 observation versions from 611 vintages since 2015; NFCICREDIT 141,005 from 611; STLFSI4 100,011 from 205; VXVCLS 4,750 from 3,811; DCOILWTICO 10,327 from 801; DTWEXBGS 21,879 from 401).
+  - 129 month ends since January 2016 (backfilled) and today: 130 assessments, all 130 recompute identically (`regime_evaluate --verify 200`). Stress: 106 normal, 15 elevated, 9 high, 0 crisis.
+  - Key periods (New York month ends): February 2020 HIGH (VIX 40.1); March 2020 HIGH, 5 of 8 flags (VIX 53.5, SPY 23.9% below its high, the dollar and oil flags); 2022 HIGH at the ends of February, April and September and ELEVATED from May to August and October to December; the March 2023 bank failures fall between month ends (ELEVATED at the end of February, NORMAL at the end of March with VIX 18.7); ELEVATED at the ends of March and April 2025.
+  - Now: NORMAL, 0 of 9 flags; growth slowing, inflation above target, policy neutral, credit calm (high-yield spread 3.15), volatility calm (VIX 14.84); quadrant stagflation.
+  - 26 backfilled stress alerts (hidden by default). `make alerts-backfill` stored the 710 convergence assessments under alert rules 0.2.0 with the same levels as 0.1.0 (164 L0, 409 L1, 33 L2, 75 L3, 29 none).
+  - Endpoints: `/regime` 0.04 s now, 0.02 s as known on 2020-03-31; `/regime/rules` 0.02 s.
+- **For the threshold review (R5; recorded on 2026-10-13 at Steven's request as `docs/KNOWN_ISSUES.md` KI-3 to KI-9; regime rules 0.1.0 stay until Steven asks for 0.2.0):**
+  - Crisis cannot be reached before 2023-10: it needs distressed credit, and the NFCI credit subindex known then peaked at 0.13 (October 2022) against a stressed threshold of 0.25, so the credit flag never fired and the end of March 2020 is HIGH. Options: lower the NFCI credit thresholds, or call crisis on two of the three conditions.
+  - The NFCI flag (above 0) never fired: the vintages known at month ends peaked at −0.11 (October 2022). Option: −0.25.
+  - VIX above 30 alone gives HIGH with a single flag on (the ends of June 2020 and January 2021). Option: require two flags with it, or 35.
+  - Month ends miss spikes inside a month (mid-March 2020, March 2023, early April 2025). The daily evaluation catches them from now on; a daily backfill since 2016 (about 2,700 assessments) would show them in the history.
+  - The quadrant reads stagflation in most months since December 2023: core PCE stays above 2.5% (the near-target band is 0.5 points) while growth is slowing.
+- **Known gaps:** thresholds are defaults, unvalidated (OD-7); the high-yield spread is only known from 2023-10, the St. Louis index from 2022-11 and the broad dollar from 2019-02, so earlier flags are unavailable; no money-market, FX volatility or shipping inputs (later phases); closes are raw (SPY and TLT have no splits since 2016), dividends excluded from the drawdown.
+
+---
+
 ## Open decisions (owner: Steven)
 
 | ID | Decision | Needed by | Default until decided |
@@ -688,10 +732,12 @@ M1.7, one PR. Steven asked on 2026-10-12 for the work to continue overnight with
 | OD-4 | Options data provider and budget. Candidate (checked 2026-10-05; re-verify before paying): Unusual Whales API. Basic USD 150/month gives REST access to real-time flow; Advanced USD 375/month adds WebSocket streaming; a 15-minute-delayed tier is cheaper. Personal use only, no redistribution (fits ADR-001). Its free website flow is delayed, and scraping it is not allowed. | Phase 5, or earlier if Steven pulls options flow forward | No options data |
 | OD-5 | Short interest / borrow data provider | Before SHORT eligibility | SHORT ideas alert-only |
 | OD-6 | Physical data sources (candidates to evaluate: NASA FIRMS fire data, NOAA climate data, port/shipping data vendors) | Phase 3 | Not ingested |
-| OD-7 | Survivorship-free historical dataset including delisted names | Before Phase 2 backtests | Backtests blocked from reporting performance |
+| OD-7 | Survivorship-free historical dataset including delisted names. Steven compared commercial datasets (`docs/reports/od7_datasets.md`) and decided on 2026-10-13 not to buy for now (ADR-029, KNOWN_ISSUES KI-1); first candidate if revisited: Sharadar Prices (USD 299 a year, checked 2026-10-12; re-verify before paying) | Before M2.5 reports backtest performance | Backtests blocked from reporting performance |
 | OD-8 | Cloud provider, auth method, backups | Phase 2 exit | Local only |
 | OD-9 | Verify account eligibility from Singapore for Interactive Brokers (data + paper). The Alpaca part was verified on 2026-10-06 (paper account; market data reachable from Singapore). | Phase 5 | No broker |
 
 ## Decided
 - OD-1 (2026-10-06): Steven confirmed ADR-001: a personal tool, with no redistribution of data. ADR-001 is Accepted.
 - Phase 1 scope (2026-10-06): Steven accepted the Phase 0 exit report and decided OD-2 and OD-3 for Phase 1 (in-app alerts only; no consensus provider yet). Both stay open for later phases. See ADR-020.
+- Phase 2 entry (2026-10-12): Steven accepted the Phase 1 exit report; P2-1 decided (Massive not activated); OD-7 narrowed to a commercial dataset comparison. See ADR-029.
+- OD-7 for now (2026-10-13): Steven decided not to buy a survivorship-free dataset yet; OD-7 stays open for M2.5. The problems are recorded in `docs/KNOWN_ISSUES.md`.

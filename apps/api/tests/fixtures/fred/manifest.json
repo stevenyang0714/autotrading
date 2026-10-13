@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-05T18:06:25+00:00",
+  "recorded_at": "2026-10-12T15:52:11+00:00",
   "observation_start": {
     "CPIAUCSL": "2023-01-01",
     "PCEPILFE": "2023-01-01",
@@ -11,7 +11,13 @@
     "DGS10": "2025-06-01",
     "T10Y2Y": "2025-06-01",
     "BAMLH0A0HYM2": "2025-06-01",
-    "VIXCLS": "2025-06-01"
+    "VIXCLS": "2025-06-01",
+    "VXVCLS": "2025-06-01",
+    "NFCI": "2025-01-01",
+    "NFCICREDIT": "2025-01-01",
+    "STLFSI4": "2025-01-01",
+    "DCOILWTICO": "2025-06-01",
+    "DTWEXBGS": "2025-06-01"
   },
   "files": {
     "https://api.stlouisfed.org/fred/series?series_id=CPIAUCSL&file_type=json": "CPIAUCSL_00_series.json",
@@ -53,7 +59,26 @@
     "https://api.stlouisfed.org/fred/series/vintagedates?series_id=VIXCLS&limit=10000&offset=0&file_type=json": "VIXCLS_01_vintagedates.json",
     "https://api.stlouisfed.org/fred/series/observations?series_id=VIXCLS&realtime_start=1776-07-04&realtime_end=2018-07-25&limit=100000&offset=0&observation_start=2025-06-01&file_type=json": "VIXCLS_02_observations.json",
     "https://api.stlouisfed.org/fred/series/observations?series_id=VIXCLS&realtime_start=2018-07-26&realtime_end=2026-03-04&limit=100000&offset=0&observation_start=2025-06-01&file_type=json": "VIXCLS_03_observations.json",
-    "https://api.stlouisfed.org/fred/series/observations?series_id=VIXCLS&realtime_start=2026-03-05&realtime_end=9999-12-31&limit=100000&offset=0&observation_start=2025-06-01&file_type=json": "VIXCLS_04_observations.json"
+    "https://api.stlouisfed.org/fred/series/observations?series_id=VIXCLS&realtime_start=2026-03-05&realtime_end=9999-12-31&limit=100000&offset=0&observation_start=2025-06-01&file_type=json": "VIXCLS_04_observations.json",
+    "https://api.stlouisfed.org/fred/series?series_id=VXVCLS&file_type=json": "VXVCLS_00_series.json",
+    "https://api.stlouisfed.org/fred/series/vintagedates?series_id=VXVCLS&limit=10000&offset=0&file_type=json": "VXVCLS_01_vintagedates.json",
+    "https://api.stlouisfed.org/fred/series/observations?series_id=VXVCLS&realtime_start=1776-07-04&realtime_end=2021-11-12&limit=100000&offset=0&observation_start=2025-06-01&file_type=json": "VXVCLS_02_observations.json",
+    "https://api.stlouisfed.org/fred/series/observations?series_id=VXVCLS&realtime_start=2021-11-15&realtime_end=9999-12-31&limit=100000&offset=0&observation_start=2025-06-01&file_type=json": "VXVCLS_03_observations.json",
+    "https://api.stlouisfed.org/fred/series?series_id=NFCI&file_type=json": "NFCI_00_series.json",
+    "https://api.stlouisfed.org/fred/series/vintagedates?series_id=NFCI&limit=10000&offset=0&file_type=json": "NFCI_01_vintagedates.json",
+    "https://api.stlouisfed.org/fred/series/observations?series_id=NFCI&realtime_start=1776-07-04&realtime_end=9999-12-31&limit=100000&offset=0&observation_start=2025-01-01&file_type=json": "NFCI_02_observations.json",
+    "https://api.stlouisfed.org/fred/series?series_id=NFCICREDIT&file_type=json": "NFCICREDIT_00_series.json",
+    "https://api.stlouisfed.org/fred/series/vintagedates?series_id=NFCICREDIT&limit=10000&offset=0&file_type=json": "NFCICREDIT_01_vintagedates.json",
+    "https://api.stlouisfed.org/fred/series/observations?series_id=NFCICREDIT&realtime_start=1776-07-04&realtime_end=9999-12-31&limit=100000&offset=0&observation_start=2025-01-01&file_type=json": "NFCICREDIT_02_observations.json",
+    "https://api.stlouisfed.org/fred/series?series_id=STLFSI4&file_type=json": "STLFSI4_00_series.json",
+    "https://api.stlouisfed.org/fred/series/vintagedates?series_id=STLFSI4&limit=10000&offset=0&file_type=json": "STLFSI4_01_vintagedates.json",
+    "https://api.stlouisfed.org/fred/series/observations?series_id=STLFSI4&realtime_start=1776-07-04&realtime_end=9999-12-31&limit=100000&offset=0&observation_start=2025-01-01&file_type=json": "STLFSI4_02_observations.json",
+    "https://api.stlouisfed.org/fred/series?series_id=DCOILWTICO&file_type=json": "DCOILWTICO_00_series.json",
+    "https://api.stlouisfed.org/fred/series/vintagedates?series_id=DCOILWTICO&limit=10000&offset=0&file_type=json": "DCOILWTICO_01_vintagedates.json",
+    "https://api.stlouisfed.org/fred/series/observations?series_id=DCOILWTICO&realtime_start=1776-07-04&realtime_end=9999-12-31&limit=100000&offset=0&observation_start=2025-06-01&file_type=json": "DCOILWTICO_02_observations.json",
+    "https://api.stlouisfed.org/fred/series?series_id=DTWEXBGS&file_type=json": "DTWEXBGS_00_series.json",
+    "https://api.stlouisfed.org/fred/series/vintagedates?series_id=DTWEXBGS&limit=10000&offset=0&file_type=json": "DTWEXBGS_01_vintagedates.json",
+    "https://api.stlouisfed.org/fred/series/observations?series_id=DTWEXBGS&realtime_start=1776-07-04&realtime_end=9999-12-31&limit=100000&offset=0&observation_start=2025-06-01&file_type=json": "DTWEXBGS_02_observations.json"
   },
   "revision_case": {
     "series_id": "PAYEMS",

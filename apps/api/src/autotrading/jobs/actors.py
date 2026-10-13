@@ -6,7 +6,7 @@ and configures the broker before any actor is declared.
 """
 
 import logging
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from functools import lru_cache
 from typing import Any
 from uuid import UUID
@@ -32,6 +32,7 @@ from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.ingestion.schedule import market_calendar
 from autotrading.jobs.broker import WorkerHeartbeat, configure_broker
+from autotrading.repositories import regime
 from autotrading.settings import get_settings
 
 logger = logging.getLogger(__name__)
@@ -226,6 +227,52 @@ def backfill_buyback_states(known_at: str, system_time: str) -> None:
 
 def start_buyback_evaluation(*, manual: bool) -> None:
     evaluate_buyback_states.send("manual" if manual else "schedule")
+
+
+# ---------- macro regime (M2.1) ----------
+
+REGIME_BACKFILL_SINCE = date(2016, 1, 1)  # ADR-029 R3: ETF closes start in 2016
+
+
+def _record_regime(at: datetime, held: datetime, trigger: str) -> None:
+    with sessions()() as session:
+        rules = regime.stored_regime_rules(session)
+        if rules is None:
+            logger.warning("Regime rules not loaded (make migrate): nothing assessed")
+            return
+        stored = regime.record_regime(session, rules, at, held, trigger)
+        session.commit()
+    logger.info("Regime at %s (%s): %s", at, trigger, "stored" if stored else "already stored")
+
+
+@dramatiq.actor(queue_name=EVALUATION_QUEUE, max_retries=1, broker=broker)
+def evaluate_regime(trigger: str) -> None:
+    """The regime now (T = system time = now) under the active rule set."""
+    with sessions()() as session:
+        now = _now(session)
+    _record_regime(now, now, trigger)
+
+
+@dramatiq.actor(queue_name=EVALUATION_QUEUE, max_retries=1, broker=broker)
+def backfill_regime(known_at: str, system_time: str) -> None:
+    """The regime at one month end, as the database held it at `system_time`."""
+    _record_regime(
+        datetime.fromisoformat(known_at), datetime.fromisoformat(system_time), "backfill"
+    )
+
+
+def start_regime_evaluation(*, manual: bool) -> None:
+    evaluate_regime.send("manual" if manual else "schedule")
+
+
+def start_regime_backfill() -> int:
+    """One message per month end since 2016, all with one system time (now)."""
+    with sessions()() as session:
+        now = _now(session)
+    points = month_ends(REGIME_BACKFILL_SINCE, now)
+    for point in points:
+        backfill_regime.send(point.isoformat(), now.isoformat())
+    return len(points)
 
 
 def start_buyback_backfill() -> int:

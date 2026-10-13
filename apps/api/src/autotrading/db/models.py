@@ -529,6 +529,7 @@ class MacroSeries(MutableRowMixin, Base):
     position: Mapped[int] = mapped_column(SmallInteger, server_default=text("100"))
     enabled: Mapped[bool] = mapped_column(Boolean, server_default=text("true"))
     source_id: Mapped[str] = mapped_column(Text, ForeignKey("sources.id"))
+    observation_start: Mapped[date | None] = mapped_column(Date)  # earliest observation read
     # From FRED's series endpoint; empty until the first fred.series run.
     title: Mapped[str | None] = mapped_column(Text)
     units: Mapped[str | None] = mapped_column(Text)
@@ -1215,7 +1216,7 @@ class TradeDecision(Base):
 
 # ---------- alerts (M1.7) ----------
 
-ALERT_KINDS = ("event", "level_change")
+ALERT_KINDS = ("event", "level_change", "regime")
 ALERT_DIRECTIONS = ("up", "down")
 ASSESSMENT_TRIGGERS = ("schedule", "manual", "backfill", "replay")
 
@@ -1288,8 +1289,9 @@ class ConvergenceAssessment(Base):
 
 
 class Alert(Base):
-    """An in-app alert (ADR-028; P1-1): a Phase 1 event (L0) or a change of a company's
-    convergence level, with the rule version and the evidence behind it. One row per rule
+    """An in-app alert (ADR-028; P1-1): a Phase 1 event (L0), a change of a company's
+    convergence level, or (since M2.1, ADR-029) a change of the market's stress state, which
+    has no company. Each carries its rule version and the evidence behind it; one row per rule
     version and source. Append-only and audited; acknowledging is a separate row."""
 
     __tablename__ = "alerts"
@@ -1303,8 +1305,11 @@ class Alert(Base):
             f"direction IS NULL OR {sql_in('direction', ALERT_DIRECTIONS)}", name="direction"
         ),
         CheckConstraint(
-            "(kind = 'level_change' AND direction IS NOT NULL AND assessment_id IS NOT NULL)"
-            " OR (kind = 'event' AND direction IS NULL AND level = 0)",
+            "(kind = 'level_change' AND direction IS NOT NULL AND assessment_id IS NOT NULL"
+            " AND instrument_id IS NOT NULL)"
+            " OR (kind = 'event' AND direction IS NULL AND level = 0 AND instrument_id IS NOT NULL)"
+            " OR (kind = 'regime' AND direction IS NOT NULL AND assessment_id IS NULL"
+            " AND instrument_id IS NULL AND ticker IS NULL)",
             name="kind_fields",
         ),
         CheckConstraint("jsonb_array_length(evidence) >= 1", name="evidence_present"),
@@ -1318,8 +1323,8 @@ class Alert(Base):
         Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
     )
     rule_version: Mapped[str] = mapped_column(Text, ForeignKey("alert_rule_sets.rule_version"))
-    instrument_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("instruments.id"))
-    ticker: Mapped[str] = mapped_column(Text)
+    instrument_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, ForeignKey("instruments.id"))
+    ticker: Mapped[str | None] = mapped_column(Text)  # None: a market-wide (regime) alert
     kind: Mapped[str] = mapped_column(Text)
     level: Mapped[int] = mapped_column(SmallInteger)
     previous_level: Mapped[int | None] = mapped_column(SmallInteger)
@@ -1355,6 +1360,69 @@ class AlertAcknowledgement(Base):
     note: Mapped[str | None] = mapped_column(Text)
     user_id: Mapped[str] = mapped_column(Text)
     acknowledged_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+# ---------- macro regime (M2.1) ----------
+
+STRESS_STATES = ("normal", "elevated", "high", "crisis")
+QUADRANTS = ("goldilocks", "reflation", "stagflation", "disinflationary_slowdown")
+
+
+class RegimeRuleSet(Base):
+    """One released rule_version of config/regime_rules.yaml (ADR-029), loaded by `make migrate`
+    with the sha256 of its content. Append-only and audited, like the buyback rule sets."""
+
+    __tablename__ = "regime_rule_sets"
+    __table_args__ = (
+        CheckConstraint(r"rule_version ~ '^\d+\.\d+\.\d+$'", name="rule_version_format"),
+        CheckConstraint("content_sha256 ~ '^[0-9a-f]{64}$'", name="content_sha256_format"),
+        UniqueConstraint("rule_version", name="uq_regime_rule_sets_rule_version"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    rule_version: Mapped[str] = mapped_column(Text)
+    content: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    content_sha256: Mapped[str] = mapped_column(Text)
+    released: Mapped[date] = mapped_column(Date)
+    loaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class RegimeAssessment(Base):
+    """The macro regime and market stress state at a time T (known_at) as the database held it
+    at system_time, under one rule version (ADR-029; 02 §15): the five dimensions, the
+    quadrant, the stress flags and state, and the whole assessment with every input and its
+    vintage. One row per T and rule version. Append-only."""
+
+    __tablename__ = "regime_assessments"
+    __table_args__ = (
+        CheckConstraint(f"stress IS NULL OR {sql_in('stress', STRESS_STATES)}", name="stress"),
+        CheckConstraint(f"quadrant IS NULL OR {sql_in('quadrant', QUADRANTS)}", name="quadrant"),
+        CheckConstraint("flags_on BETWEEN 0 AND flags_available", name="flags_on_range"),
+        CheckConstraint(sql_in("trigger", ASSESSMENT_TRIGGERS), name="trigger"),
+        CheckConstraint("system_time >= known_at", name="system_time_after_known_at"),
+        UniqueConstraint("known_at", "rule_version", name="uq_regime_assessments_known_at_rule"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    known_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    system_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    rule_version: Mapped[str] = mapped_column(Text, ForeignKey("regime_rule_sets.rule_version"))
+    stress: Mapped[str | None] = mapped_column(Text)
+    quadrant: Mapped[str | None] = mapped_column(Text)
+    flags_on: Mapped[int] = mapped_column(SmallInteger)
+    flags_available: Mapped[int] = mapped_column(SmallInteger)
+    assessment: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    backfilled: Mapped[bool] = mapped_column(Boolean)
+    trigger: Mapped[str] = mapped_column(Text)
+    recorded_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
 

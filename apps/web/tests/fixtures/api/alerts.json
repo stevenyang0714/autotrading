@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-12T03:07:57.760148+00:00",
+  "recorded_at": "2026-10-12T16:07:09.971753+00:00",
   "recorded_from": "recorded SEC filings, Alpaca closes, FRED yields and news replayed into the integration test database (tests/integration/test_alerts.py)",
   "endpoint": "/alerts",
   "params": {
@@ -9,15 +9,15 @@
   },
   "response": {
     "known_at": "2026-10-06T12:00:00Z",
-    "rule_version": "0.1.0",
+    "rule_version": "0.2.0",
     "status": "all",
     "open_by_level": {
       "L0 Information": 2
     },
     "entries": [
       {
-        "id": "9e7baf59-d013-4ea4-902e-d5aab8d07c10",
-        "rule_version": "0.1.0",
+        "id": "2d06d77f-4f23-4d26-8ed7-8827c26cc15b",
+        "rule_version": "0.2.0",
         "ticker": "AAPL",
         "kind": "level_change",
         "level": 1,
@@ -26,28 +26,28 @@
         "direction": "up",
         "title": "AAPL reached L1 Watch",
         "known_at": "2026-10-06T12:00:00Z",
-        "system_time": "2026-10-12T03:07:56.312311Z",
+        "system_time": "2026-10-12T16:07:07.760133Z",
         "backfilled": true,
         "evidence": [
           {
             "table": "buyback_state_assignments",
-            "id": "3a4ffc44-7460-4aab-8367-1b05ad427b33",
+            "id": "8402fde8-1147-4693-917c-715bb63cb6a9",
             "label": "Buyback state ACTIVE",
             "url": null
           },
           {
             "table": "buyback_state_assignments",
-            "id": "3a4ffc44-7460-4aab-8367-1b05ad427b33",
+            "id": "8402fde8-1147-4693-917c-715bb63cb6a9",
             "label": "Market confirmation",
             "url": null
           }
         ],
-        "assessment_id": "7ab3a8b8-6c28-42e0-930c-59a3a45bd1aa",
+        "assessment_id": "a1ccd7f0-6065-4c5e-961b-6b35faeed321",
         "acknowledgement": null
       },
       {
-        "id": "b81b55a1-a486-484d-a56a-735738051adb",
-        "rule_version": "0.1.0",
+        "id": "41f1843e-d65d-4773-9fb1-dd92cea94685",
+        "rule_version": "0.2.0",
         "ticker": "AAPL",
         "kind": "event",
         "level": 0,
@@ -56,12 +56,12 @@
         "direction": null,
         "title": "AAPL: Buyback state ACTIVE (was NONE)",
         "known_at": "2026-10-06T12:00:00Z",
-        "system_time": "2026-10-12T03:07:56.312311Z",
+        "system_time": "2026-10-12T16:07:07.760133Z",
         "backfilled": false,
         "evidence": [
           {
             "table": "buyback_state_assignments",
-            "id": "3a4ffc44-7460-4aab-8367-1b05ad427b33",
+            "id": "8402fde8-1147-4693-917c-715bb63cb6a9",
             "label": "Buyback state ACTIVE (was NONE)",
             "url": null
           }
@@ -70,8 +70,8 @@
         "acknowledgement": null
       },
       {
-        "id": "3936d257-850f-45e0-bdf0-ccbf4d697ca0",
-        "rule_version": "0.1.0",
+        "id": "c9862204-7104-4061-b58b-8874e0ca6188",
+        "rule_version": "0.2.0",
         "ticker": "XOM",
         "kind": "event",
         "level": 0,
@@ -80,12 +80,12 @@
         "direction": null,
         "title": "XOM: Buyback state ACTIVE (was WATCH)",
         "known_at": "2026-10-06T12:00:00Z",
-        "system_time": "2026-10-12T03:07:56.312311Z",
+        "system_time": "2026-10-12T16:07:07.760133Z",
         "backfilled": false,
         "evidence": [
           {
             "table": "buyback_state_assignments",
-            "id": "16e8d69e-19b5-4a9f-9893-ae6a8fbc2599",
+            "id": "96250692-e966-4a55-9a2a-4b5c5f540dcb",
             "label": "Buyback state ACTIVE (was WATCH)",
             "url": null
           }
@@ -94,8 +94,8 @@
         "acknowledgement": null
       },
       {
-        "id": "36b59c7b-ddf0-4c87-8351-54508aa27ef0",
-        "rule_version": "0.1.0",
+        "id": "89267285-aa91-46a4-ba0d-b9cc3b9dcd1c",
+        "rule_version": "0.2.0",
         "ticker": "XOM",
         "kind": "level_change",
         "level": 1,
@@ -104,23 +104,23 @@
         "direction": "up",
         "title": "XOM reached L1 Watch",
         "known_at": "2026-04-01T03:59:59.999999Z",
-        "system_time": "2026-10-12T03:07:56.312311Z",
+        "system_time": "2026-10-12T16:07:07.760133Z",
         "backfilled": true,
         "evidence": [
           {
             "table": "buyback_state_assignments",
-            "id": "2d1c8119-018b-4e8d-b010-7331226387e5",
+            "id": "33321b0d-9b68-44c8-ac70-1760044f256c",
             "label": "Buyback state WATCH",
             "url": null
           },
           {
             "table": "buyback_state_assignments",
-            "id": "2d1c8119-018b-4e8d-b010-7331226387e5",
+            "id": "33321b0d-9b68-44c8-ac70-1760044f256c",
             "label": "Market confirmation",
             "url": null
           }
         ],
-        "assessment_id": "6dc746a0-95d8-4f98-9412-cb97f74238ae",
+        "assessment_id": "f735bc75-622f-43bc-9629-a5c0c08dc9a9",
         "acknowledgement": null
       }
     ],

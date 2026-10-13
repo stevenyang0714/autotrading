@@ -11,6 +11,7 @@
 """
 
 from dataclasses import dataclass, field
+from datetime import date
 from decimal import Decimal
 from pathlib import Path
 from typing import Literal
@@ -25,12 +26,14 @@ from autotrading.db.models import (
     BuybackRuleSet,
     GlossaryTermRow,
     MacroSeries,
+    RegimeRuleSet,
     Source,
 )
 from autotrading.domain.buyback_states import RulesFile
 from autotrading.domain.convergence import AlertRulesFile
 from autotrading.domain.glossary import GlossaryFile
 from autotrading.domain.provenance import LicenseStatus
+from autotrading.domain.regime import RegimeRulesFile
 from autotrading.infra.db import make_engine
 from autotrading.repositories.audit import set_actor
 from autotrading.settings import get_settings
@@ -113,6 +116,9 @@ class MacroSeriesConfig(BaseModel):
     term_id: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
     position: int = Field(ge=0)
     enabled: bool = True
+    # Earliest observation read: for series that re-estimate their whole history every week
+    # (NFCI, STLFSI4), whose every vintage would otherwise be read daily (M2.1, ADR-029).
+    observation_start: date | None = None
 
 
 class MacroSeriesFile(BaseModel):
@@ -272,6 +278,46 @@ def sync_alert_rules(session: Session, rules: AlertRulesFile) -> GlossarySyncRes
     return result
 
 
+class RegimeRulesVersionError(ValueError):
+    """A released regime rule set's content changed without a new rule_version."""
+
+
+def load_regime_rules(path: Path) -> RegimeRulesFile:
+    return RegimeRulesFile.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
+
+
+def sync_regime_rules(session: Session, rules: RegimeRulesFile) -> GlossarySyncResult:
+    """Register each regime rule_version once; the same version with other content is refused
+    (ADR-029, as the buyback and alert rules)."""
+    set_actor(session, "config:regime_rules.yaml")
+    result = GlossarySyncResult()
+    for entry in rules.rule_sets:
+        rule_set = entry.rule_set()
+        sha = rule_set.content_sha256()
+        existing = session.scalars(
+            select(RegimeRuleSet).where(RegimeRuleSet.rule_version == rule_set.rule_version)
+        ).first()
+        if existing is not None:
+            if existing.content_sha256 != sha:
+                raise RegimeRulesVersionError(
+                    f"regime rule set {rule_set.rule_version} changed but its rule_version "
+                    "was not bumped"
+                )
+            result.unchanged.append(rule_set.rule_version)
+            continue
+        session.add(
+            RegimeRuleSet(
+                rule_version=rule_set.rule_version,
+                content=rule_set.content(),
+                content_sha256=sha,
+                released=rule_set.released,
+            )
+        )
+        result.created.append(rule_set.rule_version)
+    session.flush()
+    return result
+
+
 def main() -> None:
     settings = get_settings()
     sources_path = settings.resolved_config_dir() / "sources.yaml"
@@ -285,6 +331,9 @@ def main() -> None:
             glossary = sync_glossary(session, load_glossary(glossary_path))
             rules = sync_buyback_rules(
                 session, load_buyback_rules(settings.resolved_config_dir() / "buyback_rules.yaml")
+            )
+            regime = sync_regime_rules(
+                session, load_regime_rules(settings.resolved_config_dir() / "regime_rules.yaml")
             )
             alerts = sync_alert_rules(
                 session, load_alert_rules(settings.resolved_config_dir() / "alert_rules.yaml")
@@ -305,6 +354,7 @@ def main() -> None:
         f"unchanged={len(glossary.unchanged)}"
     )
     print(f"buyback_rules.yaml synced: new rule versions={rules.created}")
+    print(f"regime_rules.yaml synced: new rule versions={regime.created}")
     print(f"alert_rules.yaml synced: new rule versions={alerts.created}")
 
 

@@ -1,0 +1,482 @@
+{
+  "recorded_at": "2026-10-12T16:06:29.995259+00:00",
+  "recorded_from": "recorded FRED vintages and Alpaca closes replayed into the integration test database (tests/integration/test_regime.py)",
+  "endpoint": "/regime",
+  "params": {
+    "known_at": "2026-09-15T00:00:00Z"
+  },
+  "response": {
+    "known_at": "2026-09-15T00:00:00Z",
+    "rule_version": "0.1.0",
+    "current": {
+      "id": "85133c05-2a12-4763-80a9-57be82e666e4",
+      "known_at": "2026-09-01T03:59:59.999999Z",
+      "system_time": "2026-10-12T16:06:29.244996Z",
+      "backfilled": true,
+      "regime": {
+        "rule_version": "0.1.0",
+        "known_at": "2026-09-01T03:59:59.999999Z",
+        "dimensions": [
+          {
+            "dimension": "growth",
+            "state": "slowing",
+            "trend": null,
+            "detail": "a slowing threshold is crossed",
+            "readings": [
+              {
+                "reading_id": "sahm",
+                "label": "Sahm rule",
+                "value": "0.00",
+                "unit": "percentage points",
+                "detail": null,
+                "inputs": [
+                  {
+                    "source": "UNRATE",
+                    "observation_date": "2026-07-01",
+                    "vintage": "2026-08-07",
+                    "value": "4.1"
+                  }
+                ]
+              },
+              {
+                "reading_id": "payrolls_3m",
+                "label": "Payrolls, 3-month average change",
+                "value": "20.00",
+                "unit": "thousands",
+                "detail": null,
+                "inputs": [
+                  {
+                    "source": "PAYEMS",
+                    "observation_date": "2026-07-01",
+                    "vintage": "2026-08-07",
+                    "value": "158858"
+                  },
+                  {
+                    "source": "PAYEMS",
+                    "observation_date": "2026-04-01",
+                    "vintage": "2026-07-02",
+                    "value": "158798"
+                  }
+                ]
+              },
+              {
+                "reading_id": "gdp_annualized",
+                "label": "Real GDP, annualized quarterly growth",
+                "value": "1.48",
+                "unit": "percent",
+                "detail": null,
+                "inputs": [
+                  {
+                    "source": "GDPC1",
+                    "observation_date": "2026-01-01",
+                    "vintage": "2026-06-25",
+                    "value": "24180.419"
+                  },
+                  {
+                    "source": "GDPC1",
+                    "observation_date": "2026-04-01",
+                    "vintage": "2026-08-26",
+                    "value": "24269.613"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dimension": "inflation",
+            "state": "above_target",
+            "trend": "falling",
+            "detail": "core PCE 3.34% against the 2.0% target",
+            "readings": [
+              {
+                "reading_id": "core_pce_yoy",
+                "label": "Core PCE, year on year",
+                "value": "3.34",
+                "unit": "percent",
+                "detail": "target 2.0%",
+                "inputs": [
+                  {
+                    "source": "PCEPILFE",
+                    "observation_date": "2026-07-01",
+                    "vintage": "2026-08-26",
+                    "value": "130.658"
+                  },
+                  {
+                    "source": "PCEPILFE",
+                    "observation_date": "2025-07-01",
+                    "vintage": "2026-01-22",
+                    "value": "126.43"
+                  }
+                ]
+              },
+              {
+                "reading_id": "core_pce_3m",
+                "label": "Core PCE, 3-month annualized",
+                "value": "3.05",
+                "unit": "percent",
+                "detail": null,
+                "inputs": [
+                  {
+                    "source": "PCEPILFE",
+                    "observation_date": "2026-07-01",
+                    "vintage": "2026-08-26",
+                    "value": "130.658"
+                  },
+                  {
+                    "source": "PCEPILFE",
+                    "observation_date": "2026-04-01",
+                    "vintage": "2026-08-26",
+                    "value": "129.681"
+                  }
+                ]
+              },
+              {
+                "reading_id": "cpi_yoy",
+                "label": "CPI, year on year",
+                "value": "3.30",
+                "unit": "percent",
+                "detail": null,
+                "inputs": [
+                  {
+                    "source": "CPIAUCSL",
+                    "observation_date": "2026-07-01",
+                    "vintage": "2026-08-12",
+                    "value": "332.813"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dimension": "policy",
+            "state": "neutral",
+            "trend": null,
+            "detail": "neither tight nor easy",
+            "readings": [
+              {
+                "reading_id": "real_fed_funds",
+                "label": "Real fed funds rate",
+                "value": "0.29",
+                "unit": "percent",
+                "detail": "fed funds minus core PCE year on year",
+                "inputs": [
+                  {
+                    "source": "FEDFUNDS",
+                    "observation_date": "2026-07-01",
+                    "vintage": "2026-08-03",
+                    "value": "3.63"
+                  }
+                ]
+              },
+              {
+                "reading_id": "nfci",
+                "label": "Chicago Fed NFCI",
+                "value": "-0.56600",
+                "unit": "index",
+                "detail": "above 0: tighter than average",
+                "inputs": [
+                  {
+                    "source": "NFCI",
+                    "observation_date": "2026-08-21",
+                    "vintage": "2026-08-26",
+                    "value": "-0.56600"
+                  }
+                ]
+              },
+              {
+                "reading_id": "curve_inversion",
+                "label": "10y-2y curve, observations on the current side",
+                "value": "313",
+                "unit": "observations",
+                "detail": "positive since 2025-06-02",
+                "inputs": [
+                  {
+                    "source": "T10Y2Y",
+                    "observation_date": "2026-08-31",
+                    "vintage": "2026-08-31",
+                    "value": "0.41"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dimension": "credit",
+            "state": "calm",
+            "trend": null,
+            "detail": "from the high-yield spread",
+            "readings": [
+              {
+                "reading_id": "hy_oas",
+                "label": "High-yield spread",
+                "value": "2.63",
+                "unit": "percent",
+                "detail": null,
+                "inputs": [
+                  {
+                    "source": "BAMLH0A0HYM2",
+                    "observation_date": "2026-08-31",
+                    "vintage": "2026-08-31",
+                    "value": "2.63"
+                  }
+                ]
+              },
+              {
+                "reading_id": "hy_oas_change",
+                "label": "High-yield spread, change over a month",
+                "value": "-0.22",
+                "unit": "percentage points",
+                "detail": null,
+                "inputs": [
+                  {
+                    "source": "BAMLH0A0HYM2",
+                    "observation_date": "2026-07-31",
+                    "vintage": "2026-07-31",
+                    "value": "2.85"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dimension": "volatility",
+            "state": "calm",
+            "trend": null,
+            "detail": "VIX 14.92",
+            "readings": [
+              {
+                "reading_id": "vix",
+                "label": "VIX",
+                "value": "14.92",
+                "unit": "index",
+                "detail": null,
+                "inputs": [
+                  {
+                    "source": "VIXCLS",
+                    "observation_date": "2026-08-31",
+                    "vintage": "2026-08-31",
+                    "value": "14.92"
+                  }
+                ]
+              },
+              {
+                "reading_id": "vix_term",
+                "label": "VIX / VIX 3-month",
+                "value": "0.85",
+                "unit": "ratio",
+                "detail": "above 1: inverted term structure",
+                "inputs": [
+                  {
+                    "source": "VXVCLS",
+                    "observation_date": "2026-08-31",
+                    "vintage": "2026-08-31",
+                    "value": "17.53"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "quadrant": "stagflation",
+        "flags": [
+          {
+            "flag_id": "credit_stress",
+            "label": "Credit stressed or distressed",
+            "status": "off",
+            "value": null,
+            "threshold": "credit state stressed or distressed",
+            "detail": "credit calm",
+            "inputs": [
+              {
+                "source": "BAMLH0A0HYM2",
+                "observation_date": "2026-08-31",
+                "vintage": "2026-08-31",
+                "value": "2.63"
+              },
+              {
+                "source": "BAMLH0A0HYM2",
+                "observation_date": "2026-07-31",
+                "vintage": "2026-07-31",
+                "value": "2.85"
+              }
+            ]
+          },
+          {
+            "flag_id": "volatility_stress",
+            "label": "Volatility elevated or stressed",
+            "status": "off",
+            "value": null,
+            "threshold": "volatility state elevated or stressed",
+            "detail": "volatility calm",
+            "inputs": [
+              {
+                "source": "VIXCLS",
+                "observation_date": "2026-08-31",
+                "vintage": "2026-08-31",
+                "value": "14.92"
+              },
+              {
+                "source": "VXVCLS",
+                "observation_date": "2026-08-31",
+                "vintage": "2026-08-31",
+                "value": "17.53"
+              }
+            ]
+          },
+          {
+            "flag_id": "nfci_tight",
+            "label": "Financial conditions tighter than average",
+            "status": "off",
+            "value": "-0.56600",
+            "threshold": "NFCI above 0.0",
+            "detail": "Chicago Fed NFCI",
+            "inputs": [
+              {
+                "source": "NFCI",
+                "observation_date": "2026-08-21",
+                "vintage": "2026-08-26",
+                "value": "-0.56600"
+              }
+            ]
+          },
+          {
+            "flag_id": "stlfsi_high",
+            "label": "Financial stress above normal",
+            "status": "off",
+            "value": "-0.8107",
+            "threshold": "St. Louis Fed stress index above 1.0",
+            "detail": "STLFSI4",
+            "inputs": [
+              {
+                "source": "STLFSI4",
+                "observation_date": "2026-08-21",
+                "vintage": "2026-08-26",
+                "value": "-0.8107"
+              }
+            ]
+          },
+          {
+            "flag_id": "vix_inverted",
+            "label": "VIX term structure inverted",
+            "status": "off",
+            "value": "0.85",
+            "threshold": "VIX / VIX 3-month above 1.0",
+            "detail": "VIX / VIX 3-month",
+            "inputs": [
+              {
+                "source": "VXVCLS",
+                "observation_date": "2026-08-31",
+                "vintage": "2026-08-31",
+                "value": "17.53"
+              }
+            ]
+          },
+          {
+            "flag_id": "equity_drawdown",
+            "label": "Stocks well below their high",
+            "status": "off",
+            "value": "1.39",
+            "threshold": "SPY more than 10% below its 252-session high",
+            "detail": "SPY drawdown",
+            "inputs": [
+              {
+                "source": "SPY",
+                "observation_date": "2026-08-31",
+                "vintage": null,
+                "value": "767.05"
+              }
+            ]
+          },
+          {
+            "flag_id": "dollar_surge",
+            "label": "Dollar surge",
+            "status": "off",
+            "value": "-1.69",
+            "threshold": "broad dollar up more than 3% in a month",
+            "detail": "DTWEXBGS change over a month",
+            "inputs": [
+              {
+                "source": "DTWEXBGS",
+                "observation_date": "2026-08-28",
+                "vintage": "2026-08-31",
+                "value": "118.7479"
+              },
+              {
+                "source": "DTWEXBGS",
+                "observation_date": "2026-07-29",
+                "vintage": "2026-08-03",
+                "value": "120.7892"
+              }
+            ]
+          },
+          {
+            "flag_id": "oil_shock",
+            "label": "Oil shock",
+            "status": "off",
+            "value": "-8.55",
+            "threshold": "WTI moves more than 30% in a month",
+            "detail": "DCOILWTICO change over a month",
+            "inputs": [
+              {
+                "source": "DCOILWTICO",
+                "observation_date": "2026-08-25",
+                "vintage": "2026-08-26",
+                "value": "83.9"
+              },
+              {
+                "source": "DCOILWTICO",
+                "observation_date": "2026-07-24",
+                "vintage": "2026-07-29",
+                "value": "91.74"
+              }
+            ]
+          },
+          {
+            "flag_id": "stock_bond_selloff",
+            "label": "Stocks and bonds falling together",
+            "status": "off",
+            "value": "0.29",
+            "threshold": "SPY-TLT 60-session correlation above 0.0 while SPY fell over 21 sessions",
+            "detail": "SPY over 21 sessions: 2.68%",
+            "inputs": [
+              {
+                "source": "SPY",
+                "observation_date": "2026-08-31",
+                "vintage": null,
+                "value": "767.05"
+              },
+              {
+                "source": "TLT",
+                "observation_date": "2026-08-31",
+                "vintage": null,
+                "value": "82.52"
+              }
+            ]
+          }
+        ],
+        "flags_on": 0,
+        "flags_available": 9,
+        "stress": "normal",
+        "stress_detail": "0 of 9 available flags on"
+      }
+    },
+    "history": [
+      {
+        "known_at": "2026-09-01T03:59:59.999999Z",
+        "stress": "normal",
+        "quadrant": "stagflation",
+        "states": {
+          "growth": "slowing",
+          "inflation": "above_target",
+          "policy": "neutral",
+          "credit": "calm",
+          "volatility": "calm"
+        },
+        "flags_on": 0,
+        "flags_available": 9,
+        "backfilled": true
+      }
+    ],
+    "detail": "Deterministic rules on data known at the date: a description of conditions, not a forecast. Thresholds are defaults, unvalidated (OD-7)."
+  }
+}

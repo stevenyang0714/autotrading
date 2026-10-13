@@ -694,6 +694,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/regime": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Regime */
+        get: operations["regime_regime_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/regime/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Regime Rules */
+        get: operations["regime_rules_regime_rules_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/research": {
         parameters: {
             query?: never;
@@ -801,7 +835,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "event" | "level_change";
+            kind: "event" | "level_change" | "regime";
             /**
              * Known At
              * Format: date-time
@@ -821,7 +855,7 @@ export interface components {
              */
             system_time: string;
             /** Ticker */
-            ticker: string;
+            ticker: string | null;
             /** Title */
             title: string;
         };
@@ -856,7 +890,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "event" | "level_change";
+            kind: "event" | "level_change" | "regime";
             /**
              * Known At
              * Format: date-time
@@ -876,7 +910,7 @@ export interface components {
              */
             system_time: string;
             /** Ticker */
-            ticker: string;
+            ticker: string | null;
             /** Title */
             title: string;
         };
@@ -1599,6 +1633,19 @@ export interface components {
             /** Value */
             value: string | null;
         };
+        /** Dimension */
+        Dimension: {
+            /** Detail */
+            detail: string;
+            /** Dimension */
+            dimension: string;
+            /** Readings */
+            readings: components["schemas"]["Reading"][];
+            /** State */
+            state: string;
+            /** Trend */
+            trend?: string | null;
+        };
         /** DisciplineRule */
         DisciplineRule: {
             /** Min Years */
@@ -1902,6 +1949,26 @@ export interface components {
              * Format: date
              */
             vintage: string;
+        };
+        /** Flag */
+        Flag: {
+            /** Detail */
+            detail: string;
+            /** Flag Id */
+            flag_id: string;
+            /** Inputs */
+            inputs: components["schemas"]["RegimeInput"][];
+            /** Label */
+            label: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "on" | "off" | "unavailable";
+            /** Threshold */
+            threshold: string;
+            /** Value */
+            value: string | null;
         };
         /** Fundamentals */
         Fundamentals: {
@@ -2898,6 +2965,21 @@ export interface components {
             /** Stock Return */
             stock_return: string | null;
         };
+        /** Reading */
+        Reading: {
+            /** Detail */
+            detail?: string | null;
+            /** Inputs */
+            inputs: components["schemas"]["RegimeInput"][];
+            /** Label */
+            label: string;
+            /** Reading Id */
+            reading_id: string;
+            /** Unit */
+            unit: string;
+            /** Value */
+            value: string | null;
+        };
         /** ReconciliationDetail */
         ReconciliationDetail: {
             filing: components["schemas"]["ReconciliationOut"];
@@ -2958,6 +3040,108 @@ export interface components {
             status: "pass" | "warn" | "fail";
             /** Ticker */
             ticker: string | null;
+        };
+        /**
+         * Regime
+         * @description Everything a regime assessment stores: recomputing it gives the same document.
+         */
+        Regime: {
+            /** Dimensions */
+            dimensions: components["schemas"]["Dimension"][];
+            /** Flags */
+            flags: components["schemas"]["Flag"][];
+            /** Flags Available */
+            flags_available: number;
+            /** Flags On */
+            flags_on: number;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Quadrant */
+            quadrant: string | null;
+            /** Rule Version */
+            rule_version: string;
+            /** Stress */
+            stress: ("normal" | "elevated" | "high" | "crisis") | null;
+            /** Stress Detail */
+            stress_detail: string;
+        };
+        /** RegimeInput */
+        RegimeInput: {
+            /**
+             * Observation Date
+             * Format: date
+             */
+            observation_date: string;
+            /** Source */
+            source: string;
+            /** Value */
+            value: string;
+            /** Vintage */
+            vintage: string | null;
+        };
+        /** RegimeOut */
+        RegimeOut: {
+            current: components["schemas"]["StoredRegime"] | null;
+            /**
+             * Detail
+             * @default Deterministic rules on data known at the date: a description of conditions, not a forecast. Thresholds are defaults, unvalidated (OD-7).
+             */
+            detail: string;
+            /** History */
+            history: components["schemas"]["RegimePoint"][];
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Rule Version */
+            rule_version: string;
+        };
+        /** RegimePoint */
+        RegimePoint: {
+            /** Backfilled */
+            backfilled: boolean;
+            /** Flags Available */
+            flags_available: number;
+            /** Flags On */
+            flags_on: number;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Quadrant */
+            quadrant: string | null;
+            /** States */
+            states: {
+                [key: string]: string;
+            };
+            /** Stress */
+            stress: string | null;
+        };
+        /** RegimeRuleSetOut */
+        RegimeRuleSetOut: {
+            /** Content */
+            content: {
+                [key: string]: unknown;
+            };
+            /** Content Sha256 */
+            content_sha256: string;
+            /**
+             * Released
+             * Format: date
+             */
+            released: string;
+            /** Rule Version */
+            rule_version: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "active" | "retired";
         };
         /** RelativeOut */
         RelativeOut: {
@@ -3563,6 +3747,27 @@ export interface components {
             high_conviction: components["schemas"]["HighConvictionRule"];
             trade_ready: components["schemas"]["TradeReadyRule"];
             watch: components["schemas"]["WatchRule"];
+        };
+        /** StoredRegime */
+        StoredRegime: {
+            /** Backfilled */
+            backfilled: boolean;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            regime: components["schemas"]["Regime"];
+            /**
+             * System Time
+             * Format: date-time
+             */
+            system_time: string;
         };
         /** TradeReadyRule */
         TradeReadyRule: {
@@ -4943,6 +5148,58 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    regime_regime_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegimeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    regime_rules_regime_rules_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegimeRuleSetOut"][];
                 };
             };
         };

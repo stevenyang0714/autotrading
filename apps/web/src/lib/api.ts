@@ -760,6 +760,31 @@ export async function acknowledgeAlert(alertId: string, note: string | null): Pr
   }
 }
 
+// ---------- macro regime (M2.1, ADR-029) ----------
+
+export type RegimeResponse = components["schemas"]["RegimeOut"];
+export type StoredRegime = components["schemas"]["StoredRegime"];
+export type Regime = components["schemas"]["Regime"];
+export type RegimeDimension = components["schemas"]["Dimension"];
+export type RegimeReading = components["schemas"]["Reading"];
+export type RegimeFlag = components["schemas"]["Flag"];
+export type RegimeInput = components["schemas"]["RegimeInput"];
+export type RegimePoint = components["schemas"]["RegimePoint"];
+
+/** The stored regime as known at `knownAt` and its history, or null when the API is down. */
+export async function loadRegime(knownAt?: string): Promise<RegimeResponse | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/regime", {
+      params: { query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
 // ---------- news (M0.8, ADR-018) ----------
 
 export type NewsFeed = components["schemas"]["NewsFeed"];

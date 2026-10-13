@@ -25,6 +25,7 @@ from autotrading.api.overview import router as overview_router
 from autotrading.api.prices import router as prices_router
 from autotrading.api.progress import router as progress_router
 from autotrading.api.reconciliation import router as reconciliation_router
+from autotrading.api.regime import router as regime_router
 from autotrading.api.research import router as research_router
 from autotrading.api.signals import router as signals_router
 from autotrading.api.valuation import router as valuation_router
@@ -85,6 +86,7 @@ def create_app(
     app.include_router(signals_router)
     app.include_router(journal_router)
     app.include_router(alerts_router)
+    app.include_router(regime_router)
     return app
 
 

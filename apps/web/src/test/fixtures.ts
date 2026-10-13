@@ -1,6 +1,7 @@
 /** Recorded real API responses (tests/fixtures/api, see recorded_from in each file). */
 import alertDetail from "../../tests/fixtures/api/alert-detail.json";
 import alertsOpen from "../../tests/fixtures/api/alerts-open.json";
+import alertsRegime from "../../tests/fixtures/api/alerts-regime.json";
 import alerts from "../../tests/fixtures/api/alerts.json";
 import auditDeletes from "../../tests/fixtures/api/audit-log-deletes.json";
 import convergence from "../../tests/fixtures/api/convergence.json";
@@ -58,9 +59,12 @@ import overview from "../../tests/fixtures/api/overview.json";
 import pricesLatestNoKey from "../../tests/fixtures/api/prices-latest-no-key.json";
 import pricesLatest from "../../tests/fixtures/api/prices-latest.json";
 import progress from "../../tests/fixtures/api/progress.json";
+import regimeEarlier from "../../tests/fixtures/api/regime-earlier.json";
+import regime from "../../tests/fixtures/api/regime.json";
 
 import type {
   AlertDetail,
+  RegimeResponse,
   Alerts,
   AssumptionList,
   Convergence,
@@ -238,3 +242,12 @@ export const recordedAlerts = alerts.response as unknown as Alerts;
 export const recordedOpenAlerts = alertsOpen.response as unknown as Alerts;
 export const recordedConvergence = convergence.response as unknown as Convergence;
 export const recordedAlertDetail = alertDetail.response as unknown as AlertDetail;
+
+/** Alerts as known 2026-10-06 18:00 UTC (M2.1), with the market-wide stress alert the regime
+ * integration test raises (tests/integration/test_regime.py). */
+export const recordedRegimeAlerts = alertsRegime.response as unknown as Alerts;
+
+/** The macro regime (M2.1) as known on 2026-10-06 (stress normal, 0 of 9 flags; growth
+ * slowing, inflation above target) and on 2026-09-15 (the August month end). */
+export const recordedRegime = regime.response as unknown as RegimeResponse;
+export const recordedRegimeEarlier = regimeEarlier.response as unknown as RegimeResponse;

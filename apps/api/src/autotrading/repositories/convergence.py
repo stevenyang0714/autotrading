@@ -200,11 +200,11 @@ def _state(state: str) -> str:
 # ---------- writing ----------
 
 
-def _insert_alert(
+def insert_alert(
     session: Session,
     rules: AlertRuleSet,
-    instrument_id: UUID,
-    ticker: str,
+    instrument_id: UUID | None,
+    ticker: str | None,
     alert: AlertIn,
     system_time: datetime,
     assessment_id: UUID | None,
@@ -306,14 +306,14 @@ def record_convergence(
         ticker, result, previous.level if previous else None, f"level:{assessment_id}", basis
     )
     if change is not None:
-        _insert_alert(
+        insert_alert(
             session, rules, instrument_id, ticker, change, system_time, assessment_id, backfilled
         )
     if trigger != "backfill":
         # Events since the previous assessment; replaying recorded history marks them so.
         since = previous.known_at if previous else None
         for event in new_events(events, since, at, rules.event_lookback_days):
-            _insert_alert(
+            insert_alert(
                 session,
                 rules,
                 instrument_id,
@@ -346,8 +346,6 @@ def seed_event_alerts(
         at,
     )
     return sum(
-        _insert_alert(
-            session, rules, instrument_id, ticker, event_alert(ticker, e), at, None, False
-        )
+        insert_alert(session, rules, instrument_id, ticker, event_alert(ticker, e), at, None, False)
         for e in new_events(events, None, at, rules.event_lookback_days)
     )

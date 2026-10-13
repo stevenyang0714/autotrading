@@ -129,6 +129,8 @@ for (const path of [
   "/dashboards/earnings?known_on=2026-05-01",
   "/dashboards/strategy-lab",
   "/dashboards/alerts-center?status=all&backfilled=1",
+  "/dashboards/market-regime",
+  "/dashboards/market-regime?known_on=2026-09-15",
 ]) {
   test(`numbers on ${path} are all explained`, async ({ page }) => {
     await page.goto(path);
@@ -442,6 +444,22 @@ test("A NO TRADE and a paper TRADE are recorded alike, replay identical, and the
   const table = page.getByRole("table", { name: "Journal entries" });
   await expect(table.locator('tr[data-decision="no_trade"]').first()).toContainText("NO TRADE: Priced in");
   await expect(table.locator('tr[data-decision="trade"]').first()).toContainText("exited");
+});
+
+test("Market Regime shows the stress state, five dimensions, nine flags and the history (M2.1)", async ({
+  page,
+}) => {
+  await page.goto("/dashboards/market-regime");
+  await expect(page.locator("[data-stress]")).toBeVisible();
+  await expect(page.getByRole("list", { name: "Dimensions" }).locator("[data-dimension]")).toHaveCount(5);
+  await expect(page.getByRole("list", { name: "Stress flags" }).locator("[data-flag]")).toHaveCount(9);
+  await expect(page.getByText(/regime rules \d+\.\d+\.\d+/).first()).toBeVisible();
+  expect(await page.locator('tr[data-row="stress"] [data-state]').count()).toBeGreaterThanOrEqual(2);
+  // As known on an earlier date: that date's assessment, never a later one.
+  await page.goto("/dashboards/market-regime?known_on=2026-09-15");
+  await expect(page.getByText(/Showing what was known by/)).toContainText("2026-09-15");
+  const assessed = await page.locator("[data-stress]").textContent();
+  expect(assessed ?? "").not.toMatch(/Assessed for 2026-(09-(1[6-9]|2\d|30)|1[0-2])/);
 });
 
 test("Alerts Center shows each company's level and alerts with their rules and evidence (M1.7)", async ({

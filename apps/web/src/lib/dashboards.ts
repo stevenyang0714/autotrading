@@ -45,6 +45,7 @@ export const DASHBOARDS: readonly DashboardDef[] = [
     purpose: "Growth, inflation, liquidity, credit, volatility and risk appetite.",
     plannedPhase: 2,
     group: "dashboards",
+    live: true,
   },
   {
     id: "opportunity_radar",

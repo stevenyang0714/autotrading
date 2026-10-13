@@ -76,6 +76,12 @@ MACRO_SERIES_TERMS = (
     "macro_curve_10y_2y",
     "macro_hy_oas",
     "macro_vix",
+    "macro_vix_3m",
+    "macro_nfci",
+    "macro_nfci_credit",
+    "macro_stlfsi",
+    "macro_wti_oil",
+    "macro_dollar_index",
 )
 
 # Indicators computed on the overview (M0.6, ADR-016): term id -> function in domain/indicators.
@@ -245,6 +251,29 @@ METRICS: tuple[MetricDefinition, ...] = (
                     "convergence_l4",
                     "independent_evidence",
                     "valuation_support",
+                )
+            },
+            # M2.1 (ADR-029): the macro regime and stress state.
+            **{
+                term_id: "regime.assess"
+                for term_id in (
+                    "regime",
+                    "regime_growth",
+                    "regime_inflation",
+                    "regime_policy",
+                    "regime_credit",
+                    "regime_volatility",
+                    "regime_quadrant",
+                    "stress_state",
+                    "stress_flag_credit",
+                    "stress_flag_volatility",
+                    "stress_flag_nfci",
+                    "stress_flag_stlfsi",
+                    "stress_flag_vix_term",
+                    "stress_flag_drawdown",
+                    "stress_flag_dollar",
+                    "stress_flag_oil",
+                    "stress_flag_stock_bond",
                 )
             },
         }.items()

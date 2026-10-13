@@ -68,6 +68,8 @@ APP_TABLES = {
     "convergence_assessments",
     "alerts",
     "alert_acknowledgements",
+    "regime_rule_sets",
+    "regime_assessments",
 }
 FEB = datetime(2025, 2, 1, 21, 5, tzinfo=UTC)
 AUG = datetime(2025, 8, 1, 20, 30, tzinfo=UTC)
@@ -216,6 +218,10 @@ def test_guardrails_exist(engine: Engine) -> None:
         "alerts_audit",
         "alert_acknowledgements_append_only",
         "alert_acknowledgements_audit",
+        "regime_rule_sets_append_only",
+        "regime_rule_sets_audit",
+        "regime_assessments_append_only",
+        "regime_assessments_no_truncate",
     } <= triggers
     assert exclusions == {"ex_identifiers_value_period", "ex_identifiers_subject_period"}
 

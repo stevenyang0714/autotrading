@@ -80,9 +80,13 @@ class AlertRuleSet(_Rule):
     buyback_statement_kinds: list[str]
     event_lookback_days: Annotated[int, Field(gt=0)]
     levels: LevelRules
+    # Added in 0.2.0 (M2.1, ADR-029): market-wide alerts from the regime engine. The defaults
+    # keep 0.1.0's behaviour and stay out of its content, so its hash is unchanged.
+    market_events: list[Literal["stress_change"]] = []
+    regime_rule_version: str | None = None
 
     def content(self) -> dict[str, object]:
-        return self.model_dump(mode="json", exclude={"status"})
+        return self.model_dump(mode="json", exclude={"status"}, exclude_defaults=True)
 
     def content_sha256(self) -> str:
         canonical = json.dumps(self.content(), sort_keys=True, separators=(",", ":"))
@@ -359,7 +363,7 @@ def assess(
 
 @dataclass(frozen=True)
 class AlertIn:
-    kind: Literal["event", "level_change"]
+    kind: Literal["event", "level_change", "regime"]
     level: int
     previous_level: int | None
     direction: Literal["up", "down"] | None

@@ -21,6 +21,7 @@ from autotrading.ingestion.rate_limit import TokenBucketLimiter
 from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.ingestion.schedule import refresh_window
+from autotrading.repositories.regime import record_regime, stored_regime_rules
 from autotrading.settings import get_settings
 from tests import alpaca_replay, fred_replay, news_replay, sec_replay
 
@@ -59,11 +60,14 @@ def main() -> None:
     # daily job and `make buyback-backfill` store them, so the pages have states and history.
     with sessionmaker(make_engine(settings))() as session:
         now = session.execute(select(func.now())).scalar_one()
-        stored = sum(
-            evaluate_universe(session, at, now, "replay")
-            for at in [*month_ends(REPLAY_BACKFILL_SINCE, now), now]
-        )
-    print(f"stored {stored} buyback state assignments")
+        points = [*month_ends(REPLAY_BACKFILL_SINCE, now), now]
+        stored = sum(evaluate_universe(session, at, now, "replay") for at in points)
+        # The macro regime (M2.1) at the same points, so the Market Regime page has history.
+        rules = stored_regime_rules(session)
+        assert rules is not None, "regime rules not loaded: run `make migrate` first"
+        regimes = sum(record_regime(session, rules, at, now, "replay") is not None for at in points)
+        session.commit()
+    print(f"stored {stored} buyback state assignments and {regimes} regime assessments")
 
 
 if __name__ == "__main__":

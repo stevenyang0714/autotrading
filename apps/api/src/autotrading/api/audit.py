@@ -33,6 +33,7 @@ from autotrading.db.models import (
     MacroObservation,
     MacroSeries,
     PriceBar,
+    RegimeRuleSet,
     Source,
     ThesisCard,
     TradeDecision,
@@ -186,6 +187,12 @@ def _labels(session: Session, table: str, ids: list[str]) -> dict[str, str]:
                 select(AlertAcknowledgement, Alert.title)
                 .join(Alert, Alert.id == AlertAcknowledgement.alert_id)
                 .where(AlertAcknowledgement.id.in_(_uuids(ids)))
+            )
+        ],
+        "regime_rule_sets": lambda: [
+            (row.id, f"regime rules {row.rule_version}")
+            for row in session.scalars(
+                select(RegimeRuleSet).where(RegimeRuleSet.id.in_(_uuids(ids)))
             )
         ],
         "alert_rule_sets": lambda: [

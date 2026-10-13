@@ -44,7 +44,7 @@ terms:
 
   # dashboards
   dashboard_global_monitor: {name: 全球監控, hint: 全球事件、實體與政策的總覽（Phase 3）。}
-  dashboard_market_regime: {name: 市場環境, hint: 總經與市場所處的狀態判斷（Phase 2）。}
+  dashboard_market_regime: {name: 市場環境, hint: 壓力狀態與五個總經面向，依當時已知的資料，含 2016 年起的歷史。}
   dashboard_opportunity_radar: {name: 機會雷達, hint: 依訊號篩選出的研究候選標的（Phase 2）。}
   dashboard_fundamental_research: {name: 基本面研究, hint: 10 家公司一張表：成長、利潤率、ROIC、資本配置與估值，點公司看研究紀錄。}
   dashboard_corporate_actions: {name: 公司行動, hint: 每家公司的回購狀態、條件對門檻的檢視、狀態歷史與回購時間軸。}
@@ -181,6 +181,28 @@ terms:
   alert: {name: 警示, hint: App 內通知；一則事件（L0）或公司收斂等級變化，附規則版本與依據。}
   alert_acknowledgement: {name: 確認, hint: 標記已看過，每則一次、可附備註；寫入稽核紀錄。}
   alert_rule_set: {name: 警示規則版本, hint: 每個收斂評定與警示所用的規則版本；已發布的版本不會改。}
+  regime: {name: 市場體制, hint: 五個總經面向、成長×通膨象限與壓力狀態，依版本化規則與當時已知的資料。}
+  regime_growth: {name: 成長, hint: 擴張／放緩／收縮：看 Sahm 指標、非農就業與實質 GDP。}
+  regime_inflation: {name: 通膨, hint: 核心 PCE 對 2% 目標：低於／接近／高於／過熱，附方向。}
+  regime_policy: {name: 政策與流動性, hint: 寬鬆／中性／緊縮：實質聯邦基金利率、NFCI、殖利率曲線。}
+  regime_credit: {name: 信用, hint: 平靜／正常／緊張／困境：高收益債利差（之前用 NFCI 信用子指數）。}
+  regime_volatility: {name: 波動, hint: 平靜／正常／升高／緊張：VIX 與期限結構。}
+  regime_quadrant: {name: 成長×通膨象限, hint: 金髮女孩／再通膨／停滯性通膨／通縮放緩；是標籤，不是預測。}
+  stress_state: {name: 壓力狀態, hint: 正常／升高／高／危機：同時亮起幾個壓力旗標。}
+  stress_normal: {name: 正常, hint: 0–1 個旗標；一般策略資格。}
+  stress_elevated: {name: 升高, hint: 2–3 個旗標；減少新的高 beta 部位。}
+  stress_high: {name: 高, hint: 4 個以上旗標、信用困境或 VIX 超過 30；加避險、降總部位。}
+  stress_crisis: {name: 危機, hint: 信用困境、VIX 超過 40 且 SPY 回撤超過 20%；只做風險降低。}
+  stress_flag_credit: {name: 信用旗標, hint: 信用狀態為緊張或困境。}
+  stress_flag_volatility: {name: 波動旗標, hint: 波動狀態為升高或緊張。}
+  stress_flag_nfci: {name: 金融情勢旗標, hint: NFCI 高於 0（比平均更緊）。}
+  stress_flag_stlfsi: {name: 金融壓力旗標, hint: 聖路易壓力指數高於 1。}
+  stress_flag_vix_term: {name: VIX 期限旗標, hint: VIX 高於 VIX 3 個月（期限結構倒掛）。}
+  stress_flag_drawdown: {name: 回撤旗標, hint: SPY 低於 252 個交易日最高收盤 10% 以上。}
+  stress_flag_dollar: {name: 美元急升旗標, hint: 美元廣義指數一個月內升逾 3%。}
+  stress_flag_oil: {name: 原油衝擊旗標, hint: WTI 一個月內漲跌逾 30%。}
+  stress_flag_stock_bond: {name: 股債同跌旗標, hint: SPY 與 TLT 60 日報酬正相關且 SPY 近 21 日下跌。}
+  regime_rule_set: {name: 體制規則版本, hint: 每個體制評定所用的規則版本；已發布的版本不會改。}
 
   # buyback states (M1.4b)
   buyback_state: {name: 回購狀態, hint: 依版本化規則判定：無、WATCH、ACTIVE、HIGH-CONVICTION 候選；每個條件都存值、門檻與證據。}
@@ -249,6 +271,12 @@ terms:
   macro_curve_10y_2y: {name: 10 年減 2 年利差, hint: 殖利率曲線斜率；負值即「倒掛」。}
   macro_hy_oas: {name: 高收益債利差, hint: 高收益公司債相對美債的額外殖利率（OAS）。}
   macro_vix: {name: VIX 恐慌指數, hint: S&P 500 選擇權隱含的未來 30 天波動率。}
+  macro_vix_3m: {name: VIX 3 個月, hint: S&P 500 選擇權隱含的未來 3 個月波動率；VIX 高於它代表期限結構倒掛。}
+  macro_nfci: {name: 芝加哥聯儲金融情勢指數, hint: 每週的整體金融情勢；高於 0 代表比 1971 年以來的平均更緊。}
+  macro_nfci_credit: {name: NFCI 信用子指數, hint: NFCI 中的信用部分；高於 0 代表信用比平均更緊。}
+  macro_stlfsi: {name: 聖路易聯儲金融壓力指數, hint: 由 18 個每週指標組成；高於 0 代表壓力高於正常。}
+  macro_wti_oil: {name: WTI 原油, hint: 美國西德州原油現貨價（每桶美元）。}
+  macro_dollar_index: {name: 美元廣義指數, hint: 聯準會的貿易加權美元指數；急升常伴隨全球資金壓力。}
 
   # overview indicators
   cpi_inflation_yoy: {name: CPI 年增率, hint: CPI 與 12 個月前相比的變動百分比。}

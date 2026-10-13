@@ -16,10 +16,10 @@ export interface AlertFilters {
   includeBackfilled: boolean;
 }
 
-function LevelBadge({ level, name }: { level: number | null; name: string }) {
+function LevelBadge({ level, name, market = false }: { level: number | null; name: string; market?: boolean }) {
   return (
     <span className={`inline-block rounded border px-1.5 py-0.5 text-xs ${levelClass(level)}`}>
-      <Metric termId={levelTerm(level)} icon={false}>
+      <Metric termId={market ? "stress_state" : levelTerm(level)} icon={false}>
         {name}
       </Metric>
     </span>
@@ -78,7 +78,7 @@ function AlertItem({ alert, acknowledge }: { alert: AlertEntry; acknowledge?: Re
       className="space-y-1 rounded border border-neutral-800 px-3 py-2 text-sm"
     >
       <div className="flex flex-wrap items-baseline gap-2">
-        <LevelBadge level={alert.level} name={alert.level_name} />
+        <LevelBadge level={alert.level} name={alert.level_name} market={alert.kind === "regime"} />
         <Metric termId="alert" icon={false}>
           <span className="text-neutral-100">{alert.title}</span>
         </Metric>
@@ -95,7 +95,7 @@ function AlertItem({ alert, acknowledge }: { alert: AlertEntry; acknowledge?: Re
       </p>
       <ul className="space-y-0.5 text-xs" aria-label="Evidence">
         {alert.evidence.map((evidence) => {
-          const href = evidenceHref(evidence.table, evidence.url, alert.ticker);
+          const href = evidenceHref(evidence.table, evidence.url, alert.ticker, alert.known_at);
           const label = (
             <Metric termId="independent_evidence" icon={false}>
               {evidence.label}
