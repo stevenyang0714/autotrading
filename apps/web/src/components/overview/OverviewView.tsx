@@ -233,9 +233,13 @@ function PriceTiles({ tiles }: { tiles: PriceTile[] }) {
           className="space-y-1 rounded border border-neutral-800 px-3 py-2"
         >
           <p className="flex items-center justify-between gap-2">
-            <span data-identifier="" className="font-medium">
+            <Link
+              href={`/instruments/${tile.symbol}#factors`}
+              data-identifier=""
+              className="font-medium underline-offset-2 hover:underline"
+            >
               {tile.symbol}
-            </span>
+            </Link>
             <PriceBadge status={tile.feed_status} />
           </p>
           {tile.last && tile.feed_status !== "unavailable" ? (

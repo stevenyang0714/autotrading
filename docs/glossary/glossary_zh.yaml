@@ -45,7 +45,7 @@ terms:
   # dashboards
   dashboard_global_monitor: {name: 全球監控, hint: 全球事件、實體與政策的總覽（Phase 3）。}
   dashboard_market_regime: {name: 市場環境, hint: 壓力狀態與五個總經面向，依當時已知的資料，含 2016 年起的歷史。}
-  dashboard_opportunity_radar: {name: 機會雷達, hint: 依訊號篩選出的研究候選標的（Phase 2）。}
+  dashboard_opportunity_radar: {name: 機會雷達, hint: 18 檔標的的動能、均線、波動、beta 與相對 SPY，以及股票的估值與品質在自身歷史的百分位；候選名單在 M2.4。}
   dashboard_fundamental_research: {name: 基本面研究, hint: 10 家公司一張表：成長、利潤率、ROIC、資本配置與估值，點公司看研究紀錄。}
   dashboard_corporate_actions: {name: 公司行動, hint: 每家公司的回購狀態、條件對門檻的檢視、狀態歷史與回購時間軸。}
   dashboard_event_transmission: {name: 事件傳導, hint: 事件如何經由產業鏈影響資產（Phase 3）。}
@@ -203,6 +203,21 @@ terms:
   stress_flag_oil: {name: 原油衝擊旗標, hint: WTI 一個月內漲跌逾 30%。}
   stress_flag_stock_bond: {name: 股債同跌旗標, hint: SPY 與 TLT 60 日報酬正相關且 SPY 近 21 日下跌。}
   regime_rule_set: {name: 體制規則版本, hint: 每個體制評定所用的規則版本；已發布的版本不會改。}
+  momentum_12_1: {name: 12-1 個月動能, hint: 從 12 個月前到 1 個月前的總報酬（含股利），跳過最近一個月。}
+  momentum_6_1: {name: 6-1 個月動能, hint: 從 6 個月前到 1 個月前的總報酬（含股利），跳過最近一個月。}
+  reversal_1m: {name: 一個月報酬, hint: 最近 21 個交易日的總報酬（含股利）；短期漲跌常會部分反轉。}
+  close_vs_sma_50: {name: 收盤 vs 50 日均價, hint: 最新收盤比最近 50 個交易日平均收盤高多少（%）。}
+  close_vs_sma_200: {name: 收盤 vs 200 日均價, hint: 最新收盤比最近 200 個交易日平均收盤高多少（%），長期趨勢線。}
+  volatility_60d: {name: 60 日波動率, hint: 最近 60 個交易日日報酬的標準差，年化（× √252）。}
+  beta_252d: {name: 對 SPY 的 beta, hint: 最近 252 個交易日，SPY 漲跌 1% 時這檔平均漲跌幾 %。}
+  relative_momentum_12_1: {name: 12-1 動能相對 SPY, hint: 12-1 個月動能減 SPY 同期的動能（百分點）。}
+  relative_momentum_6_1: {name: 6-1 動能相對 SPY, hint: 6-1 個月動能減 SPY 同期的動能（百分點）。}
+  total_return: {name: 總報酬, hint: 價格變動加上現金股利，股利在除息日收盤再投入。}
+  cash_dividend: {name: 現金股利, hint: 每股配息金額，從除息日開始算已知，遇分割會換算。}
+  dividend_gap: {name: 可能缺漏的股利, hint: 依這檔自己的配息頻率，某段期間少了一次配息；該期間的總報酬可能少算。}
+  factor_percentile: {name: 自身歷史百分位, hint: 目前的值在這檔 2016 年起每月底歷史中的排名（0–100），不和其他標的比。}
+  factor_definition_set: {name: 因子定義版本, hint: 每個快照所用的因子定義版本；已發布的版本不會改。}
+  factor_snapshot: {name: 趨勢與因子, hint: 某一天存下的這檔標的趨勢、風險、估值與品質指標，每個都附輸入。}
 
   # buyback states (M1.4b)
   buyback_state: {name: 回購狀態, hint: 依版本化規則判定：無、WATCH、ACTIVE、HIGH-CONVICTION 候選；每個條件都存值、門檻與證據。}

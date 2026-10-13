@@ -3350,6 +3350,269 @@
         "title": "FactTable",
         "type": "object"
       },
+      "FactorDefinitionSetOut": {
+        "properties": {
+          "content": {
+            "additionalProperties": true,
+            "title": "Content",
+            "type": "object"
+          },
+          "content_sha256": {
+            "title": "Content Sha256",
+            "type": "string"
+          },
+          "definition_version": {
+            "title": "Definition Version",
+            "type": "string"
+          },
+          "released": {
+            "format": "date",
+            "title": "Released",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "retired"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "definition_version",
+          "status",
+          "released",
+          "content",
+          "content_sha256"
+        ],
+        "title": "FactorDefinitionSetOut",
+        "type": "object"
+      },
+      "FactorInput": {
+        "properties": {
+          "end": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "sources": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Sources",
+            "type": "array"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ],
+        "title": "FactorInput",
+        "type": "object"
+      },
+      "FactorRow": {
+        "properties": {
+          "fundamentals": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SnapshotRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "instrument_type": {
+            "enum": [
+              "equity",
+              "etf"
+            ],
+            "title": "Instrument Type",
+            "type": "string"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SnapshotRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          },
+          "values": {
+            "items": {
+              "$ref": "#/components/schemas/FactorValue"
+            },
+            "title": "Values",
+            "type": "array"
+          }
+        },
+        "required": [
+          "ticker",
+          "instrument_type",
+          "price",
+          "fundamentals",
+          "values"
+        ],
+        "title": "FactorRow",
+        "type": "object"
+      },
+      "FactorValue": {
+        "properties": {
+          "group": {
+            "title": "Group",
+            "type": "string"
+          },
+          "measure_id": {
+            "title": "Measure Id",
+            "type": "string"
+          },
+          "notes": {
+            "title": "Notes",
+            "type": "integer"
+          },
+          "percentile": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Percentile"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "measure_id",
+          "group",
+          "unit",
+          "value",
+          "reason",
+          "percentile",
+          "notes"
+        ],
+        "title": "FactorValue",
+        "type": "object"
+      },
+      "FactorsOut": {
+        "properties": {
+          "benchmark": {
+            "title": "Benchmark",
+            "type": "string"
+          },
+          "definition_version": {
+            "title": "Definition Version",
+            "type": "string"
+          },
+          "detail": {
+            "default": "Each value is compared with the instrument's own history since 2016, never ranked against the other instruments: the universe has no delisted companies (P2-3, KI-1). Descriptions of the past, not forecasts or signals.",
+            "title": "Detail",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/FactorRow"
+            },
+            "title": "Rows",
+            "type": "array"
+          }
+        },
+        "required": [
+          "known_at",
+          "definition_version",
+          "benchmark",
+          "rows"
+        ],
+        "title": "FactorsOut",
+        "type": "object"
+      },
       "FairValueOut": {
         "properties": {
           "assumptions": {
@@ -3933,6 +4196,35 @@
         "title": "HighConvictionRule",
         "type": "object"
       },
+      "HistoryPoint": {
+        "properties": {
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "values": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "title": "Values",
+            "type": "object"
+          }
+        },
+        "required": [
+          "known_at",
+          "values"
+        ],
+        "title": "HistoryPoint",
+        "type": "object"
+      },
       "Indicator": {
         "properties": {
           "as_of": {
@@ -4111,6 +4403,82 @@
           "inputs"
         ],
         "title": "Insight",
+        "type": "object"
+      },
+      "InstrumentFactorsOut": {
+        "properties": {
+          "definition_version": {
+            "title": "Definition Version",
+            "type": "string"
+          },
+          "detail": {
+            "default": "Each value is compared with the instrument's own history since 2016, never ranked against the other instruments: the universe has no delisted companies (P2-3, KI-1). Descriptions of the past, not forecasts or signals.",
+            "title": "Detail",
+            "type": "string"
+          },
+          "fundamentals": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SnapshotRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/HistoryPoint"
+            },
+            "title": "History",
+            "type": "array"
+          },
+          "instrument_type": {
+            "enum": [
+              "equity",
+              "etf"
+            ],
+            "title": "Instrument Type",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "measures": {
+            "items": {
+              "$ref": "#/components/schemas/MeasureOut"
+            },
+            "title": "Measures",
+            "type": "array"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SnapshotRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticker",
+          "instrument_type",
+          "known_at",
+          "definition_version",
+          "price",
+          "fundamentals",
+          "measures",
+          "history"
+        ],
+        "title": "InstrumentFactorsOut",
         "type": "object"
       },
       "InstrumentList": {
@@ -5132,6 +5500,158 @@
           "calendar_covered_until"
         ],
         "title": "MarketState",
+        "type": "object"
+      },
+      "MeasureOut": {
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          },
+          "group": {
+            "enum": [
+              "trend",
+              "risk",
+              "relative",
+              "value",
+              "quality"
+            ],
+            "title": "Group",
+            "type": "string"
+          },
+          "inputs": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/FactorInput"
+            },
+            "title": "Inputs",
+            "type": "array"
+          },
+          "measure_id": {
+            "title": "Measure Id",
+            "type": "string"
+          },
+          "median": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median"
+          },
+          "notes": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
+          "observations": {
+            "title": "Observations",
+            "type": "integer"
+          },
+          "percentile": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Percentile"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "enum": [
+                  "unavailable",
+                  "not_meaningful"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "since": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Since"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start"
+          },
+          "unit": {
+            "enum": [
+              "percent",
+              "x",
+              "ratio"
+            ],
+            "title": "Unit",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "measure_id",
+          "group",
+          "unit",
+          "value",
+          "detail",
+          "percentile",
+          "median",
+          "observations",
+          "since"
+        ],
+        "title": "MeasureOut",
         "type": "object"
       },
       "MentionOut": {
@@ -8710,6 +9230,65 @@
         "title": "SignalsOut",
         "type": "object"
       },
+      "SnapshotRef": {
+        "properties": {
+          "backfilled": {
+            "title": "Backfilled",
+            "type": "boolean"
+          },
+          "feed_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feed Status"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "last_close": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Close"
+          },
+          "scope": {
+            "enum": [
+              "price",
+              "all"
+            ],
+            "title": "Scope",
+            "type": "string"
+          },
+          "system_time": {
+            "format": "date-time",
+            "title": "System Time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "known_at",
+          "system_time",
+          "backfilled",
+          "scope",
+          "last_close",
+          "feed_status"
+        ],
+        "title": "SnapshotRef",
+        "type": "object"
+      },
       "SourceHealth": {
         "properties": {
           "access_status": {
@@ -10088,6 +10667,83 @@
         ]
       }
     },
+    "/factors": {
+      "get": {
+        "operationId": "factors_table_factors_get",
+        "parameters": [
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactorsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Factors Table",
+        "tags": [
+          "factors"
+        ]
+      }
+    },
+    "/factors/definitions": {
+      "get": {
+        "operationId": "factor_definitions_factors_definitions_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/FactorDefinitionSetOut"
+                  },
+                  "title": "Response Factor Definitions Factors Definitions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Factor Definitions",
+        "tags": [
+          "factors"
+        ]
+      }
+    },
     "/glossary": {
       "get": {
         "operationId": "list_terms_glossary_get",
@@ -10634,6 +11290,67 @@
         "summary": "Evidence Candidates",
         "tags": [
           "journal"
+        ]
+      }
+    },
+    "/instruments/{ticker}/factors": {
+      "get": {
+        "operationId": "instrument_factors_instruments__ticker__factors_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ticker",
+            "required": true,
+            "schema": {
+              "title": "Ticker",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstrumentFactorsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Instrument Factors",
+        "tags": [
+          "factors"
         ]
       }
     },

@@ -1,0 +1,1727 @@
+{
+  "recorded_at": "2026-10-13T12:46:07.788608+00:00",
+  "recorded_from": "recorded SEC facts and Alpaca closes, splits and dividends replayed into the integration test database (tests/integration/test_factors.py)",
+  "endpoint": "/instruments/AAPL/factors",
+  "params": {
+    "known_at": "2026-10-06T12:00:00Z"
+  },
+  "response": {
+    "ticker": "AAPL",
+    "instrument_type": "equity",
+    "known_at": "2026-10-06T12:00:00Z",
+    "definition_version": "0.1.0",
+    "price": {
+      "known_at": "2026-10-06T12:00:00Z",
+      "system_time": "2026-10-13T12:45:47.704259Z",
+      "backfilled": true,
+      "scope": "all",
+      "last_close": "2026-10-05",
+      "feed_status": "end_of_day"
+    },
+    "fundamentals": {
+      "known_at": "2026-10-06T12:00:00Z",
+      "system_time": "2026-10-13T12:45:47.704259Z",
+      "backfilled": true,
+      "scope": "all",
+      "last_close": "2026-10-05",
+      "feed_status": "end_of_day"
+    },
+    "measures": [
+      {
+        "measure_id": "momentum_12_1",
+        "group": "trend",
+        "unit": "percent",
+        "value": null,
+        "reason": "unavailable",
+        "detail": "251 closes known; 253 needed",
+        "start": null,
+        "end": null,
+        "inputs": [],
+        "notes": [],
+        "percentile": null,
+        "median": null,
+        "observations": 0,
+        "since": null
+      },
+      {
+        "measure_id": "momentum_6_1",
+        "group": "trend",
+        "unit": "percent",
+        "value": "27.02",
+        "reason": null,
+        "detail": "total return from 126 to 21 sessions before the last close",
+        "start": "2026-04-06",
+        "end": "2026-09-03",
+        "inputs": [
+          {
+            "name": "close",
+            "value": "258.86",
+            "start": "2026-04-06",
+            "end": "2026-04-06",
+            "note": null,
+            "sources": []
+          },
+          {
+            "name": "close",
+            "value": "328.21",
+            "start": "2026-09-03",
+            "end": "2026-09-03",
+            "note": null,
+            "sources": []
+          },
+          {
+            "name": "dividends",
+            "value": "0.54",
+            "start": "2026-04-06",
+            "end": "2026-09-03",
+            "note": "2 ex-dates reinvested at the close",
+            "sources": []
+          }
+        ],
+        "notes": [],
+        "percentile": "100",
+        "median": "14.35",
+        "observations": 7,
+        "since": "2026-04-30"
+      },
+      {
+        "measure_id": "reversal_1m",
+        "group": "trend",
+        "unit": "percent",
+        "value": "1.43",
+        "reason": null,
+        "detail": "total return over the last 21 sessions",
+        "start": "2026-09-03",
+        "end": "2026-10-05",
+        "inputs": [
+          {
+            "name": "close",
+            "value": "328.21",
+            "start": "2026-09-03",
+            "end": "2026-09-03",
+            "note": null,
+            "sources": []
+          },
+          {
+            "name": "close",
+            "value": "332.89",
+            "start": "2026-10-05",
+            "end": "2026-10-05",
+            "note": null,
+            "sources": []
+          },
+          {
+            "name": "dividends",
+            "value": "0",
+            "start": "2026-09-03",
+            "end": "2026-10-05",
+            "note": "0 ex-dates reinvested at the close",
+            "sources": []
+          }
+        ],
+        "notes": [],
+        "percentile": "42",
+        "median": "2.89",
+        "observations": 12,
+        "since": "2025-11-30"
+      },
+      {
+        "measure_id": "close_vs_sma_50",
+        "group": "trend",
+        "unit": "percent",
+        "value": "3.25",
+        "reason": null,
+        "detail": "close 2026-10-05 against its 50-session average close",
+        "start": "2026-07-27",
+        "end": "2026-10-05",
+        "inputs": [
+          {
+            "name": "close",
+            "value": "332.89",
+            "start": "2026-10-05",
+            "end": "2026-10-05",
+            "note": null,
+            "sources": []
+          },
+          {
+            "name": "average close",
+            "value": "322.4136",
+            "start": "2026-07-27",
+            "end": "2026-10-05",
+            "note": "mean of 50 closes on the split basis of the date",
+            "sources": []
+          }
+        ],
+        "notes": [],
+        "percentile": "73",
+        "median": "-0.19",
+        "observations": 11,
+        "since": "2025-12-31"
+      },
+      {
+        "measure_id": "close_vs_sma_200",
+        "group": "trend",
+        "unit": "percent",
+        "value": "15.01",
+        "reason": null,
+        "detail": "close 2026-10-05 against its 200-session average close",
+        "start": "2025-12-17",
+        "end": "2026-10-05",
+        "inputs": [
+          {
+            "name": "close",
+            "value": "332.89",
+            "start": "2026-10-05",
+            "end": "2026-10-05",
+            "note": null,
+            "sources": []
+          },
+          {
+            "name": "average close",
+            "value": "289.4500",
+            "start": "2025-12-17",
+            "end": "2026-10-05",
+            "note": "mean of 200 closes on the split basis of the date",
+            "sources": []
+          }
+        ],
+        "notes": [],
+        "percentile": "75",
+        "median": "13.52",
+        "observations": 4,
+        "since": "2026-07-31"
+      },
+      {
+        "measure_id": "volatility_60d",
+        "group": "risk",
+        "unit": "percent",
+        "value": "27.25",
+        "reason": null,
+        "detail": "standard deviation of 60 daily total returns, times the square root of 252",
+        "start": "2026-07-10",
+        "end": "2026-10-05",
+        "inputs": [
+          {
+            "name": "dividends",
+            "value": "0.27",
+            "start": "2026-07-10",
+            "end": "2026-10-05",
+            "note": "1 ex-date reinvested at the close",
+            "sources": []
+          }
+        ],
+        "notes": [],
+        "percentile": "73",
+        "median": "25.19",
+        "observations": 11,
+        "since": "2025-12-31"
+      },
+      {
+        "measure_id": "beta_252d",
+        "group": "risk",
+        "unit": "ratio",
+        "value": null,
+        "reason": "unavailable",
+        "detail": "251 closes known; 253 needed",
+        "start": null,
+        "end": null,
+        "inputs": [],
+        "notes": [],
+        "percentile": null,
+        "median": null,
+        "observations": 0,
+        "since": null
+      },
+      {
+        "measure_id": "relative_momentum_12_1",
+        "group": "relative",
+        "unit": "percent",
+        "value": null,
+        "reason": "unavailable",
+        "detail": "251 closes known; 253 needed",
+        "start": null,
+        "end": null,
+        "inputs": [],
+        "notes": [],
+        "percentile": null,
+        "median": null,
+        "observations": 0,
+        "since": null
+      },
+      {
+        "measure_id": "relative_momentum_6_1",
+        "group": "relative",
+        "unit": "percent",
+        "value": "9.38",
+        "reason": null,
+        "detail": "momentum_6_1 minus SPY's over the same closes",
+        "start": "2026-04-06",
+        "end": "2026-09-03",
+        "inputs": [
+          {
+            "name": "momentum_6_1",
+            "value": "27.02",
+            "start": "2026-04-06",
+            "end": "2026-09-03",
+            "note": null,
+            "sources": []
+          },
+          {
+            "name": "SPY momentum_6_1",
+            "value": "17.64",
+            "start": "2026-04-06",
+            "end": "2026-09-03",
+            "note": null,
+            "sources": []
+          }
+        ],
+        "notes": [],
+        "percentile": "100",
+        "median": "6.17",
+        "observations": 7,
+        "since": "2026-04-30"
+      },
+      {
+        "measure_id": "pe_ratio_ttm",
+        "group": "value",
+        "unit": "x",
+        "value": "38.18",
+        "reason": null,
+        "detail": "on the close of 2026-10-05",
+        "start": null,
+        "end": "2026-10-05",
+        "inputs": [
+          {
+            "name": "price",
+            "value": "332.89",
+            "start": null,
+            "end": "2026-10-05",
+            "note": "end-of-day close",
+            "sources": []
+          },
+          {
+            "name": "eps_diluted_ttm",
+            "value": "8.72",
+            "start": "2025-06-29",
+            "end": "2026-06-27",
+            "note": "fiscal year + 9 months this year - 9 months last year",
+            "sources": [
+              "0000320193-25-000073",
+              "0000320193-25-000079",
+              "0000320193-26-000020"
+            ]
+          }
+        ],
+        "notes": [],
+        "percentile": "92",
+        "median": "35.88",
+        "observations": 12,
+        "since": "2025-11-30"
+      },
+      {
+        "measure_id": "ev_to_sales",
+        "group": "value",
+        "unit": "x",
+        "value": "10.50",
+        "reason": null,
+        "detail": "on the close of 2026-10-05",
+        "start": null,
+        "end": "2026-10-05",
+        "inputs": [
+          {
+            "name": "enterprise_value",
+            "value": "4903056580200",
+            "start": null,
+            "end": "2026-10-05",
+            "note": null,
+            "sources": []
+          },
+          {
+            "name": "revenue_ttm",
+            "value": "466823000000",
+            "start": "2025-06-29",
+            "end": "2026-06-27",
+            "note": "sum of the last four quarters",
+            "sources": [
+              "0000320193-25-000073",
+              "0000320193-25-000079",
+              "0000320193-26-000006",
+              "0000320193-26-000013",
+              "0000320193-26-000020"
+            ]
+          }
+        ],
+        "notes": [],
+        "percentile": "92",
+        "median": "9.78",
+        "observations": 12,
+        "since": "2025-11-30"
+      },
+      {
+        "measure_id": "price_to_book",
+        "group": "value",
+        "unit": "x",
+        "value": "45.18",
+        "reason": null,
+        "detail": "on the close of 2026-10-05",
+        "start": null,
+        "end": "2026-10-05",
+        "inputs": [
+          {
+            "name": "market_cap",
+            "value": "4858256580200",
+            "start": null,
+            "end": "2026-10-05",
+            "note": null,
+            "sources": []
+          },
+          {
+            "name": "stockholders_equity",
+            "value": "107520000000",
+            "start": null,
+            "end": "2026-06-27",
+            "note": null,
+            "sources": [
+              "0000320193-26-000020"
+            ]
+          }
+        ],
+        "notes": [],
+        "percentile": "75",
+        "median": "43.59",
+        "observations": 12,
+        "since": "2025-11-30"
+      },
+      {
+        "measure_id": "fcf_yield",
+        "group": "value",
+        "unit": "percent",
+        "value": "2.81",
+        "reason": null,
+        "detail": "on the close of 2026-10-05",
+        "start": null,
+        "end": "2026-10-05",
+        "inputs": [
+          {
+            "name": "free_cash_flow_ttm",
+            "value": "136683000000",
+            "start": "2025-06-29",
+            "end": "2026-06-27",
+            "note": "operating cash flow - capex, last four quarters",
+            "sources": [
+              "0000320193-25-000073",
+              "0000320193-25-000079",
+              "0000320193-26-000006",
+              "0000320193-26-000013",
+              "0000320193-26-000020"
+            ]
+          },
+          {
+            "name": "market_cap",
+            "value": "4858256580200",
+            "start": null,
+            "end": "2026-10-05",
+            "note": null,
+            "sources": []
+          }
+        ],
+        "notes": [],
+        "percentile": "33",
+        "median": "3.00",
+        "observations": 12,
+        "since": "2025-11-30"
+      },
+      {
+        "measure_id": "earnings_yield",
+        "group": "value",
+        "unit": "percent",
+        "value": "2.62",
+        "reason": null,
+        "detail": "on the close of 2026-10-05",
+        "start": null,
+        "end": "2026-10-05",
+        "inputs": [
+          {
+            "name": "eps_diluted_ttm",
+            "value": "8.72",
+            "start": "2025-06-29",
+            "end": "2026-06-27",
+            "note": "fiscal year + 9 months this year - 9 months last year",
+            "sources": [
+              "0000320193-25-000073",
+              "0000320193-25-000079",
+              "0000320193-26-000020"
+            ]
+          },
+          {
+            "name": "price",
+            "value": "332.89",
+            "start": null,
+            "end": "2026-10-05",
+            "note": "end-of-day close",
+            "sources": []
+          }
+        ],
+        "notes": [],
+        "percentile": "17",
+        "median": "2.78",
+        "observations": 12,
+        "since": "2025-11-30"
+      },
+      {
+        "measure_id": "roic",
+        "group": "quality",
+        "unit": "percent",
+        "value": "90.32",
+        "reason": null,
+        "detail": "ttm 2025-06-29 to 2026-06-27",
+        "start": "2025-06-29",
+        "end": "2026-06-27",
+        "inputs": [
+          {
+            "name": "nopat",
+            "value": "128064159622",
+            "start": "2025-06-29",
+            "end": "2026-06-27",
+            "note": "operating income x (1 - tax rate 17.30%)",
+            "sources": [
+              "0000320193-25-000073",
+              "0000320193-25-000079",
+              "0000320193-26-000006",
+              "0000320193-26-000013",
+              "0000320193-26-000020"
+            ]
+          },
+          {
+            "name": "invested_capital",
+            "value": "131259000000",
+            "start": null,
+            "end": "2025-06-28",
+            "note": "stockholders' equity + total debt - cash",
+            "sources": [
+              "0000320193-25-000073"
+            ]
+          },
+          {
+            "name": "invested_capital",
+            "value": "152320000000",
+            "start": null,
+            "end": "2026-06-27",
+            "note": "stockholders' equity + total debt - cash",
+            "sources": [
+              "0000320193-26-000020"
+            ]
+          }
+        ],
+        "notes": [],
+        "percentile": "100",
+        "median": "71.74",
+        "observations": 33,
+        "since": "2024-01-31"
+      },
+      {
+        "measure_id": "roe",
+        "group": "quality",
+        "unit": "percent",
+        "value": "148.75",
+        "reason": null,
+        "detail": "ttm 2025-06-29 to 2026-06-27",
+        "start": "2025-06-29",
+        "end": "2026-06-27",
+        "inputs": [
+          {
+            "name": "net_income_ttm",
+            "value": "128930000000",
+            "start": "2025-06-29",
+            "end": "2026-06-27",
+            "note": "sum of the last four quarters",
+            "sources": [
+              "0000320193-25-000073",
+              "0000320193-25-000079",
+              "0000320193-26-000006",
+              "0000320193-26-000013",
+              "0000320193-26-000020"
+            ]
+          },
+          {
+            "name": "stockholders_equity",
+            "value": "65830000000",
+            "start": null,
+            "end": "2025-06-28",
+            "note": null,
+            "sources": [
+              "0000320193-25-000073"
+            ]
+          },
+          {
+            "name": "stockholders_equity",
+            "value": "107520000000",
+            "start": null,
+            "end": "2026-06-27",
+            "note": null,
+            "sources": [
+              "0000320193-26-000020"
+            ]
+          }
+        ],
+        "notes": [],
+        "percentile": "48",
+        "median": "149.81",
+        "observations": 33,
+        "since": "2024-01-31"
+      },
+      {
+        "measure_id": "gross_margin",
+        "group": "quality",
+        "unit": "percent",
+        "value": "48.65",
+        "reason": null,
+        "detail": "ttm 2025-06-29 to 2026-06-27",
+        "start": "2025-06-29",
+        "end": "2026-06-27",
+        "inputs": [
+          {
+            "name": "gross_profit_ttm",
+            "value": "227123000000",
+            "start": "2025-06-29",
+            "end": "2026-06-27",
+            "note": "sum of the last four quarters",
+            "sources": [
+              "0000320193-25-000073",
+              "0000320193-25-000079",
+              "0000320193-26-000006",
+              "0000320193-26-000013",
+              "0000320193-26-000020"
+            ]
+          },
+          {
+            "name": "revenue_ttm",
+            "value": "466823000000",
+            "start": "2025-06-29",
+            "end": "2026-06-27",
+            "note": "sum of the last four quarters",
+            "sources": [
+              "0000320193-25-000073",
+              "0000320193-25-000079",
+              "0000320193-26-000006",
+              "0000320193-26-000013",
+              "0000320193-26-000020"
+            ]
+          }
+        ],
+        "notes": [],
+        "percentile": "100",
+        "median": "46.63",
+        "observations": 33,
+        "since": "2024-01-31"
+      },
+      {
+        "measure_id": "operating_margin",
+        "group": "quality",
+        "unit": "percent",
+        "value": "33.17",
+        "reason": null,
+        "detail": "ttm 2025-06-29 to 2026-06-27",
+        "start": "2025-06-29",
+        "end": "2026-06-27",
+        "inputs": [
+          {
+            "name": "operating_income_ttm",
+            "value": "154859000000",
+            "start": "2025-06-29",
+            "end": "2026-06-27",
+            "note": "sum of the last four quarters",
+            "sources": [
+              "0000320193-25-000073",
+              "0000320193-25-000079",
+              "0000320193-26-000006",
+              "0000320193-26-000013",
+              "0000320193-26-000020"
+            ]
+          },
+          {
+            "name": "revenue_ttm",
+            "value": "466823000000",
+            "start": "2025-06-29",
+            "end": "2026-06-27",
+            "note": "sum of the last four quarters",
+            "sources": [
+              "0000320193-25-000073",
+              "0000320193-25-000079",
+              "0000320193-26-000006",
+              "0000320193-26-000013",
+              "0000320193-26-000020"
+            ]
+          }
+        ],
+        "notes": [],
+        "percentile": "100",
+        "median": "31.81",
+        "observations": 33,
+        "since": "2024-01-31"
+      },
+      {
+        "measure_id": "fcf_conversion",
+        "group": "quality",
+        "unit": "percent",
+        "value": "106.01",
+        "reason": null,
+        "detail": "ttm 2025-06-29 to 2026-06-27",
+        "start": "2025-06-29",
+        "end": "2026-06-27",
+        "inputs": [
+          {
+            "name": "free_cash_flow_ttm",
+            "value": "136683000000",
+            "start": "2025-06-29",
+            "end": "2026-06-27",
+            "note": "operating cash flow - capex, last four quarters",
+            "sources": [
+              "0000320193-25-000073",
+              "0000320193-25-000079",
+              "0000320193-26-000006",
+              "0000320193-26-000013",
+              "0000320193-26-000020"
+            ]
+          },
+          {
+            "name": "net_income_ttm",
+            "value": "128930000000",
+            "start": "2025-06-29",
+            "end": "2026-06-27",
+            "note": "sum of the last four quarters",
+            "sources": [
+              "0000320193-25-000073",
+              "0000320193-25-000079",
+              "0000320193-26-000006",
+              "0000320193-26-000013",
+              "0000320193-26-000020"
+            ]
+          }
+        ],
+        "notes": [],
+        "percentile": "94",
+        "median": "102.34",
+        "observations": 33,
+        "since": "2024-01-31"
+      },
+      {
+        "measure_id": "net_debt_to_ebitda",
+        "group": "quality",
+        "unit": "x",
+        "value": "0.27",
+        "reason": null,
+        "detail": "ttm 2025-06-29 to 2026-06-27",
+        "start": "2025-06-29",
+        "end": "2026-06-27",
+        "inputs": [
+          {
+            "name": "net_debt",
+            "value": "44800000000",
+            "start": null,
+            "end": "2026-06-27",
+            "note": "total debt - cash",
+            "sources": [
+              "0000320193-26-000020"
+            ]
+          },
+          {
+            "name": "ebitda_ttm",
+            "value": "167959000000",
+            "start": "2025-06-29",
+            "end": "2026-06-27",
+            "note": "operating income + depreciation and amortization",
+            "sources": [
+              "0000320193-25-000073",
+              "0000320193-25-000079",
+              "0000320193-26-000006",
+              "0000320193-26-000013",
+              "0000320193-26-000020"
+            ]
+          }
+        ],
+        "notes": [],
+        "percentile": "18",
+        "median": "0.48",
+        "observations": 33,
+        "since": "2024-01-31"
+      },
+      {
+        "measure_id": "diluted_shares_change",
+        "group": "quality",
+        "unit": "percent",
+        "value": "-1.56",
+        "reason": null,
+        "detail": "ttm 2025-06-29 to 2026-06-27",
+        "start": "2025-06-29",
+        "end": "2026-06-27",
+        "inputs": [
+          {
+            "name": "diluted_shares",
+            "value": "14714676000",
+            "start": "2026-03-29",
+            "end": "2026-06-27",
+            "note": null,
+            "sources": [
+              "0000320193-26-000020"
+            ]
+          },
+          {
+            "name": "diluted_shares",
+            "value": "14948179000",
+            "start": "2025-03-30",
+            "end": "2025-06-28",
+            "note": null,
+            "sources": [
+              "0000320193-25-000073"
+            ]
+          }
+        ],
+        "notes": [],
+        "percentile": "100",
+        "median": "-2.56",
+        "observations": 33,
+        "since": "2024-01-31"
+      },
+      {
+        "measure_id": "revenue_growth",
+        "group": "quality",
+        "unit": "percent",
+        "value": "14.24",
+        "reason": null,
+        "detail": "ttm 2025-06-29 to 2026-06-27",
+        "start": "2025-06-29",
+        "end": "2026-06-27",
+        "inputs": [
+          {
+            "name": "revenue_ttm",
+            "value": "466823000000",
+            "start": "2025-06-29",
+            "end": "2026-06-27",
+            "note": "sum of the last four quarters",
+            "sources": [
+              "0000320193-25-000073",
+              "0000320193-25-000079",
+              "0000320193-26-000006",
+              "0000320193-26-000013",
+              "0000320193-26-000020"
+            ]
+          },
+          {
+            "name": "revenue_ttm",
+            "value": "408625000000",
+            "start": "2024-06-30",
+            "end": "2025-06-28",
+            "note": "sum of the last four quarters",
+            "sources": [
+              "0000320193-24-000081",
+              "0000320193-24-000123",
+              "0000320193-25-000008",
+              "0000320193-25-000057",
+              "0000320193-25-000073"
+            ]
+          }
+        ],
+        "notes": [],
+        "percentile": "100",
+        "median": "4.91",
+        "observations": 33,
+        "since": "2024-01-31"
+      }
+    ],
+    "history": [
+      {
+        "known_at": "2024-02-01T04:59:59.999999Z",
+        "values": {
+          "roe": "171.95",
+          "roic": "67.14",
+          "beta_252d": null,
+          "fcf_yield": null,
+          "ev_to_sales": null,
+          "reversal_1m": null,
+          "gross_margin": "44.13",
+          "momentum_6_1": null,
+          "pe_ratio_ttm": null,
+          "momentum_12_1": null,
+          "price_to_book": null,
+          "earnings_yield": null,
+          "fcf_conversion": "102.67",
+          "revenue_growth": "-2.80",
+          "volatility_60d": null,
+          "close_vs_sma_50": null,
+          "close_vs_sma_200": null,
+          "operating_margin": "29.82",
+          "net_debt_to_ebitda": "0.64",
+          "diluted_shares_change": "-3.14",
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2024-03-01T04:59:59.999999Z",
+        "values": {
+          "roe": "154.27",
+          "roic": "70.04",
+          "beta_252d": null,
+          "fcf_yield": null,
+          "ev_to_sales": null,
+          "reversal_1m": null,
+          "gross_margin": "45.03",
+          "momentum_6_1": null,
+          "pe_ratio_ttm": null,
+          "momentum_12_1": null,
+          "price_to_book": null,
+          "earnings_yield": null,
+          "fcf_conversion": "105.90",
+          "revenue_growth": "-0.47",
+          "volatility_60d": null,
+          "close_vs_sma_50": null,
+          "close_vs_sma_200": null,
+          "operating_margin": "30.76",
+          "net_debt_to_ebitda": "0.52",
+          "diluted_shares_change": "-2.38",
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2024-04-01T03:59:59.999999Z",
+        "values": {
+          "roe": "154.27",
+          "roic": "70.04",
+          "beta_252d": null,
+          "fcf_yield": null,
+          "ev_to_sales": null,
+          "reversal_1m": null,
+          "gross_margin": "45.03",
+          "momentum_6_1": null,
+          "pe_ratio_ttm": null,
+          "momentum_12_1": null,
+          "price_to_book": null,
+          "earnings_yield": null,
+          "fcf_conversion": "105.90",
+          "revenue_growth": "-0.47",
+          "volatility_60d": null,
+          "close_vs_sma_50": null,
+          "close_vs_sma_200": null,
+          "operating_margin": "30.76",
+          "net_debt_to_ebitda": "0.52",
+          "diluted_shares_change": "-2.38",
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2024-05-01T03:59:59.999999Z",
+        "values": {
+          "roe": "154.27",
+          "roic": "70.04",
+          "beta_252d": null,
+          "fcf_yield": null,
+          "ev_to_sales": null,
+          "reversal_1m": null,
+          "gross_margin": "45.03",
+          "momentum_6_1": null,
+          "pe_ratio_ttm": null,
+          "momentum_12_1": null,
+          "price_to_book": null,
+          "earnings_yield": null,
+          "fcf_conversion": "105.90",
+          "revenue_growth": "-0.47",
+          "volatility_60d": null,
+          "close_vs_sma_50": null,
+          "close_vs_sma_200": null,
+          "operating_margin": "30.76",
+          "net_debt_to_ebitda": "0.52",
+          "diluted_shares_change": "-2.38",
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2024-06-01T03:59:59.999999Z",
+        "values": {
+          "roe": "147.25",
+          "roic": "68.56",
+          "beta_252d": null,
+          "fcf_yield": null,
+          "ev_to_sales": null,
+          "reversal_1m": null,
+          "gross_margin": "45.59",
+          "momentum_6_1": null,
+          "pe_ratio_ttm": null,
+          "momentum_12_1": null,
+          "price_to_book": null,
+          "earnings_yield": null,
+          "fcf_conversion": "101.52",
+          "revenue_growth": "-0.90",
+          "volatility_60d": null,
+          "close_vs_sma_50": null,
+          "close_vs_sma_200": null,
+          "operating_margin": "30.98",
+          "net_debt_to_ebitda": "0.55",
+          "diluted_shares_change": "-2.41",
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2024-07-01T03:59:59.999999Z",
+        "values": {
+          "roe": "147.25",
+          "roic": "68.56",
+          "beta_252d": null,
+          "fcf_yield": null,
+          "ev_to_sales": null,
+          "reversal_1m": null,
+          "gross_margin": "45.59",
+          "momentum_6_1": null,
+          "pe_ratio_ttm": null,
+          "momentum_12_1": null,
+          "price_to_book": null,
+          "earnings_yield": null,
+          "fcf_conversion": "101.52",
+          "revenue_growth": "-0.90",
+          "volatility_60d": null,
+          "close_vs_sma_50": null,
+          "close_vs_sma_200": null,
+          "operating_margin": "30.98",
+          "net_debt_to_ebitda": "0.55",
+          "diluted_shares_change": "-2.41",
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2024-08-01T03:59:59.999999Z",
+        "values": {
+          "roe": "147.25",
+          "roic": "68.56",
+          "beta_252d": null,
+          "fcf_yield": null,
+          "ev_to_sales": null,
+          "reversal_1m": null,
+          "gross_margin": "45.59",
+          "momentum_6_1": null,
+          "pe_ratio_ttm": null,
+          "momentum_12_1": null,
+          "price_to_book": null,
+          "earnings_yield": null,
+          "fcf_conversion": "101.52",
+          "revenue_growth": "-0.90",
+          "volatility_60d": null,
+          "close_vs_sma_50": null,
+          "close_vs_sma_200": null,
+          "operating_margin": "30.98",
+          "net_debt_to_ebitda": "0.55",
+          "diluted_shares_change": "-2.41",
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2024-09-01T03:59:59.999999Z",
+        "values": {
+          "roe": "160.58",
+          "roic": "71.74",
+          "beta_252d": null,
+          "fcf_yield": null,
+          "ev_to_sales": null,
+          "reversal_1m": null,
+          "gross_margin": "45.96",
+          "momentum_6_1": null,
+          "pe_ratio_ttm": null,
+          "momentum_12_1": null,
+          "price_to_book": null,
+          "earnings_yield": null,
+          "fcf_conversion": "102.34",
+          "revenue_growth": "0.43",
+          "volatility_60d": null,
+          "close_vs_sma_50": null,
+          "close_vs_sma_200": null,
+          "operating_margin": "31.27",
+          "net_debt_to_ebitda": "0.57",
+          "diluted_shares_change": "-2.71",
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2024-10-01T03:59:59.999999Z",
+        "values": {
+          "roe": "160.58",
+          "roic": "71.74",
+          "beta_252d": null,
+          "fcf_yield": null,
+          "ev_to_sales": null,
+          "reversal_1m": null,
+          "gross_margin": "45.96",
+          "momentum_6_1": null,
+          "pe_ratio_ttm": null,
+          "momentum_12_1": null,
+          "price_to_book": null,
+          "earnings_yield": null,
+          "fcf_conversion": "102.34",
+          "revenue_growth": "0.43",
+          "volatility_60d": null,
+          "close_vs_sma_50": null,
+          "close_vs_sma_200": null,
+          "operating_margin": "31.27",
+          "net_debt_to_ebitda": "0.57",
+          "diluted_shares_change": "-2.71",
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2024-11-01T03:59:59.999999Z",
+        "values": {
+          "roe": "160.58",
+          "roic": "71.74",
+          "beta_252d": null,
+          "fcf_yield": null,
+          "ev_to_sales": null,
+          "reversal_1m": null,
+          "gross_margin": "45.96",
+          "momentum_6_1": null,
+          "pe_ratio_ttm": null,
+          "momentum_12_1": null,
+          "price_to_book": null,
+          "earnings_yield": null,
+          "fcf_conversion": "102.34",
+          "revenue_growth": "0.43",
+          "volatility_60d": null,
+          "close_vs_sma_50": null,
+          "close_vs_sma_200": null,
+          "operating_margin": "31.27",
+          "net_debt_to_ebitda": "0.57",
+          "diluted_shares_change": "-2.71",
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2024-12-01T04:59:59.999999Z",
+        "values": {
+          "roe": "157.41",
+          "roic": "67.56",
+          "beta_252d": null,
+          "fcf_yield": null,
+          "ev_to_sales": null,
+          "reversal_1m": null,
+          "gross_margin": "46.21",
+          "momentum_6_1": null,
+          "pe_ratio_ttm": null,
+          "momentum_12_1": null,
+          "price_to_book": null,
+          "earnings_yield": null,
+          "fcf_conversion": "116.08",
+          "revenue_growth": "2.02",
+          "volatility_60d": null,
+          "close_vs_sma_50": null,
+          "close_vs_sma_200": null,
+          "operating_margin": "31.51",
+          "net_debt_to_ebitda": "0.57",
+          "diluted_shares_change": "-2.56",
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2025-01-01T04:59:59.999999Z",
+        "values": {
+          "roe": "157.41",
+          "roic": "67.56",
+          "beta_252d": null,
+          "fcf_yield": null,
+          "ev_to_sales": null,
+          "reversal_1m": null,
+          "gross_margin": "46.21",
+          "momentum_6_1": null,
+          "pe_ratio_ttm": null,
+          "momentum_12_1": null,
+          "price_to_book": null,
+          "earnings_yield": null,
+          "fcf_conversion": "116.08",
+          "revenue_growth": "2.02",
+          "volatility_60d": null,
+          "close_vs_sma_50": null,
+          "close_vs_sma_200": null,
+          "operating_margin": "31.51",
+          "net_debt_to_ebitda": "0.57",
+          "diluted_shares_change": "-2.56",
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2025-02-01T04:59:59.999999Z",
+        "values": {
+          "roe": "136.52",
+          "roic": "69.98",
+          "beta_252d": null,
+          "fcf_yield": null,
+          "ev_to_sales": null,
+          "reversal_1m": null,
+          "gross_margin": "46.52",
+          "momentum_6_1": null,
+          "pe_ratio_ttm": null,
+          "momentum_12_1": null,
+          "price_to_book": null,
+          "earnings_yield": null,
+          "fcf_conversion": "102.24",
+          "revenue_growth": "2.61",
+          "volatility_60d": null,
+          "close_vs_sma_50": null,
+          "close_vs_sma_200": null,
+          "operating_margin": "31.76",
+          "net_debt_to_ebitda": "0.48",
+          "diluted_shares_change": "-2.73",
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2025-03-01T04:59:59.999999Z",
+        "values": {
+          "roe": "136.52",
+          "roic": "69.98",
+          "beta_252d": null,
+          "fcf_yield": null,
+          "ev_to_sales": null,
+          "reversal_1m": null,
+          "gross_margin": "46.52",
+          "momentum_6_1": null,
+          "pe_ratio_ttm": null,
+          "momentum_12_1": null,
+          "price_to_book": null,
+          "earnings_yield": null,
+          "fcf_conversion": "102.24",
+          "revenue_growth": "2.61",
+          "volatility_60d": null,
+          "close_vs_sma_50": null,
+          "close_vs_sma_200": null,
+          "operating_margin": "31.76",
+          "net_debt_to_ebitda": "0.48",
+          "diluted_shares_change": "-2.73",
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2025-04-01T03:59:59.999999Z",
+        "values": {
+          "roe": "136.52",
+          "roic": "69.98",
+          "beta_252d": null,
+          "fcf_yield": null,
+          "ev_to_sales": null,
+          "reversal_1m": null,
+          "gross_margin": "46.52",
+          "momentum_6_1": null,
+          "pe_ratio_ttm": null,
+          "momentum_12_1": null,
+          "price_to_book": null,
+          "earnings_yield": null,
+          "fcf_conversion": "102.24",
+          "revenue_growth": "2.61",
+          "volatility_60d": null,
+          "close_vs_sma_50": null,
+          "close_vs_sma_200": null,
+          "operating_margin": "31.76",
+          "net_debt_to_ebitda": "0.48",
+          "diluted_shares_change": "-2.73",
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2025-05-01T03:59:59.999999Z",
+        "values": {
+          "roe": "136.52",
+          "roic": "69.98",
+          "beta_252d": null,
+          "fcf_yield": null,
+          "ev_to_sales": null,
+          "reversal_1m": null,
+          "gross_margin": "46.52",
+          "momentum_6_1": null,
+          "pe_ratio_ttm": null,
+          "momentum_12_1": null,
+          "price_to_book": null,
+          "earnings_yield": null,
+          "fcf_conversion": "102.24",
+          "revenue_growth": "2.61",
+          "volatility_60d": null,
+          "close_vs_sma_50": null,
+          "close_vs_sma_200": null,
+          "operating_margin": "31.76",
+          "net_debt_to_ebitda": "0.48",
+          "diluted_shares_change": "-2.73",
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2025-06-01T03:59:59.999999Z",
+        "values": {
+          "roe": "138.02",
+          "roic": "68.98",
+          "beta_252d": null,
+          "fcf_yield": null,
+          "ev_to_sales": null,
+          "reversal_1m": null,
+          "gross_margin": "46.63",
+          "momentum_6_1": null,
+          "pe_ratio_ttm": null,
+          "momentum_12_1": null,
+          "price_to_book": null,
+          "earnings_yield": null,
+          "fcf_conversion": "101.23",
+          "revenue_growth": "4.91",
+          "volatility_60d": null,
+          "close_vs_sma_50": null,
+          "close_vs_sma_200": null,
+          "operating_margin": "31.81",
+          "net_debt_to_ebitda": "0.50",
+          "diluted_shares_change": "-2.64",
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2025-07-01T03:59:59.999999Z",
+        "values": {
+          "roe": "138.02",
+          "roic": "68.98",
+          "beta_252d": null,
+          "fcf_yield": null,
+          "ev_to_sales": null,
+          "reversal_1m": null,
+          "gross_margin": "46.63",
+          "momentum_6_1": null,
+          "pe_ratio_ttm": null,
+          "momentum_12_1": null,
+          "price_to_book": null,
+          "earnings_yield": null,
+          "fcf_conversion": "101.23",
+          "revenue_growth": "4.91",
+          "volatility_60d": null,
+          "close_vs_sma_50": null,
+          "close_vs_sma_200": null,
+          "operating_margin": "31.81",
+          "net_debt_to_ebitda": "0.50",
+          "diluted_shares_change": "-2.64",
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2025-08-01T03:59:59.999999Z",
+        "values": {
+          "roe": "138.02",
+          "roic": "68.98",
+          "beta_252d": null,
+          "fcf_yield": null,
+          "ev_to_sales": null,
+          "reversal_1m": null,
+          "gross_margin": "46.63",
+          "momentum_6_1": null,
+          "pe_ratio_ttm": null,
+          "momentum_12_1": null,
+          "price_to_book": null,
+          "earnings_yield": null,
+          "fcf_conversion": "101.23",
+          "revenue_growth": "4.91",
+          "volatility_60d": null,
+          "close_vs_sma_50": null,
+          "close_vs_sma_200": null,
+          "operating_margin": "31.81",
+          "net_debt_to_ebitda": "0.50",
+          "diluted_shares_change": "-2.64",
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2025-09-01T03:59:59.999999Z",
+        "values": {
+          "roe": "149.81",
+          "roic": "72.93",
+          "beta_252d": null,
+          "fcf_yield": null,
+          "ev_to_sales": null,
+          "reversal_1m": null,
+          "gross_margin": "46.68",
+          "momentum_6_1": null,
+          "pe_ratio_ttm": null,
+          "momentum_12_1": null,
+          "price_to_book": null,
+          "earnings_yield": null,
+          "fcf_conversion": "96.88",
+          "revenue_growth": "5.97",
+          "volatility_60d": null,
+          "close_vs_sma_50": null,
+          "close_vs_sma_200": null,
+          "operating_margin": "31.87",
+          "net_debt_to_ebitda": "0.46",
+          "diluted_shares_change": "-2.61",
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2025-10-01T03:59:59.999999Z",
+        "values": {
+          "roe": "149.81",
+          "roic": "72.93",
+          "beta_252d": null,
+          "fcf_yield": null,
+          "ev_to_sales": null,
+          "reversal_1m": null,
+          "gross_margin": "46.68",
+          "momentum_6_1": null,
+          "pe_ratio_ttm": null,
+          "momentum_12_1": null,
+          "price_to_book": null,
+          "earnings_yield": null,
+          "fcf_conversion": "96.88",
+          "revenue_growth": "5.97",
+          "volatility_60d": null,
+          "close_vs_sma_50": null,
+          "close_vs_sma_200": null,
+          "operating_margin": "31.87",
+          "net_debt_to_ebitda": "0.46",
+          "diluted_shares_change": "-2.61",
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2025-12-01T04:59:59.999999Z",
+        "values": {
+          "roe": "171.42",
+          "roic": "83.14",
+          "beta_252d": null,
+          "fcf_yield": "2.40",
+          "ev_to_sales": "10.05",
+          "reversal_1m": "3.49",
+          "gross_margin": "46.91",
+          "momentum_6_1": null,
+          "pe_ratio_ttm": "37.38",
+          "momentum_12_1": null,
+          "price_to_book": "55.88",
+          "earnings_yield": "2.68",
+          "fcf_conversion": "88.18",
+          "revenue_growth": "6.43",
+          "volatility_60d": null,
+          "close_vs_sma_50": null,
+          "close_vs_sma_200": null,
+          "operating_margin": "31.97",
+          "net_debt_to_ebitda": "0.43",
+          "diluted_shares_change": "-2.62",
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2026-01-01T04:59:59.999999Z",
+        "values": {
+          "roe": "171.42",
+          "roic": "83.14",
+          "beta_252d": null,
+          "fcf_yield": "2.46",
+          "ev_to_sales": "9.80",
+          "reversal_1m": "-3.97",
+          "gross_margin": "46.91",
+          "momentum_6_1": null,
+          "pe_ratio_ttm": "36.44",
+          "momentum_12_1": null,
+          "price_to_book": "54.48",
+          "earnings_yield": "2.74",
+          "fcf_conversion": "88.18",
+          "revenue_growth": "6.43",
+          "volatility_60d": "17.88",
+          "close_vs_sma_50": "-0.29",
+          "close_vs_sma_200": null,
+          "operating_margin": "31.97",
+          "net_debt_to_ebitda": "0.43",
+          "diluted_shares_change": "-2.62",
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2026-02-01T04:59:59.999999Z",
+        "values": {
+          "roe": "152.02",
+          "roic": "88.29",
+          "beta_252d": null,
+          "fcf_yield": "3.24",
+          "ev_to_sales": "8.85",
+          "reversal_1m": "-4.98",
+          "gross_margin": "47.33",
+          "momentum_6_1": null,
+          "pe_ratio_ttm": "32.85",
+          "momentum_12_1": null,
+          "price_to_book": "43.20",
+          "earnings_yield": "3.04",
+          "fcf_conversion": "104.71",
+          "revenue_growth": "10.07",
+          "volatility_60d": "16.06",
+          "close_vs_sma_50": "-3.29",
+          "close_vs_sma_200": null,
+          "operating_margin": "32.38",
+          "net_debt_to_ebitda": "0.30",
+          "diluted_shares_change": "-2.25",
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2026-03-01T04:59:59.999999Z",
+        "values": {
+          "roe": "152.02",
+          "roic": "88.29",
+          "beta_252d": null,
+          "fcf_yield": "3.18",
+          "ev_to_sales": "9.01",
+          "reversal_1m": "3.12",
+          "gross_margin": "47.33",
+          "momentum_6_1": null,
+          "pe_ratio_ttm": "33.44",
+          "momentum_12_1": null,
+          "price_to_book": "43.98",
+          "earnings_yield": "2.99",
+          "fcf_conversion": "104.71",
+          "revenue_growth": "10.07",
+          "volatility_60d": "23.35",
+          "close_vs_sma_50": "-0.45",
+          "close_vs_sma_200": null,
+          "operating_margin": "32.38",
+          "net_debt_to_ebitda": "0.30",
+          "diluted_shares_change": "-2.25",
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2026-04-01T03:59:59.999999Z",
+        "values": {
+          "roe": "152.02",
+          "roic": "88.29",
+          "beta_252d": null,
+          "fcf_yield": "3.31",
+          "ev_to_sales": "8.66",
+          "reversal_1m": "-4.13",
+          "gross_margin": "47.33",
+          "momentum_6_1": null,
+          "pe_ratio_ttm": "32.13",
+          "momentum_12_1": null,
+          "price_to_book": "42.25",
+          "earnings_yield": "3.11",
+          "fcf_conversion": "104.71",
+          "revenue_growth": "10.07",
+          "volatility_60d": "25.19",
+          "close_vs_sma_50": "-2.40",
+          "close_vs_sma_200": null,
+          "operating_margin": "32.38",
+          "net_debt_to_ebitda": "0.30",
+          "diluted_shares_change": "-2.25",
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2026-05-01T03:59:59.999999Z",
+        "values": {
+          "roe": "152.02",
+          "roic": "88.29",
+          "beta_252d": null,
+          "fcf_yield": "3.10",
+          "ev_to_sales": "9.25",
+          "reversal_1m": "6.92",
+          "gross_margin": "47.33",
+          "momentum_6_1": "-5.47",
+          "pe_ratio_ttm": "34.35",
+          "momentum_12_1": null,
+          "price_to_book": "45.17",
+          "earnings_yield": "2.91",
+          "fcf_conversion": "104.71",
+          "revenue_growth": "10.07",
+          "volatility_60d": "25.08",
+          "close_vs_sma_50": "4.03",
+          "close_vs_sma_200": null,
+          "operating_margin": "32.38",
+          "net_debt_to_ebitda": "0.30",
+          "diluted_shares_change": "-2.25",
+          "relative_momentum_6_1": "-0.67",
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2026-06-01T03:59:59.999999Z",
+        "values": {
+          "roe": "141.47",
+          "roic": "86.62",
+          "beta_252d": null,
+          "fcf_yield": "2.82",
+          "ev_to_sales": "10.24",
+          "reversal_1m": "15.61",
+          "gross_margin": "47.86",
+          "momentum_6_1": "-2.36",
+          "pe_ratio_ttm": "37.78",
+          "momentum_12_1": null,
+          "price_to_book": "43.04",
+          "earnings_yield": "2.65",
+          "fcf_conversion": "105.38",
+          "revenue_growth": "12.76",
+          "volatility_60d": "21.06",
+          "close_vs_sma_50": "13.36",
+          "close_vs_sma_200": null,
+          "operating_margin": "32.64",
+          "net_debt_to_ebitda": "0.24",
+          "diluted_shares_change": "-2.19",
+          "relative_momentum_6_1": "-8.38",
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2026-07-01T03:59:59.999999Z",
+        "values": {
+          "roe": "141.47",
+          "roic": "86.62",
+          "beta_252d": null,
+          "fcf_yield": "3.04",
+          "ev_to_sales": "9.50",
+          "reversal_1m": "-7.27",
+          "gross_margin": "47.86",
+          "momentum_6_1": "14.35",
+          "pe_ratio_ttm": "35.03",
+          "momentum_12_1": null,
+          "price_to_book": "39.91",
+          "earnings_yield": "2.85",
+          "fcf_conversion": "105.38",
+          "revenue_growth": "12.76",
+          "volatility_60d": "27.33",
+          "close_vs_sma_50": "-0.99",
+          "close_vs_sma_200": null,
+          "operating_margin": "32.64",
+          "net_debt_to_ebitda": "0.24",
+          "diluted_shares_change": "-2.19",
+          "relative_momentum_6_1": "4.46",
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2026-08-01T03:59:59.999999Z",
+        "values": {
+          "roe": "148.75",
+          "roic": "90.32",
+          "beta_252d": null,
+          "fcf_yield": "3.03",
+          "ev_to_sales": "9.75",
+          "reversal_1m": "4.94",
+          "gross_margin": "48.65",
+          "momentum_6_1": "14.19",
+          "pe_ratio_ttm": "35.43",
+          "momentum_12_1": null,
+          "price_to_book": "41.93",
+          "earnings_yield": "2.82",
+          "fcf_conversion": "106.01",
+          "revenue_growth": "14.24",
+          "volatility_60d": "32.01",
+          "close_vs_sma_50": "-0.19",
+          "close_vs_sma_200": "11.13",
+          "operating_margin": "33.17",
+          "net_debt_to_ebitda": "0.27",
+          "diluted_shares_change": "-1.56",
+          "relative_momentum_6_1": "6.17",
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2026-09-01T03:59:59.999999Z",
+        "values": {
+          "roe": "148.75",
+          "roic": "90.32",
+          "beta_252d": null,
+          "fcf_yield": "2.96",
+          "ev_to_sales": "10.00",
+          "reversal_1m": "2.66",
+          "gross_margin": "48.65",
+          "momentum_6_1": "16.80",
+          "pe_ratio_ttm": "36.34",
+          "momentum_12_1": null,
+          "price_to_book": "43.01",
+          "earnings_yield": "2.75",
+          "fcf_conversion": "106.01",
+          "revenue_growth": "14.24",
+          "volatility_60d": "32.10",
+          "close_vs_sma_50": "1.43",
+          "close_vs_sma_200": "12.04",
+          "operating_margin": "33.17",
+          "net_debt_to_ebitda": "0.27",
+          "diluted_shares_change": "-1.56",
+          "relative_momentum_6_1": "7.38",
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2026-10-01T03:59:59.999999Z",
+        "values": {
+          "roe": "148.75",
+          "roic": "90.32",
+          "beta_252d": null,
+          "fcf_yield": "2.81",
+          "ev_to_sales": "10.51",
+          "reversal_1m": "5.10",
+          "gross_margin": "48.65",
+          "momentum_6_1": "25.07",
+          "pe_ratio_ttm": "38.19",
+          "momentum_12_1": null,
+          "price_to_book": "45.20",
+          "earnings_yield": "2.62",
+          "fcf_conversion": "106.01",
+          "revenue_growth": "14.24",
+          "volatility_60d": "27.22",
+          "close_vs_sma_50": "3.39",
+          "close_vs_sma_200": "15.39",
+          "operating_margin": "33.17",
+          "net_debt_to_ebitda": "0.27",
+          "diluted_shares_change": "-1.56",
+          "relative_momentum_6_1": "6.82",
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2026-10-06T12:00:00Z",
+        "values": {
+          "roe": "148.75",
+          "roic": "90.32",
+          "beta_252d": null,
+          "fcf_yield": "2.81",
+          "ev_to_sales": "10.50",
+          "reversal_1m": "1.43",
+          "gross_margin": "48.65",
+          "momentum_6_1": "27.02",
+          "pe_ratio_ttm": "38.18",
+          "momentum_12_1": null,
+          "price_to_book": "45.18",
+          "earnings_yield": "2.62",
+          "fcf_conversion": "106.01",
+          "revenue_growth": "14.24",
+          "volatility_60d": "27.25",
+          "close_vs_sma_50": "3.25",
+          "close_vs_sma_200": "15.01",
+          "operating_margin": "33.17",
+          "net_debt_to_ebitda": "0.27",
+          "diluted_shares_change": "-1.56",
+          "relative_momentum_6_1": "9.38",
+          "relative_momentum_12_1": null
+        }
+      }
+    ],
+    "detail": "Each value is compared with the instrument's own history since 2016, never ranked against the other instruments: the universe has no delisted companies (P2-3, KI-1). Descriptions of the past, not forecasts or signals."
+  }
+}

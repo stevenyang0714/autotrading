@@ -1,0 +1,2984 @@
+{
+  "recorded_at": "2026-10-13T12:46:07.747573+00:00",
+  "recorded_from": "recorded SEC facts and Alpaca closes, splits and dividends replayed into the integration test database (tests/integration/test_factors.py)",
+  "endpoint": "/factors",
+  "params": {
+    "known_at": "2026-10-06T12:00:00Z"
+  },
+  "response": {
+    "known_at": "2026-10-06T12:00:00Z",
+    "definition_version": "0.1.0",
+    "benchmark": "SPY",
+    "rows": [
+      {
+        "ticker": "AAPL",
+        "instrument_type": "equity",
+        "price": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "fundamentals": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "values": [
+          {
+            "measure_id": "momentum_12_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "momentum_6_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": "27.02",
+            "reason": null,
+            "percentile": "100",
+            "notes": 0
+          },
+          {
+            "measure_id": "reversal_1m",
+            "group": "trend",
+            "unit": "percent",
+            "value": "1.43",
+            "reason": null,
+            "percentile": "42",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_50",
+            "group": "trend",
+            "unit": "percent",
+            "value": "3.25",
+            "reason": null,
+            "percentile": "73",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_200",
+            "group": "trend",
+            "unit": "percent",
+            "value": "15.01",
+            "reason": null,
+            "percentile": "75",
+            "notes": 0
+          },
+          {
+            "measure_id": "volatility_60d",
+            "group": "risk",
+            "unit": "percent",
+            "value": "27.25",
+            "reason": null,
+            "percentile": "73",
+            "notes": 0
+          },
+          {
+            "measure_id": "beta_252d",
+            "group": "risk",
+            "unit": "ratio",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_12_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_6_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": "9.38",
+            "reason": null,
+            "percentile": "100",
+            "notes": 0
+          },
+          {
+            "measure_id": "pe_ratio_ttm",
+            "group": "value",
+            "unit": "x",
+            "value": "38.18",
+            "reason": null,
+            "percentile": "92",
+            "notes": 0
+          },
+          {
+            "measure_id": "ev_to_sales",
+            "group": "value",
+            "unit": "x",
+            "value": "10.50",
+            "reason": null,
+            "percentile": "92",
+            "notes": 0
+          },
+          {
+            "measure_id": "price_to_book",
+            "group": "value",
+            "unit": "x",
+            "value": "45.18",
+            "reason": null,
+            "percentile": "75",
+            "notes": 0
+          },
+          {
+            "measure_id": "fcf_yield",
+            "group": "value",
+            "unit": "percent",
+            "value": "2.81",
+            "reason": null,
+            "percentile": "33",
+            "notes": 0
+          },
+          {
+            "measure_id": "earnings_yield",
+            "group": "value",
+            "unit": "percent",
+            "value": "2.62",
+            "reason": null,
+            "percentile": "17",
+            "notes": 0
+          },
+          {
+            "measure_id": "roic",
+            "group": "quality",
+            "unit": "percent",
+            "value": "90.32",
+            "reason": null,
+            "percentile": "100",
+            "notes": 0
+          },
+          {
+            "measure_id": "roe",
+            "group": "quality",
+            "unit": "percent",
+            "value": "148.75",
+            "reason": null,
+            "percentile": "48",
+            "notes": 0
+          },
+          {
+            "measure_id": "gross_margin",
+            "group": "quality",
+            "unit": "percent",
+            "value": "48.65",
+            "reason": null,
+            "percentile": "100",
+            "notes": 0
+          },
+          {
+            "measure_id": "operating_margin",
+            "group": "quality",
+            "unit": "percent",
+            "value": "33.17",
+            "reason": null,
+            "percentile": "100",
+            "notes": 0
+          },
+          {
+            "measure_id": "fcf_conversion",
+            "group": "quality",
+            "unit": "percent",
+            "value": "106.01",
+            "reason": null,
+            "percentile": "94",
+            "notes": 0
+          },
+          {
+            "measure_id": "net_debt_to_ebitda",
+            "group": "quality",
+            "unit": "x",
+            "value": "0.27",
+            "reason": null,
+            "percentile": "18",
+            "notes": 0
+          },
+          {
+            "measure_id": "diluted_shares_change",
+            "group": "quality",
+            "unit": "percent",
+            "value": "-1.56",
+            "reason": null,
+            "percentile": "100",
+            "notes": 0
+          },
+          {
+            "measure_id": "revenue_growth",
+            "group": "quality",
+            "unit": "percent",
+            "value": "14.24",
+            "reason": null,
+            "percentile": "100",
+            "notes": 0
+          }
+        ]
+      },
+      {
+        "ticker": "MSFT",
+        "instrument_type": "equity",
+        "price": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "fundamentals": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "values": [
+          {
+            "measure_id": "momentum_12_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "momentum_6_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": "37.36",
+            "reason": null,
+            "percentile": "86",
+            "notes": 0
+          },
+          {
+            "measure_id": "reversal_1m",
+            "group": "trend",
+            "unit": "percent",
+            "value": "2.95",
+            "reason": null,
+            "percentile": "67",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_50",
+            "group": "trend",
+            "unit": "percent",
+            "value": "7.05",
+            "reason": null,
+            "percentile": "73",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_200",
+            "group": "trend",
+            "unit": "percent",
+            "value": "21.27",
+            "reason": null,
+            "percentile": "100",
+            "notes": 0
+          },
+          {
+            "measure_id": "volatility_60d",
+            "group": "risk",
+            "unit": "percent",
+            "value": "40.23",
+            "reason": null,
+            "percentile": "73",
+            "notes": 0
+          },
+          {
+            "measure_id": "beta_252d",
+            "group": "risk",
+            "unit": "ratio",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_12_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_6_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": "19.72",
+            "reason": null,
+            "percentile": "100",
+            "notes": 0
+          },
+          {
+            "measure_id": "pe_ratio_ttm",
+            "group": "value",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "ev_to_sales",
+            "group": "value",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "price_to_book",
+            "group": "value",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "fcf_yield",
+            "group": "value",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "earnings_yield",
+            "group": "value",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "roic",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "roe",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "gross_margin",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "operating_margin",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "fcf_conversion",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "net_debt_to_ebitda",
+            "group": "quality",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "diluted_shares_change",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "revenue_growth",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          }
+        ]
+      },
+      {
+        "ticker": "GOOGL",
+        "instrument_type": "equity",
+        "price": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "fundamentals": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "values": [
+          {
+            "measure_id": "momentum_12_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "momentum_6_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": "14.23",
+            "reason": null,
+            "percentile": "57",
+            "notes": 0
+          },
+          {
+            "measure_id": "reversal_1m",
+            "group": "trend",
+            "unit": "percent",
+            "value": "1.23",
+            "reason": null,
+            "percentile": "58",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_50",
+            "group": "trend",
+            "unit": "percent",
+            "value": "0.45",
+            "reason": null,
+            "percentile": "64",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_200",
+            "group": "trend",
+            "unit": "percent",
+            "value": "2.17",
+            "reason": null,
+            "percentile": "75",
+            "notes": 0
+          },
+          {
+            "measure_id": "volatility_60d",
+            "group": "risk",
+            "unit": "percent",
+            "value": "34.83",
+            "reason": null,
+            "percentile": "55",
+            "notes": 0
+          },
+          {
+            "measure_id": "beta_252d",
+            "group": "risk",
+            "unit": "ratio",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_12_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_6_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": "-3.41",
+            "reason": null,
+            "percentile": "14",
+            "notes": 0
+          },
+          {
+            "measure_id": "pe_ratio_ttm",
+            "group": "value",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "ev_to_sales",
+            "group": "value",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "price_to_book",
+            "group": "value",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "fcf_yield",
+            "group": "value",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "earnings_yield",
+            "group": "value",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "roic",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "roe",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "gross_margin",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "operating_margin",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "fcf_conversion",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "net_debt_to_ebitda",
+            "group": "quality",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "diluted_shares_change",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "revenue_growth",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          }
+        ]
+      },
+      {
+        "ticker": "META",
+        "instrument_type": "equity",
+        "price": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "fundamentals": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "values": [
+          {
+            "measure_id": "momentum_12_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "momentum_6_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": "6.67",
+            "reason": null,
+            "percentile": "100",
+            "notes": 0
+          },
+          {
+            "measure_id": "reversal_1m",
+            "group": "trend",
+            "unit": "percent",
+            "value": "21.57",
+            "reason": null,
+            "percentile": "92",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_50",
+            "group": "trend",
+            "unit": "percent",
+            "value": "18.14",
+            "reason": null,
+            "percentile": "100",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_200",
+            "group": "trend",
+            "unit": "percent",
+            "value": "17.99",
+            "reason": null,
+            "percentile": "100",
+            "notes": 0
+          },
+          {
+            "measure_id": "volatility_60d",
+            "group": "risk",
+            "unit": "percent",
+            "value": "46.45",
+            "reason": null,
+            "percentile": "82",
+            "notes": 0
+          },
+          {
+            "measure_id": "beta_252d",
+            "group": "risk",
+            "unit": "ratio",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_12_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_6_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": "-10.97",
+            "reason": null,
+            "percentile": "86",
+            "notes": 0
+          },
+          {
+            "measure_id": "pe_ratio_ttm",
+            "group": "value",
+            "unit": "x",
+            "value": "27.94",
+            "reason": null,
+            "percentile": "75",
+            "notes": 0
+          },
+          {
+            "measure_id": "ev_to_sales",
+            "group": "value",
+            "unit": "x",
+            "value": "8.58",
+            "reason": null,
+            "percentile": "75",
+            "notes": 0
+          },
+          {
+            "measure_id": "price_to_book",
+            "group": "value",
+            "unit": "x",
+            "value": "7.24",
+            "reason": null,
+            "percentile": "67",
+            "notes": 0
+          },
+          {
+            "measure_id": "fcf_yield",
+            "group": "value",
+            "unit": "percent",
+            "value": "2.17",
+            "reason": null,
+            "percentile": "8",
+            "notes": 0
+          },
+          {
+            "measure_id": "earnings_yield",
+            "group": "value",
+            "unit": "percent",
+            "value": "3.58",
+            "reason": null,
+            "percentile": "33",
+            "notes": 0
+          },
+          {
+            "measure_id": "roic",
+            "group": "quality",
+            "unit": "percent",
+            "value": "24.99",
+            "reason": null,
+            "percentile": "33",
+            "notes": 0
+          },
+          {
+            "measure_id": "roe",
+            "group": "quality",
+            "unit": "percent",
+            "value": "29.85",
+            "reason": null,
+            "percentile": "33",
+            "notes": 0
+          },
+          {
+            "measure_id": "gross_margin",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "operating_margin",
+            "group": "quality",
+            "unit": "percent",
+            "value": "38.08",
+            "reason": null,
+            "percentile": "33",
+            "notes": 0
+          },
+          {
+            "measure_id": "fcf_conversion",
+            "group": "quality",
+            "unit": "percent",
+            "value": "60.17",
+            "reason": null,
+            "percentile": "33",
+            "notes": 0
+          },
+          {
+            "measure_id": "net_debt_to_ebitda",
+            "group": "quality",
+            "unit": "x",
+            "value": "0.62",
+            "reason": null,
+            "percentile": "100",
+            "notes": 0
+          },
+          {
+            "measure_id": "diluted_shares_change",
+            "group": "quality",
+            "unit": "percent",
+            "value": "-0.16",
+            "reason": null,
+            "percentile": "100",
+            "notes": 0
+          },
+          {
+            "measure_id": "revenue_growth",
+            "group": "quality",
+            "unit": "percent",
+            "value": "27.65",
+            "reason": null,
+            "percentile": "100",
+            "notes": 0
+          }
+        ]
+      },
+      {
+        "ticker": "NVDA",
+        "instrument_type": "equity",
+        "price": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "fundamentals": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "values": [
+          {
+            "measure_id": "momentum_12_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": "21.09",
+            "reason": null,
+            "percentile": "17",
+            "notes": 0
+          },
+          {
+            "measure_id": "momentum_6_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": "28.75",
+            "reason": null,
+            "percentile": "67",
+            "notes": 0
+          },
+          {
+            "measure_id": "reversal_1m",
+            "group": "trend",
+            "unit": "percent",
+            "value": "4.69",
+            "reason": null,
+            "percentile": "61",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_50",
+            "group": "trend",
+            "unit": "percent",
+            "value": "9.13",
+            "reason": null,
+            "percentile": "76",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_200",
+            "group": "trend",
+            "unit": "percent",
+            "value": "18.84",
+            "reason": null,
+            "percentile": "56",
+            "notes": 0
+          },
+          {
+            "measure_id": "volatility_60d",
+            "group": "risk",
+            "unit": "percent",
+            "value": "38.15",
+            "reason": null,
+            "percentile": "36",
+            "notes": 0
+          },
+          {
+            "measure_id": "beta_252d",
+            "group": "risk",
+            "unit": "ratio",
+            "value": "1.882",
+            "reason": null,
+            "percentile": "41",
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_12_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": "4.60",
+            "reason": null,
+            "percentile": "17",
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_6_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": "11.11",
+            "reason": null,
+            "percentile": "55",
+            "notes": 0
+          },
+          {
+            "measure_id": "pe_ratio_ttm",
+            "group": "value",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "ev_to_sales",
+            "group": "value",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "price_to_book",
+            "group": "value",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "fcf_yield",
+            "group": "value",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "earnings_yield",
+            "group": "value",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "roic",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "roe",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "gross_margin",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "operating_margin",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "fcf_conversion",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "net_debt_to_ebitda",
+            "group": "quality",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "diluted_shares_change",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "revenue_growth",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          }
+        ]
+      },
+      {
+        "ticker": "JPM",
+        "instrument_type": "equity",
+        "price": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "fundamentals": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "values": [
+          {
+            "measure_id": "momentum_12_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "momentum_6_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": "23.09",
+            "reason": null,
+            "percentile": "100",
+            "notes": 0
+          },
+          {
+            "measure_id": "reversal_1m",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-8.20",
+            "reason": null,
+            "percentile": "8",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_50",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-5.53",
+            "reason": null,
+            "percentile": "18",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_200",
+            "group": "trend",
+            "unit": "percent",
+            "value": "3.27",
+            "reason": null,
+            "percentile": "50",
+            "notes": 0
+          },
+          {
+            "measure_id": "volatility_60d",
+            "group": "risk",
+            "unit": "percent",
+            "value": "18.20",
+            "reason": null,
+            "percentile": "9",
+            "notes": 0
+          },
+          {
+            "measure_id": "beta_252d",
+            "group": "risk",
+            "unit": "ratio",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_12_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_6_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": "5.45",
+            "reason": null,
+            "percentile": "86",
+            "notes": 0
+          },
+          {
+            "measure_id": "pe_ratio_ttm",
+            "group": "value",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "ev_to_sales",
+            "group": "value",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "price_to_book",
+            "group": "value",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "fcf_yield",
+            "group": "value",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "earnings_yield",
+            "group": "value",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "roic",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "roe",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "gross_margin",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "operating_margin",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "fcf_conversion",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "net_debt_to_ebitda",
+            "group": "quality",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "diluted_shares_change",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "revenue_growth",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          }
+        ]
+      },
+      {
+        "ticker": "XOM",
+        "instrument_type": "equity",
+        "price": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "fundamentals": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "values": [
+          {
+            "measure_id": "momentum_12_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "momentum_6_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": "0.58",
+            "reason": null,
+            "percentile": "43",
+            "notes": 0
+          },
+          {
+            "measure_id": "reversal_1m",
+            "group": "trend",
+            "unit": "percent",
+            "value": "1.10",
+            "reason": null,
+            "percentile": "42",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_50",
+            "group": "trend",
+            "unit": "percent",
+            "value": "2.07",
+            "reason": null,
+            "percentile": "45",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_200",
+            "group": "trend",
+            "unit": "percent",
+            "value": "9.81",
+            "reason": null,
+            "percentile": "50",
+            "notes": 0
+          },
+          {
+            "measure_id": "volatility_60d",
+            "group": "risk",
+            "unit": "percent",
+            "value": "24.62",
+            "reason": null,
+            "percentile": "27",
+            "notes": 0
+          },
+          {
+            "measure_id": "beta_252d",
+            "group": "risk",
+            "unit": "ratio",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_12_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_6_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": "-17.06",
+            "reason": null,
+            "percentile": "29",
+            "notes": 0
+          },
+          {
+            "measure_id": "pe_ratio_ttm",
+            "group": "value",
+            "unit": "x",
+            "value": "21.11",
+            "reason": null,
+            "percentile": "50",
+            "notes": 0
+          },
+          {
+            "measure_id": "ev_to_sales",
+            "group": "value",
+            "unit": "x",
+            "value": "1.89",
+            "reason": null,
+            "percentile": "67",
+            "notes": 0
+          },
+          {
+            "measure_id": "price_to_book",
+            "group": "value",
+            "unit": "x",
+            "value": "2.60",
+            "reason": null,
+            "percentile": "92",
+            "notes": 0
+          },
+          {
+            "measure_id": "fcf_yield",
+            "group": "value",
+            "unit": "percent",
+            "value": "4.53",
+            "reason": null,
+            "percentile": "67",
+            "notes": 0
+          },
+          {
+            "measure_id": "earnings_yield",
+            "group": "value",
+            "unit": "percent",
+            "value": "4.74",
+            "reason": null,
+            "percentile": "58",
+            "notes": 0
+          },
+          {
+            "measure_id": "roic",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "roe",
+            "group": "quality",
+            "unit": "percent",
+            "value": "12.55",
+            "reason": null,
+            "percentile": "100",
+            "notes": 0
+          },
+          {
+            "measure_id": "gross_margin",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "operating_margin",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "fcf_conversion",
+            "group": "quality",
+            "unit": "percent",
+            "value": "93.27",
+            "reason": null,
+            "percentile": "100",
+            "notes": 0
+          },
+          {
+            "measure_id": "net_debt_to_ebitda",
+            "group": "quality",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "diluted_shares_change",
+            "group": "quality",
+            "unit": "percent",
+            "value": "-3.63",
+            "reason": null,
+            "percentile": "75",
+            "notes": 0
+          },
+          {
+            "measure_id": "revenue_growth",
+            "group": "quality",
+            "unit": "percent",
+            "value": "9.07",
+            "reason": null,
+            "percentile": "100",
+            "notes": 0
+          }
+        ]
+      },
+      {
+        "ticker": "AZO",
+        "instrument_type": "equity",
+        "price": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "fundamentals": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "values": [
+          {
+            "measure_id": "momentum_12_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "momentum_6_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-13.68",
+            "reason": null,
+            "percentile": "43",
+            "notes": 0
+          },
+          {
+            "measure_id": "reversal_1m",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-5.40",
+            "reason": null,
+            "percentile": "42",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_50",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-5.17",
+            "reason": null,
+            "percentile": "36",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_200",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-14.75",
+            "reason": null,
+            "percentile": "25",
+            "notes": 0
+          },
+          {
+            "measure_id": "volatility_60d",
+            "group": "risk",
+            "unit": "percent",
+            "value": "25.91",
+            "reason": null,
+            "percentile": "18",
+            "notes": 0
+          },
+          {
+            "measure_id": "beta_252d",
+            "group": "risk",
+            "unit": "ratio",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_12_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_6_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": "-31.32",
+            "reason": null,
+            "percentile": "29",
+            "notes": 0
+          },
+          {
+            "measure_id": "pe_ratio_ttm",
+            "group": "value",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "ev_to_sales",
+            "group": "value",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "price_to_book",
+            "group": "value",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "fcf_yield",
+            "group": "value",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "earnings_yield",
+            "group": "value",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "roic",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "roe",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "gross_margin",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "operating_margin",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "fcf_conversion",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "net_debt_to_ebitda",
+            "group": "quality",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "diluted_shares_change",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "revenue_growth",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          }
+        ]
+      },
+      {
+        "ticker": "ORLY",
+        "instrument_type": "equity",
+        "price": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "fundamentals": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "values": [
+          {
+            "measure_id": "momentum_12_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "momentum_6_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-5.16",
+            "reason": null,
+            "percentile": "71",
+            "notes": 0
+          },
+          {
+            "measure_id": "reversal_1m",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-3.98",
+            "reason": null,
+            "percentile": "33",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_50",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-4.99",
+            "reason": null,
+            "percentile": "27",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_200",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-7.71",
+            "reason": null,
+            "percentile": "25",
+            "notes": 0
+          },
+          {
+            "measure_id": "volatility_60d",
+            "group": "risk",
+            "unit": "percent",
+            "value": "26.42",
+            "reason": null,
+            "percentile": "45",
+            "notes": 0
+          },
+          {
+            "measure_id": "beta_252d",
+            "group": "risk",
+            "unit": "ratio",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_12_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_6_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": "-22.80",
+            "reason": null,
+            "percentile": "14",
+            "notes": 0
+          },
+          {
+            "measure_id": "pe_ratio_ttm",
+            "group": "value",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "ev_to_sales",
+            "group": "value",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "price_to_book",
+            "group": "value",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "fcf_yield",
+            "group": "value",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "earnings_yield",
+            "group": "value",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "roic",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "roe",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "gross_margin",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "operating_margin",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "fcf_conversion",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "net_debt_to_ebitda",
+            "group": "quality",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "diluted_shares_change",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "revenue_growth",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          }
+        ]
+      },
+      {
+        "ticker": "LOW",
+        "instrument_type": "equity",
+        "price": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "fundamentals": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "values": [
+          {
+            "measure_id": "momentum_12_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "momentum_6_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-13.21",
+            "reason": null,
+            "percentile": "43",
+            "notes": 0
+          },
+          {
+            "measure_id": "reversal_1m",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-11.09",
+            "reason": null,
+            "percentile": "8",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_50",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-12.22",
+            "reason": null,
+            "percentile": "9",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_200",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-22.39",
+            "reason": null,
+            "percentile": "25",
+            "notes": 0
+          },
+          {
+            "measure_id": "volatility_60d",
+            "group": "risk",
+            "unit": "percent",
+            "value": "25.14",
+            "reason": null,
+            "percentile": "18",
+            "notes": 0
+          },
+          {
+            "measure_id": "beta_252d",
+            "group": "risk",
+            "unit": "ratio",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_12_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_6_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": "-30.85",
+            "reason": null,
+            "percentile": "14",
+            "notes": 0
+          },
+          {
+            "measure_id": "pe_ratio_ttm",
+            "group": "value",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "ev_to_sales",
+            "group": "value",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "price_to_book",
+            "group": "value",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "fcf_yield",
+            "group": "value",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "earnings_yield",
+            "group": "value",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "roic",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "roe",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "gross_margin",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "operating_margin",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "fcf_conversion",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "net_debt_to_ebitda",
+            "group": "quality",
+            "unit": "x",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "diluted_shares_change",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "revenue_growth",
+            "group": "quality",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          }
+        ]
+      },
+      {
+        "ticker": "SPY",
+        "instrument_type": "etf",
+        "price": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "fundamentals": null,
+        "values": [
+          {
+            "measure_id": "momentum_12_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": "16.49",
+            "reason": null,
+            "percentile": "41",
+            "notes": 0
+          },
+          {
+            "measure_id": "momentum_6_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": "17.64",
+            "reason": null,
+            "percentile": "91",
+            "notes": 0
+          },
+          {
+            "measure_id": "reversal_1m",
+            "group": "trend",
+            "unit": "percent",
+            "value": "0.21",
+            "reason": null,
+            "percentile": "39",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_50",
+            "group": "trend",
+            "unit": "percent",
+            "value": "1.36",
+            "reason": null,
+            "percentile": "42",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_200",
+            "group": "trend",
+            "unit": "percent",
+            "value": "7.47",
+            "reason": null,
+            "percentile": "50",
+            "notes": 0
+          },
+          {
+            "measure_id": "volatility_60d",
+            "group": "risk",
+            "unit": "percent",
+            "value": "11.15",
+            "reason": null,
+            "percentile": "33",
+            "notes": 0
+          },
+          {
+            "measure_id": "beta_252d",
+            "group": "risk",
+            "unit": "ratio",
+            "value": null,
+            "reason": "not_meaningful",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_12_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": null,
+            "reason": "not_meaningful",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_6_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": null,
+            "reason": "not_meaningful",
+            "percentile": null,
+            "notes": 0
+          }
+        ]
+      },
+      {
+        "ticker": "QQQ",
+        "instrument_type": "etf",
+        "price": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "fundamentals": null,
+        "values": [
+          {
+            "measure_id": "momentum_12_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "momentum_6_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": "22.08",
+            "reason": null,
+            "percentile": "86",
+            "notes": 0
+          },
+          {
+            "measure_id": "reversal_1m",
+            "group": "trend",
+            "unit": "percent",
+            "value": "5.37",
+            "reason": null,
+            "percentile": "83",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_50",
+            "group": "trend",
+            "unit": "percent",
+            "value": "5.28",
+            "reason": null,
+            "percentile": "82",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_200",
+            "group": "trend",
+            "unit": "percent",
+            "value": "12.98",
+            "reason": null,
+            "percentile": "100",
+            "notes": 0
+          },
+          {
+            "measure_id": "volatility_60d",
+            "group": "risk",
+            "unit": "percent",
+            "value": "18.81",
+            "reason": null,
+            "percentile": "45",
+            "notes": 0
+          },
+          {
+            "measure_id": "beta_252d",
+            "group": "risk",
+            "unit": "ratio",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_12_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_6_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": "4.44",
+            "reason": null,
+            "percentile": "57",
+            "notes": 0
+          }
+        ]
+      },
+      {
+        "ticker": "IWM",
+        "instrument_type": "etf",
+        "price": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "fundamentals": null,
+        "values": [
+          {
+            "measure_id": "momentum_12_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "momentum_6_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": "17.25",
+            "reason": null,
+            "percentile": "86",
+            "notes": 0
+          },
+          {
+            "measure_id": "reversal_1m",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-3.75",
+            "reason": null,
+            "percentile": "25",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_50",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-3.09",
+            "reason": null,
+            "percentile": "27",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_200",
+            "group": "trend",
+            "unit": "percent",
+            "value": "2.49",
+            "reason": null,
+            "percentile": "50",
+            "notes": 0
+          },
+          {
+            "measure_id": "volatility_60d",
+            "group": "risk",
+            "unit": "percent",
+            "value": "13.13",
+            "reason": null,
+            "percentile": "9",
+            "notes": 0
+          },
+          {
+            "measure_id": "beta_252d",
+            "group": "risk",
+            "unit": "ratio",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_12_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_6_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": "-0.39",
+            "reason": null,
+            "percentile": "14",
+            "notes": 0
+          }
+        ]
+      },
+      {
+        "ticker": "TLT",
+        "instrument_type": "etf",
+        "price": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "fundamentals": null,
+        "values": [
+          {
+            "measure_id": "momentum_12_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "momentum_6_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-3.45",
+            "reason": null,
+            "percentile": "43",
+            "notes": 0
+          },
+          {
+            "measure_id": "reversal_1m",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-6.04",
+            "reason": null,
+            "percentile": "8",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_50",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-5.44",
+            "reason": null,
+            "percentile": "9",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_200",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-9.68",
+            "reason": null,
+            "percentile": "25",
+            "notes": 0
+          },
+          {
+            "measure_id": "volatility_60d",
+            "group": "risk",
+            "unit": "percent",
+            "value": "9.95",
+            "reason": null,
+            "percentile": "73",
+            "notes": 0
+          },
+          {
+            "measure_id": "beta_252d",
+            "group": "risk",
+            "unit": "ratio",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_12_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_6_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": "-21.09",
+            "reason": null,
+            "percentile": "29",
+            "notes": 0
+          }
+        ]
+      },
+      {
+        "ticker": "IEF",
+        "instrument_type": "etf",
+        "price": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "fundamentals": null,
+        "values": [
+          {
+            "measure_id": "momentum_12_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "momentum_6_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-1.21",
+            "reason": null,
+            "percentile": "43",
+            "notes": 0
+          },
+          {
+            "measure_id": "reversal_1m",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-3.64",
+            "reason": null,
+            "percentile": "8",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_50",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-3.30",
+            "reason": null,
+            "percentile": "9",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_200",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-5.84",
+            "reason": null,
+            "percentile": "25",
+            "notes": 0
+          },
+          {
+            "measure_id": "volatility_60d",
+            "group": "risk",
+            "unit": "percent",
+            "value": "5.16",
+            "reason": null,
+            "percentile": "64",
+            "notes": 0
+          },
+          {
+            "measure_id": "beta_252d",
+            "group": "risk",
+            "unit": "ratio",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_12_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_6_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": "-18.85",
+            "reason": null,
+            "percentile": "29",
+            "notes": 0
+          }
+        ]
+      },
+      {
+        "ticker": "GLD",
+        "instrument_type": "etf",
+        "price": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "fundamentals": null,
+        "values": [
+          {
+            "measure_id": "momentum_12_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "momentum_6_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-4.08",
+            "reason": null,
+            "percentile": "57",
+            "notes": 0
+          },
+          {
+            "measure_id": "reversal_1m",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-7.48",
+            "reason": null,
+            "percentile": "25",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_50",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-4.26",
+            "reason": null,
+            "percentile": "36",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_200",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-8.78",
+            "reason": null,
+            "percentile": "50",
+            "notes": 0
+          },
+          {
+            "measure_id": "volatility_60d",
+            "group": "risk",
+            "unit": "percent",
+            "value": "24.85",
+            "reason": null,
+            "percentile": "27",
+            "notes": 0
+          },
+          {
+            "measure_id": "beta_252d",
+            "group": "risk",
+            "unit": "ratio",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_12_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_6_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": "-21.72",
+            "reason": null,
+            "percentile": "57",
+            "notes": 0
+          }
+        ]
+      },
+      {
+        "ticker": "XLE",
+        "instrument_type": "etf",
+        "price": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "fundamentals": null,
+        "values": [
+          {
+            "measure_id": "momentum_12_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "momentum_6_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": "9.05",
+            "reason": null,
+            "percentile": "57",
+            "notes": 0
+          },
+          {
+            "measure_id": "reversal_1m",
+            "group": "trend",
+            "unit": "percent",
+            "value": "-1.21",
+            "reason": null,
+            "percentile": "50",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_50",
+            "group": "trend",
+            "unit": "percent",
+            "value": "2.02",
+            "reason": null,
+            "percentile": "45",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_200",
+            "group": "trend",
+            "unit": "percent",
+            "value": "12.00",
+            "reason": null,
+            "percentile": "50",
+            "notes": 0
+          },
+          {
+            "measure_id": "volatility_60d",
+            "group": "risk",
+            "unit": "percent",
+            "value": "21.04",
+            "reason": null,
+            "percentile": "27",
+            "notes": 0
+          },
+          {
+            "measure_id": "beta_252d",
+            "group": "risk",
+            "unit": "ratio",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_12_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_6_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": "-8.59",
+            "reason": null,
+            "percentile": "29",
+            "notes": 0
+          }
+        ]
+      },
+      {
+        "ticker": "XLK",
+        "instrument_type": "etf",
+        "price": {
+          "known_at": "2026-10-06T12:00:00Z",
+          "system_time": "2026-10-13T12:45:47.704259Z",
+          "backfilled": true,
+          "scope": "all",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day"
+        },
+        "fundamentals": null,
+        "values": [
+          {
+            "measure_id": "momentum_12_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "momentum_6_1",
+            "group": "trend",
+            "unit": "percent",
+            "value": "36.12",
+            "reason": null,
+            "percentile": "86",
+            "notes": 0
+          },
+          {
+            "measure_id": "reversal_1m",
+            "group": "trend",
+            "unit": "percent",
+            "value": "8.17",
+            "reason": null,
+            "percentile": "83",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_50",
+            "group": "trend",
+            "unit": "percent",
+            "value": "7.56",
+            "reason": null,
+            "percentile": "82",
+            "notes": 0
+          },
+          {
+            "measure_id": "close_vs_sma_200",
+            "group": "trend",
+            "unit": "percent",
+            "value": "21.60",
+            "reason": null,
+            "percentile": "100",
+            "notes": 0
+          },
+          {
+            "measure_id": "volatility_60d",
+            "group": "risk",
+            "unit": "percent",
+            "value": "25.78",
+            "reason": null,
+            "percentile": "55",
+            "notes": 0
+          },
+          {
+            "measure_id": "beta_252d",
+            "group": "risk",
+            "unit": "ratio",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_12_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": null,
+            "reason": "unavailable",
+            "percentile": null,
+            "notes": 0
+          },
+          {
+            "measure_id": "relative_momentum_6_1",
+            "group": "relative",
+            "unit": "percent",
+            "value": "18.48",
+            "reason": null,
+            "percentile": "57",
+            "notes": 0
+          }
+        ]
+      }
+    ],
+    "detail": "Each value is compared with the instrument's own history since 2016, never ranked against the other instruments: the universe has no delisted companies (P2-3, KI-1). Descriptions of the past, not forecasts or signals."
+  }
+}

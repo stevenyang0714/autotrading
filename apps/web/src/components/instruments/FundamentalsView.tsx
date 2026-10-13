@@ -39,6 +39,8 @@ interface Props {
   sources?: SourceHealth[] | null;
   /** The price block (M0.7), shown under the header; absent for instruments without prices. */
   prices?: ReactNode;
+  /** Trend and factors against the instrument's own history (M2.2), after the price block. */
+  factors?: ReactNode;
   /** Recent news stories (M0.8), shown after the price block. */
   news?: ReactNode;
   /** Market cap, EV and multiples (M1.2), shown after the price block. */
@@ -68,6 +70,7 @@ export function FundamentalsView({
   invalidKnownOn,
   sources,
   prices,
+  factors,
   news,
   valuation,
   fairValue,
@@ -140,6 +143,8 @@ export function FundamentalsView({
       </header>
 
       {prices}
+
+      {factors}
 
       {valuation}
 

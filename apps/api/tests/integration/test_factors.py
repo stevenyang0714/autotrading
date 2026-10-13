@@ -40,6 +40,7 @@ from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.main import create_app
 from autotrading.repositories.factors import (
+    backfill_points,
     load_factor_definitions,
     recompute,
     record_universe,
@@ -282,8 +283,9 @@ def test_instrument_factors_as_known_on_a_date(client: TestClient) -> None:
     assert body["price"]["known_at"].startswith("2024-06-08")
     assert body["fundamentals"]["known_at"].startswith("2024-06-01")  # the May month end
     by = {m["measure_id"]: m for m in body["measures"]}
-    # the month ends since 2024-01 known then (12-1 momentum needs a year of closes first)
-    assert by["close_vs_sma_50"]["observations"] == 5
+    # the last snapshot of each month known then: the month ends since 2024-01 and June's
+    # session before the split (12-1 momentum needs a year of closes first)
+    assert by["close_vs_sma_50"]["observations"] == 6
     assert 0 <= Decimal(by["close_vs_sma_50"]["percentile"]) <= 100
     assert all(p["known_at"] <= "2024-06-20" for p in body["history"])
 
@@ -299,6 +301,23 @@ def test_factors_table_and_definitions(client: TestClient) -> None:
     definitions = client.get("/factors/definitions").json()
     assert [(d["definition_version"], d["status"]) for d in definitions] == [("0.1.0", "active")]
     assert client.get("/instruments/ZZZZ/factors").status_code == 404
+
+
+def test_backfill_points_are_every_session_and_every_month_end_once(
+    sessions: sessionmaker[Session], stored: datetime
+) -> None:
+    with sessions() as session:
+        definitions = stored_definitions(session)
+        assert definitions is not None
+        points = backfill_points(session, definitions, 2024, stored)
+    scopes = dict(points)
+    assert len(scopes) == len(points)  # each T once
+    # 2024-12-31 is a session and the year's last month end (2025-01-01 in UTC): all measures
+    assert scopes[end_of_day(date(2024, 12, 31))] == "all"
+    assert scopes[end_of_day(date(2024, 6, 7))] == "price"
+    assert scopes[end_of_day(date(2024, 6, 30))] == "all"  # a Sunday month end
+    assert sum(scope == "all" for _, scope in points) == 12
+    assert all(p.astimezone(UTC) <= stored for p, _ in points)
 
 
 def test_a_changed_released_definition_set_is_refused(
@@ -321,6 +340,7 @@ def test_record_web_fixtures(client: TestClient) -> None:
         ("factors", "/factors", {"known_at": iso(VALUED_AT)}),
         ("factors-nvda", "/instruments/NVDA/factors", {"known_at": iso(VALUED_AT)}),
         ("factors-tlt", "/instruments/TLT/factors", {"known_at": iso(VALUED_AT)}),
+        ("factors-aapl", "/instruments/AAPL/factors", {"known_at": iso(VALUED_AT)}),
         ("factors-nvda-earlier", "/instruments/NVDA/factors", {"known_at": "2024-06-20T00:00:00Z"}),
     )
     for name, path, params in recorded:

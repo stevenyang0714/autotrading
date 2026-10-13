@@ -276,6 +276,25 @@ METRICS: tuple[MetricDefinition, ...] = (
                     "stress_flag_stock_bond",
                 )
             },
+            # M2.2 (ADR-030): price, trend and factor measures.
+            **{
+                term_id: "factors.price_measures"
+                for term_id in (
+                    "momentum_12_1",
+                    "momentum_6_1",
+                    "reversal_1m",
+                    "close_vs_sma_50",
+                    "close_vs_sma_200",
+                    "volatility_60d",
+                    "beta_252d",
+                    "relative_momentum_12_1",
+                    "relative_momentum_6_1",
+                    "total_return",
+                    "dividend_gap",
+                )
+            },
+            "factor_percentile": "fair_value.relative",
+            "factor_snapshot": "factors.record_snapshot",
         }.items()
     ),
     MetricDefinition(

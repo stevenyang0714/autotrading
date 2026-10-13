@@ -239,3 +239,29 @@ def test_feed_status_and_last_close() -> None:
         DEFINITIONS, datetime(2010, 1, 1, tzinfo=UTC), series("AAPL", [1.0]), None
     )
     assert nothing[1] is None and nothing[0][0].detail == "no close known at this time"
+
+
+def test_a_relative_measure_names_the_benchmark_notes() -> None:
+    from autotrading.api.factors import _attributed
+
+    own = Measure(
+        measure_id="momentum_12_1",
+        group="trend",
+        unit="percent",
+        value=Decimal(1),
+        detail="",
+        notes=["no dividend recorded between 2025-12-19 and 2026-02-02 (usually every 30 days)"],
+    )
+    relative = Measure(
+        measure_id="relative_momentum_12_1",
+        group="relative",
+        unit="percent",
+        value=Decimal(1),
+        detail="",
+        notes=[*own.notes, "no dividend recorded since 2026-06-18 (usually every 91 days)"],
+    )
+    found = _attributed([own, relative], "SPY")[1].notes
+    assert found == [
+        own.notes[0],
+        "SPY: no dividend recorded since 2026-06-18 (usually every 91 days)",
+    ]

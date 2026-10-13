@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 
 import { saveAssumptionsAction } from "@/app/instruments/[ticker]/actions";
 import { EarningsView } from "@/components/earnings/EarningsView";
+import { EtfView } from "@/components/factors/EtfView";
+import { FactorsPanel } from "@/components/factors/FactorsPanel";
 import { InstrumentJournal } from "@/components/journal/InstrumentJournal";
 import { BuybacksView } from "@/components/instruments/BuybacksView";
 import { FairValueView } from "@/components/instruments/FairValueView";
@@ -19,6 +21,7 @@ import {
   loadJournal,
   loadFairValue,
   loadFundamentals,
+  loadInstrumentFactors,
   loadInstrumentPrices,
   loadNews,
   loadResearch,
@@ -64,6 +67,7 @@ export default async function InstrumentPage({
     coverage,
     sources,
     journal,
+    factors,
   ] = await Promise.all([
       loadFundamentals(ticker, knownAt ?? undefined),
       loadInstrumentPrices(ticker, knownAt ?? undefined),
@@ -77,8 +81,26 @@ export default async function InstrumentPage({
       loadNews({ ...newsQuery, kinds: ["article", "official"] }),
       loadSourceHealth(),
       loadJournal(knownAt ?? undefined, ticker),
+      loadInstrumentFactors(ticker, knownAt ?? undefined),
     ]);
-  if (result.status === "not_found") notFound();
+  if (result.status === "not_found") {
+    // A universe ETF (M2.2): no company filings, so its price and trend measures only.
+    if (factors.status !== "ok" || factors.data.instrument_type !== "etf") notFound();
+    const etfStatuses = prices.status === "ok" ? [prices.data.quote?.feed_status, prices.data.closes_feed_status] : [];
+    return (
+      <div className="space-y-4">
+        <DemoBanner statuses={etfStatuses} />
+        <EtfView
+          ticker={factors.data.ticker}
+          knownOn={knownAt ? knownOn : undefined}
+          invalidKnownOn={Boolean(knownOn) && knownAt === null}
+          sources={sources}
+          prices={prices.status === "not_found" ? undefined : <InstrumentPricePanel result={prices} />}
+          factors={<FactorsPanel result={factors} />}
+        />
+      </div>
+    );
+  }
   if (result.status === "unavailable") {
     return (
       <section className="space-y-4">
@@ -110,6 +132,7 @@ export default async function InstrumentPage({
         invalidKnownOn={Boolean(knownOn) && knownAt === null}
         sources={sources}
         prices={prices.status === "not_found" ? undefined : <InstrumentPricePanel result={prices} />}
+        factors={<FactorsPanel result={factors} />}
         valuation={valuation.status === "not_found" ? undefined : <ValuationView result={valuation} />}
         fairValue={
           <FairValueView

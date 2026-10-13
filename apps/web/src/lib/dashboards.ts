@@ -52,9 +52,10 @@ export const DASHBOARDS: readonly DashboardDef[] = [
     slug: "opportunity-radar",
     label: "Opportunity Radar",
     termId: "dashboard_opportunity_radar",
-    purpose: "Long, short and hedge candidates with signal convergence.",
+    purpose: "Trend, risk, value and quality of every instrument against its own history; candidates next.",
     plannedPhase: 2,
     group: "dashboards",
+    live: true,
   },
   {
     id: "fundamental_research",

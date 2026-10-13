@@ -40,7 +40,7 @@ from autotrading.domain.factors import FactorSnapshot as Snapshot
 from autotrading.domain.fair_value import month_ends
 from autotrading.domain.provenance import end_of_day
 from autotrading.domain.research import RESEARCH_METRICS, ROWS, research_record
-from autotrading.domain.splits import Split
+from autotrading.domain.splits import NEW_YORK, Split
 from autotrading.domain.valuation import METRICS, Close, Valued, valuation
 from autotrading.repositories.audit import set_actor
 from autotrading.repositories.prices import daily_bars, instruments_by_symbol
@@ -330,24 +330,27 @@ def record_universe(
 def backfill_points(
     session: Session, definitions: FactorDefinitionSet, year: int, system_time: datetime
 ) -> list[tuple[datetime, Literal["price", "all"]]]:
-    """The points of one year to backfill (ADR-030 F2): the end of every session the benchmark
-    has a close for (price measures) and every month end (all measures), up to `system_time`."""
+    """The points of one New York year to backfill (ADR-030 F2): the end of every session the
+    benchmark has a close for (price measures) and every month end (all measures; a month end
+    that is also a session counts once, as a month end), up to `system_time`."""
     bench = targets(session, [definitions.benchmark])
     if not bench:
         return []
-    start = datetime(year, 1, 1, tzinfo=UTC)
-    end = min(system_time, datetime(year + 1, 1, 1, tzinfo=UTC))
+    start = datetime(year, 1, 1, tzinfo=UTC) - timedelta(days=1)
     bars = daily_bars(
         session,
         bench[0].instrument.id,
         "raw",
-        since=start - timedelta(days=1),
-        until=end + timedelta(days=1),
+        since=start,
+        until=min(system_time, datetime(year + 1, 1, 2, tzinfo=UTC)),
         known_at=system_time,
         system_time=system_time,
     )
     sessions = {end_of_day(b.bar_date) for b in bars if b.bar_date.year == year}
-    months = {p for p in month_ends(date(year, 1, 1), end) if p.year == year or p < end}
+    # month ends are the end of their New York day, which is the next day in UTC for December
+    months = {
+        p for p in month_ends(date(year, 1, 1), system_time) if p.astimezone(NEW_YORK).year == year
+    }
     points = sorted(p for p in sessions | months if p <= system_time)
     return [(p, "all" if p in months else "price") for p in points]
 

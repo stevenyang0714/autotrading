@@ -47,6 +47,7 @@ test("every page loads without console errors", async ({ page }) => {
     "/system/reconciliation?status=pass&form=10-K",
     "/system/reconciliation/0000320193-25-000079",
     "/instruments/META",
+    "/instruments/SPY",
     "/system/progress",
     "/journal/new?ticker=AAPL",
     ...DASHBOARD_SLUGS.map((s) => `/dashboards/${s}`),
@@ -131,6 +132,9 @@ for (const path of [
   "/dashboards/alerts-center?status=all&backfilled=1",
   "/dashboards/market-regime",
   "/dashboards/market-regime?known_on=2026-09-15",
+  "/dashboards/opportunity-radar",
+  "/dashboards/opportunity-radar?known_on=2026-09-15&sort=momentum_6_1&dir=desc",
+  "/instruments/TLT",
 ]) {
   test(`numbers on ${path} are all explained`, async ({ page }) => {
     await page.goto(path);
@@ -444,6 +448,37 @@ test("A NO TRADE and a paper TRADE are recorded alike, replay identical, and the
   const table = page.getByRole("table", { name: "Journal entries" });
   await expect(table.locator('tr[data-decision="no_trade"]').first()).toContainText("NO TRADE: Priced in");
   await expect(table.locator('tr[data-decision="trade"]').first()).toContainText("exited");
+});
+
+test("Opportunity Radar lists each instrument's trend and each company's value and quality (M2.2)", async ({
+  page,
+}) => {
+  await page.goto("/dashboards/opportunity-radar");
+  const trend = page.getByRole("table", { name: "Trend and risk" });
+  expect(await trend.locator("tbody tr[data-ticker]").count()).toBeGreaterThanOrEqual(11); // 8 ETFs and the companies
+  await expect(trend.locator('tr[data-ticker="SPY"] [data-column="beta_252d"]')).toContainText("n/m");
+  const fundamentals = page.getByRole("table", { name: "Value and quality" });
+  expect(await fundamentals.locator("tbody tr[data-ticker]").count()).toBeGreaterThanOrEqual(3);
+  await expect(page.getByText(/never ranked against the other instruments/).first()).toBeVisible();
+  // As known on an earlier date.
+  await page.goto("/dashboards/opportunity-radar?known_on=2026-09-15");
+  await expect(page.getByText(/Showing what was known by/)).toContainText("2026-09-15");
+  // An ETF opens its own page with its trend measures.
+  await trend.locator('tr[data-ticker="TLT"] a').click();
+  await expect(page).toHaveURL(/\/instruments\/TLT\?known_on=2026-09-15#factors$/, { timeout: 15_000 });
+  await expect(page.locator("h1")).toContainText("Exchange-traded fund");
+  const factors = page.locator('[data-block="factors"]');
+  await expect(factors.locator('[data-measure="momentum_6_1"]')).toBeVisible();
+  await expect(factors.locator('[data-group="value"]')).toHaveCount(0);
+});
+
+test("a company page shows its trend and factors against its own history (M2.2)", async ({ page }) => {
+  await page.goto("/instruments/AAPL#factors");
+  const factors = page.locator('[data-block="factors"]');
+  await expect(factors.getByRole("heading", { name: /Trend and factors/ })).toBeVisible();
+  expect(await factors.locator("[data-measure]").count()).toBeGreaterThanOrEqual(9);
+  await expect(factors.locator('[data-group="quality"] [data-measure="roic"]')).toBeVisible();
+  await expect(factors.getByText(/factor definitions \d+\.\d+\.\d+/)).toBeVisible();
 });
 
 test("Market Regime shows the stress state, five dimensions, nine flags and the history (M2.1)", async ({

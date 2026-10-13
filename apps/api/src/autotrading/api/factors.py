@@ -13,13 +13,14 @@ other instruments (KI-1).
 """
 
 from collections import defaultdict
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from typing import Any, Literal
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import func, select
+from sqlalchemy.dialects.postgresql import distinct_on
 from sqlalchemy.orm import Session
 
 from autotrading.api.data_health import SessionDep
@@ -30,6 +31,7 @@ from autotrading.db.models import FactorSnapshot
 from autotrading.domain.factors import FactorSnapshot as Snapshot
 from autotrading.domain.factors import Measure
 from autotrading.domain.fair_value import relative
+from autotrading.domain.provenance import end_of_day
 from autotrading.domain.splits import NEW_YORK
 from autotrading.repositories.factors import (
     Target,
@@ -140,25 +142,34 @@ def _latest(
 
 
 def _monthly(
-    session: Session, instrument_ids: list[Any], version: str, at: datetime, since: date
+    session: Session,
+    instrument_ids: list[Any],
+    version: str,
+    at: datetime,
+    since: date,
+    full: bool,
 ) -> dict[Any, list[tuple[datetime, dict[str, Any]]]]:
-    """Per instrument, the last full snapshot of each New York month since `since`, by T."""
-    rows = session.execute(
+    """Per instrument, its last snapshot of each New York month since `since` known by T, oldest
+    first; with `full`, its last full one (value and quality measures)."""
+    month = func.date_trunc("month", func.timezone("America/New_York", FactorSnapshot.known_at))
+    query = (
         select(FactorSnapshot.instrument_id, FactorSnapshot.known_at, FactorSnapshot.measure_values)
         .where(
             FactorSnapshot.instrument_id.in_(instrument_ids),
             FactorSnapshot.definition_version == version,
-            FactorSnapshot.scope == "all",
             FactorSnapshot.known_at <= at,
+            FactorSnapshot.known_at >= end_of_day(since) - timedelta(days=1),
         )
-        .order_by(FactorSnapshot.known_at)
-    ).all()
-    by_month: dict[Any, dict[tuple[int, int], tuple[datetime, dict[str, Any]]]] = defaultdict(dict)
-    for instrument_id, known_at, values in rows:
-        day = known_at.astimezone(NEW_YORK).date()
-        if day >= since:
-            by_month[instrument_id][(day.year, day.month)] = (known_at, values)
-    return {k: list(v.values()) for k, v in by_month.items()}
+        .ext(distinct_on(FactorSnapshot.instrument_id, month))
+        .order_by(FactorSnapshot.instrument_id, month, FactorSnapshot.known_at.desc())
+    )
+    if full:
+        query = query.where(FactorSnapshot.scope == "all")
+    out: dict[Any, list[tuple[datetime, dict[str, Any]]]] = defaultdict(list)
+    for instrument_id, known_at, values in session.execute(query):
+        if known_at.astimezone(NEW_YORK).date() >= since:
+            out[instrument_id].append((known_at, values))
+    return out
 
 
 def _points(
@@ -171,18 +182,35 @@ def _points(
     ]
 
 
+def _attributed(measures: list[Measure], benchmark: str) -> list[Measure]:
+    """A relative measure stores its own notes and the benchmark's together; name the
+    benchmark's (those not on the instrument's own measure) so they are not read as the
+    instrument's."""
+    own = {m.measure_id: set(m.notes) for m in measures}
+    out = []
+    for m in measures:
+        base = own.get(m.measure_id.removeprefix("relative_"), set())
+        if m.group == "relative" and m.notes:
+            notes = [n if n in base else f"{benchmark}: {n}" for n in m.notes]
+            m = m.model_copy(update={"notes": notes})
+        out.append(m)
+    return out
+
+
 def _measures(
     price: FactorSnapshot | None,
     full: FactorSnapshot | None,
     history: list[tuple[datetime, dict[str, Any]]],
+    full_history: list[tuple[datetime, dict[str, Any]]],
+    benchmark: str = "SPY",
 ) -> list[MeasureOut]:
     """The price measures of `price` and the value and quality measures of `full`, each with its
-    percentile in the monthly history."""
+    percentile in the monthly history (the full snapshots' for value and quality)."""
     chosen: list[Measure] = []
     if price is not None:
         chosen += [
             m
-            for m in Snapshot.model_validate(price.snapshot).measures
+            for m in _attributed(Snapshot.model_validate(price.snapshot).measures, benchmark)
             if m.group in ("trend", "risk", "relative")
         ]
     if full is not None:
@@ -193,7 +221,8 @@ def _measures(
         ]
     out = []
     for measure in chosen:
-        found = relative(measure.measure_id, measure.value, _points(history, measure.measure_id))
+        months = full_history if measure.group in ("value", "quality") else history
+        found = relative(measure.measure_id, measure.value, _points(months, measure.measure_id))
         out.append(
             MeasureOut(
                 **measure.model_dump(),
@@ -206,9 +235,12 @@ def _measures(
     return out
 
 
-def _since(session: Session, version: str) -> date:
+def _settings(session: Session, version: str) -> tuple[date, str]:
+    """The definition set's percentile history start and benchmark."""
     definitions = stored_definitions(session, version)
-    return definitions.percentile_since if definitions else date(2016, 1, 1)
+    if definitions is None:
+        return date(2016, 1, 1), "SPY"
+    return definitions.percentile_since, definitions.benchmark
 
 
 @router.get("/factors/definitions")
@@ -241,7 +273,11 @@ def instrument_factors(
     version = active_factor_version()
     price = _latest(session, target, version, at, full=False)
     full = _latest(session, target, version, at, full=True)
-    history = _monthly(session, [target.instrument.id], version, at, _since(session, version)).get(
+    since, benchmark = _settings(session, version)
+    history = _monthly(session, [target.instrument.id], version, at, since, full=False).get(
+        target.instrument.id, []
+    )
+    full_history = _monthly(session, [target.instrument.id], version, at, since, full=True).get(
         target.instrument.id, []
     )
     return InstrumentFactorsOut(
@@ -251,7 +287,9 @@ def instrument_factors(
         definition_version=version,
         price=_ref(price) if price else None,
         fundamentals=_ref(full) if full and target.kind == "equity" else None,
-        measures=_measures(price, full if target.kind == "equity" else None, history),
+        measures=_measures(
+            price, full if target.kind == "equity" else None, history, full_history, benchmark
+        ),
         history=[HistoryPoint(known_at=k, values=v) for k, v in history],
     )
 
@@ -261,15 +299,21 @@ def factors_table(session: SessionDep, known_at: KnownAt = None) -> FactorsOut:
     at = known_at_or_now(session, known_at)
     version = active_factor_version()
     everything = targets(session)
-    histories = _monthly(
-        session, [t.instrument.id for t in everything], version, at, _since(session, version)
-    )
-    definitions = stored_definitions(session, version)
+    ids = [t.instrument.id for t in everything]
+    since, benchmark = _settings(session, version)
+    histories = _monthly(session, ids, version, at, since, full=False)
+    full_histories = _monthly(session, ids, version, at, since, full=True)
     rows = []
     for target in everything:
         price = _latest(session, target, version, at, full=False)
         full = _latest(session, target, version, at, full=True) if target.kind == "equity" else None
-        measures = _measures(price, full, histories.get(target.instrument.id, []))
+        measures = _measures(
+            price,
+            full,
+            histories.get(target.instrument.id, []),
+            full_histories.get(target.instrument.id, []),
+            benchmark,
+        )
         rows.append(
             FactorRow(
                 ticker=target.symbol,
@@ -293,6 +337,6 @@ def factors_table(session: SessionDep, known_at: KnownAt = None) -> FactorsOut:
     return FactorsOut(
         known_at=at,
         definition_version=version,
-        benchmark=definitions.benchmark if definitions else "SPY",
+        benchmark=benchmark,
         rows=rows,
     )
