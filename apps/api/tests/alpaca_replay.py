@@ -93,8 +93,15 @@ def register_recorded(registry: JobRegistry, *, fixture: bool = True) -> JobRegi
 
 def replay(runner: IngestionRunner, window: Window) -> list[UUID]:
     """Every recorded run (snapshots, one year of bars, the NVDA split window, splits,
-    dividends, two earlier years of NVDA and SPY bars), in order."""
-    run_ids = [runner.create_run(run["job"], run["params"], window) for run in MANIFEST["runs"]]
+    dividends, two earlier years of NVDA and SPY bars), in order. The splits run again in a
+    later window: `replay_splits` may have run it before the ETF instruments existed (M2.2)."""
+    later = Window(start=window.end, end=None) if window.end else window
+    run_ids = [
+        runner.create_run(
+            run["job"], run["params"], later if run["job"] == "alpaca.splits" else window
+        )
+        for run in MANIFEST["runs"]
+    ]
     for run_id in run_ids:
         runner.execute(run_id)
     return run_ids

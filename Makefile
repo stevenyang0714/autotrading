@@ -82,6 +82,15 @@ regime-backfill: ## Queue regime assessments at every month end since 2016, mark
 regime-verify: ## Recompute the latest 20 stored regime assessments and report any that differ
 	$(COMPOSE) exec -T api python -m autotrading.jobs.regime_evaluate --verify 20
 
+factors-evaluate: ## Queue factor snapshots of every universe instrument now (M2.2)
+	$(COMPOSE) exec -T api python -m autotrading.jobs.factors_evaluate
+
+factors-backfill: ## Queue factor snapshots at every session since 2016, marked backfilled (run once)
+	$(COMPOSE) exec -T api python -m autotrading.jobs.factors_evaluate --backfill
+
+factors-verify: ## Recompute the latest 20 and 200 random stored factor snapshots (and those around splits)
+	$(COMPOSE) exec -T api python -m autotrading.jobs.factors_evaluate --verify 20 --sample 200
+
 replay-fixtures: ## CI only: load the recorded SEC, FRED, Alpaca and news fixtures into the stack database
 	cd $(API) && uv run python -m tests.replay
 

@@ -13,6 +13,7 @@ from autotrading.api.buyback_states import router as buyback_states_router
 from autotrading.api.buybacks import router as buybacks_router
 from autotrading.api.data_health import router as data_health_router
 from autotrading.api.earnings import router as earnings_router
+from autotrading.api.factors import router as factors_router
 from autotrading.api.fair_value import router as fair_value_router
 from autotrading.api.glossary import router as glossary_router
 from autotrading.api.health import HealthChecker
@@ -87,6 +88,7 @@ def create_app(
     app.include_router(journal_router)
     app.include_router(alerts_router)
     app.include_router(regime_router)
+    app.include_router(factors_router)
     return app
 
 

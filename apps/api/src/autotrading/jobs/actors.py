@@ -32,7 +32,7 @@ from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.ingestion.schedule import market_calendar
 from autotrading.jobs.broker import WorkerHeartbeat, configure_broker
-from autotrading.repositories import regime
+from autotrading.repositories import factors, regime
 from autotrading.settings import get_settings
 
 logger = logging.getLogger(__name__)
@@ -281,6 +281,58 @@ def start_regime_backfill() -> int:
     for point in points:
         backfill_regime.send(point.isoformat(), now.isoformat())
     return len(points)
+
+
+# ---------- price, trend and factors (M2.2) ----------
+
+FACTORS_BACKFILL_SINCE = 2016  # ADR-030 F2: closes and dividends start in 2016
+FACTORS_TIME_LIMIT_MS = 60 * 60 * 1000  # a year of sessions for 18 instruments
+
+
+@dramatiq.actor(
+    queue_name=EVALUATION_QUEUE, max_retries=1, time_limit=FACTORS_TIME_LIMIT_MS, broker=broker
+)
+def evaluate_factors(trigger: str) -> None:
+    """Every universe instrument's snapshot now (T = system time = now), all measures."""
+    with sessions()() as session:
+        now = _now(session)
+        definitions = factors.stored_definitions(session)
+        if definitions is None:
+            logger.warning("Factor definitions not loaded (make migrate): nothing computed")
+            return
+        stored = factors.record_universe(session, definitions, [(now, "all")], now, trigger)
+    logger.info("Factor snapshots at %s (%s): %d stored", now, trigger, stored)
+
+
+@dramatiq.actor(
+    queue_name=EVALUATION_QUEUE, max_retries=1, time_limit=FACTORS_TIME_LIMIT_MS, broker=broker
+)
+def backfill_factors(year: int, system_time: str) -> None:
+    """One year of snapshots (every session, all measures at month ends), as the database held
+    them at `system_time`."""
+    held = datetime.fromisoformat(system_time)
+    with sessions()() as session:
+        definitions = factors.stored_definitions(session)
+        if definitions is None:
+            logger.warning("Factor definitions not loaded (make migrate): nothing computed")
+            return
+        points = factors.backfill_points(session, definitions, year, held)
+        stored = factors.record_universe(session, definitions, points, held, "backfill")
+    logger.info("Factor backfill %d: %d points, %d snapshots stored", year, len(points), stored)
+
+
+def start_factor_evaluation(*, manual: bool) -> None:
+    evaluate_factors.send("manual" if manual else "schedule")
+
+
+def start_factor_backfill() -> int:
+    """One message per year since 2016, all with one system time (now)."""
+    with sessions()() as session:
+        now = _now(session)
+    years = list(range(FACTORS_BACKFILL_SINCE, now.year + 1))
+    for year in years:
+        backfill_factors.send(year, now.isoformat())
+    return len(years)
 
 
 def start_buyback_backfill() -> int:

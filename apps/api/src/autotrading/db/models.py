@@ -1464,6 +1464,83 @@ class RegimeAssessment(Base):
     )
 
 
+# ---------- price, trend and factors (M2.2) ----------
+
+FACTOR_SCOPES = ("price", "all")
+
+
+class FactorDefinitionSet(Base):
+    """One released definition_version of config/factor_definitions.yaml (ADR-030), loaded by
+    `make migrate` with the sha256 of its content. Append-only and audited, like the regime
+    rule sets."""
+
+    __tablename__ = "factor_definition_sets"
+    __table_args__ = (
+        CheckConstraint(
+            r"definition_version ~ '^\d+\.\d+\.\d+$'", name="definition_version_format"
+        ),
+        CheckConstraint("content_sha256 ~ '^[0-9a-f]{64}$'", name="content_sha256_format"),
+        UniqueConstraint("definition_version", name="uq_factor_definition_sets_version"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    definition_version: Mapped[str] = mapped_column(Text)
+    content: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    content_sha256: Mapped[str] = mapped_column(Text)
+    released: Mapped[date] = mapped_column(Date)
+    loaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class FactorSnapshot(Base):
+    """One instrument's price, trend and factor measures at a time T (known_at) as the database
+    held it at system_time, under one definition version (ADR-030; 02 §13). `measure_values`
+    holds each measure's value for the history and percentiles; `snapshot` the whole document
+    with every input. Scope `price`: the value and quality measures were not computed for this
+    T (backfilled sessions between month ends). One row per instrument, T and definition
+    version. Append-only."""
+
+    __tablename__ = "factor_snapshots"
+    __table_args__ = (
+        CheckConstraint(sql_in("scope", FACTOR_SCOPES), name="scope"),
+        CheckConstraint(sql_in("trigger", ASSESSMENT_TRIGGERS), name="trigger"),
+        CheckConstraint("system_time >= known_at", name="system_time_after_known_at"),
+        UniqueConstraint(
+            "instrument_id", "known_at", "definition_version", name="uq_factor_snapshots_key"
+        ),
+        Index(
+            "ix_factor_snapshots_instrument_version_known_at",
+            "instrument_id",
+            "definition_version",
+            "known_at",
+        ),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    instrument_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("instruments.id"))
+    symbol: Mapped[str] = mapped_column(Text)
+    known_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    system_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    definition_version: Mapped[str] = mapped_column(
+        Text, ForeignKey("factor_definition_sets.definition_version")
+    )
+    scope: Mapped[str] = mapped_column(Text)
+    last_close: Mapped[date | None] = mapped_column(Date)
+    feed_status: Mapped[str | None] = mapped_column(Text)
+    measure_values: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    snapshot: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    backfilled: Mapped[bool] = mapped_column(Boolean)
+    trigger: Mapped[str] = mapped_column(Text)
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
 # ---------- filing reconciliation (M1.1) ----------
 
 RECONCILIATION_CHECKS = ("fact", "identity", "quarter", "split")
