@@ -162,6 +162,14 @@ def start_alpaca_daily_bars(*, manual: bool, backfill: bool = False) -> UUID | N
     )
     if splits_run is not None:
         run_ingestion.send(str(splits_run))
+    dividends_run = alpaca_refresh.start_dividends(
+        ingestion_runner(),
+        now=datetime.now(UTC),
+        manual=manual or backfill,
+        config_dir=_settings.resolved_config_dir(),
+    )
+    if dividends_run is not None:
+        run_ingestion.send(str(dividends_run))
     return run_id
 
 

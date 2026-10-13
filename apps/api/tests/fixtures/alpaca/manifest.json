@@ -1,8 +1,9 @@
 {
   "recorded_at": "2026-10-06T05:00:15+00:00",
-  "splits_recorded_at": "2026-10-06T14:54:34+00:00",
+  "partly_recorded_at": "2026-10-13T11:47:59+00:00",
   "runs": [
     {
+      "label": "snapshots",
       "job": "alpaca.snapshots",
       "params": {
         "symbols": [
@@ -38,6 +39,7 @@
       }
     },
     {
+      "label": "bars_year",
       "job": "alpaca.daily_bars",
       "params": {
         "symbols": [
@@ -75,6 +77,7 @@
       }
     },
     {
+      "label": "bars_nvda_split",
       "job": "alpaca.daily_bars",
       "params": {
         "symbols": [
@@ -86,6 +89,7 @@
       }
     },
     {
+      "label": "splits",
       "job": "alpaca.splits",
       "params": {
         "symbols": [
@@ -98,10 +102,61 @@
           "XOM",
           "AZO",
           "ORLY",
-          "LOW"
+          "LOW",
+          "SPY",
+          "QQQ",
+          "IWM",
+          "TLT",
+          "IEF",
+          "GLD",
+          "XLE",
+          "XLK"
         ],
         "start": "2016-01-01",
         "end": "2026-10-05"
+      }
+    },
+    {
+      "label": "dividends",
+      "job": "alpaca.dividends",
+      "params": {
+        "symbols": [
+          "AAPL",
+          "MSFT",
+          "GOOGL",
+          "META",
+          "NVDA",
+          "JPM",
+          "XOM",
+          "AZO",
+          "ORLY",
+          "LOW",
+          "SPY",
+          "QQQ",
+          "IWM",
+          "TLT",
+          "IEF",
+          "GLD",
+          "XLE",
+          "XLK"
+        ],
+        "start": "2016-01-01",
+        "end": "2026-10-05"
+      }
+    },
+    {
+      "label": "bars_history",
+      "job": "alpaca.daily_bars",
+      "params": {
+        "symbols": [
+          "NVDA",
+          "SPY"
+        ],
+        "etfs": [
+          "SPY"
+        ],
+        "start": "2023-05-01",
+        "end": "2025-10-04"
       }
     }
   ],
@@ -115,6 +170,11 @@
     "https://data.alpaca.markets/v2/stocks/bars?symbols=NVDA&timeframe=1Day&adjustment=raw&feed=sip&start=2024-06-03&limit=10000&end=2024-06-14": "bars_nvda_split_01.json",
     "https://data.alpaca.markets/v2/stocks/bars?symbols=NVDA&timeframe=1Day&adjustment=split&feed=sip&start=2024-06-03&limit=10000&end=2024-06-14": "bars_nvda_split_02.json",
     "https://data.alpaca.markets/v2/stocks/bars?symbols=NVDA&timeframe=1Day&adjustment=split&feed=sip&start=2016-01-01&limit=10000&end=2024-06-14": "bars_nvda_split_03.json",
-    "https://data.alpaca.markets/v1/corporate-actions?symbols=AAPL%2CMSFT%2CGOOGL%2CMETA%2CNVDA%2CJPM%2CXOM%2CAZO%2CORLY%2CLOW&types=forward_split%2Creverse_split&start=2016-01-01&end=2026-10-05&limit=1000": "splits_00.json"
+    "https://data.alpaca.markets/v1/corporate-actions?symbols=AAPL%2CMSFT%2CGOOGL%2CMETA%2CNVDA%2CJPM%2CXOM%2CAZO%2CORLY%2CLOW%2CSPY%2CQQQ%2CIWM%2CTLT%2CIEF%2CGLD%2CXLE%2CXLK&types=forward_split%2Creverse_split&start=2016-01-01&end=2026-10-05&limit=1000": "splits_00.json",
+    "https://data.alpaca.markets/v1/corporate-actions?symbols=AAPL%2CMSFT%2CGOOGL%2CMETA%2CNVDA%2CJPM%2CXOM%2CAZO%2CORLY%2CLOW%2CSPY%2CQQQ%2CIWM%2CTLT%2CIEF%2CGLD%2CXLE%2CXLK&types=cash_dividend&start=2016-01-01&end=2026-10-05&limit=1000": "dividends_00.json",
+    "https://data.alpaca.markets/v1/corporate-actions?symbols=NVDA%2CSPY&types=forward_split%2Creverse_split&start=2023-05-01&end=2025-10-04": "bars_history_00.json",
+    "https://data.alpaca.markets/v2/stocks/bars?symbols=NVDA%2CSPY&timeframe=1Day&adjustment=raw&feed=sip&start=2023-05-01&limit=10000&end=2025-10-04": "bars_history_01.json",
+    "https://data.alpaca.markets/v2/stocks/bars?symbols=NVDA%2CSPY&timeframe=1Day&adjustment=split&feed=sip&start=2023-05-01&limit=10000&end=2025-10-04": "bars_history_02.json",
+    "https://data.alpaca.markets/v2/stocks/bars?symbols=NVDA&timeframe=1Day&adjustment=split&feed=sip&start=2016-01-01&limit=10000&end=2025-10-04": "bars_history_03.json"
   }
 }

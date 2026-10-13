@@ -825,6 +825,43 @@ class SplitEvent(ProvenanceMixin, Base):
     )
 
 
+class DividendEvent(ProvenanceMixin, Base):
+    """A cash dividend of an instrument (M2.2, ADR-030): `rate` per share as of its ex-date, from
+    Alpaca corporate actions (2016 on). Append-only: a trigger rejects UPDATE and DELETE.
+
+    published_at is the start of the ex-date in New York: a dividend is declared before it goes
+    ex (Alpaca gives no declaration date), so this is never early. One row per instrument,
+    ex-date and kind (regular or special): a repeated payment of the same day and kind is stored
+    once; another amount for a stored one is a conflict and the stored row stays.
+    """
+
+    __tablename__ = "dividend_events"
+    __table_args__ = (
+        *provenance_constraints(),
+        CheckConstraint("rate > 0", name="rate_positive"),
+        UniqueConstraint(
+            "instrument_id", "ex_date", "special", name="uq_dividend_events_instrument_ex_special"
+        ),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    instrument_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("instruments.id"))
+    symbol: Mapped[str] = mapped_column(Text)
+    ex_date: Mapped[date] = mapped_column(Date)
+    rate: Mapped[Decimal] = mapped_column(Numeric)
+    special: Mapped[bool] = mapped_column(Boolean)
+    foreign: Mapped[bool] = mapped_column(Boolean)
+    record_date: Mapped[date | None] = mapped_column(Date)
+    payable_date: Mapped[date | None] = mapped_column(Date)
+    corporate_action_id: Mapped[str | None] = mapped_column(Text)
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
 # ---------- buyback announcements (M1.4a) ----------
 
 BUYBACK_STATEMENT_KINDS = ("new", "increase", "plan", "remaining")
