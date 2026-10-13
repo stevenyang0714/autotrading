@@ -1,6 +1,8 @@
 # OD-7 Survivorship-free US equity history: dataset comparison
 
-**Status:** For Steven's decision. Checked 2026-10-12 from each provider's public pages (linked); prices change, so re-check the provider's page on the day of purchase. Nothing has been bought or connected, and no provider is added to `config/sources.yaml` until Steven decides (ADR-029).
+**Decision (Steven, 2026-10-13): not buying for now.** OD-7 stays open for M2.5; the problems this leaves are `docs/KNOWN_ISSUES.md` KI-1 and KI-2. The comparison below stays for when it is revisited.
+
+**Status:** Checked 2026-10-12 from each provider's public pages (linked); prices change, so re-check the provider's page on the day of purchase. Nothing has been bought or connected, and no provider is added to `config/sources.yaml` until Steven decides (ADR-029).
 
 **Why it matters:** backtests on today's universe ignore the companies that were delisted, merged away or dropped from the index, so their results look better than reality (survivorship bias). Until OD-7 is decided, the Strategy Lab (M2.5) shows a backtest's method, trades and costs but **not its performance**, with the reason (M2 file, P2-2).
 

@@ -684,7 +684,7 @@ M2.1, one PR.
 - **Phase 2 entry (Steven, 2026-10-12):**
   - The Phase 1 exit report (`docs/reports/phase1_exit.md`) is accepted; Phase 2 starts with M2.1.
   - P2-1: Massive (ADR-004) is not activated. Regime, factors, risk and backtests run on Alpaca's end-of-day SIP bars; live quotes stay IEX `live_single_venue`. Revisit before Phase 5 (orders).
-  - OD-7: compare commercial survivorship-free datasets (not WRDS). The comparison is `docs/reports/od7_datasets.md` (first choice Sharadar Prices, USD 299 a year, bought directly); paying is Steven's decision and only M2.5's performance reporting waits for it.
+  - OD-7: compare commercial survivorship-free datasets (not WRDS). The comparison is `docs/reports/od7_datasets.md` (first choice Sharadar Prices, USD 299 a year, bought directly). **Steven decided on 2026-10-13 not to buy for now**; the problems this leaves are recorded in `docs/KNOWN_ISSUES.md` (KI-1, KI-2). Backtests stay on the current universe and do not report performance (P2-2 default).
 - **M2.1 decisions (Steven, 2026-10-12):**
   - R1 Scope: the five macro dimensions (growth, inflation, policy and liquidity, credit, volatility) of signal family 1 and the stress state of family 10 (02 §15, 01 §14), with a growth x inflation quadrant as a label.
   - R2 New FRED series: NFCI, NFCICREDIT and STLFSI4 (weekly) read only from 2015 (`macro_series.observation_start`, migration 0020: each weekly vintage re-estimates the whole history, NFCI has 799), and VXVCLS, DCOILWTICO and DTWEXBGS (daily) in full. VXVCLS is Cboe data, personal use like VIX.
@@ -713,7 +713,7 @@ M2.1, one PR.
   - Now: NORMAL, 0 of 9 flags; growth slowing, inflation above target, policy neutral, credit calm (high-yield spread 3.15), volatility calm (VIX 14.84); quadrant stagflation.
   - 26 backfilled stress alerts (hidden by default). `make alerts-backfill` stored the 710 convergence assessments under alert rules 0.2.0 with the same levels as 0.1.0 (164 L0, 409 L1, 33 L2, 75 L3, 29 none).
   - Endpoints: `/regime` 0.04 s now, 0.02 s as known on 2020-03-31; `/regime/rules` 0.02 s.
-- **For the threshold review (R5, Steven decides; a change is regime rules 0.2.0):**
+- **For the threshold review (R5; recorded on 2026-10-13 at Steven's request as `docs/KNOWN_ISSUES.md` KI-3 to KI-9; regime rules 0.1.0 stay until Steven asks for 0.2.0):**
   - Crisis cannot be reached before 2023-10: it needs distressed credit, and the NFCI credit subindex known then peaked at 0.13 (October 2022) against a stressed threshold of 0.25, so the credit flag never fired and the end of March 2020 is HIGH. Options: lower the NFCI credit thresholds, or call crisis on two of the three conditions.
   - The NFCI flag (above 0) never fired: the vintages known at month ends peaked at −0.11 (October 2022). Option: −0.25.
   - VIX above 30 alone gives HIGH with a single flag on (the ends of June 2020 and January 2021). Option: require two flags with it, or 35.
@@ -732,7 +732,7 @@ M2.1, one PR.
 | OD-4 | Options data provider and budget. Candidate (checked 2026-10-05; re-verify before paying): Unusual Whales API. Basic USD 150/month gives REST access to real-time flow; Advanced USD 375/month adds WebSocket streaming; a 15-minute-delayed tier is cheaper. Personal use only, no redistribution (fits ADR-001). Its free website flow is delayed, and scraping it is not allowed. | Phase 5, or earlier if Steven pulls options flow forward | No options data |
 | OD-5 | Short interest / borrow data provider | Before SHORT eligibility | SHORT ideas alert-only |
 | OD-6 | Physical data sources (candidates to evaluate: NASA FIRMS fire data, NOAA climate data, port/shipping data vendors) | Phase 3 | Not ingested |
-| OD-7 | Survivorship-free historical dataset including delisted names. Steven chose to compare commercial datasets (ADR-029); comparison in `docs/reports/od7_datasets.md`, first choice Sharadar Prices (USD 299 a year, checked 2026-10-12; re-verify before paying) | Before M2.5 reports backtest performance | Backtests blocked from reporting performance |
+| OD-7 | Survivorship-free historical dataset including delisted names. Steven compared commercial datasets (`docs/reports/od7_datasets.md`) and decided on 2026-10-13 not to buy for now (ADR-029, KNOWN_ISSUES KI-1); first candidate if revisited: Sharadar Prices (USD 299 a year, checked 2026-10-12; re-verify before paying) | Before M2.5 reports backtest performance | Backtests blocked from reporting performance |
 | OD-8 | Cloud provider, auth method, backups | Phase 2 exit | Local only |
 | OD-9 | Verify account eligibility from Singapore for Interactive Brokers (data + paper). The Alpaca part was verified on 2026-10-06 (paper account; market data reachable from Singapore). | Phase 5 | No broker |
 
@@ -740,3 +740,4 @@ M2.1, one PR.
 - OD-1 (2026-10-06): Steven confirmed ADR-001: a personal tool, with no redistribution of data. ADR-001 is Accepted.
 - Phase 1 scope (2026-10-06): Steven accepted the Phase 0 exit report and decided OD-2 and OD-3 for Phase 1 (in-app alerts only; no consensus provider yet). Both stay open for later phases. See ADR-020.
 - Phase 2 entry (2026-10-12): Steven accepted the Phase 1 exit report; P2-1 decided (Massive not activated); OD-7 narrowed to a commercial dataset comparison. See ADR-029.
+- OD-7 for now (2026-10-13): Steven decided not to buy a survivorship-free dataset yet; OD-7 stays open for M2.5. The problems are recorded in `docs/KNOWN_ISSUES.md`.
