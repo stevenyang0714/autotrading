@@ -1,0 +1,450 @@
+{
+  "recorded_at": "2026-10-13T12:46:07.774634+00:00",
+  "recorded_from": "recorded SEC facts and Alpaca closes, splits and dividends replayed into the integration test database (tests/integration/test_factors.py)",
+  "endpoint": "/instruments/TLT/factors",
+  "params": {
+    "known_at": "2026-10-06T12:00:00Z"
+  },
+  "response": {
+    "ticker": "TLT",
+    "instrument_type": "etf",
+    "known_at": "2026-10-06T12:00:00Z",
+    "definition_version": "0.1.0",
+    "price": {
+      "known_at": "2026-10-06T12:00:00Z",
+      "system_time": "2026-10-13T12:45:47.704259Z",
+      "backfilled": true,
+      "scope": "all",
+      "last_close": "2026-10-05",
+      "feed_status": "end_of_day"
+    },
+    "fundamentals": null,
+    "measures": [
+      {
+        "measure_id": "momentum_12_1",
+        "group": "trend",
+        "unit": "percent",
+        "value": null,
+        "reason": "unavailable",
+        "detail": "251 closes known; 253 needed",
+        "start": null,
+        "end": null,
+        "inputs": [],
+        "notes": [],
+        "percentile": null,
+        "median": null,
+        "observations": 0,
+        "since": null
+      },
+      {
+        "measure_id": "momentum_6_1",
+        "group": "trend",
+        "unit": "percent",
+        "value": "-3.45",
+        "reason": null,
+        "detail": "total return from 126 to 21 sessions before the last close",
+        "start": "2026-04-06",
+        "end": "2026-09-03",
+        "inputs": [
+          {
+            "name": "close",
+            "value": "86.65",
+            "start": "2026-04-06",
+            "end": "2026-04-06",
+            "note": null,
+            "sources": []
+          },
+          {
+            "name": "close",
+            "value": "82.07",
+            "start": "2026-09-03",
+            "end": "2026-09-03",
+            "note": null,
+            "sources": []
+          },
+          {
+            "name": "dividends",
+            "value": "1.614293",
+            "start": "2026-04-06",
+            "end": "2026-09-03",
+            "note": "5 ex-dates reinvested at the close",
+            "sources": []
+          }
+        ],
+        "notes": [],
+        "percentile": "43",
+        "median": "-3.24",
+        "observations": 7,
+        "since": "2026-04-30"
+      },
+      {
+        "measure_id": "reversal_1m",
+        "group": "trend",
+        "unit": "percent",
+        "value": "-6.04",
+        "reason": null,
+        "detail": "total return over the last 21 sessions",
+        "start": "2026-09-03",
+        "end": "2026-10-05",
+        "inputs": [
+          {
+            "name": "close",
+            "value": "82.07",
+            "start": "2026-09-03",
+            "end": "2026-09-03",
+            "note": null,
+            "sources": []
+          },
+          {
+            "name": "close",
+            "value": "77.11",
+            "start": "2026-10-05",
+            "end": "2026-10-05",
+            "note": null,
+            "sources": []
+          },
+          {
+            "name": "dividends",
+            "value": "0",
+            "start": "2026-09-03",
+            "end": "2026-10-05",
+            "note": "0 ex-dates reinvested at the close",
+            "sources": []
+          }
+        ],
+        "notes": [],
+        "percentile": "8",
+        "median": "-0.84",
+        "observations": 12,
+        "since": "2025-11-30"
+      },
+      {
+        "measure_id": "close_vs_sma_50",
+        "group": "trend",
+        "unit": "percent",
+        "value": "-5.44",
+        "reason": null,
+        "detail": "close 2026-10-05 against its 50-session average close",
+        "start": "2026-07-27",
+        "end": "2026-10-05",
+        "inputs": [
+          {
+            "name": "close",
+            "value": "77.11",
+            "start": "2026-10-05",
+            "end": "2026-10-05",
+            "note": null,
+            "sources": []
+          },
+          {
+            "name": "average close",
+            "value": "81.5472",
+            "start": "2026-07-27",
+            "end": "2026-10-05",
+            "note": "mean of 50 closes on the split basis of the date",
+            "sources": []
+          }
+        ],
+        "notes": [],
+        "percentile": "9",
+        "median": "-1.52",
+        "observations": 11,
+        "since": "2025-12-31"
+      },
+      {
+        "measure_id": "close_vs_sma_200",
+        "group": "trend",
+        "unit": "percent",
+        "value": "-9.68",
+        "reason": null,
+        "detail": "close 2026-10-05 against its 200-session average close",
+        "start": "2025-12-17",
+        "end": "2026-10-05",
+        "inputs": [
+          {
+            "name": "close",
+            "value": "77.11",
+            "start": "2026-10-05",
+            "end": "2026-10-05",
+            "note": null,
+            "sources": []
+          },
+          {
+            "name": "average close",
+            "value": "85.3704",
+            "start": "2025-12-17",
+            "end": "2026-10-05",
+            "note": "mean of 200 closes on the split basis of the date",
+            "sources": []
+          }
+        ],
+        "notes": [],
+        "percentile": "25",
+        "median": "-7.40",
+        "observations": 4,
+        "since": "2026-07-31"
+      },
+      {
+        "measure_id": "volatility_60d",
+        "group": "risk",
+        "unit": "percent",
+        "value": "9.95",
+        "reason": null,
+        "detail": "standard deviation of 60 daily total returns, times the square root of 252",
+        "start": "2026-07-10",
+        "end": "2026-10-05",
+        "inputs": [
+          {
+            "name": "dividends",
+            "value": "0.64514",
+            "start": "2026-07-10",
+            "end": "2026-10-05",
+            "note": "2 ex-dates reinvested at the close",
+            "sources": []
+          }
+        ],
+        "notes": [],
+        "percentile": "73",
+        "median": "9.90",
+        "observations": 11,
+        "since": "2025-12-31"
+      },
+      {
+        "measure_id": "beta_252d",
+        "group": "risk",
+        "unit": "ratio",
+        "value": null,
+        "reason": "unavailable",
+        "detail": "251 closes known; 253 needed",
+        "start": null,
+        "end": null,
+        "inputs": [],
+        "notes": [],
+        "percentile": null,
+        "median": null,
+        "observations": 0,
+        "since": null
+      },
+      {
+        "measure_id": "relative_momentum_12_1",
+        "group": "relative",
+        "unit": "percent",
+        "value": null,
+        "reason": "unavailable",
+        "detail": "251 closes known; 253 needed",
+        "start": null,
+        "end": null,
+        "inputs": [],
+        "notes": [],
+        "percentile": null,
+        "median": null,
+        "observations": 0,
+        "since": null
+      },
+      {
+        "measure_id": "relative_momentum_6_1",
+        "group": "relative",
+        "unit": "percent",
+        "value": "-21.09",
+        "reason": null,
+        "detail": "momentum_6_1 minus SPY's over the same closes",
+        "start": "2026-04-06",
+        "end": "2026-09-03",
+        "inputs": [
+          {
+            "name": "momentum_6_1",
+            "value": "-3.45",
+            "start": "2026-04-06",
+            "end": "2026-09-03",
+            "note": null,
+            "sources": []
+          },
+          {
+            "name": "SPY momentum_6_1",
+            "value": "17.64",
+            "start": "2026-04-06",
+            "end": "2026-09-03",
+            "note": null,
+            "sources": []
+          }
+        ],
+        "notes": [],
+        "percentile": "29",
+        "median": "-10.69",
+        "observations": 7,
+        "since": "2026-04-30"
+      }
+    ],
+    "history": [
+      {
+        "known_at": "2025-12-01T04:59:59.999999Z",
+        "values": {
+          "beta_252d": null,
+          "reversal_1m": "-0.61",
+          "momentum_6_1": null,
+          "momentum_12_1": null,
+          "volatility_60d": null,
+          "close_vs_sma_50": null,
+          "close_vs_sma_200": null,
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2026-01-01T04:59:59.999999Z",
+        "values": {
+          "beta_252d": null,
+          "reversal_1m": "-1.43",
+          "momentum_6_1": null,
+          "momentum_12_1": null,
+          "volatility_60d": "8.30",
+          "close_vs_sma_50": "-2.31",
+          "close_vs_sma_200": null,
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2026-02-01T04:59:59.999999Z",
+        "values": {
+          "beta_252d": null,
+          "reversal_1m": "-0.83",
+          "momentum_6_1": null,
+          "momentum_12_1": null,
+          "volatility_60d": "8.13",
+          "close_vs_sma_50": "-1.13",
+          "close_vs_sma_200": null,
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2026-03-01T04:59:59.999999Z",
+        "values": {
+          "beta_252d": null,
+          "reversal_1m": "4.07",
+          "momentum_6_1": null,
+          "momentum_12_1": null,
+          "volatility_60d": "8.10",
+          "close_vs_sma_50": "3.09",
+          "close_vs_sma_200": null,
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2026-04-01T03:59:59.999999Z",
+        "values": {
+          "beta_252d": null,
+          "reversal_1m": "-3.26",
+          "momentum_6_1": null,
+          "momentum_12_1": null,
+          "volatility_60d": "10.59",
+          "close_vs_sma_50": "-1.45",
+          "close_vs_sma_200": null,
+          "relative_momentum_6_1": null,
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2026-05-01T03:59:59.999999Z",
+        "values": {
+          "beta_252d": null,
+          "reversal_1m": "-0.84",
+          "momentum_6_1": "-4.05",
+          "momentum_12_1": null,
+          "volatility_60d": "10.16",
+          "close_vs_sma_50": "-2.06",
+          "close_vs_sma_200": null,
+          "relative_momentum_6_1": "0.75",
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2026-06-01T03:59:59.999999Z",
+        "values": {
+          "beta_252d": null,
+          "reversal_1m": "0.44",
+          "momentum_6_1": "-3.24",
+          "momentum_12_1": null,
+          "volatility_60d": "10.29",
+          "close_vs_sma_50": "-0.16",
+          "close_vs_sma_200": null,
+          "relative_momentum_6_1": "-9.26",
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2026-07-01T03:59:59.999999Z",
+        "values": {
+          "beta_252d": null,
+          "reversal_1m": "1.17",
+          "momentum_6_1": "-0.80",
+          "momentum_12_1": null,
+          "volatility_60d": "8.89",
+          "close_vs_sma_50": "0.88",
+          "close_vs_sma_200": null,
+          "relative_momentum_6_1": "-10.69",
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2026-08-01T03:59:59.999999Z",
+        "values": {
+          "beta_252d": null,
+          "reversal_1m": "-3.82",
+          "momentum_6_1": "-0.18",
+          "momentum_12_1": null,
+          "volatility_60d": "9.44",
+          "close_vs_sma_50": "-3.23",
+          "close_vs_sma_200": "-5.74",
+          "relative_momentum_6_1": "-8.20",
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2026-09-01T03:59:59.999999Z",
+        "values": {
+          "beta_252d": null,
+          "reversal_1m": "0.73",
+          "momentum_6_1": "-6.80",
+          "momentum_12_1": null,
+          "volatility_60d": "9.90",
+          "close_vs_sma_50": "-1.52",
+          "close_vs_sma_200": "-4.48",
+          "relative_momentum_6_1": "-16.22",
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2026-10-01T03:59:59.999999Z",
+        "values": {
+          "beta_252d": null,
+          "reversal_1m": "-5.38",
+          "momentum_6_1": "-2.95",
+          "momentum_12_1": null,
+          "volatility_60d": "9.94",
+          "close_vs_sma_50": "-5.03",
+          "close_vs_sma_200": "-9.05",
+          "relative_momentum_6_1": "-21.20",
+          "relative_momentum_12_1": null
+        }
+      },
+      {
+        "known_at": "2026-10-06T12:00:00Z",
+        "values": {
+          "beta_252d": null,
+          "reversal_1m": "-6.04",
+          "momentum_6_1": "-3.45",
+          "momentum_12_1": null,
+          "volatility_60d": "9.95",
+          "close_vs_sma_50": "-5.44",
+          "close_vs_sma_200": "-9.68",
+          "relative_momentum_6_1": "-21.09",
+          "relative_momentum_12_1": null
+        }
+      }
+    ],
+    "detail": "Each value is compared with the instrument's own history since 2016, never ranked against the other instruments: the universe has no delisted companies (P2-3, KI-1). Descriptions of the past, not forecasts or signals."
+  }
+}

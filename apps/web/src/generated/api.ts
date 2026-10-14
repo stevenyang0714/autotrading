@@ -197,6 +197,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/factors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Factors Table */
+        get: operations["factors_table_factors_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/factors/definitions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Factor Definitions */
+        get: operations["factor_definitions_factors_definitions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/glossary": {
         parameters: {
             query?: never;
@@ -363,6 +397,23 @@ export interface paths {
         };
         /** Evidence Candidates */
         get: operations["evidence_candidates_instruments__ticker__evidence_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/instruments/{ticker}/factors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Instrument Factors */
+        get: operations["instrument_factors_instruments__ticker__factors_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1891,6 +1942,95 @@ export interface components {
             /** Rows */
             rows: components["schemas"]["MetricRow"][];
         };
+        /** FactorDefinitionSetOut */
+        FactorDefinitionSetOut: {
+            /** Content */
+            content: {
+                [key: string]: unknown;
+            };
+            /** Content Sha256 */
+            content_sha256: string;
+            /** Definition Version */
+            definition_version: string;
+            /**
+             * Released
+             * Format: date
+             */
+            released: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "active" | "retired";
+        };
+        /** FactorInput */
+        FactorInput: {
+            /** End */
+            end?: string | null;
+            /** Name */
+            name: string;
+            /** Note */
+            note?: string | null;
+            /**
+             * Sources
+             * @default []
+             */
+            sources: string[];
+            /** Start */
+            start?: string | null;
+            /** Value */
+            value: string | null;
+        };
+        /** FactorRow */
+        FactorRow: {
+            fundamentals: components["schemas"]["SnapshotRef"] | null;
+            /**
+             * Instrument Type
+             * @enum {string}
+             */
+            instrument_type: "equity" | "etf";
+            price: components["schemas"]["SnapshotRef"] | null;
+            /** Ticker */
+            ticker: string;
+            /** Values */
+            values: components["schemas"]["FactorValue"][];
+        };
+        /** FactorValue */
+        FactorValue: {
+            /** Group */
+            group: string;
+            /** Measure Id */
+            measure_id: string;
+            /** Notes */
+            notes: number;
+            /** Percentile */
+            percentile: string | null;
+            /** Reason */
+            reason: string | null;
+            /** Unit */
+            unit: string;
+            /** Value */
+            value: string | null;
+        };
+        /** FactorsOut */
+        FactorsOut: {
+            /** Benchmark */
+            benchmark: string;
+            /** Definition Version */
+            definition_version: string;
+            /**
+             * Detail
+             * @default Each value is compared with the instrument's own history since 2016, never ranked against the other instruments: the universe has no delisted companies (P2-3, KI-1). Descriptions of the past, not forecasts or signals.
+             */
+            detail: string;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Rows */
+            rows: components["schemas"]["FactorRow"][];
+        };
         /** FairValueOut */
         FairValueOut: {
             assumptions: components["schemas"]["AssumptionVersion"];
@@ -2116,6 +2256,18 @@ export interface components {
             /** Repurchase To Fcf Max */
             repurchase_to_fcf_max: string;
         };
+        /** HistoryPoint */
+        HistoryPoint: {
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Values */
+            values: {
+                [key: string]: string | null;
+            };
+        };
         /** Indicator */
         Indicator: {
             /**
@@ -2173,6 +2325,34 @@ export interface components {
             inputs: components["schemas"]["InputRef"][];
             /** Text */
             text: string;
+        };
+        /** InstrumentFactorsOut */
+        InstrumentFactorsOut: {
+            /** Definition Version */
+            definition_version: string;
+            /**
+             * Detail
+             * @default Each value is compared with the instrument's own history since 2016, never ranked against the other instruments: the universe has no delisted companies (P2-3, KI-1). Descriptions of the past, not forecasts or signals.
+             */
+            detail: string;
+            fundamentals: components["schemas"]["SnapshotRef"] | null;
+            /** History */
+            history: components["schemas"]["HistoryPoint"][];
+            /**
+             * Instrument Type
+             * @enum {string}
+             */
+            instrument_type: "equity" | "etf";
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Measures */
+            measures: components["schemas"]["MeasureOut"][];
+            price: components["schemas"]["SnapshotRef"] | null;
+            /** Ticker */
+            ticker: string;
         };
         /** InstrumentList */
         InstrumentList: {
@@ -2502,6 +2682,49 @@ export interface components {
             next_open: string;
             /** Open */
             open: boolean;
+        };
+        /** MeasureOut */
+        MeasureOut: {
+            /** Detail */
+            detail: string;
+            /** End */
+            end?: string | null;
+            /**
+             * Group
+             * @enum {string}
+             */
+            group: "trend" | "risk" | "relative" | "value" | "quality";
+            /**
+             * Inputs
+             * @default []
+             */
+            inputs: components["schemas"]["FactorInput"][];
+            /** Measure Id */
+            measure_id: string;
+            /** Median */
+            median: string | null;
+            /**
+             * Notes
+             * @default []
+             */
+            notes: string[];
+            /** Observations */
+            observations: number;
+            /** Percentile */
+            percentile: string | null;
+            /** Reason */
+            reason?: ("unavailable" | "not_meaningful") | null;
+            /** Since */
+            since: string | null;
+            /** Start */
+            start?: string | null;
+            /**
+             * Unit
+             * @enum {string}
+             */
+            unit: "percent" | "x" | "ratio";
+            /** Value */
+            value: string | null;
         };
         /** MentionOut */
         MentionOut: {
@@ -3610,6 +3833,30 @@ export interface components {
             /** Rule Version */
             rule_version: string;
         };
+        /** SnapshotRef */
+        SnapshotRef: {
+            /** Backfilled */
+            backfilled: boolean;
+            /** Feed Status */
+            feed_status: string | null;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Last Close */
+            last_close: string | null;
+            /**
+             * Scope
+             * @enum {string}
+             */
+            scope: "price" | "all";
+            /**
+             * System Time
+             * Format: date-time
+             */
+            system_time: string;
+        };
         /** SourceHealth */
         SourceHealth: {
             /** Access Status */
@@ -4195,6 +4442,58 @@ export interface operations {
             };
         };
     };
+    factors_table_factors_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FactorsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    factor_definitions_factors_definitions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FactorDefinitionSetOut"][];
+                };
+            };
+        };
+    };
     list_terms_glossary_get: {
         parameters: {
             query?: {
@@ -4518,6 +4817,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CandidatesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    instrument_factors_instruments__ticker__factors_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+            };
+            header?: never;
+            path: {
+                ticker: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InstrumentFactorsOut"];
                 };
             };
             /** @description Validation Error */

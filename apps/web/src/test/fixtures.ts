@@ -61,10 +61,17 @@ import pricesLatest from "../../tests/fixtures/api/prices-latest.json";
 import progress from "../../tests/fixtures/api/progress.json";
 import regimeEarlier from "../../tests/fixtures/api/regime-earlier.json";
 import regime from "../../tests/fixtures/api/regime.json";
+import factorsAapl from "../../tests/fixtures/api/factors-aapl.json";
+import factorsNvdaEarlier from "../../tests/fixtures/api/factors-nvda-earlier.json";
+import factorsNvda from "../../tests/fixtures/api/factors-nvda.json";
+import factorsTlt from "../../tests/fixtures/api/factors-tlt.json";
+import factors from "../../tests/fixtures/api/factors.json";
 
 import type {
   AlertDetail,
   RegimeResponse,
+  FactorsTable,
+  InstrumentFactors,
   Alerts,
   AssumptionList,
   Convergence,
@@ -251,3 +258,8 @@ export const recordedRegimeAlerts = alertsRegime.response as unknown as Alerts;
  * slowing, inflation above target) and on 2026-09-15 (the August month end). */
 export const recordedRegime = regime.response as unknown as RegimeResponse;
 export const recordedRegimeEarlier = regimeEarlier.response as unknown as RegimeResponse;
+export const recordedFactors = factors.response as unknown as FactorsTable;
+export const recordedFactorsNvda = factorsNvda.response as unknown as InstrumentFactors;
+export const recordedFactorsNvdaEarlier = factorsNvdaEarlier.response as unknown as InstrumentFactors;
+export const recordedFactorsAapl = factorsAapl.response as unknown as InstrumentFactors;
+export const recordedFactorsTlt = factorsTlt.response as unknown as InstrumentFactors;

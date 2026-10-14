@@ -723,6 +723,41 @@ M2.1, one PR.
 
 ---
 
+## ADR-030 Price, trend and factor engine — Accepted (2026-10-13, approved by Steven with the M2.2 plan)
+M2.2, one PR.
+- **Decisions (Steven, 2026-10-13):**
+  - F1 The cross-instrument table goes live on the Opportunity Radar; M2.4 adds its candidates to the same page. Every universe instrument page, ETFs included, shows its own trend and factors.
+  - F2 History: the price measures at every session since 2016, the value and quality measures at every month end since 2016, then daily.
+  - F3 Total returns with cash dividends from Alpaca corporate actions (the existing provider). Checked before building: complete for 11 of 18 (AZO, ORLY and GLD pay none; Alphabet and Meta started in 2024), with gaps and repeats elsewhere (KNOWN_ISSUES KI-10). Steven chose to use them with a gap check rather than prices only.
+  - F4 The Research Record's value and quality measures are stored too, each against the company's own history since 2016; no cross-sectional ranks (P2-3 decided: the 10 equities and 8 ETFs, time-series only; KI-1).
+- **Technical defaults:**
+  - Definitions: `config/factor_definitions.yaml` 0.1.0, loaded into `factor_definition_sets` by `make migrate` with its sha256 (a changed released version is refused; hash pinned in a unit test).
+  - Measures (`domain/factors.py`, mypy --strict), each from the last close known at T:
+    - 12-1 and 6-1 month momentum: total return from 252 (126) to 21 sessions before;
+    - 1-month return: total return over the last 21 sessions;
+    - close against its 50- and 200-session average close (prices);
+    - 60-session volatility of daily total returns times the square root of 252;
+    - 252-session beta to SPY, needing 90% of the sessions paired;
+    - 12-1 and 6-1 momentum minus SPY's over the same closes (not meaningful for SPY);
+    - value: P/E, EV/sales, P/B, FCF yield, earnings yield (on the last close); quality: ROIC, ROE, gross and operating margin, FCF conversion, net debt / EBITDA, diluted share change and revenue growth (the Research Record's latest period).
+  - Point in time: raw closes, splits and dividends known at T and recorded by S, moved to T's split basis (domain/splits); facts through `market_view` with S; a dividend is known from the start of its ex-date (Alpaca gives no declaration date) and reinvested at that day's close; sessions are the days with a close (the market calendar covers 2026–2028 only). No close within 5 days, or too few closes, makes a measure unavailable with the reason.
+  - Dividend gap check: from the instrument's own regular ex-dates (at least four), an interval above 1.25 times the usual one, a long wait since the last payment, or a late start of the recorded history is noted on every measure whose window (to the last close) it touches; a measure against SPY names SPY's notes.
+  - Storage: `dividend_events` (migration 0022) and `factor_snapshots` (migration 0023), both append-only; one snapshot per instrument, T and definition version, with each measure's value and the whole document with every input. Scope `price` marks backfilled sessions between month ends.
+  - Splits: `alpaca.splits` now covers the ETFs; XLE and XLK split 2-for-1 on 2025-12-05 and were missing from `split_events` until now (no feature read ETF splits before).
+  - Percentiles are read, never stored: among the last snapshot of each New York month since 2016 known by T (any scope for price measures, full snapshots for value and quality), the share at or below today's value.
+  - Schedule: `alpaca.dividends` with the daily bars (06:30 SGT); snapshots daily at 11:05 SGT (T = S = now); `make factors-backfill` (one message per year), `make factors-verify` (latest 20, 200 random and the snapshots around every split since 2016). The CI replay stores snapshots at the regime's points and replays the splits again once the ETF instruments exist.
+  - No signals: family 5 signals come with M2.4 (S3) and M2.5 (S4); the convergence level's market confirmation is unchanged.
+- **API and web:** `GET /instruments/{ticker}/factors` (equities and ETFs), `GET /factors`, `GET /factors/definitions`; `/dashboards/opportunity-radar` live (trend and risk of all 18, value and quality percentiles of the 10 companies, sortable, As known on); `#factors` on every instrument page; ETF pages; the Overview market tiles link to them; Audit Log label for factor definitions.
+- **Live check 2026-10-13:**
+  - Dividends: 747 rows for 15 instruments (one repeat stored once); splits: XLE and XLK added.
+  - Backfill: 49,392 snapshots in about 10.5 minutes (two worker threads; every session since 2016 and the month ends), plus 72 for four December month ends a first build missed (fixed before merge, KI-12); 49,464 in all, 2,232 full.
+  - `make factors-verify`: 315 snapshots recomputed (latest 20, 200 random, and those around the AAPL 2020, NVDA 2021 and 2024, GOOGL 2022, ORLY 2025, XLE and XLK 2025 splits), all identical.
+  - Values as known on 2026-10-13 (last close 2026-10-12): 12-1 momentum SPY +14.82%, AAPL +31.28%, NVDA +13.63%, TLT −5.48%, XLE +51.74% (on the post-split basis), GLD +9.12%; NVDA beta 1.890; SPY's 60-session volatility on the close of 2020-03-30 52.42%. NVDA's measures are continuous across its 2024-06-10 split.
+  - Endpoints: `/factors` 0.22 s, `/instruments/{ticker}/factors` 0.03 s, `/factors/definitions` 0.01 s.
+- **Known gaps:** time-series only, no delisted companies (KI-1); 12-1 momentum and beta start in 2017; value and quality history at month ends only; dividends without declaration dates and with the gaps of KI-10; the gap check can over-flag (KI-11); taxes, costs and corporate actions other than splits and cash dividends are not modelled.
+
+---
+
 ## Open decisions (owner: Steven)
 
 | ID | Decision | Needed by | Default until decided |

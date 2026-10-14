@@ -17,6 +17,7 @@ export type CompleteTermId =
   | "backfilled_evaluation"
   | "balance_identity"
   | "basic_shares"
+  | "beta_252d"
   | "bid"
   | "buyback_intensity"
   | "buyback_quality_score"
@@ -35,12 +36,15 @@ export type CompleteTermId =
   | "buyback_state_watch"
   | "capex"
   | "cash"
+  | "cash_dividend"
   | "cash_returned"
   | "cash_returned_to_fcf"
   | "catalyst"
   | "change_qoq"
   | "change_yoy"
   | "close_vs_moving_average"
+  | "close_vs_sma_200"
+  | "close_vs_sma_50"
   | "commercial_paper"
   | "condition_status"
   | "consensus_estimate"
@@ -77,6 +81,7 @@ export type CompleteTermId =
   | "diluted_shares_change"
   | "disciplined_years"
   | "discount_rate"
+  | "dividend_gap"
   | "dividends_paid"
   | "duplicate_group"
   | "earnings_actuals"
@@ -98,6 +103,9 @@ export type CompleteTermId =
   | "ev_to_sales"
   | "evidence_item"
   | "execution_eligibility"
+  | "factor_definition_set"
+  | "factor_percentile"
+  | "factor_snapshot"
   | "fair_value_dcf"
   | "fcf_conversion"
   | "fcf_funding"
@@ -151,6 +159,8 @@ export type CompleteTermId =
   | "mega_cap"
   | "milestone_status"
   | "model_output"
+  | "momentum_12_1"
+  | "momentum_6_1"
   | "multiple_percentile"
   | "net_debt"
   | "net_debt_change_yoy"
@@ -205,6 +215,8 @@ export type CompleteTermId =
   | "regime_quadrant"
   | "regime_rule_set"
   | "regime_volatility"
+  | "relative_momentum_12_1"
+  | "relative_momentum_6_1"
   | "relative_return_1m"
   | "remaining_to_market_cap"
   | "reporting_period"
@@ -216,6 +228,7 @@ export type CompleteTermId =
   | "restated_flag"
   | "revenue"
   | "revenue_growth"
+  | "reversal_1m"
   | "reverse_dcf_growth"
   | "risk_check"
   | "roe"
@@ -253,6 +266,7 @@ export type CompleteTermId =
   | "thesis_card"
   | "threshold_review"
   | "total_debt"
+  | "total_return"
   | "trade_decision"
   | "trailing_twelve_months"
   | "update_cadence"
@@ -261,6 +275,7 @@ export type CompleteTermId =
   | "valuation_support"
   | "vintage"
   | "vix_percentile_1y"
+  | "volatility_60d"
   | "volume"
   | "yield_curve_inversion";
 
@@ -589,6 +604,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "基本加權股數",
     "hint_zh": "期間內的加權平均流通股數，不含潛在稀釋股份。"
+  },
+  "beta_252d": {
+    "term_id": "beta_252d",
+    "display_name": "Beta to SPY (252 sessions)",
+    "category": "factor",
+    "short_definition": "How much the instrument has moved with SPY over the last 252 sessions.",
+    "full_definition": "The covariance of the instrument's daily total returns with SPY's over the last 252 sessions (days both have a return), divided by the variance of SPY's. Needs 90% of the sessions paired.",
+    "formula": "cov(r, r_SPY) / var(r_SPY)",
+    "unit": "ratio",
+    "example": "NVDA as known on 2026-10-06 (recorded closes and dividends): 1.882.",
+    "direction": "Above 1 = moves more than the market",
+    "interpretation": "1.5 means a 1% SPY move came with about 1.5% on average.",
+    "why_it_matters": "Measures market exposure for the portfolio risk check (M2.3).",
+    "source": "Factor definitions 0.1.0 (config/factor_definitions.yaml); Alpaca closes, splits and cash dividends",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/factor_definitions.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily (11:05 SGT) and every session since 2016",
+    "caveats": "Not meaningful for SPY itself. Betas change over time; one year of data.",
+    "related_terms": [
+      "volatility_60d",
+      "momentum_12_1"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "對 SPY 的 beta",
+    "hint_zh": "最近 252 個交易日，SPY 漲跌 1% 時這檔平均漲跌幾 %。"
   },
   "bid": {
     "term_id": "bid",
@@ -1056,6 +1096,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "現金及約當現金",
     "hint_zh": "期末的現金與極短期、高流動性投資。"
   },
+  "cash_dividend": {
+    "term_id": "cash_dividend",
+    "display_name": "Cash Dividend",
+    "category": "factor",
+    "short_definition": "A cash payment per share, as of its ex-date.",
+    "full_definition": "Stored from Alpaca corporate actions since 2016 (one row per instrument, ex-date and kind), known from the start of the ex-date in New York, per share on the basis of that date and moved across later splits.",
+    "formula": "rate per share at the ex-date",
+    "unit": "USD per share",
+    "example": "Apple, ex-date 2020-08-07: 0.82 per pre-split share, 0.205 on today's basis after the 4-for-1 split.",
+    "direction": "N/A",
+    "interpretation": "Reinvested in total returns.",
+    "why_it_matters": "Total returns need them; without them income funds are understated.",
+    "source": "Factor definitions 0.1.0 (config/factor_definitions.yaml); Alpaca closes, splits and cash dividends",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/factor_definitions.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily with the closes (06:30 SGT)",
+    "caveats": "Alpaca gives no declaration date. A repeated payment of the same day and kind is stored once.",
+    "related_terms": [
+      "total_return",
+      "dividend_gap"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "現金股利",
+    "hint_zh": "每股配息金額，從除息日開始算已知，遇分割會換算。"
+  },
   "cash_returned": {
     "term_id": "cash_returned",
     "display_name": "Cash Returned to Shareholders",
@@ -1207,6 +1272,56 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "收盤 vs 50 日均線",
     "hint_zh": "最新收盤高於 50 個交易日平均多少。"
+  },
+  "close_vs_sma_200": {
+    "term_id": "close_vs_sma_200",
+    "display_name": "Close vs 200-Session Average",
+    "category": "factor",
+    "short_definition": "How far the last close is above the average close of the last 200 sessions.",
+    "full_definition": "The last close known at the date / the mean of the last 200 closes - 1, every close on the split basis of the date. Prices only, without dividends.",
+    "formula": "close / mean(last 200 closes) - 1",
+    "unit": "percent",
+    "example": "Apple as known on 2026-10-06 (recorded closes): +15.01%.",
+    "direction": "Above 0 = above its long average",
+    "interpretation": "Whether the price is above its long-term trend line.",
+    "why_it_matters": "The most common long-term trend filter.",
+    "source": "Factor definitions 0.1.0 (config/factor_definitions.yaml); Alpaca closes, splits and cash dividends",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/factor_definitions.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily (11:05 SGT) and every session since 2016",
+    "caveats": "Lags turning points by months.",
+    "related_terms": [
+      "close_vs_sma_50",
+      "momentum_12_1"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "收盤 vs 200 日均價",
+    "hint_zh": "最新收盤比最近 200 個交易日平均收盤高多少（%），長期趨勢線。"
+  },
+  "close_vs_sma_50": {
+    "term_id": "close_vs_sma_50",
+    "display_name": "Close vs 50-Session Average",
+    "category": "factor",
+    "short_definition": "How far the last close is above the average close of the last 50 sessions.",
+    "full_definition": "The last close known at the date / the mean of the last 50 closes - 1, every close on the split basis of the date. Prices only, without dividends.",
+    "formula": "close / mean(last 50 closes) - 1",
+    "unit": "percent",
+    "example": "Apple as known on 2026-10-06 (recorded closes): +3.25%.",
+    "direction": "Above 0 = above its recent average",
+    "interpretation": "Whether the price is above or below its short trend line.",
+    "why_it_matters": "A simple, widely watched trend filter.",
+    "source": "Factor definitions 0.1.0 (config/factor_definitions.yaml); Alpaca closes, splits and cash dividends",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/factor_definitions.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily (11:05 SGT) and every session since 2016",
+    "caveats": "Lags turning points. The buyback rules' market confirmation uses the same formula (close_vs_moving_average) on end-of-day closes only.",
+    "related_terms": [
+      "close_vs_sma_200",
+      "close_vs_moving_average"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "收盤 vs 50 日均價",
+    "hint_zh": "最新收盤比最近 50 個交易日平均收盤高多少（%）。"
   },
   "commercial_paper": {
     "term_id": "commercial_paper",
@@ -1722,25 +1837,27 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "term_id": "dashboard_opportunity_radar",
     "display_name": "Opportunity Radar",
     "category": "navigation",
-    "short_definition": "Long, short and hedge candidates with signal convergence.",
-    "full_definition": "Candidates ranked by how many independent signals agree and how far they have climbed the L0 to L4 convergence ladder (02 §16).",
-    "formula": "not a calculation; dashboard defined in build spec 02 §21",
+    "short_definition": "Every universe instrument's trend, risk and factor values against its own history.",
+    "full_definition": "Since M2.2 (ADR-030): one row per universe equity and ETF with its momentum, averages, volatility, beta and momentum against SPY, and for equities the percentile of each value and quality measure in its own history, as known on the chosen date. Candidates from convergence levels, factors and the regime come with M2.4 on the same page.",
+    "formula": "not a calculation; reads GET /factors",
     "unit": "page",
-    "example": "A company with an active buyback, positive revisions and price confirmation would rank higher than one with a single headline.",
+    "example": "As known on 2026-10-06 (recorded data): NVDA 12-1 momentum +21.09%, 4.60 points ahead of SPY.",
     "direction": "N/A",
-    "interpretation": "Planned for Phase 2; until then the page shows no data, live or simulated.",
-    "why_it_matters": "Concentrates attention on ideas backed by more than one independent signal.",
-    "source": "Build spec 02 §21; research report 01 §21; ROADMAP dashboard map",
-    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/spec/02_master_build_prompt_v2.md",
-    "as_of": "2026-10-05",
-    "update_cadence": "per release",
-    "caveats": "Contents arrive with Phase 2; scope can change through a roadmap update.",
+    "interpretation": "A map of where each instrument stands against its own past; not a ranking and not a buy list.",
+    "why_it_matters": "The inputs the candidates of M2.4 will be built from, visible first.",
+    "source": "Build spec 02 §13 and §21; ADR-030",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/factor_definitions.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily (11:05 SGT)",
+    "caveats": "Time-series only: no delisted companies, so no cross-sectional ranks (P2-3, KI-1). Candidates arrive with M2.4.",
     "related_terms": [
-      "planned_phase"
+      "momentum_12_1",
+      "factor_percentile",
+      "factor_definition_set"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "機會雷達",
-    "hint_zh": "依訊號篩選出的研究候選標的（Phase 2）。"
+    "hint_zh": "18 檔標的的動能、均線、波動、beta 與相對 SPY，以及股票的估值與品質在自身歷史的百分位；候選名單在 M2.4。"
   },
   "dashboard_options_vol": {
     "term_id": "dashboard_options_vol",
@@ -2120,6 +2237,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "折現率",
     "hint_zh": "當時已知的 10 年期美債殖利率 + 股權風險溢酬。"
+  },
+  "dividend_gap": {
+    "term_id": "dividend_gap",
+    "display_name": "Possibly Missing Dividend",
+    "category": "factor",
+    "short_definition": "A window where the recorded dividends skip a usual payment.",
+    "full_definition": "From the instrument's own regular ex-dates (at least four), an interval longer than 1.25 times the usual one, a long wait since the last payment, or a late start of the recorded history is noted on every measure whose window it touches.",
+    "formula": "interval between ex-dates > 1.25 x median interval",
+    "unit": "note",
+    "example": "SPY: no dividend recorded between 2018-03-16 and 2018-09-21 (usually every 91 days).",
+    "direction": "N/A",
+    "interpretation": "The total return there may be understated by about one payment.",
+    "why_it_matters": "Shows where the dividend data may be incomplete instead of hiding it.",
+    "source": "Factor definitions 0.1.0 (config/factor_definitions.yaml); Alpaca closes, splits and cash dividends",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/factor_definitions.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "with each snapshot",
+    "caveats": "A heuristic: an irregular payer can be flagged wrongly. The check runs from the window's first close to the last close known, so a momentum that skips the last month can be flagged for a payment after its end. A measure against SPY also carries SPY's notes, named as such. The known gaps are listed in KNOWN_ISSUES.",
+    "related_terms": [
+      "cash_dividend",
+      "total_return"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "可能缺漏的股利",
+    "hint_zh": "依這檔自己的配息頻率，某段期間少了一次配息；該期間的總報酬可能少算。"
   },
   "dividends_paid": {
     "term_id": "dividends_paid",
@@ -2660,6 +2802,82 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "執行資格",
     "hint_zh": "訊號能否導致下單；Phase 1 一律 paper only（只能模擬）。"
+  },
+  "factor_definition_set": {
+    "term_id": "factor_definition_set",
+    "display_name": "Factor Definition Version",
+    "category": "factor",
+    "short_definition": "The version of the factor definitions a snapshot used.",
+    "full_definition": "config/factor_definitions.yaml lists versioned definition sets; a released version never changes (make migrate refuses edited content and a test pins its sha256). Each snapshot stores the version it used.",
+    "formula": "content sha256 per definition_version",
+    "unit": "version",
+    "example": "0.1.0, released 2026-10-13.",
+    "direction": "N/A",
+    "interpretation": "Which formulas and windows a value came from.",
+    "why_it_matters": "Factor definitions are versioned (Phase 2 exit), so stored values recompute exactly.",
+    "source": "Factor definitions 0.1.0 (config/factor_definitions.yaml); Alpaca closes, splits and cash dividends",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/factor_definitions.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "per release",
+    "caveats": "A change is a new version; snapshots under an older version stay as they were.",
+    "related_terms": [
+      "momentum_12_1",
+      "factor_percentile"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "因子定義版本",
+    "hint_zh": "每個快照所用的因子定義版本；已發布的版本不會改。"
+  },
+  "factor_percentile": {
+    "term_id": "factor_percentile",
+    "display_name": "Percentile in Own History",
+    "category": "factor",
+    "short_definition": "Where today's value ranks among the instrument's own month-end values since 2016.",
+    "full_definition": "Among the last stored snapshot of each New York month since 2016 (each as known then, same definition version), the share at or below today's value; the median is that history's middle. Months without a value are left out.",
+    "formula": "count(history <= current) / count(history) x 100",
+    "unit": "percentile (0-100)",
+    "example": "Apple as known on 2026-10-06 (recorded data): ROIC 90.32%, 100th percentile of 33 month ends since 2024-01.",
+    "direction": "Depends on the measure: a high momentum percentile = stronger than usual; a high P/E percentile = dearer than usual",
+    "interpretation": "Compares the instrument with its own past, never with the others (P2-3).",
+    "why_it_matters": "Puts a value in context without a cross-sectional ranking the universe cannot support (KI-1).",
+    "source": "Factor definitions 0.1.0 (config/factor_definitions.yaml); Alpaca closes, splits and cash dividends",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/factor_definitions.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "computed when the page is read",
+    "caveats": "Early history is short (12-1 momentum from 2017); business changes make old values less comparable.",
+    "related_terms": [
+      "multiple_percentile",
+      "momentum_12_1"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "自身歷史百分位",
+    "hint_zh": "目前的值在這檔 2016 年起每月底歷史中的排名（0–100），不和其他標的比。"
+  },
+  "factor_snapshot": {
+    "term_id": "factor_snapshot",
+    "display_name": "Trend and Factors",
+    "category": "factor",
+    "short_definition": "An instrument's stored trend, risk, value and quality measures at a date, each with its inputs.",
+    "full_definition": "One snapshot per universe instrument, date and factor definition version, read from the closes, splits, dividends and filings known then and as the database held them, so it recomputes exactly. Daily at 11:05 SGT; every session since 2016 was backfilled (value and quality at month ends only). The page shows the latest snapshot at or before the chosen date.",
+    "formula": "not a calculation; the stored measures of config/factor_definitions.yaml",
+    "unit": "snapshot",
+    "example": "NVDA as known on 2026-10-06 (recorded data): 12-1 momentum +21.09%, volatility 38.15%, beta 1.882.",
+    "direction": "N/A",
+    "interpretation": "Where the instrument stands against its own history; not a forecast or a signal.",
+    "why_it_matters": "The price and factor inputs that ETF rotation, the risk check and momentum backtests build on.",
+    "source": "Factor definitions 0.1.0 (config/factor_definitions.yaml); ADR-030",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/factor_definitions.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily (11:05 SGT) and every session since 2016",
+    "caveats": "Time-series only (P2-3, KI-1). Backfilled snapshots between month ends hold the price measures only.",
+    "related_terms": [
+      "factor_definition_set",
+      "factor_percentile",
+      "momentum_12_1"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "趨勢與因子",
+    "hint_zh": "某一天存下的這檔標的趨勢、風險、估值與品質指標，每個都附輸入。"
   },
   "fair_value_dcf": {
     "term_id": "fair_value_dcf",
@@ -4001,6 +4219,59 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "模型結果，不是事實",
     "hint_zh": "由假設算出的數字，不是公司申報或市場報價。"
   },
+  "momentum_12_1": {
+    "term_id": "momentum_12_1",
+    "display_name": "12-1 Month Momentum",
+    "category": "factor",
+    "short_definition": "The total return from 12 months to 1 month ago, skipping the latest month.",
+    "full_definition": "From the close 252 sessions before the last close known at the date to the close 21 sessions before it. Total return: closes and cash dividends on the split basis of the date, each dividend reinvested at the close of its ex-date.",
+    "formula": "TR index(t - 21) / TR index(t - 252) - 1",
+    "unit": "percent",
+    "example": "NVDA as known on 2026-10-06 (recorded closes and dividends): +21.09% (2025-10-02 to 2026-09-03), 17th percentile of its month ends since 2024.",
+    "direction": "Higher = stronger past trend",
+    "interpretation": "Medium-term trend, leaving out the last month where short-term reversal dominates.",
+    "why_it_matters": "The classic momentum measure behind strategy S4 and ETF rotation (S3).",
+    "source": "Factor definitions 0.1.0 (config/factor_definitions.yaml); Alpaca closes, splits and cash dividends",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/factor_definitions.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily (11:05 SGT) and every session since 2016",
+    "caveats": "Needs 253 closes, so it starts in 2017. Describes the past; momentum can reverse sharply. Compared only with the instrument's own history (KI-1).",
+    "related_terms": [
+      "momentum_6_1",
+      "reversal_1m",
+      "relative_momentum_12_1",
+      "total_return"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "12-1 個月動能",
+    "hint_zh": "從 12 個月前到 1 個月前的總報酬（含股利），跳過最近一個月。"
+  },
+  "momentum_6_1": {
+    "term_id": "momentum_6_1",
+    "display_name": "6-1 Month Momentum",
+    "category": "factor",
+    "short_definition": "The total return from 6 months to 1 month ago, skipping the latest month.",
+    "full_definition": "From the close 126 sessions before the last close known at the date to the close 21 sessions before it. Total return: closes and cash dividends on the split basis of the date, each dividend reinvested at the close of its ex-date.",
+    "formula": "TR index(t - 21) / TR index(t - 126) - 1",
+    "unit": "percent",
+    "example": "Apple as known on 2026-10-06 (recorded closes and dividends): +27.02% (2026-04-06 to 2026-09-03).",
+    "direction": "Higher = stronger past trend",
+    "interpretation": "A shorter, faster version of 12-1 momentum.",
+    "why_it_matters": "Shows whether a trend is recent or long-standing next to 12-1 momentum.",
+    "source": "Factor definitions 0.1.0 (config/factor_definitions.yaml); Alpaca closes, splits and cash dividends",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/factor_definitions.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily (11:05 SGT) and every session since 2016",
+    "caveats": "Describes the past; compared only with the instrument's own history (KI-1).",
+    "related_terms": [
+      "momentum_12_1",
+      "relative_momentum_6_1",
+      "total_return"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "6-1 個月動能",
+    "hint_zh": "從 6 個月前到 1 個月前的總報酬（含股利），跳過最近一個月。"
+  },
   "multiple_percentile": {
     "term_id": "multiple_percentile",
     "display_name": "Multiple Percentile (own history)",
@@ -4542,7 +4813,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "Instruments",
     "category": "navigation",
     "short_definition": "Universe stocks with their prices, SEC-reported fundamentals and news as known at a chosen date.",
-    "full_definition": "System page listing the equities in config/universe.yaml. Each stock page shows its latest price with feed status and one year of daily closes (M0.7), valuation and fair value (M1.2, M1.3a), the Research Record (M1.3b), buybacks (M1.4a), the last three fiscal years, quarters and recent balance sheets from SEC XBRL filings, every value linked to its filing, and recent news stories (M0.8), with an As known on date to see what was public at that time.",
+    "full_definition": "System page listing the equities in config/universe.yaml. Each stock page shows its latest price with feed status and one year of daily closes (M0.7), trend and factors against its own history (M2.2), valuation and fair value (M1.2, M1.3a), the Research Record (M1.3b), buybacks (M1.4a), the last three fiscal years, quarters and recent balance sheets from SEC XBRL filings, every value linked to its filing, and recent news stories (M0.8), with an As known on date to see what was public at that time. Each universe ETF has a page with its price and trend measures (M2.2).",
     "formula": "not a calculation; reads GET /instruments, /instruments/{ticker}/fundamentals, /instruments/{ticker}/prices and /news",
     "unit": "page",
     "example": "Choosing As known on 2010-01-25 on AAPL shows FY2008 net income before Apple's 2010 restatement.",
@@ -4551,7 +4822,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "why_it_matters": "Every later signal builds on these values; this page shows them with their sources.",
     "source": "Milestone M0.5b (minimal instrument page)",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M0_foundation.md",
-    "as_of": "2026-10-06",
+    "as_of": "2026-10-13",
     "update_cadence": "live (each page load); SEC data refreshed daily at 10:00 SGT",
     "caveats": "Valuation (M1.2), fair value (M1.3a) and the Research Record (M1.3b) are shown from filings and end-of-day closes; live quotes are IEX single-venue on the free plan.",
     "related_terms": [
@@ -4560,7 +4831,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "accession_number",
       "research_record"
     ],
-    "methodology_version": "0.4.0",
+    "methodology_version": "0.5.0",
     "name_zh": "個股",
     "hint_zh": "投資範圍內股票的財報、估值、合理價值與研究紀錄，可切換「當時已知」的版本。"
   },
@@ -5377,6 +5648,56 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "波動",
     "hint_zh": "平靜／正常／升高／緊張：VIX 與期限結構。"
   },
+  "relative_momentum_12_1": {
+    "term_id": "relative_momentum_12_1",
+    "display_name": "12-1 Momentum vs SPY",
+    "category": "factor",
+    "short_definition": "12-1 month momentum minus SPY's over the same closes.",
+    "full_definition": "The instrument's 12-1 month momentum minus SPY's, in percentage points, both over the same start and end closes; unavailable when the windows differ.",
+    "formula": "momentum_12_1 - SPY momentum_12_1",
+    "unit": "percentage points",
+    "example": "NVDA as known on 2026-10-06 (recorded closes and dividends): +4.60 points.",
+    "direction": "Above 0 = beat the market",
+    "interpretation": "Relative strength against the market over the medium term.",
+    "why_it_matters": "Separates an instrument's own trend from the market's.",
+    "source": "Factor definitions 0.1.0 (config/factor_definitions.yaml); Alpaca closes, splits and cash dividends",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/factor_definitions.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily (11:05 SGT) and every session since 2016",
+    "caveats": "Not meaningful for SPY itself. Describes the past.",
+    "related_terms": [
+      "momentum_12_1",
+      "relative_momentum_6_1"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "12-1 動能相對 SPY",
+    "hint_zh": "12-1 個月動能減 SPY 同期的動能（百分點）。"
+  },
+  "relative_momentum_6_1": {
+    "term_id": "relative_momentum_6_1",
+    "display_name": "6-1 Momentum vs SPY",
+    "category": "factor",
+    "short_definition": "6-1 month momentum minus SPY's over the same closes.",
+    "full_definition": "The instrument's 6-1 month momentum minus SPY's, in percentage points, both over the same start and end closes; unavailable when the windows differ.",
+    "formula": "momentum_6_1 - SPY momentum_6_1",
+    "unit": "percentage points",
+    "example": "Apple as known on 2026-10-06 (recorded closes and dividends): +9.38 points.",
+    "direction": "Above 0 = beat the market",
+    "interpretation": "Relative strength against the market over the last half-year.",
+    "why_it_matters": "Shows whether outperformance is recent.",
+    "source": "Factor definitions 0.1.0 (config/factor_definitions.yaml); Alpaca closes, splits and cash dividends",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/factor_definitions.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily (11:05 SGT) and every session since 2016",
+    "caveats": "Not meaningful for SPY itself. Describes the past.",
+    "related_terms": [
+      "momentum_6_1",
+      "relative_momentum_12_1"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "6-1 動能相對 SPY",
+    "hint_zh": "6-1 個月動能減 SPY 同期的動能（百分點）。"
+  },
   "relative_return_1m": {
     "term_id": "relative_return_1m",
     "display_name": "1-Month Return vs SPY",
@@ -5658,6 +5979,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "營收成長率",
     "hint_zh": "本期營收 ÷ 一年前同長度期間的營收 − 1。"
+  },
+  "reversal_1m": {
+    "term_id": "reversal_1m",
+    "display_name": "1-Month Return",
+    "category": "factor",
+    "short_definition": "The total return over the last 21 sessions.",
+    "full_definition": "From the close 21 sessions before the last close known at the date to that close. Total return: closes and cash dividends on the split basis of the date, each dividend reinvested at the close of its ex-date.",
+    "formula": "TR index(t) / TR index(t - 21) - 1",
+    "unit": "percent",
+    "example": "Apple as known on 2026-10-06 (recorded closes and dividends): +1.43% (2026-09-03 to 2026-10-05).",
+    "direction": "Higher = stronger last month",
+    "interpretation": "Short-term moves tend to partly reverse, which is why momentum skips this month.",
+    "why_it_matters": "Separates a recent jump or drop from the medium-term trend.",
+    "source": "Factor definitions 0.1.0 (config/factor_definitions.yaml); Alpaca closes, splits and cash dividends",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/factor_definitions.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily (11:05 SGT) and every session since 2016",
+    "caveats": "Noisy over one month; not a signal by itself.",
+    "related_terms": [
+      "momentum_12_1",
+      "relative_return_1m",
+      "total_return"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "一個月報酬",
+    "hint_zh": "最近 21 個交易日的總報酬（含股利）；短期漲跌常會部分反轉。"
   },
   "reverse_dcf_growth": {
     "term_id": "reverse_dcf_growth",
@@ -6589,6 +6936,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "總負債（借款）",
     "hint_zh": "長期負債（含一年內到期）加商業本票；未申報的短期項目以 0 計並標示。"
   },
+  "total_return": {
+    "term_id": "total_return",
+    "display_name": "Total Return",
+    "category": "factor",
+    "short_definition": "The price change plus the cash dividends, reinvested at the close of each ex-date.",
+    "full_definition": "Each daily return is (close + dividends going ex that day) / previous close - 1, with closes and dividends on the split basis of the date; returns compound over the window.",
+    "formula": "product of (close_k + dividend_k) / close_k-1, minus 1",
+    "unit": "percent",
+    "example": "TLT as known on 2026-09-30 (recorded closes and dividends): its one-month return includes the 2026-09-01 dividend.",
+    "direction": "N/A",
+    "interpretation": "What a holder earned, not only the price move.",
+    "why_it_matters": "Without dividends, bond and high-yield funds look worse than they were (TLT pays about 4% a year).",
+    "source": "Factor definitions 0.1.0 (config/factor_definitions.yaml); Alpaca closes, splits and cash dividends",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/factor_definitions.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily (11:05 SGT) and every session since 2016",
+    "caveats": "Cash dividends from Alpaca since 2016, known from the start of the ex-date; some payments are missing (KNOWN_ISSUES), which the measure notes. Taxes and costs are not deducted.",
+    "related_terms": [
+      "cash_dividend",
+      "dividend_gap",
+      "momentum_12_1"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "總報酬",
+    "hint_zh": "價格變動加上現金股利，股利在除息日收盤再投入。"
+  },
   "trade_decision": {
     "term_id": "trade_decision",
     "display_name": "Trade Decision",
@@ -6792,6 +7165,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "VIX 一年百分位",
     "hint_zh": "目前 VIX 在過去 12 個月收盤值中的排名（0–100）。"
+  },
+  "volatility_60d": {
+    "term_id": "volatility_60d",
+    "display_name": "60-Session Volatility",
+    "category": "factor",
+    "short_definition": "How much the daily total return has varied over the last 60 sessions, annualized.",
+    "full_definition": "The sample standard deviation of the last 60 daily total returns times the square root of 252. Total return: closes and cash dividends on the split basis of the date, each dividend reinvested at the close of its ex-date.",
+    "formula": "stdev(60 daily total returns) x sqrt(252)",
+    "unit": "percent",
+    "example": "Apple as known on 2026-10-06 (recorded closes and dividends): 27.25%, 73rd percentile of its month ends.",
+    "direction": "Higher = more turbulent",
+    "interpretation": "How large a typical move has been lately.",
+    "why_it_matters": "Sets position sizes and stop distances; the risk cockpit (M2.3) reads it.",
+    "source": "Factor definitions 0.1.0 (config/factor_definitions.yaml); Alpaca closes, splits and cash dividends",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/factor_definitions.yaml",
+    "as_of": "2026-10-13",
+    "update_cadence": "daily (11:05 SGT) and every session since 2016",
+    "caveats": "Backward-looking; volatility clusters and can jump overnight.",
+    "related_terms": [
+      "beta_252d",
+      "regime_volatility"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "60 日波動率",
+    "hint_zh": "最近 60 個交易日日報酬的標準差，年化（× √252）。"
   },
   "volume": {
     "term_id": "volume",

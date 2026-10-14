@@ -26,6 +26,7 @@ from autotrading.adapters.alpaca.snapshots import parse_time
 from autotrading.adapters.sec.tickers import SecTickersJob
 from autotrading.config_sync import load_sources, sync_sources
 from autotrading.db.models import (
+    DividendEvent,
     IngestionRun,
     MarketQuote,
     PriceBar,
@@ -216,8 +217,11 @@ def spy_snapshot() -> dict[str, Any]:
 
 
 def test_runs_store_every_quote_and_bar(runs: dict[str, Any], engine: Engine) -> None:
-    # snapshots, one year of bars, the NVDA split window, splits (M1.1)
-    assert [(r.status, r.rows_conflicted) for r in runs["runs"]] == [("succeeded", 0)] * 4
+    # snapshots, one year of bars, the NVDA split window, splits (M1.1), dividends and two
+    # earlier years of NVDA and SPY bars (M2.2)
+    assert [(r.status, r.rows_conflicted) for r in runs["runs"]] == [("succeeded", 0)] * len(
+        MANIFEST["runs"]
+    )
     with Session(engine) as session:
         quotes = session.scalar(select(func.count()).select_from(MarketQuote))
         keys = session.execute(
@@ -249,6 +253,8 @@ def test_splits_since_2016_and_the_reviewed_earlier_ones_are_stored(
         ("GOOGL", "2022-07-18", 20),
         ("NVDA", "2024-06-10", 10),
         ("ORLY", "2025-06-10", 15),
+        ("XLE", "2025-12-05", 2),  # ETFs since M2.2
+        ("XLK", "2025-12-05", 2),
     }
     aapl_2020 = splits[("AAPL", date(2020, 8, 31))]
     # Effective from the start of the ex-date in New York (EDT): 04:00 UTC.
@@ -263,11 +269,53 @@ def test_splits_since_2016_and_the_reviewed_earlier_ones_are_stored(
     runner.execute(again)
     with runner.sessions() as session:
         rerun = session.get_one(IngestionRun, again)
-    assert (rerun.status, rerun.rows_inserted, rerun.rows_unchanged) == ("succeeded", 0, 7)
+    assert (rerun.status, rerun.rows_inserted, rerun.rows_unchanged) == ("succeeded", 0, 9)
+
+
+def test_cash_dividends_since_2016_are_stored_once_from_their_ex_date(
+    runs: dict[str, Any], engine: Engine, runner: IngestionRunner
+) -> None:
+    recorded = json.loads((FIXTURES / "dividends_00.json").read_text(encoding="utf-8"))
+    payments = recorded["corporate_actions"]["cash_dividends"]
+    distinct = {(p["symbol"], p["ex_date"], bool(p["special"])) for p in payments}
+    with Session(engine) as session:
+        stored = session.scalars(select(DividendEvent)).all()
+    assert len(stored) == len(distinct) < len(payments)  # Alpaca repeats some payments
+    by_key = {(d.symbol, d.ex_date.isoformat(), d.special): d for d in stored}
+    assert {d.symbol for d in stored} >= {"AAPL", "SPY", "TLT", "QQQ"}
+    assert not {"AZO", "ORLY", "GLD"} & {d.symbol for d in stored}  # they pay none
+    # QQQ's 2022-09-19 payment arrives twice with the same amount: one row.
+    assert by_key[("QQQ", "2022-09-19", False)].rate == Decimal("0.51856")
+    aapl = by_key[("AAPL", "2020-08-07", False)]
+    # Known from the start of the ex-date in New York (EDT): 04:00 UTC; per share as of then.
+    assert aapl.published_at == datetime(2020, 8, 7, 4, 0, tzinfo=UTC)
+    assert (aapl.rate, aapl.source_id, aapl.published_at_precision) == (
+        Decimal("0.82"),
+        "alpaca_iex",
+        "day",
+    )
+    # A second run adds nothing.
+    params = next(r["params"] for r in MANIFEST["runs"] if r["job"] == "alpaca.dividends")
+    again = runner.create_run("alpaca.dividends", params, Window(start=WINDOW.end, end=None))
+    runner.execute(again)
+    with runner.sessions() as session:
+        rerun = session.get_one(IngestionRun, again)
+    assert (rerun.status, rerun.rows_inserted, rerun.rows_unchanged, rerun.rows_conflicted) == (
+        "succeeded",
+        0,
+        len(payments),
+        0,
+    )
 
 
 @pytest.mark.parametrize(
-    "statement", ["UPDATE split_events SET new_rate = 5", "DELETE FROM split_events"]
+    "statement",
+    [
+        "UPDATE split_events SET new_rate = 5",
+        "DELETE FROM split_events",
+        "UPDATE dividend_events SET rate = 5",
+        "DELETE FROM dividend_events",
+    ],
 )
 def test_split_events_are_append_only(runs: dict[str, Any], engine: Engine, statement: str) -> None:
     with Session(engine) as session, pytest.raises(DBAPIError):

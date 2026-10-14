@@ -24,6 +24,7 @@ from sqlalchemy.orm import Session
 from autotrading.db.models import (
     AlertRuleSet,
     BuybackRuleSet,
+    FactorDefinitionSet,
     GlossaryTermRow,
     MacroSeries,
     RegimeRuleSet,
@@ -31,6 +32,7 @@ from autotrading.db.models import (
 )
 from autotrading.domain.buyback_states import RulesFile
 from autotrading.domain.convergence import AlertRulesFile
+from autotrading.domain.factors import FactorDefinitionsFile
 from autotrading.domain.glossary import GlossaryFile
 from autotrading.domain.provenance import LicenseStatus
 from autotrading.domain.regime import RegimeRulesFile
@@ -318,6 +320,50 @@ def sync_regime_rules(session: Session, rules: RegimeRulesFile) -> GlossarySyncR
     return result
 
 
+class FactorDefinitionsVersionError(ValueError):
+    """A released factor definition set's content changed without a new definition_version."""
+
+
+def load_factor_definitions(path: Path) -> FactorDefinitionsFile:
+    return FactorDefinitionsFile.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
+
+
+def sync_factor_definitions(
+    session: Session, definitions: FactorDefinitionsFile
+) -> GlossarySyncResult:
+    """Register each factor definition_version once; the same version with other content is
+    refused (ADR-030, as the regime rules)."""
+    set_actor(session, "config:factor_definitions.yaml")
+    result = GlossarySyncResult()
+    for entry in definitions.definition_sets:
+        definition_set = entry.definitions()
+        sha = definition_set.content_sha256()
+        existing = session.scalars(
+            select(FactorDefinitionSet).where(
+                FactorDefinitionSet.definition_version == definition_set.definition_version
+            )
+        ).first()
+        if existing is not None:
+            if existing.content_sha256 != sha:
+                raise FactorDefinitionsVersionError(
+                    f"factor definition set {definition_set.definition_version} changed but its "
+                    "definition_version was not bumped"
+                )
+            result.unchanged.append(definition_set.definition_version)
+            continue
+        session.add(
+            FactorDefinitionSet(
+                definition_version=definition_set.definition_version,
+                content=definition_set.content(),
+                content_sha256=sha,
+                released=definition_set.released,
+            )
+        )
+        result.created.append(definition_set.definition_version)
+    session.flush()
+    return result
+
+
 def main() -> None:
     settings = get_settings()
     sources_path = settings.resolved_config_dir() / "sources.yaml"
@@ -338,6 +384,10 @@ def main() -> None:
             alerts = sync_alert_rules(
                 session, load_alert_rules(settings.resolved_config_dir() / "alert_rules.yaml")
             )
+            factors = sync_factor_definitions(
+                session,
+                load_factor_definitions(settings.resolved_config_dir() / "factor_definitions.yaml"),
+            )
             session.commit()
     finally:
         engine.dispose()
@@ -356,6 +406,7 @@ def main() -> None:
     print(f"buyback_rules.yaml synced: new rule versions={rules.created}")
     print(f"regime_rules.yaml synced: new rule versions={regime.created}")
     print(f"alert_rules.yaml synced: new rule versions={alerts.created}")
+    print(f"factor_definitions.yaml synced: new definition versions={factors.created}")
 
 
 if __name__ == "__main__":

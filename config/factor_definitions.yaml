@@ -1,0 +1,48 @@
+# Price, trend and factor definitions (M2.2, ADR-030; build spec 02 §13).
+#
+# Deterministic and versioned like config/regime_rules.yaml: a released definition_version is
+# immutable (`make migrate` refuses changed content under an existing version, and a unit test
+# pins each version's sha256). Every stored factor snapshot names the definition_version it used.
+#
+# Every value is computed as known at a time T, from the end-of-day closes, splits and cash
+# dividends public then and as this database held them at its system time S, so a stored
+# snapshot always recomputes the same. Closes and dividends are moved to T's split basis; total
+# returns reinvest each cash dividend at the close of its ex-date. Sessions are counted on the
+# days that have a close. Time-series only (P2-3): each instrument against its own history and
+# SPY, never ranked against the others (KI-1). None of these is a signal or a forecast.
+#
+# Units: returns, averages and volatility in percent (12.5 = 12.5%); beta a plain ratio.
+version: 0.1.0
+definition_sets:
+  - definition_version: 0.1.0
+    status: active  # active: evaluated daily; retired: kept for the stored snapshots
+    released: "2026-10-13"
+    note: >-
+      Steven's decisions F1-F4 (ADR-030): time-series measures of the 10 equities and 8 ETFs,
+      total returns with Alpaca cash dividends checked for gaps, value and quality of the
+      Research Record against each company's own history since 2016.
+    benchmark: SPY
+    stale_after_days: 5  # no price measure when the last close is older (calendar days)
+    dividend_gap_ratio: 1.25  # an interval above 1.25 x the usual one may be a missing payment
+    dividends_since: "2016-01-01"  # the start of the recorded dividend history
+    price:
+      momentum_12_1: {from_sessions: 252, to_sessions: 21}  # total return, skipping a month
+      momentum_6_1: {from_sessions: 126, to_sessions: 21}
+      reversal_1m: {sessions: 21}  # total return over the last month
+      close_vs_sma_50: {sessions: 50}  # close against its average close, in percent
+      close_vs_sma_200: {sessions: 200}
+      volatility_60d: {sessions: 60, annualization_sessions: 252}  # of daily total returns
+      beta_252d: {sessions: 252, min_paired_share: 0.9}  # against the benchmark's returns
+      relative: [momentum_12_1, momentum_6_1]  # minus the benchmark's same measure
+    fundamentals:  # universe equities only, from the Research Record (ADR-022, ADR-024)
+      value: [pe_ratio_ttm, ev_to_sales, price_to_book, fcf_yield, earnings_yield]
+      quality:
+        - roic
+        - roe
+        - gross_margin
+        - operating_margin
+        - fcf_conversion
+        - net_debt_to_ebitda
+        - diluted_shares_change
+        - revenue_growth
+    percentile_since: "2016-01-01"  # own history: the last snapshot of each month since then

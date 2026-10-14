@@ -10,8 +10,11 @@ requests:
 - `alpaca.daily_bars` for every universe symbol over one year, raw and split-adjusted (SIP);
 - `alpaca.daily_bars` for NVDA around its 10-for-1 split on 2024-06-10. The job also fetches
   NVDA's full split-adjusted history, as it does for any symbol that split in its window;
-- `alpaca.splits` for the universe equities since 2016 (M1.1). `--splits-only` records just
-  this run and keeps the others.
+- `alpaca.splits` for the universe since 2016 (M1.1; ETFs since M2.2);
+- `alpaca.dividends` for the universe since 2016 (M2.2);
+- `alpaca.daily_bars` for NVDA and SPY from 2023-05 to the start of the year above (M2.2), so
+  a 12-month momentum across NVDA's 2024 split can be computed.
+`--only splits,dividends` (labels) records just those runs and keeps the others.
 Responses are stored unmodified. Keys travel as headers, so URLs carry none; the recorder
 still checks every file and URL for them.
 """
@@ -25,6 +28,7 @@ from typing import Any
 from uuid import uuid4
 
 from autotrading.adapters.alpaca.bars import AlpacaDailyBarsJob
+from autotrading.adapters.alpaca.dividends import AlpacaDividendsJob
 from autotrading.adapters.alpaca.refresh import universe
 from autotrading.adapters.alpaca.snapshots import AlpacaSnapshotsJob
 from autotrading.adapters.alpaca.splits import HISTORY_START, AlpacaSplitsJob
@@ -34,10 +38,27 @@ from autotrading.settings import get_settings
 HERE = Path(__file__).resolve().parent
 NVDA_SPLIT_WINDOW = {"symbols": ["NVDA"], "etfs": [], "start": "2024-06-03", "end": "2024-06-14"}
 SPLITS_END = "2026-10-05"
+DIVIDENDS_END = "2026-10-05"
+# Two years before the recorded year (which starts 2025-10-05), for 12-month measures (M2.2).
+HISTORY_WINDOW = {
+    "symbols": ["NVDA", "SPY"],
+    "etfs": ["SPY"],
+    "start": "2023-05-01",
+    "end": "2025-10-04",
+}
 
 
 def throttle() -> None:
     time.sleep(0.4)  # well under the 200 requests/minute of the free plan
+
+
+def _label(run: dict[str, Any]) -> str:
+    """The label of a run recorded before labels were stored (M2.2)."""
+    if run["job"] == "alpaca.splits":
+        return "splits"
+    if run["job"] == "alpaca.snapshots":
+        return "snapshots"
+    return "bars_nvda_split" if run["params"]["symbols"] == ["NVDA"] else "bars_year"
 
 
 def main() -> None:
@@ -62,19 +83,23 @@ def main() -> None:
         (
             "splits",
             AlpacaSplitsJob,
-            {
-                "symbols": [s for s in symbols if s not in etfs],
-                "start": HISTORY_START,
-                "end": SPLITS_END,
-            },
+            {"symbols": symbols, "start": HISTORY_START, "end": SPLITS_END},
         ),
+        (
+            "dividends",
+            AlpacaDividendsJob,
+            {"symbols": symbols, "start": HISTORY_START, "end": DIVIDENDS_END},
+        ),
+        ("bars_history", AlpacaDailyBarsJob, HISTORY_WINDOW),
     ]
     files: dict[str, str] = {}
     previous: dict[str, Any] = {}
-    if "--splits-only" in sys.argv[1:]:
+    only = next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--only=")), None)
+    if only:
+        labels = set(only.split(","))
         previous = json.loads((HERE / "manifest.json").read_text(encoding="utf-8"))
-        files = {u: n for u, n in previous["files"].items() if not n.startswith("splits_")}
-        runs = [run for run in runs if run[0] == "splits"]
+        files = {u: n for u, n in previous["files"].items() if n.rsplit("_", 1)[0] not in labels}
+        runs = [run for run in runs if run[0] in labels]
     for label, job_class, params in runs:
         job = job_class(params, Window())
         for i, payload in enumerate(job.fetch(FetchContext(run_id=uuid4(), acquire=throttle))):
@@ -94,16 +119,20 @@ def main() -> None:
             if secret in (HERE / name).read_text(encoding="utf-8"):
                 raise SystemExit(f"an Alpaca key is in {name}; not writing the manifest")
 
-    recorded = [{"job": job_class.name, "params": params} for _, job_class, params in runs]
+    recorded = [
+        {"label": label, "job": job_class.name, "params": params}
+        for label, job_class, params in runs
+    ]
+    now = datetime.now(UTC).isoformat(timespec="seconds")
+    kept = [
+        r
+        for r in previous.get("runs", [])
+        if r.get("label", _label(r)) not in {run["label"] for run in recorded}
+    ]
     manifest = {
-        "recorded_at": previous.get("recorded_at")
-        or datetime.now(UTC).isoformat(timespec="seconds"),
-        **(
-            {"splits_recorded_at": datetime.now(UTC).isoformat(timespec="seconds")}
-            if previous
-            else {}
-        ),
-        "runs": [r for r in previous.get("runs", []) if r["job"] != "alpaca.splits"] + recorded,
+        "recorded_at": previous.get("recorded_at") or now,
+        **({"partly_recorded_at": now} if previous else {}),
+        "runs": [{"label": r.get("label", _label(r)), **r} for r in kept] + recorded,
         "files": files,
     }
     (HERE / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")

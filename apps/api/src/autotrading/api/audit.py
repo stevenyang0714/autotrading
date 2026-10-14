@@ -27,6 +27,7 @@ from autotrading.db.models import (
     DeadLetter,
     Entity,
     EntityRelationship,
+    FactorDefinitionSet,
     FinancialFact,
     Identifier,
     Instrument,
@@ -187,6 +188,12 @@ def _labels(session: Session, table: str, ids: list[str]) -> dict[str, str]:
                 select(AlertAcknowledgement, Alert.title)
                 .join(Alert, Alert.id == AlertAcknowledgement.alert_id)
                 .where(AlertAcknowledgement.id.in_(_uuids(ids)))
+            )
+        ],
+        "factor_definition_sets": lambda: [
+            (row.id, f"factor definitions {row.definition_version}")
+            for row in session.scalars(
+                select(FactorDefinitionSet).where(FactorDefinitionSet.id.in_(_uuids(ids)))
             )
         ],
         "regime_rule_sets": lambda: [

@@ -1,4 +1,5 @@
-"""Job `alpaca.splits` (M1.1, ADR-021): stock splits of the universe equities.
+"""Job `alpaca.splits` (M1.1, ADR-021): stock splits of the universe equities and, since M2.2
+(ADR-030), its ETFs.
 
 fetch: Alpaca corporate actions (forward and reverse splits) since 2016, paged.
 store: one split_events row per instrument and ex-date, plus the reviewed earlier splits of
@@ -58,7 +59,8 @@ def load_curated(config_dir: Path) -> list[CuratedSplit]:
     return [CuratedSplit.model_validate(item) for item in data.get("splits") or []]
 
 
-def _instrument(session: Session, symbol: str) -> Any:
+def instrument_of(session: Session, symbol: str) -> Any:
+    """The instrument of an Alpaca (or SEC) ticker, or None."""
     for namespace in (NAMESPACE, "sec"):
         identifier = current_identifier(session, "ticker", namespace, symbol)
         if identifier is not None and identifier.instrument_id is not None:
@@ -125,7 +127,7 @@ class AlpacaSplitsJob(IngestionJob):
         ctx: StoreContext,
     ) -> dict[str, Any]:
         symbol = str(action["symbol"]).upper()
-        instrument_id = _instrument(session, symbol)
+        instrument_id = instrument_of(session, symbol)
         if instrument_id is None:
             return {}
         source = session.get_one(Source, SOURCE_ID)
@@ -146,7 +148,7 @@ class AlpacaSplitsJob(IngestionJob):
     def _curated_row(
         self, session: Session, split: CuratedSplit, ctx: StoreContext
     ) -> dict[str, Any]:
-        instrument_id = _instrument(session, split.ticker)
+        instrument_id = instrument_of(session, split.ticker)
         if instrument_id is None:
             return {}
         return _row(

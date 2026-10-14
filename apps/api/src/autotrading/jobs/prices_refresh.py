@@ -3,6 +3,8 @@
     make prices-refresh    # one snapshot now (even outside market hours) + recent daily bars
     make prices-backfill   # daily bars since 2016, raw and split-adjusted (run once)
 
+Both also queue the splits and cash dividends since 2016 (M1.1, M2.2).
+
 The worker executes the runs; progress shows on the Data Health page.
 """
 

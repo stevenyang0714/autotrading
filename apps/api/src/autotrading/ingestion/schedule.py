@@ -74,6 +74,8 @@ SCHEDULES: dict[str, DailySchedule | IntervalSchedule] = {
 # Buyback states (M1.4b): evaluated after the SEC and FRED refreshes of the day.
 BUYBACK_STATES = DailySchedule(11, 0)
 REGIME = DailySchedule(10, 55)  # M2.1: after FRED (10:15) and the daily closes (06:30)
+# M2.2: after the closes, splits and dividends (06:30), SEC (10:00) and the buyback states
+FACTORS = DailySchedule(11, 5)
 # Official RSS feeds (M0.8): every 30 minutes at :05 and :35, one run per feed.
 NEWS_FEEDS = IntervalSchedule(30, 5)
 

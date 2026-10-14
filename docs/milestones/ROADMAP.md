@@ -22,7 +22,7 @@ The phase is the first one in which the dashboard shows real content; until then
 |---|---|---|
 | Global Monitor | 3 | Not named in the phase table; inferred from the world/physical scope |
 | Market Regime | 2 | Live since M2.1 (2026-10-12) |
-| Opportunity Radar | 2 | Could move to 1 if Phase 1 buyback states produce candidates |
+| Opportunity Radar | 2 | Live since M2.2 (2026-10-13) with the factor table; candidates with M2.4 |
 | Fundamental Research | 1 | Live since M1.3b (2026-10-09) |
 | Corporate Actions | 1 | Buybacks first; Form 4 insider activity added in Phase 4 |
 | Event Transmission | 3 | |

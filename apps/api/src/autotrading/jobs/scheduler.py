@@ -15,6 +15,7 @@ from autotrading.infra.redis_client import make_redis
 from autotrading.ingestion.schedule import (
     BUYBACK_STATES,
     DAILY_BARS,
+    FACTORS,
     FRED,
     GDELT,
     NEWS_FEEDS,
@@ -84,6 +85,15 @@ def main() -> None:
         lambda: actors.start_regime_evaluation(manual=False),
         CronTrigger(hour=REGIME.hour, minute=REGIME.minute, timezone=REFRESH_TIMEZONE),
         id="regime",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=12 * 3600,
+    )
+    # Factor snapshots (M2.2): daily at 11:05 SGT, after the closes, dividends and SEC.
+    scheduler.add_job(
+        lambda: actors.start_factor_evaluation(manual=False),
+        CronTrigger(hour=FACTORS.hour, minute=FACTORS.minute, timezone=REFRESH_TIMEZONE),
+        id="factors",
         max_instances=1,
         coalesce=True,
         misfire_grace_time=12 * 3600,

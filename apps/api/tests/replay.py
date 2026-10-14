@@ -21,6 +21,7 @@ from autotrading.ingestion.rate_limit import TokenBucketLimiter
 from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.ingestion.schedule import refresh_window
+from autotrading.repositories.factors import record_universe, stored_definitions
 from autotrading.repositories.regime import record_regime, stored_regime_rules
 from autotrading.settings import get_settings
 from tests import alpaca_replay, fred_replay, news_replay, sec_replay
@@ -67,7 +68,16 @@ def main() -> None:
         assert rules is not None, "regime rules not loaded: run `make migrate` first"
         regimes = sum(record_regime(session, rules, at, now, "replay") is not None for at in points)
         session.commit()
-    print(f"stored {stored} buyback state assignments and {regimes} regime assessments")
+        # Factor snapshots (M2.2) of every instrument at the same points, all measures.
+        definitions = stored_definitions(session)
+        assert definitions is not None, "factor definitions not loaded: run `make migrate` first"
+        snapshots = record_universe(
+            session, definitions, [(at, "all") for at in points], now, "replay"
+        )
+    print(
+        f"stored {stored} buyback state assignments, {regimes} regime assessments and "
+        f"{snapshots} factor snapshots"
+    )
 
 
 if __name__ == "__main__":

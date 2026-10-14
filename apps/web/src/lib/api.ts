@@ -785,6 +785,53 @@ export async function loadRegime(knownAt?: string): Promise<RegimeResponse | nul
   }
 }
 
+// ---------- price, trend and factors (M2.2, ADR-030) ----------
+
+export type InstrumentFactors = components["schemas"]["InstrumentFactorsOut"];
+export type FactorMeasure = components["schemas"]["MeasureOut"];
+export type FactorInput = components["schemas"]["FactorInput"];
+export type FactorSnapshotRef = components["schemas"]["SnapshotRef"];
+export type FactorsTable = components["schemas"]["FactorsOut"];
+export type FactorRow = components["schemas"]["FactorRow"];
+export type FactorValue = components["schemas"]["FactorValue"];
+
+export type InstrumentFactorsResult =
+  | { status: "ok"; data: InstrumentFactors }
+  | { status: "not_found" }
+  | { status: "unavailable" };
+
+/** One universe instrument's stored factor measures as known at `knownAt` (default now). */
+export async function loadInstrumentFactors(
+  ticker: string,
+  knownAt?: string,
+): Promise<InstrumentFactorsResult> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data, response } = await client.GET("/instruments/{ticker}/factors", {
+      params: { path: { ticker }, query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    if (data) return { status: "ok", data };
+    return response.status === 404 ? { status: "not_found" } : { status: "unavailable" };
+  } catch {
+    return { status: "unavailable" };
+  }
+}
+
+/** Every universe instrument's latest factor values as known at `knownAt` (Opportunity Radar). */
+export async function loadFactors(knownAt?: string): Promise<FactorsTable | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/factors", {
+      params: { query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
 // ---------- news (M0.8, ADR-018) ----------
 
 export type NewsFeed = components["schemas"]["NewsFeed"];
