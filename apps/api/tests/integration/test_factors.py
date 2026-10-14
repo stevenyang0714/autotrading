@@ -320,6 +320,26 @@ def test_backfill_points_are_every_session_and_every_month_end_once(
     assert all(p.astimezone(UTC) <= stored for p, _ in points)
 
 
+def test_a_stale_close_leaves_measures_unavailable_and_the_benchmark_itself_not_meaningful(
+    sessions: sessionmaker[Session], stored: datetime
+) -> None:
+    """As CI sees it on a later day: the recorded closes end on 2026-10-05."""
+    later = VALUED_AT + timedelta(days=8)
+    with sessions() as session:
+        definitions = stored_definitions(session)
+        assert definitions is not None
+        found = {t.symbol: t for t in targets(session, ["SPY", "TLT"])}
+        now = session.execute(select(func.now())).scalar_one()
+        spy = snapshot_at(session, definitions, found["SPY"], later, now, "price")
+        tlt = snapshot_at(session, definitions, found["TLT"], later, now, "price")
+    by_spy = {m.measure_id: m for m in spy.measures}
+    by_tlt = {m.measure_id: m for m in tlt.measures}
+    assert by_spy["momentum_6_1"].reason == "unavailable"
+    assert "older than 5 days" in by_spy["momentum_6_1"].detail
+    assert by_spy["beta_252d"].reason == by_spy["relative_momentum_6_1"].reason == "not_meaningful"
+    assert by_tlt["beta_252d"].reason == by_tlt["relative_momentum_6_1"].reason == "unavailable"
+
+
 def test_a_changed_released_definition_set_is_refused(
     sessions: sessionmaker[Session], stored: datetime
 ) -> None:

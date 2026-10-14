@@ -101,6 +101,10 @@ def test_a_stale_last_close_makes_every_price_measure_unavailable() -> None:
     measures = price_measures(DEFINITIONS, later, series("AAPL", [100.0] * 300), None)[0]
     assert {m.reason for m in measures} == {"unavailable"}
     assert "older than 5 days" in measures[0].detail
+    # the benchmark's own beta and relative measures stay not meaningful
+    spy = by_id(price_measures(DEFINITIONS, later, series("SPY", [100.0] * 300), None)[0])
+    assert spy["momentum_12_1"].reason == "unavailable"
+    assert spy["beta_252d"].reason == spy["relative_momentum_12_1"].reason == "not_meaningful"
 
 
 def test_close_against_its_averages() -> None:

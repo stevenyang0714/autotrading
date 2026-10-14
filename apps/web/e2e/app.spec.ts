@@ -133,7 +133,8 @@ for (const path of [
   "/dashboards/market-regime",
   "/dashboards/market-regime?known_on=2026-09-15",
   "/dashboards/opportunity-radar",
-  "/dashboards/opportunity-radar?known_on=2026-09-15&sort=momentum_6_1&dir=desc",
+  "/dashboards/opportunity-radar?known_on=2026-10-06&sort=momentum_6_1&dir=desc",
+  "/instruments/AAPL?known_on=2026-10-06",
   "/instruments/TLT",
 ]) {
   test(`numbers on ${path} are all explained`, async ({ page }) => {
@@ -460,20 +461,21 @@ test("Opportunity Radar lists each instrument's trend and each company's value a
   const fundamentals = page.getByRole("table", { name: "Value and quality" });
   expect(await fundamentals.locator("tbody tr[data-ticker]").count()).toBeGreaterThanOrEqual(3);
   await expect(page.getByText(/never ranked against the other instruments/).first()).toBeVisible();
-  // As known on an earlier date.
-  await page.goto("/dashboards/opportunity-radar?known_on=2026-09-15");
-  await expect(page.getByText(/Showing what was known by/)).toContainText("2026-09-15");
+  // As known on a date the recorded closes cover (they end on 2026-10-05; later they are stale).
+  await page.goto("/dashboards/opportunity-radar?known_on=2026-10-06");
+  await expect(page.getByText(/Showing what was known by/)).toContainText("2026-10-06");
+  await expect(trend.locator('tr[data-ticker="TLT"] [data-column="momentum_6_1"]')).toContainText("%");
   // An ETF opens its own page with its trend measures.
   await trend.locator('tr[data-ticker="TLT"] a').click();
-  await expect(page).toHaveURL(/\/instruments\/TLT\?known_on=2026-09-15#factors$/, { timeout: 15_000 });
+  await expect(page).toHaveURL(/\/instruments\/TLT\?known_on=2026-10-06#factors$/, { timeout: 15_000 });
   await expect(page.locator("h1")).toContainText("Exchange-traded fund");
   const factors = page.locator('[data-block="factors"]');
-  await expect(factors.locator('[data-measure="momentum_6_1"]')).toBeVisible();
+  await expect(factors.locator('[data-measure="momentum_6_1"]')).toHaveAttribute("data-reason", "value");
   await expect(factors.locator('[data-group="value"]')).toHaveCount(0);
 });
 
 test("a company page shows its trend and factors against its own history (M2.2)", async ({ page }) => {
-  await page.goto("/instruments/AAPL#factors");
+  await page.goto("/instruments/AAPL?known_on=2026-10-06#factors");
   const factors = page.locator('[data-block="factors"]');
   await expect(factors.getByRole("heading", { name: /Trend and factors/ })).toBeVisible();
   expect(await factors.locator("[data-measure]").count()).toBeGreaterThanOrEqual(9);

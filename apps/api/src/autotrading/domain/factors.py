@@ -606,9 +606,25 @@ def _trend(
     return out
 
 
-def _all_unavailable(definitions: FactorDefinitionSet, detail: str) -> list[Measure]:
+def _benchmark_itself(measure_id: str, group: Group, unit: MeasureUnit, name: str) -> Measure:
+    return Measure(
+        measure_id=measure_id,
+        group=group,
+        unit=unit,
+        value=None,
+        reason="not_meaningful",
+        detail=f"{name} is the benchmark",
+    )
+
+
+def _all_unavailable(definitions: FactorDefinitionSet, symbol: str, detail: str) -> list[Measure]:
+    """Every price measure unavailable for `detail`; the benchmark's beta and relative measures
+    stay not meaningful."""
+    name = definitions.benchmark
     out = [
-        _unavailable(
+        _benchmark_itself(m, "risk", "ratio", name)
+        if m == "beta_252d" and symbol == name
+        else _unavailable(
             m,
             "risk" if m in ("volatility_60d", "beta_252d") else "trend",
             "ratio" if m == "beta_252d" else "percent",
@@ -617,7 +633,9 @@ def _all_unavailable(definitions: FactorDefinitionSet, detail: str) -> list[Meas
         for m in PRICE_MEASURES
     ]
     return out + [
-        _unavailable(f"relative_{m}", "relative", "percent", detail)
+        _benchmark_itself(f"relative_{m}", "relative", "percent", name)
+        if symbol == name
+        else _unavailable(f"relative_{m}", "relative", "percent", detail)
         for m in definitions.price.relative
     ]
 
@@ -631,10 +649,10 @@ def price_measures(
     last = closes[-1] if closes else None
     stale = definitions.stale_after_days
     if last is None:
-        return _all_unavailable(definitions, "no close known at this time"), None
+        return _all_unavailable(definitions, series.symbol, "no close known at this time"), None
     if at.astimezone(NEW_YORK).date() - last.day > timedelta(days=stale):
         detail = f"the last close ({last.day}) is older than {stale} days"
-        return _all_unavailable(definitions, detail), last
+        return _all_unavailable(definitions, series.symbol, detail), last
     dividends = known_dividends(series.dividends, at, series.splits)
     returns = total_returns(closes, dividends)
     own = _trend(definitions, returns, dividends)
