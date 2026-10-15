@@ -305,11 +305,11 @@ export function EntryForm({
               ) : null}
               <label className="space-y-1">
                 <span className="block">
-                  <Metric termId="trade_decision" icon={false}>
-                    Maximum loss (USD, optional)
+                  <Metric termId="max_loss" icon={false}>
+                    Maximum loss (USD)
                   </Metric>
                 </span>
-                <input name="max_loss" type="number" min="0.01" step="0.01" className={input} />
+                <input name="max_loss" type="number" min="0.01" step="0.01" required className={input} />
               </label>
             </div>
           )}
@@ -329,7 +329,7 @@ export function EntryForm({
         <ul role="alert" className="space-y-0.5 text-amber-400">
           {state.errors.map((error) => (
             <li key={error}>
-              <Metric termId="thesis_card" icon={false}>
+              <Metric termId={error.includes("vetoed by risk rules") ? "risk_veto" : "thesis_card"} icon={false}>
                 {error}
               </Metric>
             </li>

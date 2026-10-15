@@ -54,7 +54,7 @@ terms:
   dashboard_policy_monitor: {name: 政策監控, hint: 政策提案到實施的生命週期（Phase 3）。}
   dashboard_congress_trades: {name: 國會交易, hint: 美國議員申報的交易與申報延遲（Phase 4）。}
   dashboard_options_vol: {name: 選擇權與波動率, hint: 選擇權分析與避險（Phase 5）。}
-  dashboard_portfolio_risk: {name: 投組風險, hint: 部位風險與風險否決規則（Phase 2）。}
+  dashboard_portfolio_risk: {name: 組合風險, hint: 紙上組合的曝險、各上限使用率、回撤與風險檢查紀錄，可試算一筆交易。}
   dashboard_alerts_center: {name: 警示中心, hint: 所有警示與通知（Phase 1）。}
   dashboard_strategy_lab: {name: 策略實驗室, hint: 模擬交易日誌與回測（Phase 1–2）。}
   dashboard_execution: {name: 下單執行, hint: 下單預覽與模擬帳戶（Phase 5）。}
@@ -175,7 +175,7 @@ terms:
   convergence_l1: {name: L1 觀察, hint: 至少兩項相關訊號或事件、其中至少一項是讀數；放進觀察名單。}
   convergence_l2: {name: L2 論點, hint: 回購已執行（ACTIVE 以上）且有估值支持，兩個獨立家族；可寫論點。}
   convergence_l3: {name: L3 交易候選, hint: L2 加上市場確認與 S1 訊號；在模擬日誌中檢討。}
-  convergence_l4: {name: L4 可執行, hint: L3 加上風險、流動性、部位與合規檢查；Phase 1 不可達。}
+  convergence_l4: {name: L4 可執行, hint: L3 加上標準紙上部位通過風險檢查（警示規則 0.3.0 起）；只限紙上。}
   independent_evidence: {name: 獨立依據, hint: 依來源去重；同一份申報的多列只算一次。}
   valuation_support: {name: 估值支持, hint: base DCF 折價為正或 FCF 殖利率高於自身中位數。}
   alert: {name: 警示, hint: App 內通知；一則事件（L0）或公司收斂等級變化，附規則版本與依據。}
@@ -224,7 +224,7 @@ terms:
   buyback_state_watch: {name: 觀察 WATCH, hint: 365 天內有新授權、授權增加或每年計畫，或剩餘授權 ≥ 市值 2%。}
   buyback_state_active: {name: 執行中 ACTIVE, hint: WATCH，且最近一季買回 ≥ 市值 0.5%（超大型股有買回即可）、稀釋股數年減 ≥ 1%。只有公告到不了這一級。}
   buyback_state_high_conviction: {name: 高信心候選, hint: ACTIVE，且由 FCF 支應、淨負債沒大增，且 FCF 殖利率 ≥ 5 年中位數或股價比 DCF 低 15% 以上。}
-  buyback_state_trade_ready: {name: 可交易 TRADE-READY, hint: 需市場確認與風險檢查；風險檢查在 Phase 2，Phase 1 無法達到。}
+  buyback_state_trade_ready: {name: TRADE-READY, hint: HIGH-CONVICTION、市場確認，且這家公司的標準紙上部位通過風險檢查（回購規則 0.3.0 起）。}
   remaining_to_market_cap: {name: 剩餘授權 ÷ 市值, hint: 公告中最近的剩餘授權額 ÷ T 時市值。}
   quarter_repurchase_to_market_cap: {name: 單季買回 ÷ 市值, hint: 最近一季買回金額 ÷ 季末市值（季末前最近一筆股數）；沒買回就不通過；超大型股有買回即通過。}
   fcf_funding: {name: FCF 支應倍數, hint: 近四季買回 ÷ 近四季自由現金流。}
@@ -232,7 +232,7 @@ terms:
   fcf_yield_to_median: {name: FCF 殖利率 ÷ 5 年中位數, hint: T 時 FCF 殖利率 ÷ 過去 5 年每月底 FCF 殖利率的中位數。}
   close_vs_moving_average: {name: 收盤 vs 50 日均線, hint: 最新收盤高於 50 個交易日平均多少。}
   relative_return_1m: {name: 一個月相對 SPY 報酬, hint: 近 21 個交易日報酬減 SPY 同期報酬（百分點）。}
-  risk_check: {name: 風險檢查, hint: Phase 2 的部位與組合風控；Phase 1 一律無資料。}
+  risk_check: {name: 風險檢查, hint: 把擬議的紙上交易加進組合，逐條檢查價格、最大損失、部位、產業、流動性與槓桿；任一條不過就否決。}
   market_confirmation: {name: 市場確認, hint: 收盤高於 50 日均線，或一個月報酬勝過 SPY。}
   buyback_quality_score: {name: 回購品質分數, hint: 6 個分項的加權平均（預設權重，未驗證）；任一分項缺資料就不給總分。}
   buyback_score_undervaluation: {name: 分項：低估, hint: FCF 殖利率 ÷ 5 年中位數，0.8 倍 0 分、1.2 倍 100 分。權重 30。}
@@ -305,3 +305,25 @@ terms:
   hy_oas_percentile: {name: 高收益債利差百分位, hint: 目前利差在可取得歷史中的排名（0–100）。}
   rule_insight: {name: 規則式重點, hint: 以固定規則與門檻由資料產生的一句摘要，列出所用數據與版本；不是預測或建議。}
   vix_percentile_1y: {name: VIX 一年百分位, hint: 目前 VIX 在過去 12 個月收盤值中的排名（0–100）。}
+  paper_portfolio: {name: 紙上組合, hint: 日誌裡尚未出場的紙上交易，以當時已知的收盤價估值。}
+  portfolio_snapshot: {name: 組合快照, hint: 某一時點存下的紙上組合；風險檢查與回撤警示都指向它。}
+  notional_capital: {name: 名目資本, hint: 紙上組合的起始資本 10 萬美元，所有上限都以它的百分比計算。}
+  position_weight: {name: 部位權重, hint: 部位市值（取絕對值）佔名目資本的百分比。}
+  max_loss: {name: 最大損失, hint: 紙上交易事先寫下願意承受的損失（美元）；一定要填，且不得超過資本 1%。}
+  risk_limit_position: {name: 部位上限, hint: 同一標的交易後的總市值不得超過資本 10%。}
+  risk_limit_max_loss: {name: 最大損失上限, hint: "交易的最大損失必填，且不得超過資本 1%（1,000 美元）。"}
+  risk_limit_sector: {name: 產業上限, hint: 同一 GICS 產業交易後的總市值不得超過資本 30%；大盤、債券、商品基金不算。}
+  risk_limit_volume: {name: 流動性上限, hint: 單筆股數不得超過 20 日平均成交量的 1%。}
+  risk_limit_gross: {name: 槓桿上限, hint: 交易後所有部位的總市值不得超過資本 100%，也就是不加槓桿。}
+  risk_limit_price: {name: 可用價格, hint: 要用 5 天內的收盤價（不能是錄製或示範資料），否則否決。}
+  gics_sector: {name: GICS 產業, hint: 人工審核的產業表，附來源，寫在風險規則裡。}
+  average_daily_volume: {name: 20 日均量, hint: 最近 20 個交易日的平均成交股數（換到當日的分割基準）。}
+  days_to_exit: {name: 出清天數, hint: 部位股數相當於幾天的平均成交量。}
+  beta_exposure: {name: beta 加權曝險, hint: 每個部位市值乘上它對 SPY 的 beta 後加總。}
+  portfolio_drawdown: {name: 組合回撤, hint: 紙上權益距離高點跌了多少；跨過 10% 會發警示。}
+  portfolio_equity: {name: 紙上權益, hint: 名目資本加上已實現與未實現的紙上損益。}
+  risk_veto: {name: 風控否決, hint: 任一條上限不過就否決，交易不會被記錄，但檢查本身會存下。}
+  standard_position_check: {name: 標準部位檢查, hint: 每天替每家公司試算一筆標準紙上部位（資本 5%、最大損失 1%），通過才可達 TRADE-READY 與 L4。}
+  risk_rule_set: {name: 風險規則版本, hint: 每個組合快照與風險檢查所用的規則版本；已發布的版本不會改。}
+  gross_exposure: {name: 總曝險, hint: 所有部位市值取絕對值加總，佔資本的百分比。}
+  net_exposure: {name: 淨曝險, hint: 多單減空單的市值，佔資本的百分比。}

@@ -1,11 +1,11 @@
 {
-  "recorded_at": "2026-10-12T16:07:10.062392+00:00",
+  "recorded_at": "2026-10-15T09:41:17.160158+00:00",
   "recorded_from": "recorded SEC filings, Alpaca closes, FRED yields and news replayed into the integration test database (tests/integration/test_alerts.py)",
-  "endpoint": "/alerts/2d06d77f-4f23-4d26-8ed7-8827c26cc15b",
+  "endpoint": "/alerts/9f546319-761e-4d65-a6d0-eae9050987a5",
   "params": {},
   "response": {
-    "id": "2d06d77f-4f23-4d26-8ed7-8827c26cc15b",
-    "rule_version": "0.2.0",
+    "id": "9f546319-761e-4d65-a6d0-eae9050987a5",
+    "rule_version": "0.3.0",
     "ticker": "AAPL",
     "kind": "level_change",
     "level": 1,
@@ -14,27 +14,24 @@
     "direction": "up",
     "title": "AAPL reached L1 Watch",
     "known_at": "2026-10-06T12:00:00Z",
-    "system_time": "2026-10-12T16:07:07.760133Z",
+    "system_time": "2026-10-15T09:41:15.835638Z",
     "backfilled": true,
     "evidence": [
       {
         "table": "buyback_state_assignments",
-        "id": "8402fde8-1147-4693-917c-715bb63cb6a9",
+        "id": "3cf41c20-8fe8-4f21-b3d4-54583a2f2184",
         "label": "Buyback state ACTIVE",
         "url": null
       },
       {
         "table": "buyback_state_assignments",
-        "id": "8402fde8-1147-4693-917c-715bb63cb6a9",
+        "id": "3cf41c20-8fe8-4f21-b3d4-54583a2f2184",
         "label": "Market confirmation",
         "url": null
       }
     ],
-    "assessment_id": "a1ccd7f0-6065-4c5e-961b-6b35faeed321",
-    "acknowledgement": {
-      "acknowledged_at": "2026-10-12T16:07:09.722360Z",
-      "note": "seen, no action"
-    },
+    "assessment_id": "a12c89cc-b142-4e1d-885d-b4e09b2d484c",
+    "acknowledgement": null,
     "assessment": {
       "ticker": "AAPL",
       "known_at": "2026-10-06T12:00:00Z",
@@ -69,8 +66,8 @@
         {
           "level": 4,
           "name": "Execution Ready",
-          "status": "unavailable",
-          "detail": "needs the Phase 2 risk check, liquidity, sizing and compliance (P1-4)"
+          "status": "fail",
+          "detail": "needs L3 first (standard risk check passes)"
         }
       ],
       "items": [
@@ -79,18 +76,18 @@
           "family_id": 2,
           "label": "Buyback state ACTIVE",
           "table": "buyback_state_assignments",
-          "row_id": "8402fde8-1147-4693-917c-715bb63cb6a9",
-          "source": "buyback_state_assignments:8402fde8-1147-4693-917c-715bb63cb6a9",
+          "row_id": "3cf41c20-8fe8-4f21-b3d4-54583a2f2184",
+          "source": "buyback_state_assignments:3cf41c20-8fe8-4f21-b3d4-54583a2f2184",
           "known_at": "2026-10-06T12:00:00Z",
-          "detail": "rules 0.2.0"
+          "detail": "rules 0.3.0"
         },
         {
           "kind": "reading",
           "family_id": 5,
           "label": "Market confirmation",
           "table": "buyback_state_assignments",
-          "row_id": "8402fde8-1147-4693-917c-715bb63cb6a9",
-          "source": "market:8402fde8-1147-4693-917c-715bb63cb6a9",
+          "row_id": "3cf41c20-8fe8-4f21-b3d4-54583a2f2184",
+          "source": "market:3cf41c20-8fe8-4f21-b3d4-54583a2f2184",
           "known_at": "2026-10-06T12:00:00Z",
           "detail": "trade_ready.above_average, trade_ready.relative_return"
         }

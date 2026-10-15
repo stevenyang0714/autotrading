@@ -62,7 +62,7 @@ describe("dashboard glossary terms (errata E13)", () => {
     }
   });
 
-  it("serves each live dashboard from its own route (M1.3b, M1.4b, M1.5, M1.6, M1.7, M2.1, M2.2)", () => {
+  it("serves each live dashboard from its own route (M1.3b, M1.4b, M1.5, M1.6, M1.7, M2.1, M2.2, M2.3)", () => {
     const live = DASHBOARDS.filter((dashboard) => dashboard.live);
     expect(live.map((dashboard) => dashboard.slug)).toEqual([
       "market-regime",
@@ -70,6 +70,7 @@ describe("dashboard glossary terms (errata E13)", () => {
       "fundamental-research",
       "corporate-actions",
       "earnings",
+      "portfolio-risk",
       "alerts-center",
       "strategy-lab",
     ]);

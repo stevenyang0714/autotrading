@@ -482,6 +482,9 @@ def test_the_paper_portfolio_and_an_on_demand_check(
     }
     listed = client.get("/risk/checks", params={"trigger": "on_demand"}).json()["checks"]
     assert [c["id"] for c in listed][:1] == [found["id"]]
+    mixed = client.get("/risk/checks", params=[("trigger", "trade"), ("trigger", "on_demand")])
+    assert {c["trigger"] for c in mixed.json()["checks"]} <= {"trade", "on_demand"}
+    assert found["id"] in [c["id"] for c in mixed.json()["checks"]]
     assert (
         client.post(
             "/risk/checks", json={"ticker": "AAPL", "side": "buy", "quantity": "5", "broker": "x"}
@@ -702,6 +705,31 @@ def test_record_web_fixtures(client: TestClient) -> None:
         ("journal-replay", f"/journal/{card_id}/replay", {}),
         ("evidence-aapl", "/instruments/AAPL/evidence", {"known_at": iso(WRITE_AT)}),
         ("signals", "/signals", {"known_at": iso(VALUED_AT), "ticker": "AAPL"}),
+    ):
+        response = client.get(path, params=params)
+        assert response.status_code == 200
+        record = {
+            "recorded_at": datetime.now(UTC).isoformat(),
+            "recorded_from": "recorded SEC filings, Alpaca closes, FRED yields and news replayed "
+            "into the integration test database (tests/integration/test_journal.py)",
+            "endpoint": path,
+            "params": params,
+            "response": response.json(),
+        }
+        (target / f"{name}.json").write_text(json.dumps(record, indent=2) + "\n")
+
+
+@pytest.mark.skipif(
+    not os.environ.get("RECORD_WEB_FIXTURES"),
+    reason="recorder: set RECORD_WEB_FIXTURES=1 to refresh apps/web/tests/fixtures/api",
+)
+def test_record_risk_web_fixtures(client: TestClient) -> None:
+    # M2.3: the paper book with the AAPL TRADE open, and the risk checks (pass, veto, tried).
+    target = Path(__file__).resolve().parents[3] / "web" / "tests" / "fixtures" / "api"
+    for name, path, params in (
+        ("portfolio", "/portfolio", {"known_at": iso(WRITE_AT + timedelta(days=1))}),
+        ("portfolio-empty", "/portfolio", {"known_at": iso(WRITE_AT - timedelta(days=1))}),
+        ("risk-checks", "/risk/checks", {"limit": 10}),
     ):
         response = client.get(path, params=params)
         assert response.status_code == 200

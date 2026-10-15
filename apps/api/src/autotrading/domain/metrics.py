@@ -60,6 +60,10 @@ METHODOLOGY = {
     "quarter_repurchase_to_market_cap": "0.2.0",
     "buyback_state_active": "0.2.0",
     "buyback_score_intensity": "0.2.0",
+    # M2.3 (ADR-031): TRADE-READY and L4 read the standard risk check; the check is defined.
+    "buyback_state_trade_ready": "0.2.0",
+    "convergence_l4": "0.2.0",
+    "risk_check": "0.2.0",
 }
 
 # FRED series shown on the Macro page (M0.6): reported values with vintages, one term per
@@ -295,6 +299,37 @@ METRICS: tuple[MetricDefinition, ...] = (
             },
             "factor_percentile": "fair_value.relative",
             "factor_snapshot": "factors.record_snapshot",
+            # M2.3 (ADR-031): the paper portfolio and risk checks.
+            **{
+                term_id: "risk.check"
+                for term_id in (
+                    "risk_check",
+                    "risk_veto",
+                    "risk_limit_position",
+                    "risk_limit_max_loss",
+                    "risk_limit_sector",
+                    "risk_limit_volume",
+                    "risk_limit_gross",
+                    "risk_limit_price",
+                    "standard_position_check",
+                    "max_loss",
+                )
+            },
+            **{
+                term_id: "risk.portfolio"
+                for term_id in (
+                    "paper_portfolio",
+                    "portfolio_snapshot",
+                    "position_weight",
+                    "gross_exposure",
+                    "net_exposure",
+                    "beta_exposure",
+                    "portfolio_drawdown",
+                    "portfolio_equity",
+                    "average_daily_volume",
+                    "days_to_exit",
+                )
+            },
         }.items()
     ),
     MetricDefinition(

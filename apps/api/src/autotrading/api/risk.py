@@ -12,7 +12,7 @@
 
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Any, Literal, cast
+from typing import Annotated, Any, Literal, cast
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query
@@ -167,7 +167,7 @@ def risk_checks(
     session: SessionDep,
     known_at: KnownAt = None,
     ticker: str | None = None,
-    trigger: Literal["trade", "on_demand", "standard"] | None = None,
+    trigger: Annotated[list[Literal["trade", "on_demand", "standard"]] | None, Query()] = None,
     limit: int = Query(default=30, ge=1, le=200),
 ) -> RiskChecksOut:
     at = known_at_or_now(session, known_at)
@@ -175,7 +175,7 @@ def risk_checks(
     if ticker:
         query = query.where(RiskCheck.ticker == ticker.upper())
     if trigger:
-        query = query.where(RiskCheck.trigger == trigger)
+        query = query.where(RiskCheck.trigger.in_(trigger))
     rows = session.scalars(
         query.order_by(RiskCheck.known_at.desc(), RiskCheck.recorded_at.desc()).limit(limit)
     )

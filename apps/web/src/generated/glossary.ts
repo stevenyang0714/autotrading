@@ -14,10 +14,12 @@ export type CompleteTermId =
   | "ask"
   | "audit_action"
   | "audit_actor"
+  | "average_daily_volume"
   | "backfilled_evaluation"
   | "balance_identity"
   | "basic_shares"
   | "beta_252d"
+  | "beta_exposure"
   | "bid"
   | "buyback_intensity"
   | "buyback_quality_score"
@@ -73,6 +75,7 @@ export type CompleteTermId =
   | "dashboard_x_expert_watch"
   | "data_age"
   | "data_freshness"
+  | "days_to_exit"
   | "dead_letter"
   | "debt_funded_buyback"
   | "depreciation_amortization"
@@ -117,6 +120,8 @@ export type CompleteTermId =
   | "first_release_overlay"
   | "free_cash_flow"
   | "freshness_sla"
+  | "gics_sector"
+  | "gross_exposure"
   | "gross_margin"
   | "gross_profit"
   | "guidance_statement"
@@ -156,6 +161,7 @@ export type CompleteTermId =
   | "market_cap"
   | "market_confirmation"
   | "market_session"
+  | "max_loss"
   | "mega_cap"
   | "milestone_status"
   | "model_output"
@@ -166,6 +172,7 @@ export type CompleteTermId =
   | "net_debt_change_yoy"
   | "net_debt_to_ebitda"
   | "net_debt_to_fcf"
+  | "net_exposure"
   | "net_income"
   | "net_margin"
   | "net_share_reduction"
@@ -174,6 +181,7 @@ export type CompleteTermId =
   | "next_refresh"
   | "no_trade"
   | "nopat"
+  | "notional_capital"
   | "observation_date"
   | "open_decision"
   | "operating_cash_flow"
@@ -189,6 +197,7 @@ export type CompleteTermId =
   | "page_progress"
   | "page_reconciliation"
   | "paper_mode"
+  | "paper_portfolio"
   | "paper_return"
   | "payrolls_monthly_change"
   | "payrolls_prior_month_revision"
@@ -196,6 +205,10 @@ export type CompleteTermId =
   | "pe_ratio_ttm"
   | "planned_phase"
   | "point_in_time"
+  | "portfolio_drawdown"
+  | "portfolio_equity"
+  | "portfolio_snapshot"
+  | "position_weight"
   | "predecessor_issuer"
   | "pretax_income"
   | "price_change_1d"
@@ -231,6 +244,14 @@ export type CompleteTermId =
   | "reversal_1m"
   | "reverse_dcf_growth"
   | "risk_check"
+  | "risk_limit_gross"
+  | "risk_limit_max_loss"
+  | "risk_limit_position"
+  | "risk_limit_price"
+  | "risk_limit_sector"
+  | "risk_limit_volume"
+  | "risk_rule_set"
+  | "risk_veto"
   | "roe"
   | "roic"
   | "rule_insight"
@@ -245,6 +266,7 @@ export type CompleteTermId =
   | "source_tier"
   | "split_adjusted"
   | "split_event"
+  | "standard_position_check"
   | "stock_based_compensation"
   | "stockholders_equity"
   | "story_count"
@@ -531,6 +553,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "操作者",
     "hint_zh": "做出變更的程序：資料擷取工作、設定同步或資料庫使用者。"
   },
+  "average_daily_volume": {
+    "term_id": "average_daily_volume",
+    "display_name": "Average Daily Volume (20 sessions)",
+    "category": "risk",
+    "short_definition": "The mean shares traded per session over the last 20 sessions.",
+    "full_definition": "From the consolidated end-of-day bars known at the date, each day's volume moved to the date's split basis.",
+    "formula": "mean(volume, last 20 sessions)",
+    "unit": "shares",
+    "example": "AAPL trades tens of millions of shares a day.",
+    "direction": "Higher = more liquid",
+    "interpretation": "How much trades normally.",
+    "why_it_matters": "Feeds the liquidity limit and days to exit.",
+    "source": "Risk rules 0.1.0 (config/risk_rules.yaml); the paper journal; ADR-031",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/risk_rules.yaml",
+    "as_of": "2026-10-15",
+    "update_cadence": "with each paper TRADE, on demand, and daily (11:00 and 11:10 SGT)",
+    "caveats": "Fewer than 20 sessions: unavailable.",
+    "related_terms": [
+      "risk_limit_volume",
+      "days_to_exit"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "20 日均量",
+    "hint_zh": "最近 20 個交易日的平均成交股數（換到當日的分割基準）。"
+  },
   "backfilled_evaluation": {
     "term_id": "backfilled_evaluation",
     "display_name": "Backfilled Evaluation",
@@ -629,6 +676,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "對 SPY 的 beta",
     "hint_zh": "最近 252 個交易日，SPY 漲跌 1% 時這檔平均漲跌幾 %。"
+  },
+  "beta_exposure": {
+    "term_id": "beta_exposure",
+    "display_name": "Beta-Weighted Exposure",
+    "category": "risk",
+    "short_definition": "The sum of each position's market value times its beta to SPY.",
+    "full_definition": "Market value (signed) x the latest 252-session beta known at the date (factor snapshots, M2.2), summed. Unavailable when a position has no beta.",
+    "formula": "sum(market value x beta)",
+    "unit": "USD",
+    "example": "A 10,000 USD position with beta 1.5 counts as 15,000 USD of market exposure.",
+    "direction": "Higher = more market risk",
+    "interpretation": "How much the book moves with the market.",
+    "why_it_matters": "Two books of the same size can carry very different market risk.",
+    "source": "Risk rules 0.1.0 (config/risk_rules.yaml); the paper journal; ADR-031",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/risk_rules.yaml",
+    "as_of": "2026-10-15",
+    "update_cadence": "with each paper TRADE, on demand, and daily (11:00 and 11:10 SGT)",
+    "caveats": "Betas change; one year of data.",
+    "related_terms": [
+      "beta_252d",
+      "net_exposure"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "beta 加權曝險",
+    "hint_zh": "每個部位市值乘上它對 SPY 的 beta 後加總。"
   },
   "bid": {
     "term_id": "bid",
@@ -999,8 +1071,8 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "term_id": "buyback_state_trade_ready",
     "display_name": "TRADE-READY",
     "category": "corporate_action",
-    "short_definition": "HIGH-CONVICTION, the market confirms, and a risk check passed. Unreachable in Phase 1.",
-    "full_definition": "HIGH-CONVICTION, market confirmation (the close above its 50-session average, or a 21-session return above SPY's) and a passed risk check. The risk check arrives in Phase 2, so the rule set marks this state unreachable and the database refuses it (P1-4). Market confirmation is computed and shown.",
+    "short_definition": "HIGH-CONVICTION, the market confirms, and the standard paper position passes the risk check.",
+    "full_definition": "HIGH-CONVICTION, market confirmation (the close above its 50-session average, or a 21-session return above SPY's) and a passed risk check of the company's standard paper position (5% of capital, a 1% maximum loss) at the same date. Reachable since buyback rules 0.3.0 (M2.3, ADR-031); unreachable under 0.1.0 and 0.2.0 (P1-4).",
     "formula": "HIGH-CONVICTION AND (close > 50-session average OR return - SPY return > 0) AND risk check passed",
     "unit": "state",
     "example": "Apple as known on 2026-10-06 (recorded SEC filings and closes): market confirmation passes (close 3.25% above its average), the risk check is unavailable: not TRADE-READY.",
@@ -1009,17 +1081,17 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "why_it_matters": "Keeps the ladder complete without implying a trade.",
     "source": "Derived by the buyback state rules (domain/buyback_states.py, config/buyback_rules.yaml)",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/buyback_states.py",
-    "as_of": "2026-10-10",
+    "as_of": "2026-10-15",
     "update_cadence": "daily (11:00 SGT) and month ends since 2021",
-    "caveats": "Even in Phase 2 a state alone never places an order (02 §5).",
+    "caveats": "Paper only: a state never places an order (02 §5). The risk limits are defaults, unvalidated (OD-7).",
     "related_terms": [
       "buyback_state",
       "market_confirmation",
       "risk_check"
     ],
-    "methodology_version": "0.1.0",
-    "name_zh": "可交易 TRADE-READY",
-    "hint_zh": "需市場確認與風險檢查；風險檢查在 Phase 2，Phase 1 無法達到。"
+    "methodology_version": "0.2.0",
+    "name_zh": "TRADE-READY",
+    "hint_zh": "HIGH-CONVICTION、市場確認，且這家公司的標準紙上部位通過風險檢查（回購規則 0.3.0 起）。"
   },
   "buyback_state_watch": {
     "term_id": "buyback_state_watch",
@@ -1505,8 +1577,8 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "term_id": "convergence_l4",
     "display_name": "L4 Execution Ready",
     "category": "alerts",
-    "short_definition": "L3 plus risk, liquidity, sizing and compliance checks. Unreachable in Phase 1.",
-    "full_definition": "Needs the Phase 2 risk check, liquidity, sizing and compliance (P1-4); the database refuses L4 in Phase 1 and the Alerts Center shows it as unavailable.",
+    "short_definition": "L3 plus a passed risk check of the standard paper position.",
+    "full_definition": "L3 Trade Candidate and the company's standard paper position passing the risk check (position, maximum loss, sector, liquidity, leverage and a usable price) at the same date. Reachable since alert rules 0.3.0 (M2.3, ADR-031); unreachable before (P1-4).",
     "formula": "L3 and passed risk, liquidity, sizing and compliance checks",
     "unit": "level",
     "example": "Every company shows L4 unavailable in Phase 1.",
@@ -1515,16 +1587,16 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "why_it_matters": "Execution only after risk controls exist.",
     "source": "Build spec 02 §16; P1-4",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/convergence.py",
-    "as_of": "2026-10-12",
+    "as_of": "2026-10-15",
     "update_cadence": "per phase",
-    "caveats": "No order path exists in Phase 1.",
+    "caveats": "Paper only: no order path exists before Phase 5. Compliance checks are not modelled.",
     "related_terms": [
       "convergence_l3",
       "paper_mode"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "L4 可執行",
-    "hint_zh": "L3 加上風險、流動性、部位與合規檢查；Phase 1 不可達。"
+    "hint_zh": "L3 加上標準紙上部位通過風險檢查（警示規則 0.3.0 起）；只限紙上。"
   },
   "convergence_level": {
     "term_id": "convergence_level",
@@ -1619,15 +1691,15 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "why_it_matters": "Turns many signals into a short list that needs a decision.",
     "source": "Build spec 02 §21; research report 01 §21; ROADMAP dashboard map; ADR-028",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/spec/02_master_build_prompt_v2.md",
-    "as_of": "2026-10-12",
+    "as_of": "2026-10-15",
     "update_cadence": "per release",
-    "caveats": "In-app only (OD-2). L4 is unreachable until the Phase 2 risk check.",
+    "caveats": "In-app only (OD-2). L4 needs the standard paper position's risk check (M2.3); portfolio drawdown alerts have no company.",
     "related_terms": [
       "planned_phase",
       "convergence_level",
       "alert"
     ],
-    "methodology_version": "0.3.0",
+    "methodology_version": "0.4.0",
     "name_zh": "警示中心",
     "hint_zh": "所有警示與通知（Phase 1）。"
   },
@@ -1911,8 +1983,8 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "term_id": "dashboard_portfolio_risk",
     "display_name": "Portfolio Risk",
     "category": "navigation",
-    "short_definition": "Exposure, stress, drawdown and hedges.",
-    "full_definition": "The risk cockpit: gross and net exposure, beta, concentration, factor, currency and commodity exposure, VaR, expected shortfall, drawdown and liquidity (02 §20).",
+    "short_definition": "The paper portfolio's exposures, limits, drawdown and risk checks.",
+    "full_definition": "Since M2.3 (ADR-031): the paper portfolio as known on the chosen date (equity, gross, net and beta-weighted exposure, sectors, positions with weight, P&L, beta and days to exit, the equity curve and drawdown), each limit of the risk rules, the risk check history with vetoes, and a form to try a paper trade. VaR, expected shortfall and stress tests come later (02 §20).",
     "formula": "not a calculation; dashboard defined in build spec 02 §21",
     "unit": "page",
     "example": "Two positions with the same factor exposure show up as hidden concentration.",
@@ -1921,15 +1993,15 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "why_it_matters": "The risk engine can veto any order; this is where its view is visible.",
     "source": "Build spec 02 §21; research report 01 §21; ROADMAP dashboard map",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/spec/02_master_build_prompt_v2.md",
-    "as_of": "2026-10-05",
+    "as_of": "2026-10-15",
     "update_cadence": "per release",
-    "caveats": "Contents arrive with Phase 2; scope can change through a roadmap update.",
+    "caveats": "Paper only; limits are defaults, unvalidated (OD-7).",
     "related_terms": [
       "planned_phase"
     ],
-    "methodology_version": "0.1.0",
-    "name_zh": "投組風險",
-    "hint_zh": "部位風險與風險否決規則（Phase 2）。"
+    "methodology_version": "0.2.0",
+    "name_zh": "組合風險",
+    "hint_zh": "紙上組合的曝險、各上限使用率、回撤與風險檢查紀錄，可試算一筆交易。"
   },
   "dashboard_strategy_lab": {
     "term_id": "dashboard_strategy_lab",
@@ -2033,6 +2105,30 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "資料新鮮度",
     "hint_zh": "距離上次成功更新多久，和該來源的預期更新頻率比較。"
+  },
+  "days_to_exit": {
+    "term_id": "days_to_exit",
+    "display_name": "Days to Exit",
+    "category": "risk",
+    "short_definition": "How many days of average volume a position equals.",
+    "full_definition": "A position's shares / the 20-session average daily volume.",
+    "formula": "shares / ADV(20)",
+    "unit": "days",
+    "example": "0.00 for a 10-share position in a mega cap.",
+    "direction": "Higher = harder to exit",
+    "interpretation": "Whether a position could be closed quickly.",
+    "why_it_matters": "Liquidity part of the risk cockpit.",
+    "source": "Risk rules 0.1.0 (config/risk_rules.yaml); the paper journal; ADR-031",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/risk_rules.yaml",
+    "as_of": "2026-10-15",
+    "update_cadence": "with each paper TRADE, on demand, and daily (11:00 and 11:10 SGT)",
+    "caveats": "Ignores intraday liquidity and spreads.",
+    "related_terms": [
+      "average_daily_volume"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "出清天數",
+    "hint_zh": "部位股數相當於幾天的平均成交量。"
   },
   "dead_letter": {
     "term_id": "dead_letter",
@@ -3164,6 +3260,55 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "新鮮度標準",
     "hint_zh": "該來源可接受的最長未更新時間，超過即視為過期。"
   },
+  "gics_sector": {
+    "term_id": "gics_sector",
+    "display_name": "GICS Sector",
+    "category": "risk",
+    "short_definition": "The industry sector of an instrument, from a reviewed list in the risk rules.",
+    "full_definition": "Each company's GICS sector as of 2026-10 (S&P Dow Jones Indices and MSCI), with its source; ETFs by mandate (sector funds, broad market, fixed income, commodity). Part of the risk rules, so a change is a new version.",
+    "formula": "reviewed list (config/risk_rules.yaml)",
+    "unit": "sector",
+    "example": "AAPL, MSFT, NVDA: information technology; GOOGL, META: communication services.",
+    "direction": "N/A",
+    "interpretation": "Which positions move together.",
+    "why_it_matters": "Feeds the sector limit.",
+    "source": "Risk rules 0.1.0 (config/risk_rules.yaml); the paper journal; ADR-031",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/risk_rules.yaml",
+    "as_of": "2026-10-15",
+    "update_cadence": "per rule version",
+    "caveats": "A broad fund's holdings are not split by sector.",
+    "related_terms": [
+      "risk_limit_sector"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "GICS 產業",
+    "hint_zh": "人工審核的產業表，附來源，寫在風險規則裡。"
+  },
+  "gross_exposure": {
+    "term_id": "gross_exposure",
+    "display_name": "Gross Exposure",
+    "category": "risk",
+    "short_definition": "Absolute long plus short market value relative to capital.",
+    "full_definition": "The sum of every open paper position's |market value| at the last close known at the date, as a share of the notional capital.",
+    "formula": "sum(|market value|) / capital x 100",
+    "unit": "percent",
+    "example": "Two 10,000 USD positions, one short: 20.00%.",
+    "direction": "Higher = more invested",
+    "interpretation": "How much of the capital is at work.",
+    "why_it_matters": "Feeds the leverage limit.",
+    "source": "Risk rules 0.1.0 (config/risk_rules.yaml); the paper journal; ADR-031",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/risk_rules.yaml",
+    "as_of": "2026-10-15",
+    "update_cadence": "with each paper TRADE, on demand, and daily (11:00 and 11:10 SGT)",
+    "caveats": "Says nothing about direction; see net exposure.",
+    "related_terms": [
+      "net_exposure",
+      "risk_limit_gross"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "總曝險",
+    "hint_zh": "所有部位市值取絕對值加總，佔資本的百分比。"
+  },
   "gross_margin": {
     "term_id": "gross_margin",
     "display_name": "Gross Margin",
@@ -4143,6 +4288,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "交易時段",
     "hint_zh": "美股是否開盤（紐約時間 09:30–16:00，扣除假日與提早收盤）。"
   },
+  "max_loss": {
+    "term_id": "max_loss",
+    "display_name": "Maximum Loss",
+    "category": "risk",
+    "short_definition": "The loss, in USD, a paper TRADE states it would accept before exiting.",
+    "full_definition": "Required on every paper TRADE since M2.3; the risk check vetoes a trade without one or above 1% of the notional capital. The journal flags a position whose paper loss exceeds it.",
+    "formula": "stated by the decision, USD",
+    "unit": "USD",
+    "example": "A 1,000 USD maximum loss on a 100,000 USD book = 1.00%.",
+    "direction": "Lower = more cautious",
+    "interpretation": "The risk the trade is willing to take.",
+    "why_it_matters": "Sizing by risk, not only by dollars (02 §20).",
+    "source": "Risk rules 0.1.0 (config/risk_rules.yaml); the paper journal; ADR-031",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/risk_rules.yaml",
+    "as_of": "2026-10-15",
+    "update_cadence": "with each paper TRADE, on demand, and daily (11:00 and 11:10 SGT)",
+    "caveats": "A stated amount, not a stop order: nothing exits automatically.",
+    "related_terms": [
+      "risk_limit_max_loss",
+      "trade_decision"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "最大損失",
+    "hint_zh": "紙上交易事先寫下願意承受的損失（美元）；一定要填，且不得超過資本 1%。"
+  },
   "mega_cap": {
     "term_id": "mega_cap",
     "display_name": "Mega Cap",
@@ -4401,6 +4571,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "淨負債 ÷ FCF",
     "hint_zh": "淨負債 ÷ 近四季自由現金流；淨現金為負值。"
   },
+  "net_exposure": {
+    "term_id": "net_exposure",
+    "display_name": "Net Exposure",
+    "category": "risk",
+    "short_definition": "Long minus short market value relative to capital.",
+    "full_definition": "The sum of every open paper position's signed market value (negative for a short) as a share of the notional capital.",
+    "formula": "sum(market value) / capital x 100",
+    "unit": "percent",
+    "example": "A 10,000 USD long and a 10,000 USD short: 0.00%.",
+    "direction": "Higher = more net long",
+    "interpretation": "Which way the book leans.",
+    "why_it_matters": "Market direction risk.",
+    "source": "Risk rules 0.1.0 (config/risk_rules.yaml); the paper journal; ADR-031",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/risk_rules.yaml",
+    "as_of": "2026-10-15",
+    "update_cadence": "with each paper TRADE, on demand, and daily (11:00 and 11:10 SGT)",
+    "caveats": "Ignores beta differences between positions; see beta-weighted exposure.",
+    "related_terms": [
+      "gross_exposure",
+      "beta_exposure"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "淨曝險",
+    "hint_zh": "多單減空單的市值，佔資本的百分比。"
+  },
   "net_income": {
     "term_id": "net_income",
     "display_name": "Net Income",
@@ -4603,6 +4798,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "稅後營業利益（NOPAT）",
     "hint_zh": "營業利益 ×（1 − 有效稅率）。"
+  },
+  "notional_capital": {
+    "term_id": "notional_capital",
+    "display_name": "Notional Capital",
+    "category": "risk",
+    "short_definition": "The paper portfolio's starting capital: USD 100,000.",
+    "full_definition": "Every limit is a share of this amount (P2-4). Equity is the capital plus realized and unrealized paper P&L.",
+    "formula": "100,000 USD (risk rules 0.1.0)",
+    "unit": "USD",
+    "example": "A 10% position limit is 10,000 USD.",
+    "direction": "N/A",
+    "interpretation": "The yardstick of every limit.",
+    "why_it_matters": "Keeps sizes comparable across trades.",
+    "source": "Risk rules 0.1.0 (config/risk_rules.yaml); the paper journal; ADR-031",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/risk_rules.yaml",
+    "as_of": "2026-10-15",
+    "update_cadence": "per rule version",
+    "caveats": "Notional: no money exists. Limits are Steven's defaults (P2-5), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "paper_portfolio",
+      "position_weight"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "名目資本",
+    "hint_zh": "紙上組合的起始資本 10 萬美元，所有上限都以它的百分比計算。"
   },
   "observation_date": {
     "term_id": "observation_date",
@@ -4970,7 +5190,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "Paper Mode",
     "category": "journal",
     "short_definition": "Decisions are records only: no broker connection, no order, no fill.",
-    "full_definition": "Phase 1 journals in paper mode only (P1-6). The database refuses any other mode, a broker, a risk check or portfolio snapshot reference and any approval state but recorded; the API accepts no broker fields; the market data client reaches market-data endpoints only; live trading cannot be enabled.",
+    "full_definition": "Decisions are paper only (P1-6). The database refuses any other mode, a broker and any approval state but recorded; since M2.3 every paper TRADE entry cites its passed risk check and portfolio snapshot (P2-7). The API accepts no broker fields; the market data client reaches data endpoints only, and live trading is refused at start-up.",
     "formula": "mode = paper (a database check)",
     "unit": "state",
     "example": "Every decision in the Strategy Lab journal is paper.",
@@ -4979,7 +5199,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "why_it_matters": "Tests judgement without risking money or depending on fills.",
     "source": "ADR-008; build spec 02 §28; migration 0018",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/api/journal.py",
-    "as_of": "2026-10-11",
+    "as_of": "2026-10-15",
     "update_cadence": "per phase",
     "caveats": "Paper results ignore costs, slippage, dividends and whether a limit order would have filled.",
     "related_terms": [
@@ -4987,9 +5207,35 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "execution_eligibility",
       "paper_return"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "模擬模式",
     "hint_zh": "決策只是紀錄；沒有券商連線、沒有委託、沒有成交。"
+  },
+  "paper_portfolio": {
+    "term_id": "paper_portfolio",
+    "display_name": "Paper Portfolio",
+    "category": "risk",
+    "short_definition": "The journal's open paper TRADEs, valued at the end-of-day closes known at the date.",
+    "full_definition": "Every paper TRADE entry known at the date and not yet exited is a position: its shares and entry price moved to the date's split basis, marked at the last end-of-day close known then. With the notional capital it gives the equity, exposures, sectors and drawdown. Exits realize their P&L.",
+    "formula": "positions = TRADE entries known at T without an exit known at T",
+    "unit": "portfolio",
+    "example": "Empty until a paper TRADE passes its risk check; one 10-share AAPL entry is one position worth 10 x the last close.",
+    "direction": "N/A",
+    "interpretation": "What the paper decisions add up to.",
+    "why_it_matters": "The risk check tests every new trade against it.",
+    "source": "Risk rules 0.1.0 (config/risk_rules.yaml); the paper journal; ADR-031",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/risk_rules.yaml",
+    "as_of": "2026-10-15",
+    "update_cadence": "with each paper TRADE, on demand, and daily (11:00 and 11:10 SGT)",
+    "caveats": "Paper only: no order, fill, cost or dividend. Limits are Steven's defaults (P2-5), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "risk_check",
+      "notional_capital",
+      "portfolio_snapshot"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "紙上組合",
+    "hint_zh": "日誌裡尚未出場的紙上交易，以當時已知的收盤價估值。"
   },
   "paper_return": {
     "term_id": "paper_return",
@@ -5167,6 +5413,106 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "時點資料",
     "hint_zh": "只使用在該時間點之前已公開的資訊，避免用到「未來的資料」。"
+  },
+  "portfolio_drawdown": {
+    "term_id": "portfolio_drawdown",
+    "display_name": "Portfolio Drawdown",
+    "category": "risk",
+    "short_definition": "How far the paper equity is below its peak since the first entry.",
+    "full_definition": "From the daily equity curve (capital plus realized P&L plus open positions marked at each session's close, on the date's split basis): (peak - current) / peak x 100. An alert fires when it crosses 10% either way.",
+    "formula": "(peak equity - equity) / peak equity x 100",
+    "unit": "percent",
+    "example": "Equity 90,000 USD after a peak of 110,000 USD: 18.18%.",
+    "direction": "Higher = deeper loss",
+    "interpretation": "How much has been given back.",
+    "why_it_matters": "A drawdown alert is the book's circuit breaker (P2-5).",
+    "source": "Risk rules 0.1.0 (config/risk_rules.yaml); the paper journal; ADR-031",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/risk_rules.yaml",
+    "as_of": "2026-10-15",
+    "update_cadence": "daily (11:10 SGT)",
+    "caveats": "End-of-day only; intraday drawdowns are not seen.",
+    "related_terms": [
+      "portfolio_equity",
+      "risk_veto"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "組合回撤",
+    "hint_zh": "紙上權益距離高點跌了多少；跨過 10% 會發警示。"
+  },
+  "portfolio_equity": {
+    "term_id": "portfolio_equity",
+    "display_name": "Paper Equity",
+    "category": "risk",
+    "short_definition": "The notional capital plus realized and unrealized paper P&L.",
+    "full_definition": "Capital + P&L of exited trades + P&L of open positions at their last close; the equity curve is the same at every session's close since the first entry.",
+    "formula": "capital + realized + unrealized",
+    "unit": "USD",
+    "example": "100,000 USD with one 100 USD paper gain: 100,100 USD.",
+    "direction": "Higher = better",
+    "interpretation": "What the paper book is worth.",
+    "why_it_matters": "The base of the drawdown.",
+    "source": "Risk rules 0.1.0 (config/risk_rules.yaml); the paper journal; ADR-031",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/risk_rules.yaml",
+    "as_of": "2026-10-15",
+    "update_cadence": "with each paper TRADE, on demand, and daily (11:00 and 11:10 SGT)",
+    "caveats": "No costs, dividends or interest.",
+    "related_terms": [
+      "notional_capital",
+      "portfolio_drawdown"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "紙上權益",
+    "hint_zh": "名目資本加上已實現與未實現的紙上損益。"
+  },
+  "portfolio_snapshot": {
+    "term_id": "portfolio_snapshot",
+    "display_name": "Portfolio Snapshot",
+    "category": "risk",
+    "short_definition": "The stored paper portfolio at a date, as the database held it then.",
+    "full_definition": "One row per date, system time and risk rule version: equity, gross and net exposure, drawdown and every position. Risk checks at the same point share it; a daily one carries the drawdown alert.",
+    "formula": "stored at (T, S, rule version)",
+    "unit": "snapshot",
+    "example": "A daily snapshot at 11:10 SGT; a trade's risk check points at the snapshot it read.",
+    "direction": "N/A",
+    "interpretation": "Which portfolio a check or alert saw.",
+    "why_it_matters": "Makes a risk check reproducible and auditable.",
+    "source": "Risk rules 0.1.0 (config/risk_rules.yaml); the paper journal; ADR-031",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/risk_rules.yaml",
+    "as_of": "2026-10-15",
+    "update_cadence": "daily (11:10 SGT) and with each risk check",
+    "caveats": "Append-only; a later decision never changes an earlier snapshot.",
+    "related_terms": [
+      "paper_portfolio",
+      "risk_check"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "組合快照",
+    "hint_zh": "某一時點存下的紙上組合；風險檢查與回撤警示都指向它。"
+  },
+  "position_weight": {
+    "term_id": "position_weight",
+    "display_name": "Position Weight",
+    "category": "risk",
+    "short_definition": "A position's market value as a share of the notional capital.",
+    "full_definition": "|shares x last close| / notional capital x 100, on the date's split basis; a short counts by its size.",
+    "formula": "|market value| / capital x 100",
+    "unit": "percent",
+    "example": "50 shares at 200 USD = 10,000 USD = 10.00%.",
+    "direction": "Higher = more concentrated",
+    "interpretation": "How much of the book one name is.",
+    "why_it_matters": "Feeds the position limit.",
+    "source": "Risk rules 0.1.0 (config/risk_rules.yaml); the paper journal; ADR-031",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/risk_rules.yaml",
+    "as_of": "2026-10-15",
+    "update_cadence": "with each paper TRADE, on demand, and daily (11:00 and 11:10 SGT)",
+    "caveats": "Valued at end-of-day closes only.",
+    "related_terms": [
+      "risk_limit_position",
+      "notional_capital"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "部位權重",
+    "hint_zh": "部位市值（取絕對值）佔名目資本的百分比。"
   },
   "predecessor_issuer": {
     "term_id": "predecessor_issuer",
@@ -6034,26 +6380,227 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
   "risk_check": {
     "term_id": "risk_check",
     "display_name": "Risk Check",
-    "category": "corporate_action",
-    "short_definition": "The Phase 2 portfolio and position checks a candidate must pass before any trade.",
-    "full_definition": "Not built in Phase 1 (P1-4): always unavailable, which keeps TRADE-READY unreachable.",
-    "formula": "not a calculation in Phase 1",
-    "unit": "N/A",
-    "example": "Every company in Phase 1: unavailable.",
+    "category": "risk",
+    "short_definition": "A paper trade tested against every limit of the risk rules: pass or veto.",
+    "full_definition": "The proposed trade is added to the paper portfolio at its date and tested: usable price, stated maximum loss and its size, position, sector, liquidity and leverage. Every paper TRADE entry runs one (a veto refuses it); the Portfolio Risk page tries one on demand; the daily standard position decides TRADE-READY and L4. Stored with every limit's value and threshold, reproducible.",
+    "formula": "all limits pass = pass, else veto",
+    "unit": "verdict",
+    "example": "A 10-share AAPL trade with a 100 USD maximum loss on an empty book: pass.",
     "direction": "N/A",
-    "interpretation": "Phase 1 never reaches a trade decision.",
-    "why_it_matters": "Separates research signals from trading.",
-    "source": "Build spec 02 §5 and §8; Phase 1 decision P1-4",
-    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M1_fundamentals.md",
-    "as_of": "2026-10-10",
-    "update_cadence": "Phase 2",
-    "caveats": "Arrives with the risk engine in Phase 2.",
+    "interpretation": "Whether the trade fits the book's rules now.",
+    "why_it_matters": "A deterministic risk veto is a Phase 2 exit criterion.",
+    "source": "Risk rules 0.1.0 (config/risk_rules.yaml); the paper journal; ADR-031",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/risk_rules.yaml",
+    "as_of": "2026-10-15",
+    "update_cadence": "with each paper TRADE, on demand, and daily (11:00 and 11:10 SGT)",
+    "caveats": "Paper only; nothing is sent anywhere. Limits are Steven's defaults (P2-5), unvalidated (OD-7); a change is a new rule version.",
     "related_terms": [
-      "buyback_state_trade_ready"
+      "risk_veto",
+      "standard_position_check",
+      "risk_rule_set"
+    ],
+    "methodology_version": "0.2.0",
+    "name_zh": "風險檢查",
+    "hint_zh": "把擬議的紙上交易加進組合，逐條檢查價格、最大損失、部位、產業、流動性與槓桿；任一條不過就否決。"
+  },
+  "risk_limit_gross": {
+    "term_id": "risk_limit_gross",
+    "display_name": "Leverage Limit",
+    "category": "risk",
+    "short_definition": "All positions' gross market value after the trade: at most 100% of capital.",
+    "full_definition": "The gross exposure plus the trade's value, against the notional capital: no leverage.",
+    "formula": "(gross + new) / capital <= 100%",
+    "unit": "percent",
+    "example": "92% invested plus a 9% trade: 101%, vetoed.",
+    "direction": "Above = veto",
+    "interpretation": "The paper book never borrows.",
+    "why_it_matters": "Leverage magnifies losses.",
+    "source": "Risk rules 0.1.0 (config/risk_rules.yaml); the paper journal; ADR-031",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/risk_rules.yaml",
+    "as_of": "2026-10-15",
+    "update_cadence": "with each paper TRADE, on demand, and daily (11:00 and 11:10 SGT)",
+    "caveats": "Limits are Steven's defaults (P2-5), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "gross_exposure",
+      "risk_check"
     ],
     "methodology_version": "0.1.0",
-    "name_zh": "風險檢查",
-    "hint_zh": "Phase 2 的部位與組合風控；Phase 1 一律無資料。"
+    "name_zh": "槓桿上限",
+    "hint_zh": "交易後所有部位的總市值不得超過資本 100%，也就是不加槓桿。"
+  },
+  "risk_limit_max_loss": {
+    "term_id": "risk_limit_max_loss",
+    "display_name": "Maximum Loss Limit",
+    "category": "risk",
+    "short_definition": "A trade's stated maximum loss: required, at most 1% of capital.",
+    "full_definition": "Vetoed when the TRADE states no maximum loss, or states more than 1% of the notional capital (1,000 USD).",
+    "formula": "max loss <= 1% of capital",
+    "unit": "percent",
+    "example": "A 1,001 USD maximum loss: vetoed.",
+    "direction": "Above = veto",
+    "interpretation": "Each trade risks a small, known share of the book.",
+    "why_it_matters": "The core of risk-based sizing.",
+    "source": "Risk rules 0.1.0 (config/risk_rules.yaml); the paper journal; ADR-031",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/risk_rules.yaml",
+    "as_of": "2026-10-15",
+    "update_cadence": "with each paper TRADE, on demand, and daily (11:00 and 11:10 SGT)",
+    "caveats": "Limits are Steven's defaults (P2-5), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "max_loss",
+      "risk_check"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "最大損失上限",
+    "hint_zh": "交易的最大損失必填，且不得超過資本 1%（1,000 美元）。"
+  },
+  "risk_limit_position": {
+    "term_id": "risk_limit_position",
+    "display_name": "Position Limit",
+    "category": "risk",
+    "short_definition": "One instrument's gross market value after the trade: at most 10% of capital.",
+    "full_definition": "The trade's shares x the last close, plus the instrument's open positions' gross value, against 10% of the notional capital, compared exactly (the shown percent is rounded).",
+    "formula": "(held + new) / capital <= 10%",
+    "unit": "percent",
+    "example": "Buying 101 shares at 100 USD with nothing held: 10.10%, vetoed.",
+    "direction": "Above = veto",
+    "interpretation": "No single name dominates the book.",
+    "why_it_matters": "Limits the damage of one idea going wrong.",
+    "source": "Risk rules 0.1.0 (config/risk_rules.yaml); the paper journal; ADR-031",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/risk_rules.yaml",
+    "as_of": "2026-10-15",
+    "update_cadence": "with each paper TRADE, on demand, and daily (11:00 and 11:10 SGT)",
+    "caveats": "Limits are Steven's defaults (P2-5), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "position_weight",
+      "risk_check"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "部位上限",
+    "hint_zh": "同一標的交易後的總市值不得超過資本 10%。"
+  },
+  "risk_limit_price": {
+    "term_id": "risk_limit_price",
+    "display_name": "Usable Price",
+    "category": "risk",
+    "short_definition": "The trade is valued at an end-of-day close at most 5 days old.",
+    "full_definition": "The last close known at the date must be a consolidated end-of-day close (not recorded fixture or demo data, errata E4) and at most 5 calendar days old; otherwise the trade is vetoed.",
+    "formula": "feed = end_of_day and age <= 5 days",
+    "unit": "days",
+    "example": "A close from 6 days earlier: vetoed.",
+    "direction": "N/A",
+    "interpretation": "No check runs on a stale or demo price.",
+    "why_it_matters": "A wrong price makes every other limit wrong.",
+    "source": "Risk rules 0.1.0 (config/risk_rules.yaml); the paper journal; ADR-031",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/risk_rules.yaml",
+    "as_of": "2026-10-15",
+    "update_cadence": "with each paper TRADE, on demand, and daily (11:00 and 11:10 SGT)",
+    "caveats": "Recorded test data (CI) always fails it.",
+    "related_terms": [
+      "feed_status",
+      "risk_check"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "可用價格",
+    "hint_zh": "要用 5 天內的收盤價（不能是錄製或示範資料），否則否決。"
+  },
+  "risk_limit_sector": {
+    "term_id": "risk_limit_sector",
+    "display_name": "Sector Limit",
+    "category": "risk",
+    "short_definition": "One GICS sector's gross market value after the trade: at most 30% of capital.",
+    "full_definition": "The trade's value plus the open positions of the same sector, against 30% of the notional capital. Broad-market, bond and commodity funds are not held to it; an instrument without a sector in the rules is vetoed.",
+    "formula": "(sector held + new) / capital <= 30%",
+    "unit": "percent",
+    "example": "20% in information technology plus a 10.1% NVDA trade: 30.1%, vetoed.",
+    "direction": "Above = veto",
+    "interpretation": "Diversification across industries.",
+    "why_it_matters": "Five of the ten companies are technology or communication services.",
+    "source": "Risk rules 0.1.0 (config/risk_rules.yaml); the paper journal; ADR-031",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/risk_rules.yaml",
+    "as_of": "2026-10-15",
+    "update_cadence": "with each paper TRADE, on demand, and daily (11:00 and 11:10 SGT)",
+    "caveats": "Limits are Steven's defaults (P2-5), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "gics_sector",
+      "risk_check"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "產業上限",
+    "hint_zh": "同一 GICS 產業交易後的總市值不得超過資本 30%；大盤、債券、商品基金不算。"
+  },
+  "risk_limit_volume": {
+    "term_id": "risk_limit_volume",
+    "display_name": "Liquidity Limit",
+    "category": "risk",
+    "short_definition": "A trade's shares: at most 1% of the 20-session average daily volume.",
+    "full_definition": "The trade's shares against the mean shares traded over the last 20 sessions known at the date, on the date's split basis; fewer than 20 sessions of volume is a veto.",
+    "formula": "shares <= 1% x ADV(20)",
+    "unit": "percent",
+    "example": "50 shares against 5,000 a day is 1.0000%: passes; 51 is vetoed.",
+    "direction": "Above = veto",
+    "interpretation": "The trade is small next to normal trading.",
+    "why_it_matters": "Large orders move prices.",
+    "source": "Risk rules 0.1.0 (config/risk_rules.yaml); the paper journal; ADR-031",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/risk_rules.yaml",
+    "as_of": "2026-10-15",
+    "update_cadence": "with each paper TRADE, on demand, and daily (11:00 and 11:10 SGT)",
+    "caveats": "Volume from consolidated end-of-day bars. Limits are Steven's defaults (P2-5), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "average_daily_volume",
+      "risk_check"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "流動性上限",
+    "hint_zh": "單筆股數不得超過 20 日平均成交量的 1%。"
+  },
+  "risk_rule_set": {
+    "term_id": "risk_rule_set",
+    "display_name": "Risk Rule Version",
+    "category": "risk",
+    "short_definition": "The version of the risk rules a portfolio snapshot or check used.",
+    "full_definition": "config/risk_rules.yaml lists versioned rule sets; a released version never changes (make migrate refuses edited content and a test pins its sha256).",
+    "formula": "content sha256 per rule_version",
+    "unit": "version",
+    "example": "0.1.0, released 2026-10-15.",
+    "direction": "N/A",
+    "interpretation": "Which limits a verdict came from.",
+    "why_it_matters": "A risk veto must be reproducible (Phase 2 exit).",
+    "source": "Risk rules 0.1.0 (config/risk_rules.yaml); the paper journal; ADR-031",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/risk_rules.yaml",
+    "as_of": "2026-10-15",
+    "update_cadence": "per release",
+    "caveats": "A change is a new version; stored checks keep theirs.",
+    "related_terms": [
+      "risk_check"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "風險規則版本",
+    "hint_zh": "每個組合快照與風險檢查所用的規則版本；已發布的版本不會改。"
+  },
+  "risk_veto": {
+    "term_id": "risk_veto",
+    "display_name": "Risk Veto",
+    "category": "risk",
+    "short_definition": "A risk check that fails any limit: the paper TRADE is refused and the veto recorded.",
+    "full_definition": "Any limit vetoes the whole check. The journal refuses the entry (nothing is recorded but the check), and the database refuses a TRADE without a passed check. Exits are never checked.",
+    "formula": "any limit = veto",
+    "unit": "verdict",
+    "example": "A 1,000-share AAPL trade: position and maximum loss vetoed.",
+    "direction": "N/A",
+    "interpretation": "The trade breaks the book's rules.",
+    "why_it_matters": "The Risk Agent can veto; nothing overrides it (02 §20).",
+    "source": "Risk rules 0.1.0 (config/risk_rules.yaml); the paper journal; ADR-031",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/risk_rules.yaml",
+    "as_of": "2026-10-15",
+    "update_cadence": "with each paper TRADE, on demand, and daily (11:00 and 11:10 SGT)",
+    "caveats": "Limits are Steven's defaults (P2-5), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "risk_check",
+      "risk_limit_position"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "風控否決",
+    "hint_zh": "任一條上限不過就否決，交易不會被記錄，但檢查本身會存下。"
   },
   "roe": {
     "term_id": "roe",
@@ -6407,6 +6954,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "股票分割",
     "hint_zh": "股數按比例改變（例如一股變四股），從除權日起生效。"
+  },
+  "standard_position_check": {
+    "term_id": "standard_position_check",
+    "display_name": "Standard Position Check",
+    "category": "risk",
+    "short_definition": "The daily risk check of a standard paper position in each company, for TRADE-READY and L4.",
+    "full_definition": "Each day with the buyback states, each company's standard position (a whole number of shares worth 5% of capital at the last close, a 1% maximum loss) is checked against the portfolio then. Buyback rules 0.3.0 reach TRADE-READY, and alert rules 0.3.0 L4, only when it passes.",
+    "formula": "5% of capital, 1% maximum loss, buy",
+    "unit": "verdict",
+    "example": "With an empty book and a fresh close, it passes.",
+    "direction": "N/A",
+    "interpretation": "Whether a typical paper trade in the company would fit the book now.",
+    "why_it_matters": "Makes TRADE-READY and L4 reachable for paper decisions (P2-7).",
+    "source": "Risk rules 0.1.0 (config/risk_rules.yaml); the paper journal; ADR-031",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/risk_rules.yaml",
+    "as_of": "2026-10-15",
+    "update_cadence": "daily (11:00 SGT) and month ends since 2021",
+    "caveats": "Paper only; not a recommendation to trade.",
+    "related_terms": [
+      "risk_check",
+      "buyback_state_trade_ready",
+      "convergence_l4"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "標準部位檢查",
+    "hint_zh": "每天替每家公司試算一筆標準紙上部位（資本 5%、最大損失 1%），通過才可達 TRADE-READY 與 L4。"
   },
   "stock_based_compensation": {
     "term_id": "stock_based_compensation",
@@ -6967,7 +7540,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "Trade Decision",
     "category": "journal",
     "short_definition": "A paper TRADE (side, quantity, order type) or an explicit NO TRADE, recorded on a Thesis Card.",
-    "full_definition": "A TRADE records a side, quantity, order type (a limit price only for a limit order) and an optional maximum loss, and enters at the last end-of-day close known at its time; nothing is sent anywhere. An exit is a new decision on the opposite side that points at its entry; each entry has at most one. Decisions are never changed and every one is in the Audit Log. Phase 1 limits are database checks: paper mode, no broker, risk check or portfolio snapshot, approval state recorded.",
+    "full_definition": "A TRADE records a side, quantity, order type (a limit price only for a limit order) and a required maximum loss, passes a risk check at its time (a veto refuses it), and enters at the last end-of-day close known then; nothing is sent anywhere. An exit is a new decision on the opposite side pointing at its entry, never checked. A NO TRADE records its reason.",
     "formula": "decision in (trade, no_trade); trade: side, quantity > 0, order type; no_trade: reason",
     "unit": "decision",
     "example": "AAPL paper TRADE buy 10 at market, maximum loss $100, entered at the last close known then.",
@@ -6976,7 +7549,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "why_it_matters": "A decision log separates judgement from outcome and from hindsight.",
     "source": "Build spec 02 §28 and errata E1; migration 0018",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/api/journal.py",
-    "as_of": "2026-10-11",
+    "as_of": "2026-10-15",
     "update_cadence": "per entry",
     "caveats": "A limit price is recorded, not simulated: the paper entry is always the last close.",
     "related_terms": [
@@ -6985,7 +7558,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "paper_return",
       "thesis_card"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "交易決策",
     "hint_zh": "模擬 TRADE（方向、股數、委託類型）或明確的 NO TRADE；不會送出任何委託。"
   },

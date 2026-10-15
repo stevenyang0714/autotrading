@@ -136,6 +136,8 @@ for (const path of [
   "/dashboards/opportunity-radar?known_on=2026-10-06&sort=momentum_6_1&dir=desc",
   "/instruments/AAPL?known_on=2026-10-06",
   "/instruments/TLT",
+  "/dashboards/portfolio-risk",
+  "/dashboards/portfolio-risk?known_on=2026-10-06",
 ]) {
   test(`numbers on ${path} are all explained`, async ({ page }) => {
     await page.goto(path);
@@ -338,9 +340,11 @@ test("AAPL buybacks show the stored state with each condition against its thresh
   const card = page.locator('#buybacks [data-block="state"]');
   // The replay stores states now and at month ends since 2025 (fixture prices: no market cap).
   await expect(card.locator("[data-state]").first()).toHaveText(/^(No state|WATCH|ACTIVE|HIGH-CONVICTION candidate)$/);
-  await expect(card).toContainText("rule v0.2.0");
+  await expect(card).toContainText("rule v0.3.0");
   await expect(card.locator('[data-condition="watch.announcement"]')).toContainText("(within 365 days)");
-  await expect(card.locator('[data-level="trade_ready"]')).toContainText("Unreachable in Phase 1.");
+  // M2.3: TRADE-READY needs the standard paper position to pass the risk check (CI's recorded
+  // prices are never usable, so the check vetoes there).
+  await expect(card.locator('[data-level="trade_ready"]')).toContainText("standard paper position");
   await expect(card.locator('[data-block="score"]')).toContainText("default weights, unvalidated");
   expect(await card.getByRole("list", { name: "State history" }).locator("li").count()).toBeGreaterThan(1);
 });
@@ -408,15 +412,17 @@ test("the instrument page has the company's paper journal (M1.6)", async ({ page
   );
 });
 
-test("A NO TRADE and a paper TRADE are recorded alike, replay identical, and the TRADE exits (M1.6)", async ({
+test("A NO TRADE is recorded and replays identical; a paper TRADE on recorded prices is vetoed (M1.6, M2.3)", async ({
   page,
   isMobile,
 }) => {
   // Journal entries are append-only, so this writes only to CI's throwaway database, and once.
+  // CI's prices are recorded test data, never a usable price (E4): every TRADE is vetoed there,
+  // which shows the veto; the TRADE and its exit are covered by the integration tests.
   test.skip(!process.env.CI, "writes permanent journal entries; CI database only");
   test.skip(isMobile, "one writer");
   test.setTimeout(90_000);
-  const write = async (trade: boolean) => {
+  const fill = async (trade: boolean) => {
     await page.goto("/journal/new?ticker=AAPL");
     const form = page.getByRole("form", { name: "New Thesis Card" });
     await form.locator('textarea[name="thesis"]').fill(`e2e: ${trade ? "buy" : "pass on"} the buyback compounder`);
@@ -426,29 +432,55 @@ test("A NO TRADE and a paper TRADE are recorded alike, replay identical, and the
     if (trade) {
       await form.getByRole("radio", { name: /Paper TRADE/ }).check();
       await form.locator('input[name="quantity"]').fill("5");
+      await form.locator('input[name="max_loss"]').fill("100");
     }
     await form.getByRole("button", { name: "Save Thesis Card" }).click();
-    await expect(page).toHaveURL(/\/journal\/[0-9a-f-]{36}$/, { timeout: 20_000 });
-    await expect(page.locator("[data-replay]")).toHaveAttribute("data-replay", "identical");
-    return page.url();
+    return form;
   };
 
-  await write(false);
+  await fill(false);
+  await expect(page).toHaveURL(/\/journal\/[0-9a-f-]{36}$/, { timeout: 20_000 });
+  await expect(page.locator("[data-replay]")).toHaveAttribute("data-replay", "identical");
   await expect(page.getByRole("list", { name: "Decisions" })).toContainText("NO TRADE: Priced in");
 
-  const tradeUrl = await write(true);
-  const decisions = page.getByRole("list", { name: "Decisions" });
-  await expect(decisions).toContainText("paper TRADE buy 5");
-  await expect(decisions.locator('[data-performance="open"]')).toBeVisible();
-  await decisions.getByRole("form", { name: "Exit" }).getByRole("button", { name: "Exit at the last close" }).click();
-  await expect(page).toHaveURL(tradeUrl, { timeout: 20_000 });
-  await expect(decisions).toContainText("paper exit sell 5");
-  await expect(decisions.locator('[data-performance="closed"]')).toBeVisible();
+  const form = await fill(true);
+  await expect(form.getByRole("alert")).toContainText("vetoed by risk rules", { timeout: 20_000 });
+  await expect(form.getByRole("alert")).toContainText("Usable price");
+  await expect(page).toHaveURL(/\/journal\/new/);
+
+  // The veto is recorded on the Portfolio Risk page; the book stays empty.
+  await page.goto("/dashboards/portfolio-risk");
+  const vetoed = page.getByRole("list", { name: "Risk checks" }).locator('li[data-trigger="trade"][data-verdict="veto"]');
+  await expect(vetoed.first()).toContainText("buy 5 AAPL");
+  await expect(page.locator('[data-block="positions"]')).toContainText("No open paper trade");
 
   await page.goto("/dashboards/strategy-lab");
   const table = page.getByRole("table", { name: "Journal entries" });
   await expect(table.locator('tr[data-decision="no_trade"]').first()).toContainText("NO TRADE: Priced in");
-  await expect(table.locator('tr[data-decision="trade"]').first()).toContainText("exited");
+});
+
+test("Portfolio Risk shows the paper book, every limit and the risk checks, and tries a trade (M2.3)", async ({
+  page,
+  isMobile,
+}) => {
+  await page.goto("/dashboards/portfolio-risk");
+  await expect(page.locator("[data-paper-only]")).toContainText("PAPER ONLY");
+  await expect(page.getByText(/risk rules \d+\.\d+\.\d+/).first()).toBeVisible();
+  const limits = page.getByRole("table", { name: "Limits" });
+  await expect(limits.locator('tr[data-limit="risk_limit_position"]')).toContainText("at most 10.00%");
+  await expect(limits.locator('tr[data-limit="risk_limit_sector"]')).toContainText("at most 30.00%");
+  await expect(page.locator('[data-tile="notional_capital"]')).toContainText("100,000.00 USD");
+  // Trying a trade stores a permanent (audited) check: CI's throwaway database only, once.
+  if (isMobile || !process.env.CI) return;
+  // A 1,000-share AAPL trade breaks the position limit; the recorded price vetoes it too.
+  const form = page.getByRole("form", { name: "Try a paper trade" });
+  await form.locator('select[name="ticker"]').selectOption("AAPL");
+  await form.locator('input[name="quantity"]').fill("1000");
+  await form.locator('input[name="max_loss"]').fill("500");
+  await form.getByRole("button", { name: "Check" }).click();
+  const result = page.locator("[data-try-result]");
+  await expect(result).toHaveAttribute("data-try-result", "veto", { timeout: 20_000 });
+  await expect(result.locator('[data-limit="position"]')).toBeVisible();
 });
 
 test("Opportunity Radar lists each instrument's trend and each company's value and quality (M2.2)", async ({
@@ -506,7 +538,10 @@ test("Alerts Center shows each company's level and alerts with their rules and e
   await expect(page.locator("[data-in-app]")).toContainText("IN-APP ONLY");
   const levels = page.getByRole("list", { name: "Convergence by company" });
   await expect(levels.locator("[data-company]").first()).toBeVisible();
-  await expect(levels.locator('[data-check="4"]').first()).toHaveAttribute("data-status", "unavailable");
+  // Alert rules 0.3.0 (M2.3): L4 reads the company's standard paper position risk check.
+  const l4 = levels.locator('[data-check="4"]').first();
+  await expect(l4).toHaveAttribute("data-status", /^(pass|fail|unavailable)$/);
+  await expect(l4).toContainText("risk check");
   const first = page.getByRole("list", { name: "Alerts" }).locator("[data-alert]").first();
   await expect(first).toContainText(/alert rules \d+\.\d+\.\d+/);
   await expect(first.getByRole("list", { name: "Evidence" }).locator("li").first()).toBeVisible();

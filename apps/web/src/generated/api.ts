@@ -677,6 +677,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/portfolio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Paper Portfolio */
+        get: operations["paper_portfolio_portfolio_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/prices/latest": {
         parameters: {
             query?: never;
@@ -788,6 +805,62 @@ export interface paths {
         };
         /** Research Dashboard */
         get: operations["research_dashboard_research_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/risk/checks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Risk Checks */
+        get: operations["risk_checks_risk_checks_get"];
+        put?: never;
+        /**
+         * Try Check
+         * @description Try a paper trade against the active limits now (T = S = now). Stored and audited; no
+         *     decision is recorded and nothing is sent anywhere.
+         */
+        post: operations["try_check_risk_checks_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/risk/checks/{check_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Risk Check */
+        get: operations["risk_check_risk_checks__check_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/risk/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Risk Rules */
+        get: operations["risk_rules_risk_rules_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1379,6 +1452,47 @@ export interface components {
             /** Value */
             value: string;
         };
+        /**
+         * Check
+         * @description A risk check: the proposed trade, its price, every limit and the verdict.
+         */
+        Check: {
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Limits */
+            limits: components["schemas"]["LimitResult"][];
+            /** Notional */
+            notional: string | null;
+            /** Price */
+            price: string | null;
+            /** Price Day */
+            price_day: string | null;
+            proposal: components["schemas"]["Proposal"];
+            /** Rule Version */
+            rule_version: string;
+            /**
+             * Verdict
+             * @enum {string}
+             */
+            verdict: "pass" | "veto";
+        };
+        /** CheckIn */
+        CheckIn: {
+            /** Max Loss */
+            max_loss?: number | string | null;
+            /** Quantity */
+            quantity: number | string;
+            /**
+             * Side
+             * @enum {string}
+             */
+            side: "buy" | "sell";
+            /** Ticker */
+            ticker: string;
+        };
         /** CloseOut */
         CloseOut: {
             /** Close */
@@ -1832,6 +1946,16 @@ export interface components {
             role: "issuer" | "predecessor";
             /** Succeeded At */
             succeeded_at?: string | null;
+        };
+        /** EquityPoint */
+        EquityPoint: {
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Equity */
+            equity: string;
         };
         /** EvidenceOut */
         EvidenceOut: {
@@ -2647,6 +2771,41 @@ export interface components {
             /** Minimum */
             minimum: string;
         };
+        /** LimitResult */
+        LimitResult: {
+            /** Detail */
+            detail: string;
+            /** Label */
+            label: string;
+            /** Limit Id */
+            limit_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pass" | "veto";
+            /** Threshold */
+            threshold: string;
+            /** Value */
+            value: string | null;
+        };
+        /** Limits */
+        Limits: {
+            /** Gross Pct */
+            gross_pct: string;
+            /** Max Loss Pct */
+            max_loss_pct: string;
+            /** Position Pct */
+            position_pct: string;
+            /** Sector Pct */
+            sector_pct: string;
+            /** Stale After Days */
+            stale_after_days: number;
+            /** Volume Pct */
+            volume_pct: string;
+            /** Volume Sessions */
+            volume_sessions: number;
+        };
         /** LogOut */
         LogOut: {
             /** Date */
@@ -3023,6 +3182,109 @@ export interface components {
             /** Scope */
             scope: string;
         };
+        /**
+         * Portfolio
+         * @description The paper portfolio at T: everything a portfolio snapshot stores.
+         */
+        Portfolio: {
+            /** Beta Exposure */
+            beta_exposure: string | null;
+            /** Capital */
+            capital: string;
+            /** Cash */
+            cash: string;
+            /** Curve */
+            curve: components["schemas"]["EquityPoint"][];
+            /** Drawdown Pct */
+            drawdown_pct: string;
+            /** Equity */
+            equity: string;
+            /** Gross */
+            gross: string;
+            /** Gross Pct */
+            gross_pct: string;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Net */
+            net: string;
+            /** Net Pct */
+            net_pct: string;
+            /** Notes */
+            notes: string[];
+            /** Peak Equity */
+            peak_equity: string;
+            /** Positions */
+            positions: components["schemas"]["Position"][];
+            /** Realized Pnl */
+            realized_pnl: string;
+            /** Rule Version */
+            rule_version: string;
+            /** Sectors */
+            sectors: components["schemas"]["SectorExposure"][];
+            /** Unrealized Pnl */
+            unrealized_pnl: string;
+        };
+        /** PortfolioOut */
+        PortfolioOut: {
+            /**
+             * Detail
+             * @default PAPER ONLY: a notional portfolio built from the journal's paper decisions. No order is placed or prepared; limits are defaults, unvalidated (OD-7).
+             */
+            detail: string;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            portfolio: components["schemas"]["Portfolio"];
+            rules: components["schemas"]["RulesOut"];
+            /** Vetoes */
+            vetoes: number;
+        };
+        /** Position */
+        Position: {
+            /** Beta */
+            beta: string | null;
+            /** Days To Exit */
+            days_to_exit: string | null;
+            /** Decision Id */
+            decision_id: string;
+            /**
+             * Entry Day
+             * Format: date
+             */
+            entry_day: string;
+            /** Entry Price */
+            entry_price: string;
+            /** Mark */
+            mark: string | null;
+            /** Mark Day */
+            mark_day: string | null;
+            /** Market Value */
+            market_value: string | null;
+            /** Max Loss */
+            max_loss: string | null;
+            /** Pnl */
+            pnl: string | null;
+            /** Sector */
+            sector: string | null;
+            /** Shares */
+            shares: string;
+            /**
+             * Side
+             * @enum {string}
+             */
+            side: "buy" | "sell";
+            /** Stale */
+            stale: boolean;
+            /** Ticker */
+            ticker: string;
+            /** Weight Pct */
+            weight_pct: string | null;
+        };
         /** PreviousVersion */
         PreviousVersion: {
             filing: components["schemas"]["FilingRef"];
@@ -3097,6 +3359,20 @@ export interface components {
              * Format: date-time
              */
             read_at: string;
+        };
+        /** Proposal */
+        Proposal: {
+            /** Max Loss */
+            max_loss: string | null;
+            /** Quantity */
+            quantity: string;
+            /**
+             * Side
+             * @enum {string}
+             */
+            side: "buy" | "sell";
+            /** Ticker */
+            ticker: string;
         };
         /** QuarterRow */
         QuarterRow: {
@@ -3573,6 +3849,56 @@ export interface components {
             /** Growth */
             growth: string | null;
         };
+        /** RiskCheckOut */
+        RiskCheckOut: {
+            /** Backfilled */
+            backfilled: boolean;
+            check: components["schemas"]["Check"];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /**
+             * Portfolio Snapshot Id
+             * Format: uuid
+             */
+            portfolio_snapshot_id: string;
+            /** Rule Version */
+            rule_version: string;
+            /**
+             * System Time
+             * Format: date-time
+             */
+            system_time: string;
+            /** Ticker */
+            ticker: string;
+            /**
+             * Trigger
+             * @enum {string}
+             */
+            trigger: "trade" | "on_demand" | "standard";
+            /**
+             * Verdict
+             * @enum {string}
+             */
+            verdict: "pass" | "veto";
+        };
+        /** RiskChecksOut */
+        RiskChecksOut: {
+            /** Checks */
+            checks: components["schemas"]["RiskCheckOut"][];
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+        };
         /** RiskFreeOut */
         RiskFreeOut: {
             /**
@@ -3591,6 +3917,27 @@ export interface components {
             source_url: string;
             /** Value */
             value: string;
+        };
+        /** RiskRuleSetOut */
+        RiskRuleSetOut: {
+            /** Content */
+            content: {
+                [key: string]: unknown;
+            };
+            /** Content Sha256 */
+            content_sha256: string;
+            /**
+             * Released
+             * Format: date
+             */
+            released: string;
+            /** Rule Version */
+            rule_version: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "active" | "retired";
         };
         /** RuleSetOut */
         RuleSetOut: {
@@ -3622,6 +3969,23 @@ export interface components {
              * @enum {string}
              */
             status: "active" | "retired";
+        };
+        /** RulesOut */
+        RulesOut: {
+            /** Capital */
+            capital: string;
+            /** Drawdown Alert Pct */
+            drawdown_alert_pct: string;
+            limits: components["schemas"]["Limits"];
+            /** Rule Version */
+            rule_version: string;
+            /** Sectors */
+            sectors: {
+                [key: string]: string;
+            };
+            standard: components["schemas"]["Standard"];
+            /** Unlimited Sectors */
+            unlimited_sectors: string[];
         };
         /** RunOut */
         RunOut: {
@@ -3728,6 +4092,17 @@ export interface components {
             label: string;
             /** Mega Cap Min */
             mega_cap_min?: string | null;
+        };
+        /** SectorExposure */
+        SectorExposure: {
+            /** Gross */
+            gross: string;
+            /** Limited */
+            limited: boolean;
+            /** Pct */
+            pct: string;
+            /** Sector */
+            sector: string;
         };
         /** SeriesObservations */
         SeriesObservations: {
@@ -3941,6 +4316,13 @@ export interface components {
             /** Source Url */
             source_url: string;
         };
+        /** Standard */
+        Standard: {
+            /** Max Loss Pct */
+            max_loss_pct: string;
+            /** Position Pct */
+            position_pct: string;
+        };
         /** StateAssignmentOut */
         StateAssignmentOut: {
             assessment: components["schemas"]["AssessmentOut"];
@@ -4022,11 +4404,8 @@ export interface components {
             benchmark: string;
             /** Moving Average Sessions */
             moving_average_sessions: number;
-            /**
-             * Reachable
-             * @constant
-             */
-            reachable: false;
+            /** Reachable */
+            reachable: boolean;
             /** Relative Return Sessions */
             relative_return_sessions: number;
         };
@@ -5370,6 +5749,38 @@ export interface operations {
             };
         };
     };
+    paper_portfolio_portfolio_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortfolioOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     prices_latest_prices_latest_get: {
         parameters: {
             query?: {
@@ -5565,6 +5976,125 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    risk_checks_risk_checks_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+                ticker?: string | null;
+                trigger?: ("trade" | "on_demand" | "standard")[] | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RiskChecksOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    try_check_risk_checks_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RiskCheckOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    risk_check_risk_checks__check_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                check_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RiskCheckOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    risk_rules_risk_rules_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RiskRuleSetOut"][];
                 };
             };
         };

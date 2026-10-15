@@ -832,6 +832,70 @@ export async function loadFactors(knownAt?: string): Promise<FactorsTable | null
   }
 }
 
+// ---------- paper portfolio and risk checks (M2.3, ADR-031) ----------
+
+export type PortfolioResponse = components["schemas"]["PortfolioOut"];
+export type PaperPortfolio = components["schemas"]["Portfolio"];
+export type PortfolioPosition = components["schemas"]["Position"];
+export type RiskRules = components["schemas"]["RulesOut"];
+export type RiskCheckEntry = components["schemas"]["RiskCheckOut"];
+export type RiskChecks = components["schemas"]["RiskChecksOut"];
+export type RiskLimit = components["schemas"]["LimitResult"];
+export type RiskCheckIn = components["schemas"]["CheckIn"];
+
+/** The paper portfolio as known at `knownAt` (default now), or null when the API is down. */
+export async function loadPortfolio(knownAt?: string): Promise<PortfolioResponse | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/portfolio", {
+      params: { query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** The stored risk checks known at `knownAt` (of the given triggers), newest first, or null
+ * when the API is down. */
+export async function loadRiskChecks(
+  knownAt?: string,
+  limit = 30,
+  trigger?: ("trade" | "on_demand" | "standard")[],
+): Promise<RiskChecks | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/risk/checks", {
+      params: { query: { ...(knownAt ? { known_at: knownAt } : {}), limit, ...(trigger ? { trigger } : {}) } },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export type RiskCheckResult =
+  | { status: "ok"; data: RiskCheckEntry }
+  | { status: "invalid"; errors: string[] }
+  | { status: "unavailable" };
+
+/** Try a paper trade against the risk limits now: stored and audited, no decision recorded. */
+export async function tryRiskCheck(body: RiskCheckIn): Promise<RiskCheckResult> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data, error, response } = await client.POST("/risk/checks", { body, cache: "no-store" });
+    if (data) return { status: "ok", data };
+    if ([404, 422].includes(response.status)) {
+      return { status: "invalid", errors: validationMessages(error, "The API refused the check.") };
+    }
+    return { status: "unavailable" };
+  } catch {
+    return { status: "unavailable" };
+  }
+}
+
 // ---------- news (M0.8, ADR-018) ----------
 
 export type NewsFeed = components["schemas"]["NewsFeed"];

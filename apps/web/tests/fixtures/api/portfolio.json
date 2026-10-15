@@ -1,0 +1,113 @@
+{
+  "recorded_at": "2026-10-15T08:08:41.803601+00:00",
+  "recorded_from": "recorded SEC filings, Alpaca closes, FRED yields and news replayed into the integration test database (tests/integration/test_journal.py)",
+  "endpoint": "/portfolio",
+  "params": {
+    "known_at": "2026-09-16T12:00:00Z"
+  },
+  "response": {
+    "known_at": "2026-09-16T12:00:00Z",
+    "rules": {
+      "rule_version": "0.1.0",
+      "capital": "100000",
+      "limits": {
+        "position_pct": "10",
+        "max_loss_pct": "1",
+        "sector_pct": "30",
+        "volume_pct": "1",
+        "volume_sessions": 20,
+        "gross_pct": "100",
+        "stale_after_days": 5
+      },
+      "drawdown_alert_pct": "10",
+      "standard": {
+        "position_pct": "5",
+        "max_loss_pct": "1"
+      },
+      "unlimited_sectors": [
+        "broad_market",
+        "fixed_income",
+        "commodity"
+      ],
+      "sectors": {
+        "AZO": "consumer_discretionary",
+        "GLD": "commodity",
+        "IEF": "fixed_income",
+        "IWM": "broad_market",
+        "JPM": "financials",
+        "LOW": "consumer_discretionary",
+        "QQQ": "broad_market",
+        "SPY": "broad_market",
+        "TLT": "fixed_income",
+        "XLE": "energy",
+        "XLK": "information_technology",
+        "XOM": "energy",
+        "AAPL": "information_technology",
+        "META": "communication_services",
+        "MSFT": "information_technology",
+        "NVDA": "information_technology",
+        "ORLY": "consumer_discretionary",
+        "GOOGL": "communication_services"
+      }
+    },
+    "portfolio": {
+      "rule_version": "0.1.0",
+      "known_at": "2026-09-16T12:00:00Z",
+      "capital": "100000",
+      "positions": [
+        {
+          "decision_id": "06e8410d-e0cd-4cf6-88c9-a0d5ec27b897",
+          "ticker": "AAPL",
+          "side": "buy",
+          "shares": "10.0000",
+          "entry_price": "333.0800",
+          "entry_day": "2026-09-14",
+          "mark": "331.3400",
+          "mark_day": "2026-09-15",
+          "market_value": "3313.40",
+          "weight_pct": "3.31",
+          "pnl": "-17.40",
+          "beta": null,
+          "sector": "information_technology",
+          "days_to_exit": "0.00",
+          "stale": false,
+          "max_loss": "100"
+        }
+      ],
+      "realized_pnl": "0.00",
+      "unrealized_pnl": "-17.40",
+      "equity": "99982.60",
+      "cash": "96669.20",
+      "gross": "3313.40",
+      "net": "3313.40",
+      "gross_pct": "3.31",
+      "net_pct": "3.31",
+      "beta_exposure": null,
+      "sectors": [
+        {
+          "sector": "information_technology",
+          "gross": "3313.40",
+          "pct": "3.31",
+          "limited": true
+        }
+      ],
+      "curve": [
+        {
+          "day": "2026-09-14",
+          "equity": "100010.00"
+        },
+        {
+          "day": "2026-09-15",
+          "equity": "99982.60"
+        }
+      ],
+      "peak_equity": "100010.00",
+      "drawdown_pct": "0.03",
+      "notes": [
+        "no beta known for AAPL: beta-weighted exposure unavailable"
+      ]
+    },
+    "vetoes": 1,
+    "detail": "PAPER ONLY: a notional portfolio built from the journal's paper decisions. No order is placed or prepared; limits are defaults, unvalidated (OD-7)."
+  }
+}

@@ -1,0 +1,428 @@
+{
+  "recorded_at": "2026-10-15T08:08:41.815100+00:00",
+  "recorded_from": "recorded SEC filings, Alpaca closes, FRED yields and news replayed into the integration test database (tests/integration/test_journal.py)",
+  "endpoint": "/risk/checks",
+  "params": {
+    "limit": 10
+  },
+  "response": {
+    "known_at": "2026-10-15T08:08:41.811627Z",
+    "checks": [
+      {
+        "id": "36d06027-c16a-40f9-affd-4b7f318cb9ad",
+        "known_at": "2026-10-15T08:08:40.319649Z",
+        "system_time": "2026-10-15T08:08:40.319649Z",
+        "rule_version": "0.1.0",
+        "trigger": "on_demand",
+        "ticker": "AAPL",
+        "verdict": "veto",
+        "backfilled": false,
+        "portfolio_snapshot_id": "19d53227-1a81-45f6-b9e9-5961c0c76ba5",
+        "check": {
+          "rule_version": "0.1.0",
+          "known_at": "2026-10-15T08:08:40.319649Z",
+          "proposal": {
+            "ticker": "AAPL",
+            "side": "buy",
+            "quantity": "5",
+            "max_loss": "50"
+          },
+          "price": "332.8900",
+          "price_day": "2026-10-05",
+          "notional": "1664.45",
+          "verdict": "veto",
+          "limits": [
+            {
+              "limit_id": "price",
+              "label": "Usable price",
+              "status": "veto",
+              "value": "10",
+              "threshold": "an end-of-day close at most 5 days old",
+              "detail": "close 2026-10-05 (end_of_day), 10 days before the date"
+            },
+            {
+              "limit_id": "max_loss_stated",
+              "label": "Maximum loss stated",
+              "status": "pass",
+              "value": "50",
+              "threshold": "a TRADE states its maximum loss in USD",
+              "detail": "stated"
+            },
+            {
+              "limit_id": "max_loss",
+              "label": "Maximum loss",
+              "status": "pass",
+              "value": "0.05",
+              "threshold": "at most 1% of capital (1000.00 USD)",
+              "detail": "50 USD of 100000 USD capital"
+            },
+            {
+              "limit_id": "position",
+              "label": "Position size",
+              "status": "pass",
+              "value": "1.66",
+              "threshold": "at most 10% of capital",
+              "detail": "1664.45 USD new plus 0.00 USD held in AAPL"
+            },
+            {
+              "limit_id": "sector",
+              "label": "Sector concentration",
+              "status": "pass",
+              "value": "1.66",
+              "threshold": "at most 30% of capital in one sector",
+              "detail": "information_technology: 1664.45 USD after the trade"
+            },
+            {
+              "limit_id": "volume",
+              "label": "Trade against average volume",
+              "status": "pass",
+              "value": "0.0000",
+              "threshold": "at most 1% of the 20-session average volume",
+              "detail": "5 shares against 42143091 a day"
+            },
+            {
+              "limit_id": "gross",
+              "label": "Gross exposure (no leverage)",
+              "status": "pass",
+              "value": "1.66",
+              "threshold": "at most 100% of capital",
+              "detail": "1664.45 USD of positions after the trade"
+            }
+          ]
+        }
+      },
+      {
+        "id": "78135b92-5c7e-4c91-a094-0ff177dc58fb",
+        "known_at": "2026-10-06T12:00:00Z",
+        "system_time": "2026-10-15T08:08:41.344848Z",
+        "rule_version": "0.1.0",
+        "trigger": "standard",
+        "ticker": "AAPL",
+        "verdict": "pass",
+        "backfilled": true,
+        "portfolio_snapshot_id": "a838a704-0a52-4748-b005-0bc4b42a9469",
+        "check": {
+          "rule_version": "0.1.0",
+          "known_at": "2026-10-06T12:00:00Z",
+          "proposal": {
+            "ticker": "AAPL",
+            "side": "buy",
+            "quantity": "15",
+            "max_loss": "1000.00"
+          },
+          "price": "332.8900",
+          "price_day": "2026-10-05",
+          "notional": "4993.35",
+          "verdict": "pass",
+          "limits": [
+            {
+              "limit_id": "price",
+              "label": "Usable price",
+              "status": "pass",
+              "value": "1",
+              "threshold": "an end-of-day close at most 5 days old",
+              "detail": "close 2026-10-05 (end_of_day), 1 days before the date"
+            },
+            {
+              "limit_id": "max_loss_stated",
+              "label": "Maximum loss stated",
+              "status": "pass",
+              "value": "1000.00",
+              "threshold": "a TRADE states its maximum loss in USD",
+              "detail": "stated"
+            },
+            {
+              "limit_id": "max_loss",
+              "label": "Maximum loss",
+              "status": "pass",
+              "value": "1.00",
+              "threshold": "at most 1% of capital (1000.00 USD)",
+              "detail": "1000.00 USD of 100000 USD capital"
+            },
+            {
+              "limit_id": "position",
+              "label": "Position size",
+              "status": "pass",
+              "value": "4.99",
+              "threshold": "at most 10% of capital",
+              "detail": "4993.35 USD new plus 0.00 USD held in AAPL"
+            },
+            {
+              "limit_id": "sector",
+              "label": "Sector concentration",
+              "status": "pass",
+              "value": "4.99",
+              "threshold": "at most 30% of capital in one sector",
+              "detail": "information_technology: 4993.35 USD after the trade"
+            },
+            {
+              "limit_id": "volume",
+              "label": "Trade against average volume",
+              "status": "pass",
+              "value": "0.0000",
+              "threshold": "at most 1% of the 20-session average volume",
+              "detail": "15 shares against 42143091 a day"
+            },
+            {
+              "limit_id": "gross",
+              "label": "Gross exposure (no leverage)",
+              "status": "pass",
+              "value": "4.99",
+              "threshold": "at most 100% of capital",
+              "detail": "4993.35 USD of positions after the trade"
+            }
+          ]
+        }
+      },
+      {
+        "id": "bdd38e05-b8e5-4ba4-b6d0-ab8d0bc02b39",
+        "known_at": "2026-09-15T12:00:00Z",
+        "system_time": "2026-10-15T08:08:40.208941Z",
+        "rule_version": "0.1.0",
+        "trigger": "trade",
+        "ticker": "AAPL",
+        "verdict": "veto",
+        "backfilled": true,
+        "portfolio_snapshot_id": "18b1d4b7-2fd3-4e11-82dd-5d2aba8defd3",
+        "check": {
+          "rule_version": "0.1.0",
+          "known_at": "2026-09-15T12:00:00Z",
+          "proposal": {
+            "ticker": "AAPL",
+            "side": "buy",
+            "quantity": "1000",
+            "max_loss": "5000"
+          },
+          "price": "333.0800",
+          "price_day": "2026-09-14",
+          "notional": "333080.00",
+          "verdict": "veto",
+          "limits": [
+            {
+              "limit_id": "price",
+              "label": "Usable price",
+              "status": "pass",
+              "value": "1",
+              "threshold": "an end-of-day close at most 5 days old",
+              "detail": "close 2026-09-14 (end_of_day), 1 days before the date"
+            },
+            {
+              "limit_id": "max_loss_stated",
+              "label": "Maximum loss stated",
+              "status": "pass",
+              "value": "5000",
+              "threshold": "a TRADE states its maximum loss in USD",
+              "detail": "stated"
+            },
+            {
+              "limit_id": "max_loss",
+              "label": "Maximum loss",
+              "status": "veto",
+              "value": "5.00",
+              "threshold": "at most 1% of capital (1000.00 USD)",
+              "detail": "5000 USD of 100000 USD capital"
+            },
+            {
+              "limit_id": "position",
+              "label": "Position size",
+              "status": "veto",
+              "value": "336.41",
+              "threshold": "at most 10% of capital",
+              "detail": "333080.00 USD new plus 3330.80 USD held in AAPL"
+            },
+            {
+              "limit_id": "sector",
+              "label": "Sector concentration",
+              "status": "veto",
+              "value": "336.41",
+              "threshold": "at most 30% of capital in one sector",
+              "detail": "information_technology: 336410.80 USD after the trade"
+            },
+            {
+              "limit_id": "volume",
+              "label": "Trade against average volume",
+              "status": "pass",
+              "value": "0.0023",
+              "threshold": "at most 1% of the 20-session average volume",
+              "detail": "1000 shares against 43300095 a day"
+            },
+            {
+              "limit_id": "gross",
+              "label": "Gross exposure (no leverage)",
+              "status": "veto",
+              "value": "336.41",
+              "threshold": "at most 100% of capital",
+              "detail": "336410.80 USD of positions after the trade"
+            }
+          ]
+        }
+      },
+      {
+        "id": "0d09a578-cff4-478d-96c6-151b1a4d6f87",
+        "known_at": "2026-09-15T12:00:00Z",
+        "system_time": "2026-10-15T08:08:39.816723Z",
+        "rule_version": "0.1.0",
+        "trigger": "trade",
+        "ticker": "AAPL",
+        "verdict": "pass",
+        "backfilled": true,
+        "portfolio_snapshot_id": "47cb75e3-0e81-43e1-b566-2301858d0f84",
+        "check": {
+          "rule_version": "0.1.0",
+          "known_at": "2026-09-15T12:00:00Z",
+          "proposal": {
+            "ticker": "AAPL",
+            "side": "buy",
+            "quantity": "10",
+            "max_loss": "100"
+          },
+          "price": "333.0800",
+          "price_day": "2026-09-14",
+          "notional": "3330.80",
+          "verdict": "pass",
+          "limits": [
+            {
+              "limit_id": "price",
+              "label": "Usable price",
+              "status": "pass",
+              "value": "1",
+              "threshold": "an end-of-day close at most 5 days old",
+              "detail": "close 2026-09-14 (end_of_day), 1 days before the date"
+            },
+            {
+              "limit_id": "max_loss_stated",
+              "label": "Maximum loss stated",
+              "status": "pass",
+              "value": "100",
+              "threshold": "a TRADE states its maximum loss in USD",
+              "detail": "stated"
+            },
+            {
+              "limit_id": "max_loss",
+              "label": "Maximum loss",
+              "status": "pass",
+              "value": "0.10",
+              "threshold": "at most 1% of capital (1000.00 USD)",
+              "detail": "100 USD of 100000 USD capital"
+            },
+            {
+              "limit_id": "position",
+              "label": "Position size",
+              "status": "pass",
+              "value": "3.33",
+              "threshold": "at most 10% of capital",
+              "detail": "3330.80 USD new plus 0.00 USD held in AAPL"
+            },
+            {
+              "limit_id": "sector",
+              "label": "Sector concentration",
+              "status": "pass",
+              "value": "3.33",
+              "threshold": "at most 30% of capital in one sector",
+              "detail": "information_technology: 3330.80 USD after the trade"
+            },
+            {
+              "limit_id": "volume",
+              "label": "Trade against average volume",
+              "status": "pass",
+              "value": "0.0000",
+              "threshold": "at most 1% of the 20-session average volume",
+              "detail": "10 shares against 43300095 a day"
+            },
+            {
+              "limit_id": "gross",
+              "label": "Gross exposure (no leverage)",
+              "status": "pass",
+              "value": "3.33",
+              "threshold": "at most 100% of capital",
+              "detail": "3330.80 USD of positions after the trade"
+            }
+          ]
+        }
+      },
+      {
+        "id": "838f03fb-78bc-4398-bc9d-9e74b3924a18",
+        "known_at": "2026-09-15T12:00:00Z",
+        "system_time": "2026-10-15T08:08:39.255452Z",
+        "rule_version": "0.1.0",
+        "trigger": "standard",
+        "ticker": "AAPL",
+        "verdict": "pass",
+        "backfilled": true,
+        "portfolio_snapshot_id": "2aacf410-d9ee-40c8-83b2-33859cc9791b",
+        "check": {
+          "rule_version": "0.1.0",
+          "known_at": "2026-09-15T12:00:00Z",
+          "proposal": {
+            "ticker": "AAPL",
+            "side": "buy",
+            "quantity": "15",
+            "max_loss": "1000.00"
+          },
+          "price": "333.0800",
+          "price_day": "2026-09-14",
+          "notional": "4996.20",
+          "verdict": "pass",
+          "limits": [
+            {
+              "limit_id": "price",
+              "label": "Usable price",
+              "status": "pass",
+              "value": "1",
+              "threshold": "an end-of-day close at most 5 days old",
+              "detail": "close 2026-09-14 (end_of_day), 1 days before the date"
+            },
+            {
+              "limit_id": "max_loss_stated",
+              "label": "Maximum loss stated",
+              "status": "pass",
+              "value": "1000.00",
+              "threshold": "a TRADE states its maximum loss in USD",
+              "detail": "stated"
+            },
+            {
+              "limit_id": "max_loss",
+              "label": "Maximum loss",
+              "status": "pass",
+              "value": "1.00",
+              "threshold": "at most 1% of capital (1000.00 USD)",
+              "detail": "1000.00 USD of 100000 USD capital"
+            },
+            {
+              "limit_id": "position",
+              "label": "Position size",
+              "status": "pass",
+              "value": "5.00",
+              "threshold": "at most 10% of capital",
+              "detail": "4996.20 USD new plus 0.00 USD held in AAPL"
+            },
+            {
+              "limit_id": "sector",
+              "label": "Sector concentration",
+              "status": "pass",
+              "value": "5.00",
+              "threshold": "at most 30% of capital in one sector",
+              "detail": "information_technology: 4996.20 USD after the trade"
+            },
+            {
+              "limit_id": "volume",
+              "label": "Trade against average volume",
+              "status": "pass",
+              "value": "0.0000",
+              "threshold": "at most 1% of the 20-session average volume",
+              "detail": "15 shares against 43300095 a day"
+            },
+            {
+              "limit_id": "gross",
+              "label": "Gross exposure (no leverage)",
+              "status": "pass",
+              "value": "5.00",
+              "threshold": "at most 100% of capital",
+              "detail": "4996.20 USD of positions after the trade"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
