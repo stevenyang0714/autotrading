@@ -23,6 +23,7 @@ from autotrading.ingestion.runner import IngestionRunner
 from autotrading.ingestion.schedule import refresh_window
 from autotrading.repositories.factors import record_universe, stored_definitions
 from autotrading.repositories.regime import record_regime, stored_regime_rules
+from autotrading.repositories.risk import record_portfolio, stored_risk_rules
 from autotrading.settings import get_settings
 from tests import alpaca_replay, fred_replay, news_replay, sec_replay
 
@@ -74,6 +75,12 @@ def main() -> None:
         snapshots = record_universe(
             session, definitions, [(at, "all") for at in points], now, "replay"
         )
+        # The paper portfolio (M2.3) at the same points: empty until the journal has a TRADE.
+        risk_rules = stored_risk_rules(session)
+        assert risk_rules is not None, "risk rules not loaded: run `make migrate` first"
+        for at in points:
+            record_portfolio(session, risk_rules, at, now, "replay")
+        session.commit()
     print(
         f"stored {stored} buyback state assignments, {regimes} regime assessments and "
         f"{snapshots} factor snapshots"

@@ -273,3 +273,24 @@ def test_the_same_inputs_always_give_the_same_verdict() -> None:
         aapl,
     )
     assert first == again and first.verdict == "veto"
+
+
+def test_a_drawdown_alert_when_the_threshold_is_crossed_either_way() -> None:
+    from uuid import uuid4
+
+    from autotrading.repositories.risk import drawdown_alert
+
+    days = sessions(30)
+    aapl = market("AAPL", [100.0] * 10 + [150.0] * 10 + [50.0] * 10)
+    book = portfolio(RULES, T, [trade("AAPL", 200, 100, days[5])], {"AAPL": aapl})
+    snapshot = uuid4()
+    down = drawdown_alert(RULES, book, Decimal("4.2"), snapshot)
+    assert down is not None
+    assert (down.kind, down.level, down.previous_level, down.direction) == ("portfolio", 1, 0, "up")
+    assert down.title == "Paper portfolio drawdown reached 18.18% (alert at 10%)"
+    assert down.evidence[0]["table"] == "portfolio_snapshots"
+    assert drawdown_alert(RULES, book, Decimal("12"), snapshot) is None  # still beyond
+    flat = portfolio(RULES, T, [], {})
+    back = drawdown_alert(RULES, flat, Decimal("12"), snapshot)
+    assert back is not None and (back.level, back.direction) == (0, "down")
+    assert drawdown_alert(RULES, flat, None, snapshot) is None  # never crossed

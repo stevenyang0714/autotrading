@@ -1007,7 +1007,8 @@ class ValuationAssumptionSet(Base):
 
 # ---------- buyback states (M1.4b) ----------
 
-BUYBACK_STATES = ("none", "watch", "active", "high_conviction")  # TRADE-READY: Phase 2 (P1-4)
+# TRADE-READY since M2.3 (ADR-031): reachable when the standard risk check passes (P2-7)
+BUYBACK_STATES = ("none", "watch", "active", "high_conviction", "trade_ready")
 EVALUATION_TRIGGERS = ("schedule", "manual", "backfill", "replay")
 
 
@@ -1263,7 +1264,7 @@ class TradeDecision(Base):
 
 # ---------- alerts (M1.7) ----------
 
-ALERT_KINDS = ("event", "level_change", "regime")
+ALERT_KINDS = ("event", "level_change", "regime", "portfolio")
 ALERT_DIRECTIONS = ("up", "down")
 ASSESSMENT_TRIGGERS = ("schedule", "manual", "backfill", "replay")
 
@@ -1294,12 +1295,12 @@ class ConvergenceAssessment(Base):
     """One company's signal convergence level at a time T (known_at) as the database held it at
     system_time, under one alert rule version (ADR-028; 02 §16): the level and the whole
     assessment (every level's check and the items behind it). One row per company, T and rule
-    version, made with the buyback state assignment it reads. L4 is refused: it is unreachable
-    in Phase 1 (P1-4). Append-only."""
+    version, made with the buyback state assignment it reads. L4 needs a passed standard risk
+    check (alert rules 0.3.0, M2.3; unreachable before, P1-4). Append-only."""
 
     __tablename__ = "convergence_assessments"
     __table_args__ = (
-        CheckConstraint("level IS NULL OR level BETWEEN 0 AND 3", name="level_phase1"),
+        CheckConstraint("level IS NULL OR level BETWEEN 0 AND 4", name="level_range"),
         CheckConstraint(sql_in("trigger", ASSESSMENT_TRIGGERS), name="trigger"),
         CheckConstraint("system_time >= known_at", name="system_time_after_known_at"),
         UniqueConstraint(
@@ -1344,9 +1345,9 @@ class Alert(Base):
     __tablename__ = "alerts"
     __table_args__ = (
         CheckConstraint(sql_in("kind", ALERT_KINDS), name="kind"),
-        CheckConstraint("level BETWEEN 0 AND 3", name="level_phase1"),
+        CheckConstraint("level BETWEEN 0 AND 4", name="level_range"),
         CheckConstraint(
-            "previous_level IS NULL OR previous_level BETWEEN 0 AND 3", name="previous_level"
+            "previous_level IS NULL OR previous_level BETWEEN 0 AND 4", name="previous_level"
         ),
         CheckConstraint(
             f"direction IS NULL OR {sql_in('direction', ALERT_DIRECTIONS)}", name="direction"
@@ -1355,8 +1356,8 @@ class Alert(Base):
             "(kind = 'level_change' AND direction IS NOT NULL AND assessment_id IS NOT NULL"
             " AND instrument_id IS NOT NULL)"
             " OR (kind = 'event' AND direction IS NULL AND level = 0 AND instrument_id IS NOT NULL)"
-            " OR (kind = 'regime' AND direction IS NOT NULL AND assessment_id IS NULL"
-            " AND instrument_id IS NULL AND ticker IS NULL)",
+            " OR (kind IN ('regime', 'portfolio') AND direction IS NOT NULL"
+            " AND assessment_id IS NULL AND instrument_id IS NULL AND ticker IS NULL)",
             name="kind_fields",
         ),
         CheckConstraint("jsonb_array_length(evidence) >= 1", name="evidence_present"),

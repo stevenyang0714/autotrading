@@ -6,16 +6,44 @@
 # rule_version it used.
 #
 # Levels (01 §15): L0 Information, L1 Watch, L2 Thesis, L3 Trade Candidate, L4 Execution Ready.
-# L4 needs a risk check, liquidity, sizing and compliance, none of which exist before Phase 2, so
-# it is unreachable in Phase 1 (P1-4). No level places an order (ADR-008).
+# L4 needs a risk check, liquidity, sizing and compliance: unreachable under 0.1.0 and 0.2.0
+# (P1-4); since 0.3.0 (M2.3, ADR-031) it needs L3 and the company's standard paper position
+# passing the risk rules. Paper only: no level places an order (ADR-008).
 #
 # Families (02 §2): 2 Corporate Actions (buyback states and statements), 3 Fundamental &
 # Valuation (10-K/10-Q filings, valuation support), 4 Earnings (8-K Item 2.02 releases),
 # 5 Price / Trend (market confirmation).
 version: 0.1.0
 rule_sets:
-  - rule_version: 0.2.0
+  - rule_version: 0.3.0
     status: active  # active: evaluated with each buyback state assignment; retired: kept for history
+    released: "2026-10-15"
+    note: >-
+      0.2.0 with L4 Execution Ready reachable for paper decisions (ADR-031 R3, P2-7): L3 and a
+      passed standard risk check, read from buyback rules 0.3.0; and the paper portfolio's
+      drawdown alert under risk rules 0.1.0 (R4).
+    buyback_rule_version: 0.3.0
+    event_kinds: [earnings_release, periodic_report, buyback_statement, buyback_state_change]
+    buyback_statement_kinds: [new, increase]
+    event_lookback_days: 30
+    levels:
+      watch:
+        window_days: 30
+        min_items: 2
+        min_signals: 1
+      thesis:
+        buyback_states: [active, high_conviction, trade_ready]
+        valuation_conditions: [high_conviction.dcf_discount, high_conviction.fcf_yield]
+      trade_candidate:
+        market_conditions: [trade_ready.above_average, trade_ready.relative_return]
+      execution_ready:  # L4: L3 + the standard paper position passes the risk check
+        risk_conditions: [trade_ready.risk_check]
+    market_events: [stress_change]
+    regime_rule_version: 0.1.0
+    portfolio_events: [drawdown]
+    risk_rule_version: 0.1.0
+  - rule_version: 0.2.0
+    status: retired
     released: "2026-10-12"
     note: >-
       0.1.0 (A1-A4, still Claude's defaults to confirm) plus market-wide alerts: a change of the

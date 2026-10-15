@@ -105,7 +105,8 @@ class TradeReadyRule(_Rule):
     moving_average_sessions: Annotated[int, Field(gt=1)]
     relative_return_sessions: Annotated[int, Field(gt=0)]
     benchmark: str
-    reachable: Literal[False]  # the risk check arrives in Phase 2 (P1-4)
+    # False in rules 0.1.0 and 0.2.0 (P1-4); 0.3.0 (M2.3, ADR-031) reads the standard risk check
+    reachable: bool
 
 
 class StateRules(_Rule):
@@ -172,6 +173,9 @@ class RuleSet(_Rule):
     period_end_shares: SharesAt = "balance_sheet"
     states: StateRules
     score: ScoreRule
+    # Added in 0.3.0 (M2.3, ADR-031): the risk rules of the standard paper position that
+    # TRADE-READY needs. None before: its default keeps their content and hash.
+    risk_rule_version: str | None = None
 
     def content(self) -> dict[str, object]:
         """Everything but a file entry's `status` (retiring a version is not a change to it)
@@ -241,6 +245,16 @@ class Evidence[FactT: DatedFact]:
     fcf_yield_history: Sequence[tuple[date, Decimal]]  # month ends, each from facts known then
     dcf: DcfContext
     benchmark_closes: Sequence[Close]  # raw daily closes of the benchmark
+    risk: "RiskVerdict | None" = None  # the standard position's risk check at T (M2.3)
+
+
+@dataclass(frozen=True)
+class RiskVerdict:
+    """The verdict of the company's standard paper position against the risk rules at T."""
+
+    verdict: Literal["pass", "veto"]
+    rule_version: str
+    detail: str
 
 
 @dataclass(frozen=True)
@@ -884,16 +898,39 @@ def _trade_ready[FactT: DatedFact](
                 ),
             )
 
-    risk = Condition[FactT](
-        "trade_ready.risk_check",
-        "trade_ready",
-        "unavailable",
-        None,
-        "",
-        None,
-        None,
-        "the risk check arrives in Phase 2: TRADE-READY is unreachable in Phase 1",
-    )
+    if not rule.reachable:
+        risk = Condition[FactT](
+            "trade_ready.risk_check",
+            "trade_ready",
+            "unavailable",
+            None,
+            "",
+            None,
+            None,
+            "the risk check arrives in Phase 2: TRADE-READY is unreachable in Phase 1",
+        )
+    elif ev.risk is None:
+        risk = Condition[FactT](
+            "trade_ready.risk_check",
+            "trade_ready",
+            "unavailable",
+            None,
+            "",
+            None,
+            None,
+            "no standard risk check at this date",
+        )
+    else:
+        risk = Condition[FactT](
+            "trade_ready.risk_check",
+            "trade_ready",
+            "pass" if ev.risk.verdict == "pass" else "fail",
+            None,
+            "",
+            None,
+            None,
+            f"standard paper position under risk rules {ev.risk.rule_version}: {ev.risk.detail}",
+        )
     return [average, relative, risk]
 
 
@@ -1104,8 +1141,8 @@ def assess[FactT: DatedFact](rules: RuleSet, ev: Evidence[FactT]) -> Assessment[
         if result.status != "pass":
             break
         state = result.level
-    if state == "trade_ready" or rules.states.trade_ready.reachable:  # P1-4, never in Phase 1
-        raise AssertionError("TRADE-READY is unreachable in Phase 1")
+    if state == "trade_ready" and not rules.states.trade_ready.reachable:  # P1-4
+        raise AssertionError("TRADE-READY is unreachable under these rules")
     measures = _measures(rules.score, book, window, latest, years, yield_ratio)
     return Assessment(
         state,

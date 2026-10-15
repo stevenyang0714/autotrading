@@ -30,9 +30,11 @@ from autotrading.api.buyback_states import (
 from autotrading.config_sync import (
     BuybackRulesVersionError,
     load_macro_series,
+    load_risk_rules,
     load_sources,
     sync_buyback_rules,
     sync_macro_series,
+    sync_risk_rules,
     sync_sources,
 )
 from autotrading.db.models import (
@@ -41,6 +43,7 @@ from autotrading.db.models import (
     FinancialFact,
     Identifier,
     Instrument,
+    RiskCheck,
     SignalRecord,
     Source,
 )
@@ -85,6 +88,7 @@ def engine(database_factory: Callable[[], URL]) -> Iterator[Engine]:
     with Session(engine) as session:
         sync_sources(session, load_sources(CONFIG / "sources.yaml"))
         sync_macro_series(session, load_macro_series(CONFIG / "macro_series.yaml"))
+        sync_risk_rules(session, load_risk_rules(CONFIG / "risk_rules.yaml"))
         sync_buyback_rules(session, load_rules())
         for source in session.scalars(select(Source)):
             source.rate_limit_per_second, source.rate_limit_burst = 100, 100  # type: ignore[assignment]
@@ -140,7 +144,7 @@ def stored(sessions: sessionmaker[Session]) -> Iterator[datetime]:
     with sessions() as session:
         now = session.execute(select(func.now())).scalar_one()
         for at in (MONTH_END, VALUED_AT):
-            evaluate_universe(session, at, now, "manual")  # the active rule set, 0.2.0
+            evaluate_universe(session, at, now, "manual")  # the active rule set, 0.3.0
         # The retired 0.1.0 too: its assignments must stay reproducible.
         evaluate_universe(session, MONTH_END, now, "manual", stored_rule_set(session, "0.1.0"))
     yield now
@@ -156,7 +160,7 @@ def client(sessions: sessionmaker[Session], stored: datetime) -> Iterator[TestCl
 
 
 def assignment(
-    session: Session, ticker: str, at: datetime, rule_version: str = "0.2.0"
+    session: Session, ticker: str, at: datetime, rule_version: str = "0.3.0"
 ) -> BuybackStateAssignment:
     return session.scalars(
         select(BuybackStateAssignment).where(
@@ -178,13 +182,13 @@ def test_each_assignment_stores_its_rule_version_inputs_thresholds_and_evidence(
         rows = session.scalars(
             select(BuybackStateAssignment).where(
                 BuybackStateAssignment.known_at == VALUED_AT,
-                BuybackStateAssignment.rule_version == "0.2.0",
+                BuybackStateAssignment.rule_version == "0.3.0",
             )
         ).all()
         assert sorted(r.ticker for r in rows) == ["AAPL", "META", "NVDA", "XOM"]
         apple = assignment(session, "AAPL", VALUED_AT)
     assert (apple.rule_version, apple.extractor_version, apple.system_time) == (
-        "0.2.0",
+        "0.3.0",
         EXTRACTOR_VERSION,
         stored,
     )
@@ -202,7 +206,7 @@ def test_each_assignment_stores_its_rule_version_inputs_thresholds_and_evidence(
         "high_conviction.dcf_discount": ("fail", "-166.44", "15"),
         "trade_ready.above_average": ("pass", "3.25", "0"),
         "trade_ready.relative_return": ("pass", "1.21", "0"),
-        "trade_ready.risk_check": ("unavailable", None, None),
+        "trade_ready.risk_check": ("pass", None, None),  # the standard position (M2.3)
     }
     # Evidence: the announcement with its 8-K, the 10-Q behind the quarter, the DCF version.
     announced = found["watch.announcement"]["announcements"][0]
@@ -219,7 +223,7 @@ def test_each_assignment_stores_its_rule_version_inputs_thresholds_and_evidence(
         c for c in apple.assessment["score"]["components"] if c["component"] == "intensity"
     )
     assert (intensity["full"], intensity["score"]) == ("2", "99.0")  # 1.98% of a mega cap (B14)
-    # Rule 0.1.0 at the month end, stored beside 0.2.0: its own thresholds.
+    # Rule 0.1.0 at the month end, stored beside 0.3.0: its own thresholds.
     with sessions() as session:
         old = conditions(assignment(session, "AAPL", MONTH_END, "0.1.0"))
     assert old["active.quarter_repurchase"]["threshold"] == "0.5"
@@ -293,7 +297,7 @@ def test_recomputing_with_the_same_times_reproduces_every_assignment(
 
     with sessions() as session:
         rows = session.scalars(select(BuybackStateAssignment)).all()
-        assert len(rows) == 12  # four companies: two times under 0.2.0, one under 0.1.0
+        assert len(rows) == 12  # four companies: two times under 0.3.0, one under 0.1.0
         for row in rows:
             again = evaluate(
                 session,
@@ -306,7 +310,7 @@ def test_recomputing_with_the_same_times_reproduces_every_assignment(
             assert again.model_dump(mode="json") == row.assessment, (row.ticker, row.known_at)
         # The same T with today's database sees the late 8-K and the correction.
         now = session.execute(select(func.now())).scalar_one()
-        rule_set = stored_rule_set(session, "0.2.0")
+        rule_set = stored_rule_set(session, "0.3.0")
         fresh = evaluate(session, instrument(session, "META"), VALUED_AT, now, rule_set)
         assert fresh.state == "watch"
         assert assignment(session, "META", VALUED_AT).state == "none"
@@ -348,7 +352,7 @@ def test_an_announcement_without_repurchases_never_goes_past_watch(
 
 def test_dashboard_shows_every_company_state_as_known_on_a_date(client: TestClient) -> None:
     body = client.get("/buybacks", params={"known_at": VALUED_AT.isoformat()}).json()
-    assert body["rule_set"]["rule_version"] == "0.2.0"
+    assert body["rule_set"]["rule_version"] == "0.3.0"
     assert body["rule_set"]["status"] == "active"
     assert body["rule_set"]["states"]["watch"]["announcement_days"] == 365
     assert body["rule_set"]["states"]["active"]["mega_cap_min"] == "500000000000"
@@ -372,32 +376,65 @@ def test_dashboard_shows_every_company_state_as_known_on_a_date(client: TestClie
 
     rules = client.get("/buybacks/rules").json()
     assert [(r["rule_version"], r["status"]) for r in rules] == [
-        ("0.2.0", "active"),
+        ("0.3.0", "active"),
+        ("0.2.0", "retired"),
         ("0.1.0", "retired"),
     ]
     page = client.get("/instruments/AAPL/buybacks", params={"known_at": VALUED_AT.isoformat()})
     state = page.json()["state"]
-    assert (state["rule_version"], state["assessment"]["state"]) == ("0.2.0", "active")
+    assert (state["rule_version"], state["assessment"]["state"]) == ("0.3.0", "active")
     assert len(page.json()["state_history"]) == 2
 
 
 def test_rule_sets_are_registered_once_and_never_change(engine: Engine) -> None:
     rules = load_rules()
     with Session(engine) as session:
-        assert sync_buyback_rules(session, rules).unchanged == ["0.2.0", "0.1.0"]
+        assert sync_buyback_rules(session, rules).unchanged == ["0.3.0", "0.2.0", "0.1.0"]
         entry = rules.rule_sets[0]
         watch = entry.states.watch.model_copy(update={"announcement_days": 180})
         edited = entry.model_copy(
             update={"states": entry.states.model_copy(update={"watch": watch})}
         )
-        with pytest.raises(BuybackRulesVersionError, match=r"0\.2\.0 changed"):
+        with pytest.raises(BuybackRulesVersionError, match=r"0\.3\.0 changed"):
             sync_buyback_rules(session, rules.model_copy(update={"rule_sets": [edited]}))
-        bumped = edited.model_copy(update={"rule_version": "0.3.0", "status": "retired"})
+        bumped = edited.model_copy(update={"rule_version": "0.4.0", "status": "retired"})
         result = sync_buyback_rules(
             session, rules.model_copy(update={"rule_sets": [entry, bumped]})
         )
-        assert result.created == ["0.3.0"]
+        assert result.created == ["0.4.0"]
         session.rollback()
+
+
+def test_trade_ready_reads_the_standard_risk_check_stored_with_the_assignment(
+    sessions: sessionmaker[Session], stored: datetime
+) -> None:
+    # M2.3 (ADR-031 R3): rules 0.3.0 try each company's standard paper position at T.
+    with sessions() as session:
+        rows = session.scalars(
+            select(BuybackStateAssignment).where(BuybackStateAssignment.rule_version == "0.3.0")
+        ).all()
+        checks = {
+            (c.ticker, c.known_at): c
+            for c in session.scalars(select(RiskCheck).where(RiskCheck.trigger == "standard"))
+        }
+    assert rows and len(checks) == len(rows)
+    for row in rows:
+        check = checks[(row.ticker, row.known_at)]
+        risk = conditions(row)["trade_ready.risk_check"]
+        assert risk["status"] == ("pass" if check.verdict == "pass" else "fail")
+        assert risk["detail"].startswith("standard paper position under risk rules 0.1.0")
+        assert check.system_time == row.system_time and check.backfilled
+    # The recorded closes are end_of_day, recent and liquid, and the book is empty: the companies
+    # with closes pass; NVDA has none recorded here, so its price limit vetoes.
+    vetoed = {c.ticker for c in checks.values() if c.verdict == "veto"}
+    assert vetoed == {"NVDA"}
+    nvda = next(c for c in checks.values() if c.ticker == "NVDA")
+    price = next(r for r in nvda.risk_check["limits"] if r["limit_id"] == "price")
+    assert (price["status"], price["detail"]) == ("veto", "no close known")
+    # 0.1.0 never read it.
+    with sessions() as session:
+        old = assignment(session, "AAPL", MONTH_END, "0.1.0")
+    assert "unreachable in Phase 1" in conditions(old)["trade_ready.risk_check"]["detail"]
 
 
 def test_assignments_cannot_be_changed(engine: Engine, stored: datetime) -> None:
@@ -453,7 +490,7 @@ def test_qualifying_assignments_store_a_paper_only_signal(
     body = client.get(
         "/signals", params={"known_at": VALUED_AT.isoformat(), "ticker": "AAPL"}
     ).json()
-    assert body["rule_version"] == "0.2.0"
+    assert body["rule_version"] == "0.3.0"
     assert sorted((s["ticker"], s["state"]) for s in body["current"]) == [
         ("AAPL", "active"),
         ("XOM", "active"),

@@ -29,6 +29,7 @@ from autotrading.db.models import (
     TradeDecision,
 )
 from autotrading.db.models import RiskRuleSet as RiskRuleSetRow
+from autotrading.domain.convergence import AlertIn
 from autotrading.domain.risk import (
     Bar,
     Check,
@@ -47,6 +48,7 @@ from autotrading.domain.risk import (
 )
 from autotrading.domain.splits import Split
 from autotrading.repositories.audit import set_actor
+from autotrading.repositories.convergence import insert_alert, stored_alert_rules
 from autotrading.repositories.factors import active_factor_version
 from autotrading.repositories.prices import daily_bars
 from autotrading.settings import get_settings
@@ -326,6 +328,73 @@ def record_check(
     session.add(row)
     session.flush()
     return row, result
+
+
+SCHEDULED = ("schedule", "manual", "backfill", "replay")
+
+
+def drawdown_alert(
+    rules: RiskRuleSet, book: Portfolio, previous: Decimal | None, snapshot_id: UUID
+) -> AlertIn | None:
+    """An alert when the drawdown crosses the alert threshold, either way (ADR-031 R4)."""
+    limit = rules.drawdown_alert_pct
+    now = book.drawdown_pct >= limit
+    was = previous is not None and previous >= limit
+    if now == was:
+        return None
+    title = (
+        f"Paper portfolio drawdown reached {book.drawdown_pct}% (alert at {limit}%)"
+        if now
+        else f"Paper portfolio drawdown back within {limit}% ({book.drawdown_pct}%)"
+    )
+    return AlertIn(
+        kind="portfolio",
+        level=1 if now else 0,
+        previous_level=1 if was else 0,
+        direction="up" if now else "down",
+        title=title,
+        source_key=f"portfolio:{snapshot_id}",
+        known_at=book.known_at,
+        evidence=[
+            {
+                "table": "portfolio_snapshots",
+                "id": str(snapshot_id),
+                "label": f"Equity {book.equity} USD, {book.drawdown_pct}% below its peak of "
+                f"{book.peak_equity} USD",
+            }
+        ],
+    )
+
+
+def record_portfolio(
+    session: Session, rules: RiskRuleSet, at: datetime, system_time: datetime, trigger: str
+) -> PortfolioSnapshot:
+    """Store the paper portfolio at T (daily, R4) and, when its drawdown crossed the alert
+    threshold since the previous scheduled snapshot, a portfolio alert under the active alert
+    rules (if they ask for it)."""
+    set_actor(session, ACTOR)
+    previous = session.scalar(
+        select(PortfolioSnapshot.drawdown_pct)
+        .where(
+            PortfolioSnapshot.rule_version == rules.rule_version,
+            PortfolioSnapshot.trigger.in_(SCHEDULED),
+            PortfolioSnapshot.known_at < at,
+        )
+        .order_by(PortfolioSnapshot.known_at.desc())
+        .limit(1)
+    )
+    book, _ = book_at(session, rules, at, system_time)
+    snapshot = snapshot_row(session, rules, book, at, system_time, trigger)
+    alert_rules = stored_alert_rules(session)
+    found = drawdown_alert(rules, book, previous, snapshot.id)
+    if (
+        found is not None
+        and alert_rules is not None
+        and "drawdown" in alert_rules.portfolio_events
+        and alert_rules.risk_rule_version == rules.rule_version
+    ):
+        insert_alert(session, alert_rules, None, None, found, system_time, None, system_time > at)
+    return snapshot
 
 
 def recompute(session: Session, row: RiskCheck) -> Check | None:

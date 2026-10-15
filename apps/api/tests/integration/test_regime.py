@@ -231,7 +231,7 @@ def test_a_change_of_stress_raises_a_market_alert(
         stored_id = record_regime(session, rules, later, now, "manual")
         session.commit()
         alert = session.scalars(select(Alert).where(Alert.kind == "regime")).one()
-    assert (alert.ticker, alert.instrument_id, alert.rule_version) == (None, None, "0.2.0")
+    assert (alert.ticker, alert.instrument_id, alert.rule_version) == (None, None, "0.3.0")
     assert alert.source_key == f"regime:{stored_id}"
     assert (alert.level, alert.previous_level) == (STRESS_ORDER[coming], STRESS_ORDER[other])
     assert alert.title.endswith(f"to {coming.upper()} (was {other.upper()})")

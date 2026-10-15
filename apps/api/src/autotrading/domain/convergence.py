@@ -12,8 +12,9 @@ A company's level at a time T, from what was known then:
   median, family 3);
 - L3 Trade Candidate: L2, market confirmation (family 5) and the S1 strategy trigger (the
   ACTIVE or HIGH-CONVICTION signal);
-- L4 Execution Ready: needs a risk check, liquidity, sizing and compliance; unreachable in
-  Phase 1 (P1-4).
+- L4 Execution Ready: L3 and a passed risk check of the company's standard paper position
+  (liquidity, sizing and the portfolio limits; alert rules 0.3.0, M2.3, ADR-031). Unreachable
+  under earlier rules (P1-4). Paper only.
 The level is the highest one passing with every level below it. No level places an order.
 """
 
@@ -37,7 +38,7 @@ EVENT_FAMILY: dict[EventKind, int] = {
     "buyback_statement": 2,
     "buyback_state_change": 2,
 }
-SIGNAL_STATES = ("watch", "active", "high_conviction")
+SIGNAL_STATES = ("watch", "active", "high_conviction", "trade_ready")
 L4_DETAIL = "needs the Phase 2 risk check, liquidity, sizing and compliance (P1-4)"
 
 
@@ -63,10 +64,16 @@ class TradeCandidateRule(_Rule):
     market_conditions: list[str]
 
 
+class ExecutionReadyRule(_Rule):
+    risk_conditions: list[str]  # buyback assignment conditions that carry the risk check
+
+
 class LevelRules(_Rule):
     watch: WatchRule
     thesis: ThesisRule
     trade_candidate: TradeCandidateRule
+    # Added in 0.3.0 (M2.3, ADR-031): L4 when the risk check passes; None before (P1-4).
+    execution_ready: ExecutionReadyRule | None = None
 
 
 class AlertRuleSet(_Rule):
@@ -84,6 +91,9 @@ class AlertRuleSet(_Rule):
     # keep 0.1.0's behaviour and stay out of its content, so its hash is unchanged.
     market_events: list[Literal["stress_change"]] = []
     regime_rule_version: str | None = None
+    # Added in 0.3.0 (M2.3, ADR-031): the paper portfolio's drawdown alert.
+    portfolio_events: list[Literal["drawdown"]] = []
+    risk_rule_version: str | None = None
 
     def content(self) -> dict[str, object]:
         return self.model_dump(mode="json", exclude={"status"}, exclude_defaults=True)
@@ -265,6 +275,20 @@ def in_window(events: Sequence[Event], at: datetime, days: int) -> list[Event]:
     return list(seen.values())
 
 
+def _execution_ready(rules: AlertRuleSet, buyback: BuybackReading | None, l3: Status) -> LevelCheck:
+    rule = rules.levels.execution_ready
+    if rule is None:
+        return LevelCheck(level=4, name=LEVEL_NAMES[4], status="unavailable", detail=L4_DETAIL)
+    risk = _any(buyback.conditions, rule.risk_conditions) if buyback else "unavailable"
+    if l3 != "pass":
+        status: Status = "fail" if l3 == "fail" else "unavailable"
+        detail = f"needs L3 first (standard risk check {_status_text(risk)})"
+    else:
+        status = risk
+        detail = f"standard paper position risk check {_status_text(risk)}"
+    return LevelCheck(level=4, name=LEVEL_NAMES[4], status=status, detail=detail)
+
+
 def assess(
     rules: AlertRuleSet,
     at: datetime,
@@ -340,7 +364,7 @@ def assess(
                 else f"needs L2 first (market confirmation {_status_text(market)})"
             ),
         ),
-        LevelCheck(level=4, name=LEVEL_NAMES[4], status="unavailable", detail=L4_DETAIL),
+        _execution_ready(rules, buyback, l3),
     ]
     level: int | None = None
     for check in levels:
@@ -363,7 +387,7 @@ def assess(
 
 @dataclass(frozen=True)
 class AlertIn:
-    kind: Literal["event", "level_change", "regime"]
+    kind: Literal["event", "level_change", "regime", "portfolio"]
     level: int
     previous_level: int | None
     direction: Literal["up", "down"] | None
