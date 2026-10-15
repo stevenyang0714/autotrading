@@ -1206,8 +1206,16 @@ class TradeDecision(Base):
         CheckConstraint("note IS NULL OR length(note) <= 1000", name="note_length"),
         CheckConstraint("mode = 'paper'", name="paper_mode"),
         CheckConstraint("broker IS NULL", name="no_broker"),
-        CheckConstraint("risk_check_id IS NULL", name="no_risk_check"),
-        CheckConstraint("portfolio_snapshot_id IS NULL", name="no_portfolio_snapshot"),
+        # M2.3 (ADR-031, P2-7): every paper TRADE entry passed a risk check; exits are not
+        # checked, and a NO TRADE has none. A trigger checks the risk check passed.
+        CheckConstraint(
+            "decision <> 'trade' OR exits_decision_id IS NOT NULL OR risk_check_id IS NOT NULL",
+            name="entry_risk_check",
+        ),
+        CheckConstraint(
+            "risk_check_id IS NULL OR (decision = 'trade' AND exits_decision_id IS NULL)",
+            name="risk_check_on_entries",
+        ),
         CheckConstraint("approval_state = 'recorded'", name="approval_state"),
         CheckConstraint("system_time >= known_at", name="system_time_after_known_at"),
         CheckConstraint(f"user_id = '{JOURNAL_USER}'", name="single_user"),
@@ -1242,8 +1250,10 @@ class TradeDecision(Base):
     entry_close: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     mode: Mapped[str] = mapped_column(Text)
     broker: Mapped[str | None] = mapped_column(Text)
-    risk_check_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
-    portfolio_snapshot_id: Mapped[uuid.UUID | None] = mapped_column(Uuid)
+    risk_check_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, ForeignKey("risk_checks.id"))
+    portfolio_snapshot_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("portfolio_snapshots.id")
+    )
     approval_state: Mapped[str] = mapped_column(Text)
     known_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     system_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
@@ -1459,6 +1469,122 @@ class RegimeAssessment(Base):
     assessment: Mapped[dict[str, Any]] = mapped_column(JSONB)
     backfilled: Mapped[bool] = mapped_column(Boolean)
     trigger: Mapped[str] = mapped_column(Text)
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+# ---------- paper portfolio and risk checks (M2.3) ----------
+
+PORTFOLIO_TRIGGERS = ("schedule", "manual", "backfill", "replay", "trade", "on_demand", "standard")
+RISK_CHECK_TRIGGERS = ("trade", "on_demand", "standard")
+RISK_VERDICTS = ("pass", "veto")
+
+
+class RiskRuleSet(Base):
+    """One released rule_version of config/risk_rules.yaml (ADR-031), loaded by `make migrate`
+    with the sha256 of its content. Append-only and audited, like the regime rule sets."""
+
+    __tablename__ = "risk_rule_sets"
+    __table_args__ = (
+        CheckConstraint(r"rule_version ~ '^\d+\.\d+\.\d+$'", name="rule_version_format"),
+        CheckConstraint("content_sha256 ~ '^[0-9a-f]{64}$'", name="content_sha256_format"),
+        UniqueConstraint("rule_version", name="uq_risk_rule_sets_rule_version"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    rule_version: Mapped[str] = mapped_column(Text)
+    content: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    content_sha256: Mapped[str] = mapped_column(Text)
+    released: Mapped[date] = mapped_column(Date)
+    loaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class PortfolioSnapshot(Base):
+    """The paper portfolio at a time T (known_at) as the database held it at system_time, under
+    one risk rule version (ADR-031; 02 §20): equity, exposures, drawdown and the whole document
+    with every position. One row per T, system time and rule version (risk checks at the same
+    point share it). Append-only."""
+
+    __tablename__ = "portfolio_snapshots"
+    __table_args__ = (
+        CheckConstraint(sql_in("trigger", PORTFOLIO_TRIGGERS), name="trigger"),
+        CheckConstraint("system_time >= known_at", name="system_time_after_known_at"),
+        CheckConstraint("drawdown_pct >= 0", name="drawdown_nonnegative"),
+        UniqueConstraint(
+            "known_at", "system_time", "rule_version", name="uq_portfolio_snapshots_point"
+        ),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    known_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    system_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    rule_version: Mapped[str] = mapped_column(Text, ForeignKey("risk_rule_sets.rule_version"))
+    equity: Mapped[Decimal] = mapped_column(Numeric)
+    gross: Mapped[Decimal] = mapped_column(Numeric)
+    net: Mapped[Decimal] = mapped_column(Numeric)
+    drawdown_pct: Mapped[Decimal] = mapped_column(Numeric)
+    positions: Mapped[int] = mapped_column(SmallInteger)
+    portfolio: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    trigger: Mapped[str] = mapped_column(Text)
+    backfilled: Mapped[bool] = mapped_column(Boolean)
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class RiskCheck(Base):
+    """A proposed paper trade tested against every limit of one risk rule version at a time T,
+    as the database held it at system_time (ADR-031): the trade, its price, each limit's value,
+    threshold and status, and the verdict. `trade` checks gate journal entries, `on_demand`
+    ones are tried from the Portfolio Risk page, `standard` ones (one per company and T) decide
+    TRADE-READY and L4. Append-only; audited except the standard ones."""
+
+    __tablename__ = "risk_checks"
+    __table_args__ = (
+        CheckConstraint(sql_in("trigger", RISK_CHECK_TRIGGERS), name="trigger"),
+        CheckConstraint(sql_in("verdict", RISK_VERDICTS), name="verdict"),
+        CheckConstraint(sql_in("side", SIDES), name="side"),
+        CheckConstraint("quantity > 0", name="quantity_positive"),
+        CheckConstraint("max_loss IS NULL OR max_loss > 0", name="max_loss_positive"),
+        CheckConstraint("system_time >= known_at", name="system_time_after_known_at"),
+        Index(
+            "uq_risk_checks_standard",
+            "instrument_id",
+            "known_at",
+            "rule_version",
+            unique=True,
+            postgresql_where=text("trigger = 'standard'"),
+        ),
+        Index("ix_risk_checks_known_at", "known_at"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    known_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    system_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    rule_version: Mapped[str] = mapped_column(Text, ForeignKey("risk_rule_sets.rule_version"))
+    trigger: Mapped[str] = mapped_column(Text)
+    instrument_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("instruments.id"))
+    ticker: Mapped[str] = mapped_column(Text)
+    side: Mapped[str] = mapped_column(Text)
+    quantity: Mapped[Decimal] = mapped_column(Numeric)
+    max_loss: Mapped[Decimal | None] = mapped_column(Numeric)
+    price: Mapped[Decimal | None] = mapped_column(Numeric)
+    verdict: Mapped[str] = mapped_column(Text)
+    portfolio_snapshot_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("portfolio_snapshots.id")
+    )
+    risk_check: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    backfilled: Mapped[bool] = mapped_column(Boolean)
     recorded_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

@@ -1,0 +1,56 @@
+# Paper portfolio and risk check rules (M2.3, ADR-031; build spec 02 §20, research report 01 §15).
+#
+# Deterministic and versioned like config/regime_rules.yaml: a released rule_version is
+# immutable (`make migrate` refuses changed content under an existing version, and a unit test
+# pins each version's sha256). Every portfolio snapshot and risk check stores the rule_version
+# it used.
+#
+# The paper portfolio is the journal's open paper TRADEs, marked at the end-of-day closes known
+# at a time T as the database held them at its system time S. A risk check adds a proposed
+# trade to that portfolio and tests every limit; any veto refuses the trade. Exits are never
+# checked (they only reduce risk). Paper only: nothing here places or prepares an order.
+#
+# Units: percent values of the notional capital (10 = 10%); capital and losses in USD.
+# Thresholds are Steven's defaults (P2-4, P2-5), unvalidated (OD-7): a change is a new version.
+version: 0.1.0
+rule_sets:
+  - rule_version: 0.1.0
+    status: active  # active: used for new checks; retired: kept for the stored ones
+    released: "2026-10-15"
+    note: >-
+      Steven's decisions R1-R4 (ADR-031): USD 100,000 notional capital, the P2-5 limits, no
+      leverage, end-of-day closes only, a standard position for TRADE-READY and L4, a drawdown
+      alert, GICS sectors.
+    capital: 100000
+    limits:
+      position_pct: 10  # one instrument's gross market value after the trade
+      max_loss_pct: 1  # the stated maximum loss of the trade; a TRADE must state one
+      sector_pct: 30  # one sector's gross market value after the trade
+      volume_pct: 1  # the trade's shares against the average daily volume
+      volume_sessions: 20
+      gross_pct: 100  # all positions' gross market value after the trade: no leverage
+      stale_after_days: 5  # the price must be an end-of-day close at most this old
+    drawdown_alert_pct: 10  # the portfolio's equity below its peak
+    standard:  # the position tried every day for TRADE-READY and L4 (R3)
+      position_pct: 5
+      max_loss_pct: 1
+    unlimited_sectors: [broad_market, fixed_income, commodity]  # not held to sector_pct
+    sectors:  # GICS sectors as of 2026-10 (S&P Dow Jones Indices and MSCI); ETFs by mandate
+      AAPL: {sector: information_technology, source: "GICS Information Technology; a holding of the Technology Select Sector SPDR (XLK)"}
+      MSFT: {sector: information_technology, source: "GICS Information Technology; a holding of the Technology Select Sector SPDR (XLK)"}
+      NVDA: {sector: information_technology, source: "GICS Information Technology; a holding of the Technology Select Sector SPDR (XLK)"}
+      GOOGL: {sector: communication_services, source: "GICS Communication Services since the 2018 GICS change; a holding of the Communication Services Select Sector SPDR (XLC)"}
+      META: {sector: communication_services, source: "GICS Communication Services since the 2018 GICS change; a holding of the Communication Services Select Sector SPDR (XLC)"}
+      JPM: {sector: financials, source: "GICS Financials; a holding of the Financial Select Sector SPDR (XLF)"}
+      XOM: {sector: energy, source: "GICS Energy; a holding of the Energy Select Sector SPDR (XLE)"}
+      AZO: {sector: consumer_discretionary, source: "GICS Consumer Discretionary (specialty retail); a holding of the Consumer Discretionary Select Sector SPDR (XLY)"}
+      ORLY: {sector: consumer_discretionary, source: "GICS Consumer Discretionary (specialty retail); a holding of the Consumer Discretionary Select Sector SPDR (XLY)"}
+      LOW: {sector: consumer_discretionary, source: "GICS Consumer Discretionary (home improvement retail); a holding of the Consumer Discretionary Select Sector SPDR (XLY)"}
+      XLE: {sector: energy, source: "Energy Select Sector SPDR: the S&P 500 energy sector"}
+      XLK: {sector: information_technology, source: "Technology Select Sector SPDR: the S&P 500 information technology sector"}
+      SPY: {sector: broad_market, source: "SPDR S&P 500: every sector"}
+      QQQ: {sector: broad_market, source: "Invesco QQQ: the Nasdaq-100, several sectors"}
+      IWM: {sector: broad_market, source: "iShares Russell 2000: small caps, every sector"}
+      TLT: {sector: fixed_income, source: "iShares 20+ Year Treasury Bond: US Treasuries"}
+      IEF: {sector: fixed_income, source: "iShares 7-10 Year Treasury Bond: US Treasuries"}
+      GLD: {sector: commodity, source: "SPDR Gold Shares: gold bullion"}

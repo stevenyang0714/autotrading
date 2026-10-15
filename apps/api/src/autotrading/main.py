@@ -28,6 +28,7 @@ from autotrading.api.progress import router as progress_router
 from autotrading.api.reconciliation import router as reconciliation_router
 from autotrading.api.regime import router as regime_router
 from autotrading.api.research import router as research_router
+from autotrading.api.risk import router as risk_router
 from autotrading.api.signals import router as signals_router
 from autotrading.api.valuation import router as valuation_router
 from autotrading.infra.dependencies import Dependencies
@@ -89,6 +90,7 @@ def create_app(
     app.include_router(alerts_router)
     app.include_router(regime_router)
     app.include_router(factors_router)
+    app.include_router(risk_router)
     return app
 
 

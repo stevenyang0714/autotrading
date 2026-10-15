@@ -30,12 +30,16 @@ from autotrading.db.models import (
     RegimeRuleSet,
     Source,
 )
+from autotrading.db.models import (
+    RiskRuleSet as RiskRuleSetRow,
+)
 from autotrading.domain.buyback_states import RulesFile
 from autotrading.domain.convergence import AlertRulesFile
 from autotrading.domain.factors import FactorDefinitionsFile
 from autotrading.domain.glossary import GlossaryFile
 from autotrading.domain.provenance import LicenseStatus
 from autotrading.domain.regime import RegimeRulesFile
+from autotrading.domain.risk import RiskRulesFile
 from autotrading.infra.db import make_engine
 from autotrading.repositories.audit import set_actor
 from autotrading.settings import get_settings
@@ -364,6 +368,46 @@ def sync_factor_definitions(
     return result
 
 
+class RiskRulesVersionError(ValueError):
+    """A released risk rule set's content changed without a new rule_version."""
+
+
+def load_risk_rules(path: Path) -> RiskRulesFile:
+    return RiskRulesFile.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
+
+
+def sync_risk_rules(session: Session, rules: RiskRulesFile) -> GlossarySyncResult:
+    """Register each risk rule_version once; the same version with other content is refused
+    (ADR-031, as the regime rules)."""
+    set_actor(session, "config:risk_rules.yaml")
+    result = GlossarySyncResult()
+    for entry in rules.rule_sets:
+        rule_set = entry.rule_set()
+        sha = rule_set.content_sha256()
+        existing = session.scalars(
+            select(RiskRuleSetRow).where(RiskRuleSetRow.rule_version == rule_set.rule_version)
+        ).first()
+        if existing is not None:
+            if existing.content_sha256 != sha:
+                raise RiskRulesVersionError(
+                    f"risk rule set {rule_set.rule_version} changed but its rule_version was "
+                    "not bumped"
+                )
+            result.unchanged.append(rule_set.rule_version)
+            continue
+        session.add(
+            RiskRuleSetRow(
+                rule_version=rule_set.rule_version,
+                content=rule_set.content(),
+                content_sha256=sha,
+                released=rule_set.released,
+            )
+        )
+        result.created.append(rule_set.rule_version)
+    session.flush()
+    return result
+
+
 def main() -> None:
     settings = get_settings()
     sources_path = settings.resolved_config_dir() / "sources.yaml"
@@ -383,6 +427,9 @@ def main() -> None:
             )
             alerts = sync_alert_rules(
                 session, load_alert_rules(settings.resolved_config_dir() / "alert_rules.yaml")
+            )
+            risk = sync_risk_rules(
+                session, load_risk_rules(settings.resolved_config_dir() / "risk_rules.yaml")
             )
             factors = sync_factor_definitions(
                 session,
@@ -407,6 +454,7 @@ def main() -> None:
     print(f"regime_rules.yaml synced: new rule versions={regime.created}")
     print(f"alert_rules.yaml synced: new rule versions={alerts.created}")
     print(f"factor_definitions.yaml synced: new definition versions={factors.created}")
+    print(f"risk_rules.yaml synced: new rule versions={risk.created}")
 
 
 if __name__ == "__main__":

@@ -35,6 +35,8 @@ from autotrading.db.models import (
     MacroSeries,
     PriceBar,
     RegimeRuleSet,
+    RiskCheck,
+    RiskRuleSet,
     Source,
     ThesisCard,
     TradeDecision,
@@ -189,6 +191,14 @@ def _labels(session: Session, table: str, ids: list[str]) -> dict[str, str]:
                 .join(Alert, Alert.id == AlertAcknowledgement.alert_id)
                 .where(AlertAcknowledgement.id.in_(_uuids(ids)))
             )
+        ],
+        "risk_rule_sets": lambda: [
+            (row.id, f"risk rules {row.rule_version}")
+            for row in session.scalars(select(RiskRuleSet).where(RiskRuleSet.id.in_(_uuids(ids))))
+        ],
+        "risk_checks": lambda: [
+            (row.id, f"risk check {row.ticker} {row.side} {row.quantity}: {row.verdict}")
+            for row in session.scalars(select(RiskCheck).where(RiskCheck.id.in_(_uuids(ids))))
         ],
         "factor_definition_sets": lambda: [
             (row.id, f"factor definitions {row.definition_version}")
