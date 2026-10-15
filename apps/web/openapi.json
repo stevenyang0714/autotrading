@@ -512,7 +512,7 @@
       "AlertsOut": {
         "properties": {
           "detail": {
-            "default": "In-app alerts only (P1-1). Levels are deterministic rules; none places an order, and L4 is unreachable before the Phase 2 risk check.",
+            "default": "In-app alerts only (P1-1). Levels are deterministic rules; none places an order. L4 needs the company's standard paper position to pass the risk check (paper only).",
             "title": "Detail",
             "type": "string"
           },
@@ -2279,7 +2279,7 @@
             "type": "array"
           },
           "detail": {
-            "default": "In-app alerts only (P1-1). Levels are deterministic rules; none places an order, and L4 is unreachable before the Phase 2 risk check.",
+            "default": "In-app alerts only (P1-1). Levels are deterministic rules; none places an order. L4 needs the company's standard paper position to pass the risk check (paper only).",
             "title": "Detail",
             "type": "string"
           },

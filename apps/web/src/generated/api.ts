@@ -1063,7 +1063,7 @@ export interface components {
         AlertsOut: {
             /**
              * Detail
-             * @default In-app alerts only (P1-1). Levels are deterministic rules; none places an order, and L4 is unreachable before the Phase 2 risk check.
+             * @default In-app alerts only (P1-1). Levels are deterministic rules; none places an order. L4 needs the company's standard paper position to pass the risk check (paper only).
              */
             detail: string;
             /** Entries */
@@ -1653,7 +1653,7 @@ export interface components {
             companies: components["schemas"]["CompanyLevel"][];
             /**
              * Detail
-             * @default In-app alerts only (P1-1). Levels are deterministic rules; none places an order, and L4 is unreachable before the Phase 2 risk check.
+             * @default In-app alerts only (P1-1). Levels are deterministic rules; none places an order. L4 needs the company's standard paper position to pass the risk check (paper only).
              */
             detail: string;
             /**
