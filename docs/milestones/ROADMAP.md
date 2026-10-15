@@ -31,7 +31,7 @@ The phase is the first one in which the dashboard shows real content; until then
 | Policy Monitor | 3 | |
 | Congress Trades | 4 | |
 | Options & Vol | 5 | |
-| Portfolio Risk | 2 | |
+| Portfolio Risk | 2 | Live since M2.3 (2026-10-15): the paper book, limits and risk checks; paper only |
 | Alerts Center | 1 | In-app only until OD-2 is decided |
 | Strategy Lab | 1 | Paper journal in Phase 1; walk-forward in Phase 2 |
 | Execution | 5 | |
