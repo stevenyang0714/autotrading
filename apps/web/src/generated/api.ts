@@ -126,6 +126,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Candidates */
+        get: operations["candidates_candidates_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/convergence": {
         parameters: {
             query?: never;
@@ -869,6 +886,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/rotation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Rotation */
+        get: operations["rotation_rotation_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/rotation/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Rotation Rules */
+        get: operations["rotation_rules_rotation_rules_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/signals": {
         parameters: {
             query?: never;
@@ -959,7 +1010,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "event" | "level_change" | "regime";
+            kind: "event" | "level_change" | "regime" | "portfolio" | "rotation";
             /**
              * Known At
              * Format: date-time
@@ -1014,7 +1065,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "event" | "level_change" | "regime";
+            kind: "event" | "level_change" | "regime" | "portfolio" | "rotation";
             /**
              * Known At
              * Format: date-time
@@ -1534,6 +1585,20 @@ export interface components {
             benchmark: components["schemas"]["CloseOut"] | null;
             stock: components["schemas"]["CloseOut"] | null;
         };
+        /** CompanyCandidate */
+        CompanyCandidate: {
+            /** Alert Rule Version */
+            alert_rule_version: string;
+            /** Buyback Rule Version */
+            buyback_rule_version: string;
+            convergence: components["schemas"]["CompanyLevel"];
+            /** Strategy */
+            strategy: string;
+            /** Strategy Id */
+            strategy_id: string;
+            /** Ticker */
+            ticker: string;
+        };
         /** CompanyLevel */
         CompanyLevel: {
             /** Backfilled */
@@ -1957,6 +2022,73 @@ export interface components {
             /** Equity */
             equity: string;
         };
+        /** EtfCandidate */
+        EtfCandidate: {
+            /** Factor Definition Version */
+            factor_definition_version: string;
+            reading: components["schemas"]["EtfReading"];
+            /** Reason */
+            reason: string;
+            /** Regime Rule Version */
+            regime_rule_version: string;
+            /**
+             * Rotation Id
+             * Format: uuid
+             */
+            rotation_id: string;
+            /** Rotation Rule Version */
+            rotation_rule_version: string;
+            /**
+             * Set At
+             * Format: date-time
+             */
+            set_at: string;
+            /** Strategy */
+            strategy: string;
+            /** Strategy Id */
+            strategy_id: string;
+            /** Stress */
+            stress: string | null;
+            /** Ticker */
+            ticker: string;
+            /** Weight Pct */
+            weight_pct: string;
+        };
+        /**
+         * EtfReading
+         * @description One ETF as read at T: its trend, beta and whether the stress state allows it.
+         */
+        EtfReading: {
+            /** Allowed */
+            allowed: boolean;
+            /** Beta */
+            beta: string | null;
+            /** Detail */
+            detail: string;
+            /** Eligible */
+            eligible: boolean;
+            /** Feed Status */
+            feed_status: string | null;
+            /** High Beta */
+            high_beta: boolean;
+            /** Last Close */
+            last_close: string | null;
+            /**
+             * Sleeve
+             * @enum {string}
+             */
+            sleeve: "risk" | "defensive";
+            /** Snapshot Id */
+            snapshot_id: string | null;
+            /** Snapshot Known At */
+            snapshot_known_at: string | null;
+            /** Symbol */
+            symbol: string;
+            /** Trend */
+            trend: components["schemas"]["TrendReading"][];
+            /** Trend Up */
+            trend_up: boolean;
+        };
         /** EvidenceOut */
         EvidenceOut: {
             /**
@@ -2259,6 +2391,13 @@ export interface components {
             /** Ticker */
             ticker: string;
         };
+        /** Gate */
+        Gate: {
+            /** High Beta */
+            high_beta: boolean;
+            /** Sleeves */
+            sleeves: ("risk" | "defensive")[];
+        };
         /** GlossaryTermDetail */
         GlossaryTermDetail: {
             term: components["schemas"]["GlossaryTermOut"];
@@ -2391,6 +2530,18 @@ export interface components {
             values: {
                 [key: string]: string | null;
             };
+        };
+        /** Holding */
+        Holding: {
+            /**
+             * Sleeve
+             * @enum {string}
+             */
+            sleeve: "risk" | "defensive";
+            /** Symbol */
+            symbol: string;
+            /** Weight Pct */
+            weight_pct: string;
         };
         /** Indicator */
         Indicator: {
@@ -2822,6 +2973,25 @@ export interface components {
             /** Series */
             series: components["schemas"]["SeriesSummary"][];
         };
+        /** MarketContext */
+        MarketContext: {
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Quadrant */
+            quadrant: string | null;
+            /**
+             * Regime Id
+             * Format: uuid
+             */
+            regime_id: string;
+            /** Rule Version */
+            rule_version: string;
+            /** Stress */
+            stress: string | null;
+        };
         /** MarketState */
         MarketState: {
             /**
@@ -3119,6 +3289,24 @@ export interface components {
              * Format: date
              */
             vintage: string;
+        };
+        /** OpportunityCandidatesOut */
+        OpportunityCandidatesOut: {
+            /** Companies */
+            companies: components["schemas"]["CompanyCandidate"][];
+            context: components["schemas"]["MarketContext"] | null;
+            /**
+             * Detail
+             * @default Long only (no short data, OD-5). What the rules flag as known at the date, not a buy list and not ranked: companies at L3 or L4 (S1) and the ETFs of the S3 rotation target. Thresholds are defaults, unvalidated (OD-7).
+             */
+            detail: string;
+            /** Etfs */
+            etfs: components["schemas"]["EtfCandidate"][];
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
         };
         /** Overview */
         Overview: {
@@ -3939,6 +4127,116 @@ export interface components {
              */
             status: "active" | "retired";
         };
+        /**
+         * Rotation
+         * @description Everything a rotation assessment stores: recomputing it gives the same document.
+         */
+        Rotation: {
+            /** Cash Pct */
+            cash_pct: string | null;
+            /** Detail */
+            detail: string;
+            gate: components["schemas"]["Gate"] | null;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Previous Id */
+            previous_id: string | null;
+            /** Quadrant */
+            quadrant: string | null;
+            /** Readings */
+            readings: components["schemas"]["EtfReading"][];
+            /**
+             * Reason
+             * @enum {string}
+             */
+            reason: "month_start" | "defensive_switch" | "carried" | "unavailable";
+            /** Rebalance */
+            rebalance: boolean;
+            /** Regime Id */
+            regime_id: string | null;
+            /** Regime Known At */
+            regime_known_at: string | null;
+            /** Rule Version */
+            rule_version: string;
+            /** Set At */
+            set_at: string | null;
+            /** Stress */
+            stress: ("normal" | "elevated" | "high" | "crisis") | null;
+            /** Stress Detail */
+            stress_detail: string;
+            /** Target */
+            target: components["schemas"]["Holding"][] | null;
+        };
+        /** RotationOut */
+        RotationOut: {
+            current: components["schemas"]["StoredRotation"] | null;
+            /**
+             * Detail
+             * @default Research only (paper): each ETF against its own trend, gated by the market's stress state. No order, and no journal entry for ETFs yet. Thresholds are defaults, unvalidated (OD-7).
+             */
+            detail: string;
+            /** History */
+            history: components["schemas"]["RotationPoint"][];
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Rule Version */
+            rule_version: string;
+        };
+        /**
+         * RotationPoint
+         * @description A target as it was set: at a month start or a defensive switch.
+         */
+        RotationPoint: {
+            /** Backfilled */
+            backfilled: boolean;
+            /** Cash Pct */
+            cash_pct: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Reason */
+            reason: string;
+            /** Stress */
+            stress: string | null;
+            /** Target */
+            target: {
+                [key: string]: string;
+            };
+        };
+        /** RotationRuleSetOut */
+        RotationRuleSetOut: {
+            /** Content */
+            content: {
+                [key: string]: unknown;
+            };
+            /** Content Sha256 */
+            content_sha256: string;
+            /**
+             * Released
+             * Format: date
+             */
+            released: string;
+            /** Rule Version */
+            rule_version: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "active" | "retired";
+        };
         /** RuleSetOut */
         RuleSetOut: {
             /**
@@ -4181,6 +4479,8 @@ export interface components {
             strategy: string | null;
             /** Strategy Id */
             strategy_id: string | null;
+            /** Stress */
+            stress?: string | null;
             /**
              * System Time
              * Format: date-time
@@ -4193,6 +4493,8 @@ export interface components {
              * Format: date-time
              */
             valid_from: string;
+            /** Weight Pct */
+            weight_pct?: string | null;
         };
         /** SignalsOut */
         SignalsOut: {
@@ -4207,6 +4509,10 @@ export interface components {
             known_at: string;
             /** Rule Version */
             rule_version: string;
+            /** Rule Versions */
+            rule_versions: {
+                [key: string]: string;
+            };
         };
         /** SnapshotRef */
         SnapshotRef: {
@@ -4398,6 +4704,27 @@ export interface components {
              */
             system_time: string;
         };
+        /** StoredRotation */
+        StoredRotation: {
+            /** Backfilled */
+            backfilled: boolean;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            rotation: components["schemas"]["Rotation"];
+            /**
+             * System Time
+             * Format: date-time
+             */
+            system_time: string;
+        };
         /** TradeReadyRule */
         TradeReadyRule: {
             /** Benchmark */
@@ -4408,6 +4735,22 @@ export interface components {
             reachable: boolean;
             /** Relative Return Sessions */
             relative_return_sessions: number;
+        };
+        /** TrendReading */
+        TrendReading: {
+            /** Detail */
+            detail: string;
+            /** Measure */
+            measure: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pass" | "fail" | "unavailable";
+            /** Threshold */
+            threshold: string;
+            /** Value */
+            value: string | null;
         };
         /** ValidationError */
         ValidationError: {
@@ -4700,6 +5043,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RuleSetOut"][];
+                };
+            };
+        };
+    };
+    candidates_candidates_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpportunityCandidatesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -6099,12 +6474,65 @@ export interface operations {
             };
         };
     };
+    rotation_rotation_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RotationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rotation_rules_rotation_rules_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RotationRuleSetOut"][];
+                };
+            };
+        };
+    };
     signals_signals_get: {
         parameters: {
             query?: {
                 /** @description Point in time (ADR-012); default now */
                 known_at?: string | null;
                 ticker?: string | null;
+                strategy?: ("S1" | "S3")[] | null;
                 limit?: number;
             };
             header?: never;

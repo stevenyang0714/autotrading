@@ -9,14 +9,44 @@
 # L4 needs a risk check, liquidity, sizing and compliance: unreachable under 0.1.0 and 0.2.0
 # (P1-4); since 0.3.0 (M2.3, ADR-031) it needs L3 and the company's standard paper position
 # passing the risk rules. Paper only: no level places an order (ADR-008).
+# Market-wide alerts: a stress-state change (0.2.0), the paper portfolio's drawdown (0.3.0) and,
+# since 0.4.0 (M2.4, ADR-032), a new S3 ETF rotation target; none has a company.
 #
 # Families (02 §2): 2 Corporate Actions (buyback states and statements), 3 Fundamental &
 # Valuation (10-K/10-Q filings, valuation support), 4 Earnings (8-K Item 2.02 releases),
 # 5 Price / Trend (market confirmation).
 version: 0.1.0
 rule_sets:
-  - rule_version: 0.3.0
+  - rule_version: 0.4.0
     status: active  # active: evaluated with each buyback state assignment; retired: kept for history
+    released: "2026-10-16"
+    note: >-
+      0.3.0 plus an alert when the S3 ETF rotation sets a new target (ADR-032 Q2), under rotation
+      rules 0.1.0. Levels, events and the other alerts are unchanged.
+    buyback_rule_version: 0.3.0
+    event_kinds: [earnings_release, periodic_report, buyback_statement, buyback_state_change]
+    buyback_statement_kinds: [new, increase]
+    event_lookback_days: 30
+    levels:
+      watch:
+        window_days: 30
+        min_items: 2
+        min_signals: 1
+      thesis:
+        buyback_states: [active, high_conviction, trade_ready]
+        valuation_conditions: [high_conviction.dcf_discount, high_conviction.fcf_yield]
+      trade_candidate:
+        market_conditions: [trade_ready.above_average, trade_ready.relative_return]
+      execution_ready:  # L4: L3 + the standard paper position passes the risk check
+        risk_conditions: [trade_ready.risk_check]
+    market_events: [stress_change]
+    regime_rule_version: 0.1.0
+    portfolio_events: [drawdown]
+    risk_rule_version: 0.1.0
+    rotation_events: [target_change]
+    rotation_rule_version: 0.1.0
+  - rule_version: 0.3.0
+    status: retired
     released: "2026-10-15"
     note: >-
       0.2.0 with L4 Execution Ready reachable for paper decisions (ADR-031 R3, P2-7): L3 and a

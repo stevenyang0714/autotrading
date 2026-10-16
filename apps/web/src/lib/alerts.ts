@@ -43,11 +43,16 @@ export const FAMILY_NAMES: Record<number, string> = {
 };
 
 /** Where an evidence row is shown: EDGAR for filings, the company page for a buyback state,
- * the Market Regime page as known on the alert's day for a regime assessment (its Singapore
- * day, so that day's end includes the assessment). */
+ * and, as known on the alert's day (its Singapore day, so that day's end includes the row), the
+ * Market Regime page for a regime assessment, the Strategy Lab's rotation for a rotation
+ * assessment and Portfolio Risk for a portfolio snapshot. */
 export function evidenceHref(table: string, url: string | null, ticker: string | null, knownAt: string): string | null {
   if (url) return url;
   if (table === "buyback_state_assignments" && ticker) return `/instruments/${ticker}#buybacks`;
   if (table === "regime_assessments") return `/dashboards/market-regime?known_on=${dayIn(knownAt, "Asia/Singapore")}`;
+  if (table === "rotation_assessments") {
+    return `/dashboards/strategy-lab?known_on=${dayIn(knownAt, "Asia/Singapore")}#rotation`;
+  }
+  if (table === "portfolio_snapshots") return `/dashboards/portfolio-risk?known_on=${dayIn(knownAt, "Asia/Singapore")}`;
   return null;
 }

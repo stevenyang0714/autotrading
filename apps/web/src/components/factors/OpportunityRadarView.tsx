@@ -1,9 +1,10 @@
 import Link from "next/link";
 
 import { AsKnownOnForm } from "@/components/AsKnownOnForm";
+import { CandidatesView } from "@/components/candidates/CandidatesView";
 import { Metric } from "@/components/Metric";
 import { DemoBanner } from "@/components/prices/DemoBanner";
-import type { FactorRow, FactorsTable, FeedStatus } from "@/lib/api";
+import type { FactorRow, FactorsTable, FeedStatus, OpportunityCandidates } from "@/lib/api";
 import {
   FUNDAMENTAL_COLUMNS,
   TREND_COLUMNS,
@@ -183,18 +184,22 @@ function FundamentalCell({ row, measureId }: { row: FactorRow; measureId: string
 }
 
 /**
- * Opportunity Radar (M2.2, ADR-030 F1): every universe instrument's trend, risk and relative
- * measures, and each equity's value and quality as percentiles of its own history, as known on
- * the chosen date. Sorted on the server from ?sort=&dir=. Candidates come with M2.4.
+ * Opportunity Radar (M2.2, ADR-030 F1; M2.4, ADR-032 Q3): the candidates as known on the chosen
+ * date (companies at L3 or L4, the ETFs of the S3 rotation target), then every universe
+ * instrument's trend, risk and relative measures, and each equity's value and quality as
+ * percentiles of its own history. The tables are sorted on the server from ?sort=&dir=.
  */
 export function OpportunityRadarView({
   data,
+  candidates,
   knownOn,
   invalidKnownOn = false,
   sort = "ticker",
   dir = "asc",
 }: {
   data: FactorsTable;
+  /** Omitted: no candidates block (undefined); null: the API could not load them. */
+  candidates?: OpportunityCandidates | null;
   knownOn?: string;
   invalidKnownOn?: boolean;
   sort?: string;
@@ -214,9 +219,8 @@ export function OpportunityRadarView({
           </Metric>
         </h1>
         <p className="text-sm text-neutral-400">
-          Where each instrument stands on trend, risk and, for the companies, value and quality, each
-          against its own history. Candidates built from these, the convergence levels and the regime
-          come next (<span data-identifier="">M2.4</span>).
+          The candidates the rules flag at the date, then where each instrument stands on trend, risk and,
+          for the companies, value and quality, each against its own history.
         </p>
         <p role="note" className="text-xs text-neutral-500">
           <Metric termId="factor_percentile" icon={false}>
@@ -236,6 +240,17 @@ export function OpportunityRadarView({
         </p>
       </header>
       <DemoBanner statuses={data.rows.map((row) => (row.price?.feed_status ?? null) as FeedStatus | null)} />
+
+      {candidates !== undefined ? (
+        <div className="space-y-2" data-block="candidates">
+          <h2 className="text-lg font-medium">
+            <Metric termId="opportunity_candidate" zh>
+              Candidates
+            </Metric>
+          </h2>
+          <CandidatesView data={candidates} knownOn={knownOn} />
+        </div>
+      ) : null}
 
       <div className="space-y-2" data-block="trend">
         <h2 className="text-lg font-medium">

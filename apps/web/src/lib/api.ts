@@ -978,3 +978,46 @@ export async function loadAuditLog(query: AuditQuery = {}): Promise<AuditLogPage
     return null;
   }
 }
+
+// ---------- S3 ETF rotation and Opportunity Radar candidates (M2.4, ADR-032) ----------
+
+export type RotationResponse = components["schemas"]["RotationOut"];
+export type StoredRotation = components["schemas"]["StoredRotation"];
+export type Rotation = components["schemas"]["Rotation"];
+export type EtfReading = components["schemas"]["EtfReading"];
+export type TrendReading = components["schemas"]["TrendReading"];
+export type RotationHolding = components["schemas"]["Holding"];
+export type RotationPoint = components["schemas"]["RotationPoint"];
+export type OpportunityCandidates = components["schemas"]["OpportunityCandidatesOut"];
+export type CompanyCandidate = components["schemas"]["CompanyCandidate"];
+export type EtfCandidate = components["schemas"]["EtfCandidate"];
+export type MarketContext = components["schemas"]["MarketContext"];
+
+/** The stored S3 rotation as known at `knownAt` and every target set since, or null when the
+ * API is down. */
+export async function loadRotation(knownAt?: string): Promise<RotationResponse | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/rotation", {
+      params: { query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** The Opportunity Radar candidates as known at `knownAt`, or null when the API is down. */
+export async function loadCandidates(knownAt?: string): Promise<OpportunityCandidates | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/candidates", {
+      params: { query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}

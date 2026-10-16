@@ -45,7 +45,7 @@ terms:
   # dashboards
   dashboard_global_monitor: {name: 全球監控, hint: 全球事件、實體與政策的總覽（Phase 3）。}
   dashboard_market_regime: {name: 市場環境, hint: 壓力狀態與五個總經面向，依當時已知的資料，含 2016 年起的歷史。}
-  dashboard_opportunity_radar: {name: 機會雷達, hint: 18 檔標的的動能、均線、波動、beta 與相對 SPY，以及股票的估值與品質在自身歷史的百分位；候選名單在 M2.4。}
+  dashboard_opportunity_radar: {name: 機會雷達, hint: "規則標出的候選（L3/L4 公司與 S3 持有的 ETF），以及 18 檔標的的動能、均線、波動與各自歷史百分位；不是買進清單。"}
   dashboard_fundamental_research: {name: 基本面研究, hint: 10 家公司一張表：成長、利潤率、ROIC、資本配置與估值，點公司看研究紀錄。}
   dashboard_corporate_actions: {name: 公司行動, hint: 每家公司的回購狀態、條件對門檻的檢視、狀態歷史與回購時間軸。}
   dashboard_event_transmission: {name: 事件傳導, hint: 事件如何經由產業鏈影響資產（Phase 3）。}
@@ -55,8 +55,8 @@ terms:
   dashboard_congress_trades: {name: 國會交易, hint: 美國議員申報的交易與申報延遲（Phase 4）。}
   dashboard_options_vol: {name: 選擇權與波動率, hint: 選擇權分析與避險（Phase 5）。}
   dashboard_portfolio_risk: {name: 組合風險, hint: 紙上組合的曝險、各上限使用率、回撤與風險檢查紀錄，可試算一筆交易。}
-  dashboard_alerts_center: {name: 警示中心, hint: 所有警示與通知（Phase 1）。}
-  dashboard_strategy_lab: {name: 策略實驗室, hint: 模擬交易日誌與回測（Phase 1–2）。}
+  dashboard_alerts_center: {name: 警示中心, hint: "公司收斂等級與警示，加上市場層級警示（壓力、組合回撤、S3 輪動目標）；只在 App 內。"}
+  dashboard_strategy_lab: {name: 策略實驗室, hint: "模擬交易日誌、目前的訊號，以及 S3 ETF 輪動的目標與歷史；回測在 M2.5。"}
   dashboard_execution: {name: 下單執行, hint: 下單預覽與模擬帳戶（Phase 5）。}
 
   # audit log and macro chart (M0.9)
@@ -158,7 +158,7 @@ terms:
   guidance_statement: {name: 財報指引, hint: 公司自己給的營收、EPS、利潤率數字或區間，引用原文句子。}
   consensus_estimate: {name: 共識預估, hint: 分析師預期；沒有資料來源（OD-3），一律 Data unavailable，不估算。}
   earnings_surprise: {name: 財報驚喜, hint: 實際 ÷ 共識 − 1；沒有共識所以不計算。}
-  signal: {name: 訊號, hint: 規則自動產生的「值得研究」提示；Phase 1 只有回購狀態 ACTIVE 或 HIGH-CONVICTION 時產生，一律只能模擬。}
+  signal: {name: 訊號, hint: "規則自動產生的「值得研究」提示，一律只能模擬：S1 來自回購狀態，S3 來自 ETF 輪動的新目標（每檔趨勢與壓力各一個）。"}
   execution_eligibility: {name: 執行資格, hint: 訊號能否導致下單；Phase 1 一律 paper only（只能模擬）。}
   thesis_card: {name: 論點卡, hint: 論點、3–7 個系統資料依據、催化劑、看錯條件與估值，寫下當時的快照；修改就存新版本。}
   evidence_item: {name: 依據, hint: 卡片引用的一筆系統資料，以寫卡當時已知的值存成快照。}
@@ -178,7 +178,7 @@ terms:
   convergence_l4: {name: L4 可執行, hint: L3 加上標準紙上部位通過風險檢查（警示規則 0.3.0 起）；只限紙上。}
   independent_evidence: {name: 獨立依據, hint: 依來源去重；同一份申報的多列只算一次。}
   valuation_support: {name: 估值支持, hint: base DCF 折價為正或 FCF 殖利率高於自身中位數。}
-  alert: {name: 警示, hint: App 內通知；一則事件（L0）或公司收斂等級變化，附規則版本與依據。}
+  alert: {name: 警示, hint: "App 內通知：公司事件（L0）、收斂等級變化，或市場層級的變化（壓力、組合回撤、S3 輪動目標），附規則版本與依據。"}
   alert_acknowledgement: {name: 確認, hint: 標記已看過，每則一次、可附備註；寫入稽核紀錄。}
   alert_rule_set: {name: 警示規則版本, hint: 每個收斂評定與警示所用的規則版本；已發布的版本不會改。}
   regime: {name: 市場體制, hint: 五個總經面向、成長×通膨象限與壓力狀態，依版本化規則與當時已知的資料。}
@@ -325,5 +325,17 @@ terms:
   risk_veto: {name: 風控否決, hint: 任一條上限不過就否決，交易不會被記錄，但檢查本身會存下。}
   standard_position_check: {name: 標準部位檢查, hint: 每天替每家公司試算一筆標準紙上部位（資本 5%、最大損失 1%），通過才可達 TRADE-READY 與 L4。}
   risk_rule_set: {name: 風險規則版本, hint: 每個組合快照與風險檢查所用的規則版本；已發布的版本不會改。}
+  rotation_alert: {name: 輪動警示, hint: "S3 設定的新目標和上一次不同時發出的市場層級警示。"}
+  opportunity_candidate: {name: 候選, hint: "規則在當時標出的標的：L3/L4 的公司（S1）或 S3 目標持有的 ETF；不打分、不排名、只做多。"}
+  defensive_switch: {name: 轉防守, hint: "月中壓力升到 HIGH 或 CRISIS 時立刻改成防守型；壓力下降要等下個月才換回。"}
+  rotation_rebalance: {name: 輪動調整, hint: "每個紐約月份第一次評估時換目標；其他時候沿用上一次的。"}
+  high_beta: {name: 高 beta, hint: "相對 SPY 的 252 日 beta ≥ 1.10；SPY 視為 1.00，未知的 beta 當作高 beta。"}
+  defensive_sleeve: {name: 防守型, hint: "輪動裡的防守型 ETF：TLT、IEF、GLD；壓力高時只能持有這些。"}
+  risk_sleeve: {name: 風險型, hint: "輪動裡的股票型 ETF：SPY、QQQ、IWM、XLK、XLE。"}
+  regime_gate: {name: 壓力限制, hint: "NORMAL 全部可持有；ELEVATED 排除高 beta；HIGH 與 CRISIS 只能持有防守型。"}
+  trend_filter: {name: 趨勢條件, hint: "12-1 動能與相對 200 日均線都大於 0 才算趨勢向上；剛好等於 0 不算。"}
+  rotation_target: {name: 輪動目標持有, hint: "S3 目前持有的 ETF 與權重（等權、無條件捨去到 0.01%），其餘是現金。"}
+  rotation_rule_set: {name: 輪動規則版本, hint: "每個輪動評估與 S3 訊號所用的規則版本；已發布的不會改，並固定讀取的壓力與因子版本。"}
+  etf_rotation: {name: ETF 輪動（S3）, hint: "8 檔 ETF 各看自己的趨勢，再由市場壓力決定能持有哪些，等權持有、其餘現金；只做研究。"}
   gross_exposure: {name: 總曝險, hint: 所有部位市值取絕對值加總，佔資本的百分比。}
   net_exposure: {name: 淨曝險, hint: 多單減空單的市值，佔資本的百分比。}

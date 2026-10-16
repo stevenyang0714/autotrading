@@ -65,8 +65,8 @@ class AcknowledgementOut(BaseModel):
 class AlertOut(BaseModel):
     id: UUID
     rule_version: str
-    ticker: str | None  # None: a market-wide alert (kind regime)
-    kind: Literal["event", "level_change", "regime"]
+    ticker: str | None  # None: a market-wide alert (kinds regime, portfolio and rotation)
+    kind: Literal["event", "level_change", "regime", "portfolio", "rotation"]
     level: int
     level_name: str
     previous_level: int | None
@@ -147,6 +147,18 @@ def _acknowledgements(
     return {a.alert_id: a for a in session.scalars(query)}
 
 
+def kind_level_name(kind: str, level: int) -> str:
+    """A company alert's convergence level; a market-wide alert's own state (ADR-029, ADR-031,
+    ADR-032)."""
+    if kind == "regime":
+        return STRESS_NAMES[level]
+    if kind == "portfolio":
+        return "DRAWDOWN" if level else "WITHIN LIMIT"
+    if kind == "rotation":
+        return "S3 TARGET"
+    return level_name(level)
+
+
 def alert_out(
     row: Alert, links: dict[tuple[str, str], str], ack: AlertAcknowledgement | None
 ) -> AlertOut:
@@ -156,7 +168,7 @@ def alert_out(
         ticker=row.ticker,
         kind=row.kind,  # type: ignore[arg-type]
         level=row.level,
-        level_name=STRESS_NAMES[row.level] if row.kind == "regime" else level_name(row.level),
+        level_name=kind_level_name(row.kind, row.level),
         previous_level=row.previous_level,
         direction=row.direction,  # type: ignore[arg-type]
         title=row.title,

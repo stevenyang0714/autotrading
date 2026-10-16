@@ -22,7 +22,7 @@ The phase is the first one in which the dashboard shows real content; until then
 |---|---|---|
 | Global Monitor | 3 | Not named in the phase table; inferred from the world/physical scope |
 | Market Regime | 2 | Live since M2.1 (2026-10-12) |
-| Opportunity Radar | 2 | Live since M2.2 (2026-10-13) with the factor table; candidates with M2.4 |
+| Opportunity Radar | 2 | Live since M2.2 (2026-10-13) with the factor table; candidates since M2.4 (2026-10-16) |
 | Fundamental Research | 1 | Live since M1.3b (2026-10-09) |
 | Corporate Actions | 1 | Buybacks first; Form 4 insider activity added in Phase 4 |
 | Event Transmission | 3 | |
@@ -33,7 +33,7 @@ The phase is the first one in which the dashboard shows real content; until then
 | Options & Vol | 5 | |
 | Portfolio Risk | 2 | Live since M2.3 (2026-10-15): the paper book, limits and risk checks; paper only |
 | Alerts Center | 1 | In-app only until OD-2 is decided |
-| Strategy Lab | 1 | Paper journal in Phase 1; walk-forward in Phase 2 |
+| Strategy Lab | 1 | Paper journal in Phase 1; the S3 ETF rotation since M2.4; walk-forward with M2.5 |
 | Execution | 5 | |
 
 The Phase 0 screens from M0.9 (Data Health, Instrument, Macro, News feed, Audit log) are not among the 15 dashboards. They go in a separate "System" nav group. All five were delivered by M0.9 (2026-10-06); Phase 0 closes with the M0.10 exit report.

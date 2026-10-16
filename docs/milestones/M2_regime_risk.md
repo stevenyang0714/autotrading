@@ -1,6 +1,6 @@
 # Phase 2 — Macro regime, momentum and factors, portfolio risk, walk-forward
 
-**Status:** Approved 2026-10-12 (ADR-029): Steven accepted the Phase 1 exit report, decided P2-1 and chose the OD-7 direction; Phase 2 is in progress (M2.1 and M2.2 merged; M2.3 built). Proposed by Claude on 2026-10-12 with the Phase 1 exit report (`docs/reports/phase1_exit.md`). Each sub-milestone still starts in plan mode and is approved before it is built; P2-3 to P2-8 are answered in the plan of the sub-milestone that needs them.
+**Status:** Approved 2026-10-12 (ADR-029): Steven accepted the Phase 1 exit report, decided P2-1 and chose the OD-7 direction; Phase 2 is in progress (M2.1 to M2.3 merged; M2.4 built). Proposed by Claude on 2026-10-12 with the Phase 1 exit report (`docs/reports/phase1_exit.md`). Each sub-milestone still starts in plan mode and is approved before it is built; P2-3 to P2-8 are answered in the plan of the sub-milestone that needs them.
 
 **Goal:** turn the Phase 1 research record into tested, point-in-time context for decisions:
 - a deterministic macro regime, reproducible as known on any date;
@@ -79,12 +79,14 @@ Work one sub-milestone at a time, in order. Each one ends with the Build Output 
 - [x] A vetoed paper TRADE is refused and the veto is recorded; no path places an order.
 
 ## M2.4 ETF rotation research (S3) and the Opportunity Radar
+**Decided (ADR-032, Q1–Q4):** each ETF on its own trend (12-1 momentum and the 200-session average), gated by the stress state; equal weights; monthly targets with an immediate defensive switch and an alert; Radar candidates are L3/L4 companies and the S3 ETFs, long only, unranked; no ETF journal yet.
+
 **Build**
 - **S3 research:** rule-based rotation across the 8 ETFs from the regime (M2.1) and momentum (M2.2), as signals of family 1 and 5 for strategy S3, paper only.
 - **Opportunity Radar** (P1-7): candidates from convergence levels (M1.7), factors and the regime, each with its evidence and the strategy it fits; long only (no short data, OD-5).
 
 **Acceptance**
-- [ ] Every candidate and rotation signal cites its rule versions and inputs as known at its date.
+- [x] Every candidate and rotation signal cites its rule versions and inputs as known at its date.
 
 ## M2.5 Strategy Lab: walk-forward backtests with costs
 **Build**

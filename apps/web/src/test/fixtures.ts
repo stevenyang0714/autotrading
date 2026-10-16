@@ -69,9 +69,15 @@ import factorsNvdaEarlier from "../../tests/fixtures/api/factors-nvda-earlier.js
 import factorsNvda from "../../tests/fixtures/api/factors-nvda.json";
 import factorsTlt from "../../tests/fixtures/api/factors-tlt.json";
 import factors from "../../tests/fixtures/api/factors.json";
+import candidates from "../../tests/fixtures/api/candidates.json";
+import rotationEarlier from "../../tests/fixtures/api/rotation-earlier.json";
+import rotation from "../../tests/fixtures/api/rotation.json";
+import signalsRotation from "../../tests/fixtures/api/signals-rotation.json";
 
 import type {
   AlertDetail,
+  OpportunityCandidates,
+  RotationResponse,
   RegimeResponse,
   PortfolioResponse,
   RiskChecks,
@@ -271,3 +277,11 @@ export const recordedFactorsNvda = factorsNvda.response as unknown as Instrument
 export const recordedFactorsNvdaEarlier = factorsNvdaEarlier.response as unknown as InstrumentFactors;
 export const recordedFactorsAapl = factorsAapl.response as unknown as InstrumentFactors;
 export const recordedFactorsTlt = factorsTlt.response as unknown as InstrumentFactors;
+
+/** The S3 ETF rotation (M2.4) from tests/integration/test_rotation.py, as known on 2026-10-06
+ * (the October month start: SPY only, the other ETFs without a year of recorded closes for 12-1
+ * momentum) and on 2026-07-01 (nothing assessed yet); the candidates and S3 signals then. */
+export const recordedRotation = rotation.response as unknown as RotationResponse;
+export const recordedRotationEarlier = rotationEarlier.response as unknown as RotationResponse;
+export const recordedCandidates = candidates.response as unknown as OpportunityCandidates;
+export const recordedRotationSignals = signalsRotation.response as unknown as Signals;

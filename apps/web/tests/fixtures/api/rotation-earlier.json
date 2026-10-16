@@ -1,0 +1,15 @@
+{
+  "recorded_at": "2026-10-16T04:26:24.542762+00:00",
+  "recorded_from": "recorded FRED vintages and Alpaca closes replayed into the integration test database (tests/integration/test_rotation.py)",
+  "endpoint": "/rotation",
+  "params": {
+    "known_at": "2026-07-01T00:00:00Z"
+  },
+  "response": {
+    "known_at": "2026-07-01T00:00:00Z",
+    "rule_version": "0.1.0",
+    "current": null,
+    "history": [],
+    "detail": "Research only (paper): each ETF against its own trend, gated by the market's stress state. No order, and no journal entry for ETFs yet. Thresholds are defaults, unvalidated (OD-7)."
+  }
+}

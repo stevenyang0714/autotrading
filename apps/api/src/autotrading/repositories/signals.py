@@ -1,5 +1,6 @@
 """Insert-only access to signals (M1.6, ADR-027 J1): the signal of each qualifying buyback state
-assignment, in the caller's transaction. One row per company, family, time and rule version.
+assignment (S1) and, since M2.4, of each new S3 rotation target, in the caller's transaction.
+One row per instrument, family, strategy, time and rule version.
 """
 
 from uuid import UUID
@@ -9,13 +10,19 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from autotrading.db.models import BuybackStateAssignment, SignalRecord
-from autotrading.domain.signals import QUALIFYING_STATES, SignalIn, buyback_signal
+from autotrading.domain.signals import (
+    BUYBACK_STRATEGY,
+    QUALIFYING_STATES,
+    SignalIn,
+    buyback_signal,
+)
 
 
 def record_signal(
     session: Session, instrument_id: UUID, ticker: str, signal: SignalIn
 ) -> UUID | None:
-    """Insert one signal; None when this company, family, time and rule version has one."""
+    """Insert one signal; None when this instrument, family, strategy, time and rule version
+    has one."""
     return session.execute(
         insert(SignalRecord)
         .values(
@@ -35,7 +42,7 @@ def record_signal(
             execution_eligibility=signal.execution_eligibility,
             backfilled=signal.backfilled,
         )
-        .on_conflict_do_nothing(constraint="uq_signals_instrument_family_time_rule")
+        .on_conflict_do_nothing(constraint="uq_signals_instrument_family_strategy_time_rule")
         .returning(SignalRecord.id)
     ).scalar()
 
@@ -58,6 +65,7 @@ def backfill_signals(session: Session) -> int:
     """The signals of every qualifying assignment stored without one; returns how many."""
     stored = select(SignalRecord.id).where(
         SignalRecord.instrument_id == BuybackStateAssignment.instrument_id,
+        SignalRecord.strategy_id == BUYBACK_STRATEGY,
         SignalRecord.generated_at == BuybackStateAssignment.known_at,
         SignalRecord.rule_version == BuybackStateAssignment.rule_version,
     )

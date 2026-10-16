@@ -33,6 +33,9 @@ from autotrading.db.models import (
 from autotrading.db.models import (
     RiskRuleSet as RiskRuleSetRow,
 )
+from autotrading.db.models import (
+    RotationRuleSet as RotationRuleSetRow,
+)
 from autotrading.domain.buyback_states import RulesFile
 from autotrading.domain.convergence import AlertRulesFile
 from autotrading.domain.factors import FactorDefinitionsFile
@@ -40,6 +43,7 @@ from autotrading.domain.glossary import GlossaryFile
 from autotrading.domain.provenance import LicenseStatus
 from autotrading.domain.regime import RegimeRulesFile
 from autotrading.domain.risk import RiskRulesFile
+from autotrading.domain.rotation import RotationRulesFile
 from autotrading.infra.db import make_engine
 from autotrading.repositories.audit import set_actor
 from autotrading.settings import get_settings
@@ -408,6 +412,48 @@ def sync_risk_rules(session: Session, rules: RiskRulesFile) -> GlossarySyncResul
     return result
 
 
+class RotationRulesVersionError(ValueError):
+    """A released rotation rule set's content changed without a new rule_version."""
+
+
+def load_rotation_rules(path: Path) -> RotationRulesFile:
+    return RotationRulesFile.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
+
+
+def sync_rotation_rules(session: Session, rules: RotationRulesFile) -> GlossarySyncResult:
+    """Register each rotation rule_version once; the same version with other content is refused
+    (ADR-032, as the risk rules)."""
+    set_actor(session, "config:rotation_rules.yaml")
+    result = GlossarySyncResult()
+    for entry in rules.rule_sets:
+        rule_set = entry.rule_set()
+        sha = rule_set.content_sha256()
+        existing = session.scalars(
+            select(RotationRuleSetRow).where(
+                RotationRuleSetRow.rule_version == rule_set.rule_version
+            )
+        ).first()
+        if existing is not None:
+            if existing.content_sha256 != sha:
+                raise RotationRulesVersionError(
+                    f"rotation rule set {rule_set.rule_version} changed but its rule_version "
+                    "was not bumped"
+                )
+            result.unchanged.append(rule_set.rule_version)
+            continue
+        session.add(
+            RotationRuleSetRow(
+                rule_version=rule_set.rule_version,
+                content=rule_set.content(),
+                content_sha256=sha,
+                released=rule_set.released,
+            )
+        )
+        result.created.append(rule_set.rule_version)
+    session.flush()
+    return result
+
+
 def main() -> None:
     settings = get_settings()
     sources_path = settings.resolved_config_dir() / "sources.yaml"
@@ -435,6 +481,10 @@ def main() -> None:
                 session,
                 load_factor_definitions(settings.resolved_config_dir() / "factor_definitions.yaml"),
             )
+            rotation = sync_rotation_rules(
+                session,
+                load_rotation_rules(settings.resolved_config_dir() / "rotation_rules.yaml"),
+            )
             session.commit()
     finally:
         engine.dispose()
@@ -455,6 +505,7 @@ def main() -> None:
     print(f"alert_rules.yaml synced: new rule versions={alerts.created}")
     print(f"factor_definitions.yaml synced: new definition versions={factors.created}")
     print(f"risk_rules.yaml synced: new rule versions={risk.created}")
+    print(f"rotation_rules.yaml synced: new rule versions={rotation.created}")
 
 
 if __name__ == "__main__":

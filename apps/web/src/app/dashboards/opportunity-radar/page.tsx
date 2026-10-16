@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { Metric } from "@/components/Metric";
 import { OpportunityRadarView } from "@/components/factors/OpportunityRadarView";
-import { loadFactors } from "@/lib/api";
+import { loadCandidates, loadFactors } from "@/lib/api";
 import { isSortKey, type SortDir } from "@/lib/factors";
 import { endOfDaySgt } from "@/lib/time";
 
@@ -17,7 +17,10 @@ export default async function OpportunityRadarPage({ searchParams }: PageProps<"
   const knownAt = knownOn ? endOfDaySgt(knownOn) : null;
   const sort = typeof query.sort === "string" && isSortKey(query.sort) ? query.sort : "ticker";
   const dir: SortDir = query.dir === "desc" ? "desc" : "asc";
-  const data = await loadFactors(knownAt ?? undefined);
+  const [data, candidates] = await Promise.all([
+    loadFactors(knownAt ?? undefined),
+    loadCandidates(knownAt ?? undefined),
+  ]);
   if (data === null) {
     return (
       <section className="space-y-4">
@@ -34,6 +37,7 @@ export default async function OpportunityRadarPage({ searchParams }: PageProps<"
   return (
     <OpportunityRadarView
       data={data}
+      candidates={candidates}
       knownOn={knownAt ? knownOn : undefined}
       invalidKnownOn={Boolean(knownOn) && knownAt === null}
       sort={sort}

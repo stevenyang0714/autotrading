@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-15T09:41:17.149359+00:00",
+  "recorded_at": "2026-10-16T04:28:11.199249+00:00",
   "recorded_from": "recorded SEC filings, Alpaca closes, FRED yields and news replayed into the integration test database (tests/integration/test_alerts.py)",
   "endpoint": "/alerts",
   "params": {
@@ -7,15 +7,15 @@
   },
   "response": {
     "known_at": "2026-10-06T12:00:00Z",
-    "rule_version": "0.3.0",
+    "rule_version": "0.4.0",
     "status": "open",
     "open_by_level": {
       "L0 Information": 2
     },
     "entries": [
       {
-        "id": "2e734cba-5a8e-482d-8836-95016a233e9b",
-        "rule_version": "0.3.0",
+        "id": "fe23d613-2484-49b3-ba4a-da332c642523",
+        "rule_version": "0.4.0",
         "ticker": "AAPL",
         "kind": "event",
         "level": 0,
@@ -24,12 +24,12 @@
         "direction": null,
         "title": "AAPL: Buyback state ACTIVE (was NONE)",
         "known_at": "2026-10-06T12:00:00Z",
-        "system_time": "2026-10-15T09:41:15.835638Z",
+        "system_time": "2026-10-16T04:28:09.509184Z",
         "backfilled": false,
         "evidence": [
           {
             "table": "buyback_state_assignments",
-            "id": "3cf41c20-8fe8-4f21-b3d4-54583a2f2184",
+            "id": "954bbd28-26a9-43e0-81f9-376bf496df78",
             "label": "Buyback state ACTIVE (was NONE)",
             "url": null
           }
@@ -38,8 +38,8 @@
         "acknowledgement": null
       },
       {
-        "id": "94e12150-4525-42a4-beb2-23af9d243d79",
-        "rule_version": "0.3.0",
+        "id": "7d6409cd-188e-4561-b3d6-e0b3a442fac4",
+        "rule_version": "0.4.0",
         "ticker": "XOM",
         "kind": "event",
         "level": 0,
@@ -48,12 +48,12 @@
         "direction": null,
         "title": "XOM: Buyback state ACTIVE (was WATCH)",
         "known_at": "2026-10-06T12:00:00Z",
-        "system_time": "2026-10-15T09:41:15.835638Z",
+        "system_time": "2026-10-16T04:28:09.509184Z",
         "backfilled": false,
         "evidence": [
           {
             "table": "buyback_state_assignments",
-            "id": "557ebd4a-b97f-4891-878c-68289e94e4d9",
+            "id": "3d03df1b-d912-44ff-a8e2-50c0e49e1c53",
             "label": "Buyback state ACTIVE (was WATCH)",
             "url": null
           }
