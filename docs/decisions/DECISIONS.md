@@ -840,6 +840,79 @@ M2.3, one PR.
 
 ---
 
+## ADR-032 S3 ETF rotation research and Opportunity Radar candidates — Accepted (2026-10-16, approved by Steven with the M2.4 plan)
+M2.4, one PR.
+- **Decisions (Steven, 2026-10-16):**
+  - Q1 The rule: each ETF on its own trend, gated by stress.
+    - Each of the 8 ETFs is judged against its own history only: 12-1 momentum and the close against its 200-session average must both be above 0. There is no ranking across ETFs (P2-3, KI-1).
+    - The stress state gates what may be held: NORMAL everything; ELEVATED no beta of 1.10 or more; HIGH and CRISIS only TLT, IEF and GLD.
+    - The selected ETFs are held in equal weights; the rest is cash.
+  - Q2 Targets change at the first assessment of each New York month. A rise in stress into HIGH or CRISIS switches to defensive at once. Easing waits for the next month. A new target raises an alert in the Alerts Center.
+  - Q3 The Opportunity Radar candidates are companies at L3 or L4 (S1) and the ETFs of the S3 target.
+    - Each comes with its evidence, its rule versions and the stress state and quadrant at the date.
+    - Long only, with no score and no ranking across instruments.
+    - Read from stored rows; nothing new is stored.
+  - Q4 ETFs stay out of the journal and the risk check for now: S3 is research signals only. ETF position limits and ETF paper trades are decided with M2.5's backtests.
+- **Technical defaults:**
+  - Rules: `config/rotation_rules.yaml` 0.1.0.
+    - Loaded into `rotation_rule_sets` (audited) by `make migrate` with its sha256; a changed released version is refused; the hash is pinned in a unit test.
+    - It pins regime rules 0.1.0 and factor definitions 0.1.0.
+    - Sleeves: risk SPY, QQQ, IWM, XLK, XLE; defensive TLT, IEF, GLD.
+    - SPY counts as beta 1.00; an unknown beta counts as high.
+    - Weights are rounded down to 0.01%; the remainder is cash.
+    - The regime must be at most 3 days old and each factor snapshot at most 5. Otherwise the ETF is not selected, with the reason. Without a regime the assessment is `unavailable`, has no target, and the next one carries from the last target.
+    - Recorded fixture closes are accepted, as by the factor engine: this is research, not a trade. The pages show the DEMO DATA banner.
+  - Assessment (`domain/rotation.py`, mypy --strict):
+    - It reads the stored regime assessment and each ETF's factor snapshot known at T and recorded by S, under the pinned versions, plus the latest earlier assessment that had a target.
+    - It stores every ETF's trend readings, beta, gate and reason; the target in force; why it was set (`month_start`, `defensive_switch`) or `carried`; and the previous assessment.
+    - The quadrant is context only (KI-7).
+  - Signals: each ETF of a newly set target makes two paper signals for S3, family 5 (trend; scored by its 12-1 momentum) and family 1 (gate). They are made only when a target is set. The signals' unique key now includes the strategy (NULLS NOT DISTINCT), so S4's family 5 signals can follow.
+  - Storage (migration 0026): `rotation_rule_sets` and `rotation_assessments` (append-only, one row per T and rule version); alert kind `rotation`.
+  - Alert rules 0.4.0 = 0.3.0 + `rotation_events: [target_change]` and `rotation_rule_version`. The 0.1.0 to 0.3.0 hashes are unchanged. The alert is `down` when the risk sleeve's weight fell, `up` otherwise.
+  - Schedule:
+    - Daily at 11:15 SGT, after the regime (10:55) and factors (11:05).
+    - `make rotation-backfill`: month ends since 2017 (12-1 momentum needs a year of closes), in order in one message, at one system time. Each point compares with the previous point of its run.
+    - `make rotation-verify`: recomputes with the stored T, S and previous target.
+    - `make alerts-backfill` now also raises the stress-change and rotation alerts of the stored assessments under the active alert rules. Under 0.3.0 the local stress history was missing.
+    - The CI replay stores the rotation at its points.
+- **API and web:**
+  - Endpoints:
+    - `GET /rotation` (current plus every target set) and `GET /rotation/rules`;
+    - `GET /candidates`;
+    - `GET /signals` lists the S3 signals of the target in force (weight, stress), with `rule_versions` per strategy and `?strategy=`;
+    - `GET /alerts` lists portfolio and rotation alerts. A drawdown alert used to fail the response, an M2.3 gap.
+  - Pages:
+    - Opportunity Radar has a Candidates block above its tables.
+    - Strategy Lab has an "ETF rotation (S3)" block (`#rotation`): the target, every ETF's trend, beta and gate, the last 12 targets and all since 2017. Its current signals show S3 cards with no Thesis Card link.
+    - The Alerts Center shows rotation alerts linking to the rotation as known that day.
+  - Glossary: 12 new terms and 5 rewritten, all with Chinese hints.
+- **Live check 2026-10-16:**
+  - Backfill: 117 month ends (January 2017 to September 2026): stress NORMAL 93, ELEVATED 15, HIGH 9 (no CRISIS, KI-3). 70 target changes; 5 months all cash.
+  - Months held: SPY 87, XLK 85, QQQ 84, GLD 68, IWM 66, XLE 58, IEF 39, TLT 28.
+  - Examples:
+    - end of February 2020, HIGH: TLT, IEF and GLD at 33.33% each;
+    - end of February 2022, HIGH: GLD only;
+    - end of May 2022, ELEVATED: XLE only;
+    - end of September 2022, HIGH: all cash;
+    - end of March 2025, ELEVATED: GLD and IEF;
+    - end of September 2026, NORMAL: SPY, QQQ, IWM, XLK and XLE at 20%.
+  - 2026-10-16 (the October month start): SPY, QQQ, XLK and XLE at 25%. IWM is out: its close is 2.18% below its 200-session average.
+  - `make rotation-verify`: 119 assessments recomputed, all identical.
+  - 1,038 S3 signals (519 per family) and 71 rotation alerts (70 backfilled).
+  - `make alerts-backfill` under 0.4.0: 710 convergence assessments and 26 stress-change alerts.
+  - No company is at L3 or L4 today; the first L4 was AZO and ORLY in 2021 (ADR-031).
+  - Endpoints: `/rotation` 0.03 s, `/candidates` 0.02 s, `/signals` 0.01 s.
+- **Known gaps:**
+  - The thresholds are defaults, unvalidated (KI-2).
+  - The 8 ETFs were chosen today (KI-16).
+  - Month-end history cannot show a defensive switch, and KI-5 can make switches come in pairs (KI-17).
+  - The local backfilled rotation alerts list the previous target alphabetically (KI-18).
+  - Dividend gaps affect total-return momentum (KI-10).
+  - No costs until M2.5 (P2-6).
+  - ETFs are not in the journal yet (Q4).
+
+---
+
 ## Open decisions (owner: Steven)
 
 | ID | Decision | Needed by | Default until decided |
@@ -857,5 +930,6 @@ M2.3, one PR.
 - OD-1 (2026-10-06): Steven confirmed ADR-001: a personal tool, with no redistribution of data. ADR-001 is Accepted.
 - Phase 1 scope (2026-10-06): Steven accepted the Phase 0 exit report and decided OD-2 and OD-3 for Phase 1 (in-app alerts only; no consensus provider yet). Both stay open for later phases. See ADR-020.
 - Phase 2 entry (2026-10-12): Steven accepted the Phase 1 exit report; P2-1 decided (Massive not activated); OD-7 narrowed to a commercial dataset comparison. See ADR-029.
+- M2.4 scope (2026-10-16): Steven chose the S3 rule (each ETF's own trend, gated by stress), monthly targets with a defensive switch, the Radar candidates (L3/L4 companies and the S3 ETFs) and no ETF journal yet. See ADR-032.
 - P2-4, P2-5 and P2-7 (2026-10-15): Steven accepted the proposed paper portfolio, risk limits and unlocks, with a reviewed sector table and a portfolio drawdown alert. See ADR-031.
 - OD-7 for now (2026-10-13): Steven decided not to buy a survivorship-free dataset yet; OD-7 stays open for M2.5. The problems are recorded in `docs/KNOWN_ISSUES.md`.
