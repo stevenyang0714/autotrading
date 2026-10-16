@@ -180,7 +180,7 @@ def test_each_assignment_has_its_convergence_level(
     for assignment in assignments:
         row = assessments[assignment.id]
         assert (row.rule_version, row.known_at, row.ticker) == (
-            "0.3.0",  # since M2.3: L4 with the standard risk check, portfolio alerts
+            "0.4.0",  # since M2.4: rotation alerts (0.3.0: L4 and portfolio alerts)
             assignment.known_at,
             assignment.ticker,
         )
@@ -274,7 +274,7 @@ def test_every_alert_links_its_rule_version_and_evidence(client: TestClient) -> 
     kinds = {e["kind"] for e in entries}
     assert "event" in kinds
     for entry in entries:
-        assert entry["rule_version"] == "0.3.0"
+        assert entry["rule_version"] == "0.4.0"
         assert entry["evidence"] and all(e["label"] for e in entry["evidence"])
         for evidence in entry["evidence"]:
             if evidence["table"] in ("filings", "filing_buyback_statements"):
@@ -349,7 +349,7 @@ def test_alerts_cannot_change_and_levels_stop_at_l4(engine: Engine, stored: date
 
 def test_each_company_level_as_known_on_a_date(client: TestClient) -> None:
     body = client.get("/convergence", params={"known_at": iso(VALUED_AT)}).json()
-    assert body["rule_version"] == "0.3.0"
+    assert body["rule_version"] == "0.4.0"
     companies = {c["ticker"]: c for c in body["companies"]}
     assert sorted(companies) == ["AAPL", "META", "XOM"]
     for company in companies.values():
@@ -368,14 +368,14 @@ def test_each_company_level_as_known_on_a_date(client: TestClient) -> None:
 def test_rule_sets_are_registered_once_and_never_change(engine: Engine) -> None:
     rules = load_alert_rules()
     with Session(engine) as session:
-        assert sync_alert_rules(session, rules).unchanged == ["0.3.0", "0.2.0", "0.1.0"]
+        assert sync_alert_rules(session, rules).unchanged == ["0.4.0", "0.3.0", "0.2.0", "0.1.0"]
         entry = rules.rule_sets[0]
         edited = entry.model_copy(update={"event_lookback_days": 60})
-        with pytest.raises(AlertRulesVersionError, match=r"0\.3\.0 changed"):
+        with pytest.raises(AlertRulesVersionError, match=r"0\.4\.0 changed"):
             sync_alert_rules(session, rules.model_copy(update={"rule_sets": [edited]}))
-        bumped = edited.model_copy(update={"rule_version": "0.4.0", "status": "retired"})
+        bumped = edited.model_copy(update={"rule_version": "0.5.0", "status": "retired"})
         result = sync_alert_rules(session, rules.model_copy(update={"rule_sets": [entry, bumped]}))
-        assert result.created == ["0.4.0"]
+        assert result.created == ["0.5.0"]
         session.rollback()
 
 

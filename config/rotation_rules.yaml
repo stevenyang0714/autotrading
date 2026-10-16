@@ -1,0 +1,49 @@
+# ETF rotation research rules, strategy S3 (M2.4, ADR-032; build spec 02 §13, §15, §18).
+#
+# Deterministic and versioned like config/risk_rules.yaml: a released rule_version is immutable
+# (`make migrate` refuses changed content under an existing version, and a unit test pins each
+# version's sha256). Every rotation assessment and S3 signal stores the rule_version it used.
+#
+# Each ETF is judged against its own history only (no ranking across ETFs: P2-3, KI-1): its
+# trend is up when both trend measures are above their thresholds. The market's stress state
+# decides which ETFs may be held. The selected ETFs are held in equal weights; the rest is
+# cash. The target changes at the first assessment of each New York month, and at once when the
+# stress state rises into a defensive state. Inputs are the stored regime assessments and
+# factor snapshots known at T, as the database held them at S, under the versions named here.
+#
+# Research only: paper signals, no order, and no journal entry for ETFs yet (ADR-032 Q4).
+# Thresholds are Steven's defaults (Q1, Q2), unvalidated (OD-7): a change is a new version.
+version: 0.1.0
+rule_sets:
+  - rule_version: 0.1.0
+    status: active  # active: used for new assessments; retired: kept for the stored ones
+    released: "2026-10-16"
+    note: >-
+      Steven's decisions Q1-Q2 (ADR-032): each ETF's own trend (12-1 momentum and the close
+      against its 200-session average above zero), gated by the stress state (no high beta when
+      ELEVATED, defensive only when HIGH or CRISIS), equal weights, monthly targets with an
+      immediate defensive switch.
+    regime_rule_version: 0.1.0
+    factor_definition_version: 0.1.0
+    sleeves:  # universe order is the order shown
+      risk: [SPY, QQQ, IWM, XLK, XLE]
+      defensive: [TLT, IEF, GLD]
+    trend:  # both must be above (strictly) for the trend to be up
+      - measure: momentum_12_1
+        above: 0
+      - measure: close_vs_sma_200
+        above: 0
+    high_beta:
+      measure: beta_252d
+      at_least: 1.10
+      benchmark: SPY  # the benchmark's beta to itself is not stored; it counts as 1.00
+      benchmark_beta: 1.00
+    gates:  # the sleeves each stress state allows, and whether high-beta ETFs may be held
+      normal: {sleeves: [risk, defensive], high_beta: true}
+      elevated: {sleeves: [risk, defensive], high_beta: false}
+      high: {sleeves: [defensive], high_beta: false}
+      crisis: {sleeves: [defensive], high_beta: false}
+    defensive_switch: [high, crisis]  # rising into one of these resets the target mid-month
+    weight_quantum_pct: 0.01  # equal weights rounded down to this; the remainder stays in cash
+    regime_stale_after_days: 3
+    factor_stale_after_days: 5

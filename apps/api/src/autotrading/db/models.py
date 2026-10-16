@@ -1099,12 +1099,16 @@ class SignalRecord(Base):
         CheckConstraint("source_quality BETWEEN 1 AND 4", name="source_quality_range"),
         CheckConstraint("evidence_independence >= 0", name="evidence_independence_positive"),
         CheckConstraint("system_time >= generated_at", name="system_time_after_generated_at"),
+        # Since M2.4 (ADR-032) the strategy is part of the key: S3 and, later, S4 both make
+        # family 5 signals on the ETFs. NULLS NOT DISTINCT keeps one strategy-less signal.
         UniqueConstraint(
             "instrument_id",
             "family_id",
+            "strategy_id",
             "generated_at",
             "rule_version",
-            name="uq_signals_instrument_family_time_rule",
+            name="uq_signals_instrument_family_strategy_time_rule",
+            postgresql_nulls_not_distinct=True,
         ),
         Index("ix_signals_generated_at", "generated_at"),
     )
@@ -1264,7 +1268,7 @@ class TradeDecision(Base):
 
 # ---------- alerts (M1.7) ----------
 
-ALERT_KINDS = ("event", "level_change", "regime", "portfolio")
+ALERT_KINDS = ("event", "level_change", "regime", "portfolio", "rotation")
 ALERT_DIRECTIONS = ("up", "down")
 ASSESSMENT_TRIGGERS = ("schedule", "manual", "backfill", "replay")
 
@@ -1339,8 +1343,10 @@ class ConvergenceAssessment(Base):
 class Alert(Base):
     """An in-app alert (ADR-028; P1-1): a Phase 1 event (L0), a change of a company's
     convergence level, or (since M2.1, ADR-029) a change of the market's stress state, which
-    has no company. Each carries its rule version and the evidence behind it; one row per rule
-    version and source. Append-only and audited; acknowledging is a separate row."""
+    has no company; since M2.3 the paper portfolio's drawdown and since M2.4 a new S3 rotation
+    target (ADR-032), neither with a company. Each carries its rule version and the evidence
+    behind it; one row per rule version and source. Append-only and audited; acknowledging is
+    a separate row."""
 
     __tablename__ = "alerts"
     __table_args__ = (
@@ -1356,7 +1362,7 @@ class Alert(Base):
             "(kind = 'level_change' AND direction IS NOT NULL AND assessment_id IS NOT NULL"
             " AND instrument_id IS NOT NULL)"
             " OR (kind = 'event' AND direction IS NULL AND level = 0 AND instrument_id IS NOT NULL)"
-            " OR (kind IN ('regime', 'portfolio') AND direction IS NOT NULL"
+            " OR (kind IN ('regime', 'portfolio', 'rotation') AND direction IS NOT NULL"
             " AND assessment_id IS NULL AND instrument_id IS NULL AND ticker IS NULL)",
             name="kind_fields",
         ),
@@ -1592,6 +1598,71 @@ class RiskCheck(Base):
 
 
 # ---------- price, trend and factors (M2.2) ----------
+
+ROTATION_REASONS = ("month_start", "defensive_switch", "carried", "unavailable")
+
+
+class RotationRuleSet(Base):
+    """One released rule_version of config/rotation_rules.yaml (ADR-032), loaded by `make
+    migrate` with the sha256 of its content. Append-only and audited, like the risk rule sets."""
+
+    __tablename__ = "rotation_rule_sets"
+    __table_args__ = (
+        CheckConstraint(r"rule_version ~ '^\d+\.\d+\.\d+$'", name="rule_version_format"),
+        CheckConstraint("content_sha256 ~ '^[0-9a-f]{64}$'", name="content_sha256_format"),
+        UniqueConstraint("rule_version", name="uq_rotation_rule_sets_rule_version"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    rule_version: Mapped[str] = mapped_column(Text)
+    content: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    content_sha256: Mapped[str] = mapped_column(Text)
+    released: Mapped[date] = mapped_column(Date)
+    loaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class RotationAssessment(Base):
+    """The S3 ETF rotation at a time T (known_at) as the database held it at system_time, under
+    one rule version (ADR-032): every ETF's trend and gate, the target in force and why. One row
+    per T and rule version; `previous_id` is the assessment whose target it compared with or
+    carried. Append-only, not audited (like the regime assessments)."""
+
+    __tablename__ = "rotation_assessments"
+    __table_args__ = (
+        CheckConstraint(f"stress IS NULL OR {sql_in('stress', STRESS_STATES)}", name="stress"),
+        CheckConstraint(sql_in("reason", ROTATION_REASONS), name="reason"),
+        CheckConstraint(sql_in("trigger", ASSESSMENT_TRIGGERS), name="trigger"),
+        CheckConstraint("system_time >= known_at", name="system_time_after_known_at"),
+        CheckConstraint(
+            "(reason = 'unavailable') = (target IS NULL)", name="target_when_available"
+        ),
+        UniqueConstraint("known_at", "rule_version", name="uq_rotation_assessments_known_at_rule"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    known_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    system_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    rule_version: Mapped[str] = mapped_column(Text, ForeignKey("rotation_rule_sets.rule_version"))
+    stress: Mapped[str | None] = mapped_column(Text)
+    rebalance: Mapped[bool] = mapped_column(Boolean)
+    reason: Mapped[str] = mapped_column(Text)
+    target: Mapped[dict[str, str] | None] = mapped_column(JSONB)  # symbol -> weight (percent)
+    previous_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("rotation_assessments.id")
+    )
+    assessment: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    backfilled: Mapped[bool] = mapped_column(Boolean)
+    trigger: Mapped[str] = mapped_column(Text)
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
 
 FACTOR_SCOPES = ("price", "all")
 

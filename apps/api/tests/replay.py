@@ -24,6 +24,7 @@ from autotrading.ingestion.schedule import refresh_window
 from autotrading.repositories.factors import record_universe, stored_definitions
 from autotrading.repositories.regime import record_regime, stored_regime_rules
 from autotrading.repositories.risk import record_portfolio, stored_risk_rules
+from autotrading.repositories.rotation import record_points, stored_rotation_rules
 from autotrading.settings import get_settings
 from tests import alpaca_replay, fred_replay, news_replay, sec_replay
 
@@ -81,9 +82,13 @@ def main() -> None:
         for at in points:
             record_portfolio(session, risk_rules, at, now, "replay")
         session.commit()
+        # The S3 ETF rotation (M2.4) at the same points, in order, as `make rotation-backfill`.
+        rotation_rules = stored_rotation_rules(session)
+        assert rotation_rules is not None, "rotation rules not loaded: run `make migrate` first"
+        rotations = record_points(session, rotation_rules, points, now, "replay")
     print(
-        f"stored {stored} buyback state assignments, {regimes} regime assessments and "
-        f"{snapshots} factor snapshots"
+        f"stored {stored} buyback state assignments, {regimes} regime assessments, "
+        f"{snapshots} factor snapshots and {rotations} rotation assessments"
     )
 
 

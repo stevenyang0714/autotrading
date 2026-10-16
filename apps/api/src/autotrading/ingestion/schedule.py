@@ -78,6 +78,8 @@ REGIME = DailySchedule(10, 55)  # M2.1: after FRED (10:15) and the daily closes 
 FACTORS = DailySchedule(11, 5)
 # M2.3: the paper portfolio and its drawdown alert, after the buyback states and factors
 PORTFOLIO = DailySchedule(11, 10)
+# M2.4: the S3 ETF rotation, after the regime (10:55) and the factor snapshots (11:05)
+ROTATION = DailySchedule(11, 15)
 # Official RSS feeds (M0.8): every 30 minutes at :05 and :35, one run per feed.
 NEWS_FEEDS = IntervalSchedule(30, 5)
 

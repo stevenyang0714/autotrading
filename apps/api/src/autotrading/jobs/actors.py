@@ -32,7 +32,7 @@ from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.ingestion.schedule import market_calendar
 from autotrading.jobs.broker import WorkerHeartbeat, configure_broker
-from autotrading.repositories import factors, regime, risk
+from autotrading.repositories import factors, regime, risk, rotation
 from autotrading.settings import get_settings
 
 logger = logging.getLogger(__name__)
@@ -360,6 +360,60 @@ def snapshot_portfolio(trigger: str) -> None:
 
 def start_portfolio_snapshot(*, manual: bool) -> None:
     snapshot_portfolio.send("manual" if manual else "schedule")
+
+
+# ---------- S3 ETF rotation (M2.4) ----------
+
+ROTATION_BACKFILL_SINCE = date(2017, 1, 1)  # ADR-032: 12-1 momentum needs a year of closes
+ROTATION_TIME_LIMIT_MS = 30 * 60 * 1000  # every month end since 2017, in order
+
+
+@dramatiq.actor(queue_name=EVALUATION_QUEUE, max_retries=1, broker=broker)
+def evaluate_rotation(trigger: str) -> None:
+    """The rotation now (T = S = now): signals of a new target and its alert (ADR-032)."""
+    with sessions()() as session:
+        now = _now(session)
+        rules = rotation.stored_rotation_rules(session)
+        if rules is None:
+            logger.warning("Rotation rules not loaded (make migrate): nothing assessed")
+            return
+        row = rotation.record_rotation(session, rules, now, now, trigger)
+        session.commit()
+    logger.info(
+        "Rotation at %s (%s): %s",
+        now,
+        trigger,
+        f"{row.reason}, target {row.target}" if row is not None else "already stored",
+    )
+
+
+@dramatiq.actor(
+    queue_name=EVALUATION_QUEUE, max_retries=1, time_limit=ROTATION_TIME_LIMIT_MS, broker=broker
+)
+def backfill_rotation(system_time: str) -> None:
+    """The rotation at every month end since 2017, in order, as the database held it at
+    `system_time` (each compares with the previous month end of the run)."""
+    held = datetime.fromisoformat(system_time)
+    with sessions()() as session:
+        rules = rotation.stored_rotation_rules(session)
+        if rules is None:
+            logger.warning("Rotation rules not loaded (make migrate): nothing assessed")
+            return
+        points = month_ends(ROTATION_BACKFILL_SINCE, held)
+        stored = rotation.record_points(session, rules, points, held, "backfill")
+    logger.info("Rotation backfill: %d month ends, %d stored", len(points), stored)
+
+
+def start_rotation_evaluation(*, manual: bool) -> None:
+    evaluate_rotation.send("manual" if manual else "schedule")
+
+
+def start_rotation_backfill() -> int:
+    """One message for every month end since 2017 (in order), with one system time (now)."""
+    with sessions()() as session:
+        now = _now(session)
+    backfill_rotation.send(now.isoformat())
+    return len(month_ends(ROTATION_BACKFILL_SINCE, now))
 
 
 def start_buyback_backfill() -> int:

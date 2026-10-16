@@ -76,6 +76,8 @@ APP_TABLES = {
     "risk_rule_sets",
     "portfolio_snapshots",
     "risk_checks",
+    "rotation_rule_sets",
+    "rotation_assessments",
 }
 FEB = datetime(2025, 2, 1, 21, 5, tzinfo=UTC)
 AUG = datetime(2025, 8, 1, 20, 30, tzinfo=UTC)
@@ -241,6 +243,11 @@ def test_guardrails_exist(engine: Engine) -> None:
         "risk_checks_append_only",
         "risk_checks_no_truncate",
         "risk_checks_audit",
+        "rotation_rule_sets_append_only",
+        "rotation_rule_sets_no_truncate",
+        "rotation_rule_sets_audit",
+        "rotation_assessments_append_only",
+        "rotation_assessments_no_truncate",
         "trade_decisions_risk_check",
     } <= triggers
     assert exclusions == {"ex_identifiers_value_period", "ex_identifiers_subject_period"}

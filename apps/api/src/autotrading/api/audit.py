@@ -37,6 +37,7 @@ from autotrading.db.models import (
     RegimeRuleSet,
     RiskCheck,
     RiskRuleSet,
+    RotationRuleSet,
     Source,
     ThesisCard,
     TradeDecision,
@@ -199,6 +200,12 @@ def _labels(session: Session, table: str, ids: list[str]) -> dict[str, str]:
         "risk_checks": lambda: [
             (row.id, f"risk check {row.ticker} {row.side} {row.quantity}: {row.verdict}")
             for row in session.scalars(select(RiskCheck).where(RiskCheck.id.in_(_uuids(ids))))
+        ],
+        "rotation_rule_sets": lambda: [
+            (row.id, f"rotation rules {row.rule_version}")
+            for row in session.scalars(
+                select(RotationRuleSet).where(RotationRuleSet.id.in_(_uuids(ids)))
+            )
         ],
         "factor_definition_sets": lambda: [
             (row.id, f"factor definitions {row.definition_version}")

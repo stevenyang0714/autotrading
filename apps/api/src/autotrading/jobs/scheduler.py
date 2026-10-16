@@ -22,6 +22,7 @@ from autotrading.ingestion.schedule import (
     PORTFOLIO,
     REFRESH_TIMEZONE,
     REGIME,
+    ROTATION,
     SEC_EDGAR,
     SNAPSHOT_SECONDS,
 )
@@ -104,6 +105,15 @@ def main() -> None:
         lambda: actors.start_portfolio_snapshot(manual=False),
         CronTrigger(hour=PORTFOLIO.hour, minute=PORTFOLIO.minute, timezone=REFRESH_TIMEZONE),
         id="portfolio",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=12 * 3600,
+    )
+    # S3 ETF rotation (M2.4): daily at 11:15 SGT, after the regime and the factor snapshots.
+    scheduler.add_job(
+        lambda: actors.start_rotation_evaluation(manual=False),
+        CronTrigger(hour=ROTATION.hour, minute=ROTATION.minute, timezone=REFRESH_TIMEZONE),
+        id="rotation",
         max_instances=1,
         coalesce=True,
         misfire_grace_time=12 * 3600,
