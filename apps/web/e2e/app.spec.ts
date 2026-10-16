@@ -528,8 +528,11 @@ test("Opportunity Radar lists the candidates and the Strategy Lab the S3 rotatio
   const rotation = page.locator("#rotation");
   await expect(rotation).toContainText(/rotation rules \d+\.\d+\.\d+/);
   await expect(rotation.locator("[data-target]")).toContainText(/Target: |No target: /);
+  // Every ETF is read unless the regime was unavailable (then there is no target and no table).
   const readings = rotation.getByRole("table", { name: "ETF readings" });
-  await expect(readings.locator("tbody tr[data-etf]")).toHaveCount(8);
+  if ((await rotation.locator("[data-target]").textContent())?.includes("Target: ")) {
+    await expect(readings.locator("tbody tr[data-etf]")).toHaveCount(8);
+  }
   expect(await rotation.getByRole("table", { name: "Recent targets" }).locator("tbody tr").count()).toBeGreaterThan(0);
 });
 

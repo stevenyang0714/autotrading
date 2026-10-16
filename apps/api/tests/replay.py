@@ -82,10 +82,12 @@ def main() -> None:
         for at in points:
             record_portfolio(session, risk_rules, at, now, "replay")
         session.commit()
-        # The S3 ETF rotation (M2.4) at the same points, in order, as `make rotation-backfill`.
+        # The S3 ETF rotation (M2.4) at the same points, in order, as `make rotation-backfill`:
+        # at a later system time, so it reads the regime and snapshots stored above.
         rotation_rules = stored_rotation_rules(session)
         assert rotation_rules is not None, "rotation rules not loaded: run `make migrate` first"
-        rotations = record_points(session, rotation_rules, points, now, "replay")
+        held = session.execute(select(func.now())).scalar_one()
+        rotations = record_points(session, rotation_rules, points, held, "replay")
     print(
         f"stored {stored} buyback state assignments, {regimes} regime assessments, "
         f"{snapshots} factor snapshots and {rotations} rotation assessments"

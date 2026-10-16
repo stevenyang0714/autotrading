@@ -59,6 +59,7 @@ from autotrading.repositories.rotation import (
     raise_alerts,
     recompute,
     record_points,
+    record_rotation,
     rotation_at,
     same,
     stored_rotation_rules,
@@ -377,6 +378,22 @@ def test_rotation_alerts_are_listed_with_the_market_alerts(
         assert (entry["ticker"], entry["level_name"]) == (None, "S3 TARGET")
         assert entry["title"].startswith("S3 rotation (")
         assert entry["evidence"][0]["table"] == "rotation_assessments"
+
+
+def test_an_unavailable_assessment_is_stored_without_a_target(
+    sessions: sessionmaker[Session], stored: tuple[datetime, datetime]
+) -> None:
+    before, _ = stored
+    early = end_of_day(date(2026, 6, 30))  # no regime recorded by `before`
+    with sessions() as session:
+        rules = stored_rotation_rules(session)
+        assert rules is not None
+        row = record_rotation(session, rules, early, before, "manual")
+        assert row is not None
+        assert (row.reason, row.target, row.rebalance) == ("unavailable", None, False)
+        signals = select(SignalRecord).where(SignalRecord.generated_at == early)
+        assert session.scalars(signals).all() == []
+        session.rollback()
 
 
 # ---------- web fixtures (opt-in recorder) ----------

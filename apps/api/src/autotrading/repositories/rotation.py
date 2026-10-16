@@ -18,7 +18,7 @@ from typing import cast
 from uuid import UUID
 
 import yaml
-from sqlalchemy import select
+from sqlalchemy import null, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
@@ -221,7 +221,8 @@ def record_rotation(
             stress=rotation.stress,
             rebalance=rotation.rebalance,
             reason=rotation.reason,
-            target=_target(rotation),
+            # SQL NULL when unavailable (a plain None would store JSON null)
+            target=_target(rotation) if rotation.target is not None else null(),
             previous_id=before.id if before is not None else None,
             assessment=rotation.model_dump(mode="json"),
             backfilled=backfilled,
