@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-15T09:43:45.869590+00:00",
+  "recorded_at": "2026-10-16T04:28:55.033646+00:00",
   "recorded_from": "recorded FRED vintages and Alpaca closes replayed into the integration test database (tests/integration/test_regime.py)",
   "endpoint": "/alerts",
   "params": {
@@ -9,13 +9,13 @@
   },
   "response": {
     "known_at": "2026-10-06T18:00:00Z",
-    "rule_version": "0.3.0",
+    "rule_version": "0.4.0",
     "status": "all",
     "open_by_level": {},
     "entries": [
       {
-        "id": "adb44e74-7de3-4378-902d-dbaae551481e",
-        "rule_version": "0.3.0",
+        "id": "ce0262a8-dc70-465b-a87d-9677b66bf876",
+        "rule_version": "0.4.0",
         "ticker": null,
         "kind": "regime",
         "level": 0,
@@ -24,12 +24,12 @@
         "direction": "down",
         "title": "Market stress eased to NORMAL (was ELEVATED)",
         "known_at": "2026-10-06T18:00:00Z",
-        "system_time": "2026-10-15T09:43:45.646067Z",
+        "system_time": "2026-10-16T04:28:54.815645Z",
         "backfilled": true,
         "evidence": [
           {
             "table": "regime_assessments",
-            "id": "3250ba98-e610-43c0-8c77-3d7c69f21bf1",
+            "id": "773b21e8-4849-4c00-be64-27d3ff761e01",
             "label": "Stress NORMAL: 0 of 9 available flags on",
             "url": null
           }

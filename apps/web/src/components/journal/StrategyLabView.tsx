@@ -2,7 +2,8 @@ import { AsKnownOnForm } from "@/components/AsKnownOnForm";
 import { Metric } from "@/components/Metric";
 import { JournalTable } from "@/components/journal/JournalTable";
 import { SignalList } from "@/components/journal/SignalList";
-import type { Journal, Signals } from "@/lib/api";
+import { RotationView } from "@/components/rotation/RotationView";
+import type { Journal, RotationResponse, Signals } from "@/lib/api";
 import { formatSgtEt } from "@/lib/time";
 
 const HREF = "/dashboards/strategy-lab";
@@ -25,16 +26,19 @@ export function PaperOnlyNotice({ detail }: { detail: string }) {
 
 /**
  * Strategy Lab (M1.6, ADR-027): the paper journal as known on the chosen date, the current
- * signals, and where to write a new Thesis Card. Backtests arrive in Phase 2.
+ * signals, where to write a new Thesis Card, and since M2.4 the S3 ETF rotation (ADR-032).
+ * Backtests arrive with M2.5.
  */
 export function StrategyLabView({
   journal,
   signals,
+  rotation = null,
   knownOn,
   invalidKnownOn = false,
 }: {
   journal: Journal;
   signals: Signals | null;
+  rotation?: RotationResponse | null;
   knownOn?: string;
   invalidKnownOn?: boolean;
 }) {
@@ -47,10 +51,14 @@ export function StrategyLabView({
           </Metric>
         </h1>
         <p className="text-sm text-neutral-400">
-          The paper journal: every Thesis Card with its TRADE or NO TRADE decision and its paper return against SPY.
-          Backtests and walk-forward validation come in{" "}
+          The paper journal: every Thesis Card with its TRADE or NO TRADE decision and its paper return against SPY,
+          and the{" "}
+          <Metric termId="etf_rotation" icon={false}>
+            S3 ETF rotation
+          </Metric>
+          . Backtests and walk-forward validation come with{" "}
           <Metric termId="planned_phase" icon={false}>
-            Phase 2
+            <span data-identifier="">M2.5</span>
           </Metric>
           .
         </p>
@@ -76,6 +84,14 @@ export function StrategyLabView({
         ) : (
           <SignalList signals={signals.current} knownOn={knownOn} />
         )}
+      </div>
+      <div className="space-y-2 scroll-mt-4" data-block="rotation" id="rotation">
+        <h2 className="text-lg font-medium">
+          <Metric termId="etf_rotation" zh>
+            ETF rotation (S3)
+          </Metric>
+        </h2>
+        <RotationView data={rotation} knownOn={knownOn} />
       </div>
       <div className="space-y-2" data-block="journal">
         <div className="flex flex-wrap items-baseline justify-between gap-2">

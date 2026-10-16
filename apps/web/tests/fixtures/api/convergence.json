@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-15T09:41:17.154674+00:00",
+  "recorded_at": "2026-10-16T04:28:11.204808+00:00",
   "recorded_from": "recorded SEC filings, Alpaca closes, FRED yields and news replayed into the integration test database (tests/integration/test_alerts.py)",
   "endpoint": "/convergence",
   "params": {
@@ -7,7 +7,7 @@
   },
   "response": {
     "known_at": "2026-10-06T12:00:00Z",
-    "rule_version": "0.3.0",
+    "rule_version": "0.4.0",
     "companies": [
       {
         "ticker": "AAPL",
@@ -53,8 +53,8 @@
             "family_id": 2,
             "label": "Buyback state ACTIVE",
             "table": "buyback_state_assignments",
-            "row_id": "3cf41c20-8fe8-4f21-b3d4-54583a2f2184",
-            "source": "buyback_state_assignments:3cf41c20-8fe8-4f21-b3d4-54583a2f2184",
+            "row_id": "954bbd28-26a9-43e0-81f9-376bf496df78",
+            "source": "buyback_state_assignments:954bbd28-26a9-43e0-81f9-376bf496df78",
             "known_at": "2026-10-06T12:00:00Z",
             "detail": "rules 0.3.0"
           },
@@ -63,8 +63,8 @@
             "family_id": 5,
             "label": "Market confirmation",
             "table": "buyback_state_assignments",
-            "row_id": "3cf41c20-8fe8-4f21-b3d4-54583a2f2184",
-            "source": "market:3cf41c20-8fe8-4f21-b3d4-54583a2f2184",
+            "row_id": "954bbd28-26a9-43e0-81f9-376bf496df78",
+            "source": "market:954bbd28-26a9-43e0-81f9-376bf496df78",
             "known_at": "2026-10-06T12:00:00Z",
             "detail": "trade_ready.above_average, trade_ready.relative_return"
           }
@@ -118,8 +118,8 @@
             "family_id": 2,
             "label": "Buyback state ACTIVE",
             "table": "buyback_state_assignments",
-            "row_id": "557ebd4a-b97f-4891-878c-68289e94e4d9",
-            "source": "buyback_state_assignments:557ebd4a-b97f-4891-878c-68289e94e4d9",
+            "row_id": "3d03df1b-d912-44ff-a8e2-50c0e49e1c53",
+            "source": "buyback_state_assignments:3d03df1b-d912-44ff-a8e2-50c0e49e1c53",
             "known_at": "2026-10-06T12:00:00Z",
             "detail": "rules 0.3.0"
           },
@@ -128,8 +128,8 @@
             "family_id": 5,
             "label": "Market confirmation",
             "table": "buyback_state_assignments",
-            "row_id": "557ebd4a-b97f-4891-878c-68289e94e4d9",
-            "source": "market:557ebd4a-b97f-4891-878c-68289e94e4d9",
+            "row_id": "3d03df1b-d912-44ff-a8e2-50c0e49e1c53",
+            "source": "market:3d03df1b-d912-44ff-a8e2-50c0e49e1c53",
             "known_at": "2026-10-06T12:00:00Z",
             "detail": "trade_ready.above_average, trade_ready.relative_return"
           }
@@ -183,8 +183,8 @@
             "family_id": 5,
             "label": "Market confirmation",
             "table": "buyback_state_assignments",
-            "row_id": "041f81f5-03c8-4229-897c-dda2b2e5c3fb",
-            "source": "market:041f81f5-03c8-4229-897c-dda2b2e5c3fb",
+            "row_id": "0795c6c3-ff54-442f-96ab-da7e6948bf4a",
+            "source": "market:0795c6c3-ff54-442f-96ab-da7e6948bf4a",
             "known_at": "2026-10-06T12:00:00Z",
             "detail": "trade_ready.above_average, trade_ready.relative_return"
           }

@@ -78,6 +78,8 @@ export type CompleteTermId =
   | "days_to_exit"
   | "dead_letter"
   | "debt_funded_buyback"
+  | "defensive_sleeve"
+  | "defensive_switch"
   | "depreciation_amortization"
   | "dev_log"
   | "diluted_shares"
@@ -102,6 +104,7 @@ export type CompleteTermId =
   | "eps_diluted"
   | "eps_diluted_ttm"
   | "equity_risk_premium"
+  | "etf_rotation"
   | "ev_to_ebitda"
   | "ev_to_sales"
   | "evidence_item"
@@ -125,6 +128,7 @@ export type CompleteTermId =
   | "gross_margin"
   | "gross_profit"
   | "guidance_statement"
+  | "high_beta"
   | "hy_oas_percentile"
   | "implied_upside"
   | "income_tax_expense"
@@ -187,6 +191,7 @@ export type CompleteTermId =
   | "operating_cash_flow"
   | "operating_income"
   | "operating_margin"
+  | "opportunity_candidate"
   | "owner_fcf"
   | "page_audit_log"
   | "page_data_health"
@@ -222,6 +227,7 @@ export type CompleteTermId =
   | "reconciliation_status"
   | "regime"
   | "regime_credit"
+  | "regime_gate"
   | "regime_growth"
   | "regime_inflation"
   | "regime_policy"
@@ -251,9 +257,14 @@ export type CompleteTermId =
   | "risk_limit_sector"
   | "risk_limit_volume"
   | "risk_rule_set"
+  | "risk_sleeve"
   | "risk_veto"
   | "roe"
   | "roic"
+  | "rotation_alert"
+  | "rotation_rebalance"
+  | "rotation_rule_set"
+  | "rotation_target"
   | "rule_insight"
   | "sahm_rule_indicator"
   | "sbc_offset"
@@ -291,6 +302,7 @@ export type CompleteTermId =
   | "total_return"
   | "trade_decision"
   | "trailing_twelve_months"
+  | "trend_filter"
   | "update_cadence"
   | "valuation_assumptions"
   | "valuation_price"
@@ -380,27 +392,28 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "term_id": "alert",
     "display_name": "Alert",
     "category": "alerts",
-    "short_definition": "An in-app notice: a company event (L0), a change of a company's convergence level, or a change of the market's stress state.",
-    "full_definition": "Each alert stores its rule version and the evidence behind it (links to the filings or the buyback assignment). Level changes raise one when either side is L1 or above; each new event since the previous assessment raises an L0 alert. Since M2.1 a change of the market stress state is a market-wide alert with no company, under alert rules 0.2.0. Alerts never change; acknowledging is a separate record. In-app only (P1-1).",
+    "short_definition": "An in-app notice: a company event (L0), a change of a company's convergence level, or a market-wide change (stress state, portfolio drawdown, S3 rotation target).",
+    "full_definition": "Each alert stores its rule version and the evidence behind it (links to the filings, the buyback assignment, or the regime, portfolio or rotation assessment). Level changes raise one when either side is L1 or above; each new event since the previous assessment raises an L0 alert. Market-wide alerts have no company: the stress state (alert rules 0.2.0), the paper portfolio's drawdown (0.3.0) and a new S3 rotation target (0.4.0). Alerts never change; acknowledging is a separate record. In-app only (P1-1).",
     "formula": "event or level change under one rule version",
     "unit": "alert",
     "example": "AAPL reached L1 Watch (alert rules 0.1.0).",
     "direction": "N/A",
     "interpretation": "Something needs a look.",
     "why_it_matters": "A short queue instead of every page.",
-    "source": "Alert rules 0.1.0; api/alerts.py",
+    "source": "Alert rules 0.4.0; api/alerts.py",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/alert_rules.yaml",
-    "as_of": "2026-10-12",
+    "as_of": "2026-10-16",
     "update_cadence": "daily, with the buyback states",
     "caveats": "Backfilled alerts (computed after their date) are hidden by default.",
     "related_terms": [
       "convergence_level",
       "alert_acknowledgement",
-      "alert_rule_set"
+      "alert_rule_set",
+      "rotation_alert"
     ],
-    "methodology_version": "0.2.0",
+    "methodology_version": "0.3.0",
     "name_zh": "警示",
-    "hint_zh": "App 內通知；一則事件（L0）或公司收斂等級變化，附規則版本與依據。"
+    "hint_zh": "App 內通知：公司事件（L0）、收斂等級變化，或市場層級的變化（壓力、組合回撤、S3 輪動目標），附規則版本與依據。"
   },
   "alert_acknowledgement": {
     "term_id": "alert_acknowledgement",
@@ -1687,21 +1700,21 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "unit": "page",
     "example": "A thesis that reaches L3 raises an alert for review.",
     "direction": "N/A",
-    "interpretation": "Live from M1.7: each company's convergence level and the open alerts (company and, since M2.1, market stress), with their rule version and evidence; acknowledge to clear.",
+    "interpretation": "Live from M1.7: each company's convergence level and the open alerts (company and market-wide: stress since M2.1, portfolio drawdown since M2.3, S3 rotation targets since M2.4), with their rule version and evidence; acknowledge to clear.",
     "why_it_matters": "Turns many signals into a short list that needs a decision.",
     "source": "Build spec 02 §21; research report 01 §21; ROADMAP dashboard map; ADR-028",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/spec/02_master_build_prompt_v2.md",
-    "as_of": "2026-10-15",
+    "as_of": "2026-10-16",
     "update_cadence": "per release",
-    "caveats": "In-app only (OD-2). L4 needs the standard paper position's risk check (M2.3); portfolio drawdown alerts have no company.",
+    "caveats": "In-app only (OD-2). L4 needs the standard paper position's risk check (M2.3); stress, portfolio and rotation alerts have no company.",
     "related_terms": [
       "planned_phase",
       "convergence_level",
       "alert"
     ],
-    "methodology_version": "0.4.0",
+    "methodology_version": "0.5.0",
     "name_zh": "警示中心",
-    "hint_zh": "所有警示與通知（Phase 1）。"
+    "hint_zh": "公司收斂等級與警示，加上市場層級警示（壓力、組合回撤、S3 輪動目標）；只在 App 內。"
   },
   "dashboard_congress_trades": {
     "term_id": "dashboard_congress_trades",
@@ -1909,27 +1922,28 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "term_id": "dashboard_opportunity_radar",
     "display_name": "Opportunity Radar",
     "category": "navigation",
-    "short_definition": "Every universe instrument's trend, risk and factor values against its own history.",
-    "full_definition": "Since M2.2 (ADR-030): one row per universe equity and ETF with its momentum, averages, volatility, beta and momentum against SPY, and for equities the percentile of each value and quality measure in its own history, as known on the chosen date. Candidates from convergence levels, factors and the regime come with M2.4 on the same page.",
-    "formula": "not a calculation; reads GET /factors",
+    "short_definition": "The rules' candidates, and every universe instrument's trend, risk and factor values against its own history.",
+    "full_definition": "Since M2.4 (ADR-032): the candidates as known on the chosen date, companies at L3 or L4 (S1) and the ETFs of the S3 rotation target, each with its evidence, rule versions and the market's stress state. Since M2.2 (ADR-030): one row per universe equity and ETF with its momentum, averages, volatility, beta and momentum against SPY, and for equities the percentile of each value and quality measure in its own history.",
+    "formula": "not a calculation; reads GET /candidates and GET /factors",
     "unit": "page",
     "example": "As known on 2026-10-06 (recorded data): NVDA 12-1 momentum +21.09%, 4.60 points ahead of SPY.",
     "direction": "N/A",
-    "interpretation": "A map of where each instrument stands against its own past; not a ranking and not a buy list.",
-    "why_it_matters": "The inputs the candidates of M2.4 will be built from, visible first.",
-    "source": "Build spec 02 §13 and §21; ADR-030",
+    "interpretation": "A short list to research and a map of where each instrument stands against its own past; not a ranking and not a buy list.",
+    "why_it_matters": "Where a decision is needed, next to the inputs behind it.",
+    "source": "Build spec 02 §13 and §21; ADR-030; ADR-032",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/factor_definitions.yaml",
-    "as_of": "2026-10-13",
-    "update_cadence": "daily (11:05 SGT)",
-    "caveats": "Time-series only: no delisted companies, so no cross-sectional ranks (P2-3, KI-1). Candidates arrive with M2.4.",
+    "as_of": "2026-10-16",
+    "update_cadence": "daily (11:00, 11:05 and 11:15 SGT)",
+    "caveats": "Long only (OD-5). Time-series only: no delisted companies, so no cross-sectional ranks (P2-3, KI-1). Thresholds unvalidated (OD-7).",
     "related_terms": [
+      "opportunity_candidate",
+      "etf_rotation",
       "momentum_12_1",
-      "factor_percentile",
-      "factor_definition_set"
+      "factor_percentile"
     ],
-    "methodology_version": "0.2.0",
+    "methodology_version": "0.3.0",
     "name_zh": "機會雷達",
-    "hint_zh": "18 檔標的的動能、均線、波動、beta 與相對 SPY，以及股票的估值與品質在自身歷史的百分位；候選名單在 M2.4。"
+    "hint_zh": "規則標出的候選（L3/L4 公司與 S3 持有的 ETF），以及 18 檔標的的動能、均線、波動與各自歷史百分位；不是買進清單。"
   },
   "dashboard_options_vol": {
     "term_id": "dashboard_options_vol",
@@ -2008,27 +2022,27 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "Strategy Lab",
     "category": "navigation",
     "short_definition": "Paper journal, backtests, walk-forward validation and paper trading.",
-    "full_definition": "Live from M1.6 as the paper journal: every Thesis Card with its decision and paper return against SPY, the current signals, and a link to write a new card. Point-in-time backtests with costs and walk-forward validation follow in Phase 2 (02 §23).",
+    "full_definition": "Live from M1.6 as the paper journal: every Thesis Card with its decision and paper return against SPY, the current signals, and a link to write a new card. Since M2.4 (ADR-032) also the S3 ETF rotation: the target in force, each ETF's trend and gate, and every target set since 2017. Point-in-time backtests with costs and walk-forward validation follow in M2.5 (02 §23).",
     "formula": "not a calculation; dashboard defined in build spec 02 §21",
     "unit": "page",
-    "example": "An AAPL NO TRADE (priced in) next to an AAPL paper TRADE with its return against SPY.",
+    "example": "An AAPL NO TRADE next to an AAPL paper TRADE; the S3 rotation holding SPY, QQQ, XLE and XLK.",
     "direction": "N/A",
     "interpretation": "Review decisions as known on a date; open a card for its evidence and replay.",
     "why_it_matters": "No strategy can be unlocked without out-of-sample evidence; the journal records judgement until then.",
     "source": "Build spec 02 §21; research report 01 §21; ROADMAP dashboard map; ADR-027",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/spec/02_master_build_prompt_v2.md",
-    "as_of": "2026-10-11",
+    "as_of": "2026-10-16",
     "update_cadence": "per release",
-    "caveats": "Paper only. Backtests and walk-forward validation arrive in Phase 2.",
+    "caveats": "Paper only. ETFs cannot enter the journal yet (ADR-032 Q4). Backtests and walk-forward validation arrive in M2.5.",
     "related_terms": [
-      "planned_phase",
       "journal_entry",
       "signal",
-      "paper_return"
+      "paper_return",
+      "etf_rotation"
     ],
-    "methodology_version": "0.2.0",
+    "methodology_version": "0.3.0",
     "name_zh": "策略實驗室",
-    "hint_zh": "模擬交易日誌與回測（Phase 1–2）。"
+    "hint_zh": "模擬交易日誌、目前的訊號，以及 S3 ETF 輪動的目標與歷史；回測在 M2.5。"
   },
   "dashboard_x_expert_watch": {
     "term_id": "dashboard_x_expert_watch",
@@ -2179,6 +2193,58 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "借錢買回",
     "hint_zh": "期間內淨負債上升且買回超過自由現金流。"
+  },
+  "defensive_sleeve": {
+    "term_id": "defensive_sleeve",
+    "display_name": "Defensive Sleeve",
+    "category": "signal",
+    "short_definition": "The rotation's defensive ETFs: TLT, IEF and GLD.",
+    "full_definition": "The only ETFs allowed when stress is HIGH or CRISIS. Each still needs its own trend up; when none is up the rotation holds cash.",
+    "formula": "a fixed list in the rule version",
+    "unit": "list",
+    "example": "TLT, IEF, GLD.",
+    "direction": "N/A",
+    "interpretation": "Where the rotation goes when stress is high.",
+    "why_it_matters": "Bonds and gold have often held up when equities fell, though not always (2022).",
+    "source": "Rotation rules 0.1.0 (config/rotation_rules.yaml); domain/rotation.py; ADR-032",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/rotation_rules.yaml",
+    "as_of": "2026-10-16",
+    "update_cadence": "per release",
+    "caveats": "Thresholds are Steven's defaults (Q1, Q2), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "risk_sleeve",
+      "regime_gate",
+      "defensive_switch"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "防守型",
+    "hint_zh": "輪動裡的防守型 ETF：TLT、IEF、GLD；壓力高時只能持有這些。"
+  },
+  "defensive_switch": {
+    "term_id": "defensive_switch",
+    "display_name": "Defensive Switch",
+    "category": "signal",
+    "short_definition": "A mid-month change of the rotation target when stress rises into HIGH or CRISIS.",
+    "full_definition": "The target is set again at once from the defensive sleeve. When stress eases within the month, the defensive target stays until the next month starts. Month-end history before daily assessments (2026-10) cannot show one.",
+    "formula": "stress rises into (HIGH, CRISIS) -> new target now",
+    "unit": "event",
+    "example": "Stress rises from ELEVATED to HIGH on the 15th: TLT, IEF and GLD (those in trend) from that day.",
+    "direction": "N/A",
+    "interpretation": "The rotation reacted to stress without waiting for the month end.",
+    "why_it_matters": "Limits the time spent in risk assets when stress jumps.",
+    "source": "Rotation rules 0.1.0 (config/rotation_rules.yaml); domain/rotation.py; ADR-032",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/rotation_rules.yaml",
+    "as_of": "2026-10-16",
+    "update_cadence": "daily (11:15 SGT); targets change at month starts and defensive switches",
+    "caveats": "VIX above 30 alone gives HIGH (KI-5), so switches can come in pairs with the next month start. Thresholds are Steven's defaults (Q1, Q2), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "rotation_rebalance",
+      "defensive_sleeve",
+      "stress_state"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "轉防守",
+    "hint_zh": "月中壓力升到 HIGH 或 CRISIS 時立刻改成防守型；壓力下降要等下個月才換回。"
   },
   "depreciation_amortization": {
     "term_id": "depreciation_amortization",
@@ -2798,6 +2864,33 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "股權風險溢酬",
     "hint_zh": "股票相對美債要求的額外年報酬；假設值，2–10%。"
   },
+  "etf_rotation": {
+    "term_id": "etf_rotation",
+    "display_name": "ETF Rotation (S3)",
+    "category": "signal",
+    "short_definition": "Strategy S3: which of the 8 ETFs to hold, from each one's own trend and the market's stress state. Research only.",
+    "full_definition": "Each ETF (SPY, QQQ, IWM, XLK, XLE, TLT, IEF, GLD) is judged against its own history: its trend is up when 12-1 momentum and the close against its 200-session average are both above 0. The stress state gates what may be held. The selected ETFs are held in equal weights, the rest in cash. The target changes at the first assessment of each New York month, and at once when stress rises into HIGH or CRISIS. A new target makes paper signals of family 5 and family 1 for S3 (ADR-032).",
+    "formula": "trend up (both measures > 0) and allowed by the stress state -> equal weight; else cash",
+    "unit": "target",
+    "example": "As known on 2026-10-01 (the September month end, NORMAL): SPY, QQQ, IWM, XLK and XLE at 20% each.",
+    "direction": "N/A",
+    "interpretation": "Which ETFs the rules would hold now, and why each other one is out.",
+    "why_it_matters": "A deterministic, reproducible rotation that M2.5 can backtest with costs.",
+    "source": "Rotation rules 0.1.0 (config/rotation_rules.yaml); domain/rotation.py; ADR-032",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/rotation_rules.yaml",
+    "as_of": "2026-10-16",
+    "update_cadence": "daily (11:15 SGT); targets change at month starts and defensive switches",
+    "caveats": "Research only: ETFs cannot enter the journal yet (ADR-032 Q4). No costs until M2.5 (P2-6). The 8 ETFs were chosen today (hindsight). Thresholds are Steven's defaults (Q1, Q2), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "rotation_target",
+      "trend_filter",
+      "regime_gate",
+      "signal"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "ETF 輪動（S3）",
+    "hint_zh": "8 檔 ETF 各看自己的趨勢，再由市場壓力決定能持有哪些，等權持有、其餘現金；只做研究。"
+  },
   "ev_to_ebitda": {
     "term_id": "ev_to_ebitda",
     "display_name": "EV/EBITDA",
@@ -3384,6 +3477,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "財報指引",
     "hint_zh": "公司自己給的營收、EPS、利潤率數字或區間，引用原文句子。"
+  },
+  "high_beta": {
+    "term_id": "high_beta",
+    "display_name": "High Beta",
+    "category": "signal",
+    "short_definition": "An ETF whose 252-session beta to SPY is 1.10 or more; excluded when stress is ELEVATED.",
+    "full_definition": "Read from the ETF's factor snapshot known at the date. SPY, the benchmark, counts as 1.00. An unknown beta counts as high, the stricter reading.",
+    "formula": "beta_252d >= 1.10",
+    "unit": "ratio",
+    "example": "QQQ 1.433 and XLK 1.752: high beta; XLE -0.381: not.",
+    "direction": "Higher is more sensitive to the market",
+    "interpretation": "How much the ETF tends to move with the market.",
+    "why_it_matters": "02 §15: reduce new high-beta exposure when stress is elevated.",
+    "source": "Rotation rules 0.1.0 (config/rotation_rules.yaml); domain/rotation.py; ADR-032",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/rotation_rules.yaml",
+    "as_of": "2026-10-16",
+    "update_cadence": "daily (11:15 SGT); targets change at month starts and defensive switches",
+    "caveats": "Thresholds are Steven's defaults (Q1, Q2), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "beta_252d",
+      "regime_gate"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "高 beta",
+    "hint_zh": "相對 SPY 的 252 日 beta ≥ 1.10；SPY 視為 1.00，未知的 beta 當作高 beta。"
   },
   "hy_oas_percentile": {
     "term_id": "hy_oas_percentile",
@@ -4950,6 +5068,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "營業利益率",
     "hint_zh": "營業利益 ÷ 營收。"
   },
+  "opportunity_candidate": {
+    "term_id": "opportunity_candidate",
+    "display_name": "Opportunity Candidate",
+    "category": "signal",
+    "short_definition": "What the rules flag as known at the date: a company at L3 or L4 (S1), or an ETF of the S3 rotation target.",
+    "full_definition": "Read from stored rows, never scored or ranked across instruments: companies by level then ticker, ETFs in the rotation's order, each with its evidence, rule versions and the market's stress state and quadrant at the date. Long only (no short data, OD-5).",
+    "formula": "convergence level >= L3, or in the rotation target",
+    "unit": "candidate",
+    "example": "As known on 2026-10-16: AZO at L4 (S1); SPY, QQQ, XLE and XLK (S3).",
+    "direction": "N/A",
+    "interpretation": "A short list to research, not a buy list.",
+    "why_it_matters": "Where a decision is needed, with the reasons in one place.",
+    "source": "Convergence (ADR-028, ADR-031) and rotation (ADR-032); api/candidates.py",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/api/candidates.py",
+    "as_of": "2026-10-16",
+    "update_cadence": "daily (11:00 and 11:15 SGT)",
+    "caveats": "Thresholds are defaults, unvalidated (OD-7); no delisted companies (KI-1).",
+    "related_terms": [
+      "convergence_l3",
+      "convergence_l4",
+      "etf_rotation"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "候選",
+    "hint_zh": "規則在當時標出的標的：L3/L4 的公司（S1）或 S3 目標持有的 ETF；不打分、不排名、只做多。"
+  },
   "owner_fcf": {
     "term_id": "owner_fcf",
     "display_name": "Owner Free Cash Flow",
@@ -5840,6 +5984,33 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "信用",
     "hint_zh": "平靜／正常／緊張／困境：高收益債利差（之前用 NFCI 信用子指數）。"
   },
+  "regime_gate": {
+    "term_id": "regime_gate",
+    "display_name": "Regime Gate",
+    "category": "signal",
+    "short_definition": "What the market's stress state allows the rotation to hold.",
+    "full_definition": "NORMAL: every ETF. ELEVATED: no high-beta ETF. HIGH and CRISIS: the defensive sleeve only (TLT, IEF, GLD). Read from the stored regime assessment known at the date (regime rules 0.1.0), at most 3 days old; without one the assessment is unavailable.",
+    "formula": "stress state -> allowed sleeves and whether high beta is allowed",
+    "unit": "gate",
+    "example": "ELEVATED at the end of March 2025: QQQ, IWM and XLK (beta 1.10 or more) are out.",
+    "direction": "N/A",
+    "interpretation": "How much risk the stress state allows (02 §15).",
+    "why_it_matters": "Keeps the rotation out of high-beta assets when stress rises.",
+    "source": "Rotation rules 0.1.0 (config/rotation_rules.yaml); domain/rotation.py; ADR-032",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/rotation_rules.yaml",
+    "as_of": "2026-10-16",
+    "update_cadence": "daily (11:15 SGT); targets change at month starts and defensive switches",
+    "caveats": "Stress thresholds are regime rules 0.1.0 defaults (KI-3 to KI-7): VIX above 30 alone gives HIGH (KI-5). Thresholds are Steven's defaults (Q1, Q2), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "stress_state",
+      "high_beta",
+      "defensive_sleeve",
+      "risk_sleeve"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "壓力限制",
+    "hint_zh": "NORMAL 全部可持有；ELEVATED 排除高 beta；HIGH 與 CRISIS 只能持有防守型。"
+  },
   "regime_growth": {
     "term_id": "regime_growth",
     "display_name": "Growth",
@@ -6577,6 +6748,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "風險規則版本",
     "hint_zh": "每個組合快照與風險檢查所用的規則版本；已發布的版本不會改。"
   },
+  "risk_sleeve": {
+    "term_id": "risk_sleeve",
+    "display_name": "Risk Sleeve",
+    "category": "signal",
+    "short_definition": "The rotation's equity ETFs: SPY, QQQ, IWM, XLK and XLE.",
+    "full_definition": "Allowed when stress is NORMAL, and without the high-beta ones when ELEVATED; never when HIGH or CRISIS.",
+    "formula": "a fixed list in the rule version",
+    "unit": "list",
+    "example": "SPY, QQQ, IWM, XLK, XLE.",
+    "direction": "N/A",
+    "interpretation": "The growth assets of the rotation.",
+    "why_it_matters": "Its share of the target shows how much risk the rotation takes.",
+    "source": "Rotation rules 0.1.0 (config/rotation_rules.yaml); domain/rotation.py; ADR-032",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/rotation_rules.yaml",
+    "as_of": "2026-10-16",
+    "update_cadence": "per release",
+    "caveats": "Thresholds are Steven's defaults (Q1, Q2), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "defensive_sleeve",
+      "regime_gate"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "風險型",
+    "hint_zh": "輪動裡的股票型 ETF：SPY、QQQ、IWM、XLK、XLE。"
+  },
   "risk_veto": {
     "term_id": "risk_veto",
     "display_name": "Risk Veto",
@@ -6653,6 +6849,108 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "投入資本報酬率（ROIC）",
     "hint_zh": "NOPAT ÷ 平均投入資本（期初與期末）。"
+  },
+  "rotation_alert": {
+    "term_id": "rotation_alert",
+    "display_name": "Rotation Alert",
+    "category": "alerts",
+    "short_definition": "A market-wide alert when the S3 rotation sets a target that differs from the previous one.",
+    "full_definition": "Raised under alert rules 0.4.0 with the rotation assessment as evidence; up when the risk sleeve's weight rose or held, down when it fell. No company.",
+    "formula": "new target != previous target",
+    "unit": "alert",
+    "example": "S3 rotation (monthly target): now SPY, QQQ, XLE, XLK (was SPY, QQQ, IWM, XLK, XLE).",
+    "direction": "N/A",
+    "interpretation": "The research portfolio changed.",
+    "why_it_matters": "A paper decision may follow, or an explicit NO TRADE.",
+    "source": "Alert rules 0.4.0 (config/alert_rules.yaml); ADR-032",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/alert_rules.yaml",
+    "as_of": "2026-10-16",
+    "update_cadence": "daily (11:15 SGT); targets change at month starts and defensive switches",
+    "caveats": "In-app only (OD-2). Thresholds are Steven's defaults (Q1, Q2), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "alert",
+      "rotation_target"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "輪動警示",
+    "hint_zh": "S3 設定的新目標和上一次不同時發出的市場層級警示。"
+  },
+  "rotation_rebalance": {
+    "term_id": "rotation_rebalance",
+    "display_name": "Rotation Rebalance",
+    "category": "signal",
+    "short_definition": "When the rotation sets a new target: the first assessment of each New York month.",
+    "full_definition": "Every other assessment carries the target set before it (reason carried), so the rotation trades at most monthly, except for a defensive switch. Backfilled month ends are each the first of their month.",
+    "formula": "new New York month -> new target; else carried",
+    "unit": "event",
+    "example": "The first assessment of October 2026 replaces September's target.",
+    "direction": "N/A",
+    "interpretation": "Why a target changed or stayed.",
+    "why_it_matters": "Monthly targets keep turnover low (01 §30: turnover controls).",
+    "source": "Rotation rules 0.1.0 (config/rotation_rules.yaml); domain/rotation.py; ADR-032",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/rotation_rules.yaml",
+    "as_of": "2026-10-16",
+    "update_cadence": "daily (11:15 SGT); targets change at month starts and defensive switches",
+    "caveats": "Thresholds are Steven's defaults (Q1, Q2), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "rotation_target",
+      "defensive_switch"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "輪動調整",
+    "hint_zh": "每個紐約月份第一次評估時換目標；其他時候沿用上一次的。"
+  },
+  "rotation_rule_set": {
+    "term_id": "rotation_rule_set",
+    "display_name": "Rotation Rule Version",
+    "category": "signal",
+    "short_definition": "The released version of the rotation rules every rotation assessment and S3 signal cites.",
+    "full_definition": "config/rotation_rules.yaml, loaded by make migrate with the sha256 of its content; a released version never changes (a changed one is refused). It names the regime rule version and factor definition version it reads.",
+    "formula": "rule_version + sha256 of the content",
+    "unit": "version",
+    "example": "Rotation rules 0.1.0 read regime rules 0.1.0 and factor definitions 0.1.0.",
+    "direction": "N/A",
+    "interpretation": "Which rules produced a target.",
+    "why_it_matters": "A stored target recomputes identically under its own version.",
+    "source": "Rotation rules 0.1.0 (config/rotation_rules.yaml); domain/rotation.py; ADR-032",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/rotation_rules.yaml",
+    "as_of": "2026-10-16",
+    "update_cadence": "per release",
+    "caveats": "Thresholds are Steven's defaults (Q1, Q2), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "etf_rotation",
+      "regime_rule_set",
+      "factor_definition_set"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "輪動規則版本",
+    "hint_zh": "每個輪動評估與 S3 訊號所用的規則版本；已發布的不會改，並固定讀取的壓力與因子版本。"
+  },
+  "rotation_target": {
+    "term_id": "rotation_target",
+    "display_name": "Rotation Target",
+    "category": "signal",
+    "short_definition": "The ETFs the S3 rotation holds and their weights, with the rest in cash.",
+    "full_definition": "Set at the first assessment of each New York month from the ETFs whose trend is up and that the stress state allows, in equal weights rounded down to 0.01%; the remainder is cash. Carried unchanged within the month, except for a defensive switch. None when the regime is unavailable.",
+    "formula": "100% / number selected, rounded down; cash = 100% - sum",
+    "unit": "percent",
+    "example": "3 ETFs selected: 33.33% each, 0.01% cash.",
+    "direction": "N/A",
+    "interpretation": "The research portfolio in force at the date.",
+    "why_it_matters": "What a paper position following S3 would hold.",
+    "source": "Rotation rules 0.1.0 (config/rotation_rules.yaml); domain/rotation.py; ADR-032",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/rotation_rules.yaml",
+    "as_of": "2026-10-16",
+    "update_cadence": "daily (11:15 SGT); targets change at month starts and defensive switches",
+    "caveats": "Equal weights only; no sizing by risk. Thresholds are Steven's defaults (Q1, Q2), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "etf_rotation",
+      "rotation_rebalance",
+      "defensive_switch"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "輪動目標持有",
+    "hint_zh": "S3 目前持有的 ETF 與權重（等權、無條件捨去到 0.01%），其餘是現金。"
   },
   "rule_insight": {
     "term_id": "rule_insight",
@@ -6857,28 +7155,28 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "term_id": "signal",
     "display_name": "Signal",
     "category": "signal",
-    "short_definition": "A rule's output that a company deserves a look, with the rule version and the data behind it.",
-    "full_definition": "Generated by a versioned rule, never by hand (ADR-027 J1). Phase 1 has one source: a buyback state assignment at ACTIVE or HIGH-CONVICTION makes one long signal of family 2 (Corporate Actions & Capital Structure) for strategy S1 (Buyback + Value + Quality), at the assignment's time T, with its score, the assignment it came from, source quality 1 (SEC filings and consolidated closes), evidence independence (how many rule conditions passed) and execution eligibility paper only. A signal from a backfilled assignment is marked backfilled.",
-    "formula": "buyback state in (ACTIVE, HIGH-CONVICTION) -> one long signal per company, time and rule version",
+    "short_definition": "A rule's output that an instrument deserves a look, with the rule version and the data behind it.",
+    "full_definition": "Generated by a versioned rule, never by hand (ADR-027 J1), paper only, at its time T with its source quality, evidence independence (how many rule conditions passed) and the rows it came from; a backfilled one is marked backfilled. Two sources: S1, a buyback state assignment at ACTIVE, HIGH-CONVICTION or TRADE-READY makes one long signal of family 2 (Corporate Actions) with its Buyback Quality Score; S3 (since M2.4, ADR-032), each ETF of a newly set rotation target makes two long signals, family 5 (its trend is up, scored by its 12-1 momentum) and family 1 (the stress state allows it).",
+    "formula": "S1: qualifying buyback state -> one long family 2 signal; S3: new rotation target -> two long signals (family 5, family 1) per ETF",
     "unit": "signal",
-    "example": "Apple at 2026-10-06 under rules 0.2.0 is ACTIVE: one long signal with its Buyback Quality Score and passed conditions, paper only.",
+    "example": "Apple ACTIVE under buyback rules 0.3.0: one S1 signal; XLE in the October 2026 rotation target: two S3 signals.",
     "direction": "N/A",
     "interpretation": "A prompt to research and decide, not a recommendation; the decision is yours and is recorded either way.",
     "why_it_matters": "Decisions can later be compared with the signals they followed or ignored.",
-    "source": "Buyback state assignments (M1.4b); domain/signals.py",
+    "source": "Buyback state assignments (M1.4b) and rotation assessments (M2.4); domain/signals.py, domain/rotation.py",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/domain/signals.py",
-    "as_of": "2026-10-11",
-    "update_cadence": "daily, with the buyback state evaluation",
-    "caveats": "Earnings make no signal yet: strategy S2 needs a consensus estimate (OD-3). Rule weights are unvalidated until Phase 2 backtests.",
+    "as_of": "2026-10-16",
+    "update_cadence": "daily, with the buyback states (11:00 SGT) and the rotation (11:15 SGT)",
+    "caveats": "Earnings make no signal yet: strategy S2 needs a consensus estimate (OD-3). S3 ETFs cannot be cited in the journal yet (ADR-032 Q4). Rules are unvalidated until backtests (M2.5).",
     "related_terms": [
       "buyback_state_active",
-      "buyback_state_high_conviction",
+      "etf_rotation",
       "execution_eligibility",
       "thesis_card"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "訊號",
-    "hint_zh": "規則自動產生的「值得研究」提示；Phase 1 只有回購狀態 ACTIVE 或 HIGH-CONVICTION 時產生，一律只能模擬。"
+    "hint_zh": "規則自動產生的「值得研究」提示，一律只能模擬：S1 來自回購狀態，S3 來自 ETF 輪動的新目標（每檔趨勢與壓力各一個）。"
   },
   "source_tier": {
     "term_id": "source_tier",
@@ -7585,6 +7883,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "近四季合計（TTM）",
     "hint_zh": "最近連續四個季度的合計，只用於流量類數字。"
+  },
+  "trend_filter": {
+    "term_id": "trend_filter",
+    "display_name": "Trend Filter",
+    "category": "signal",
+    "short_definition": "An ETF's trend is up when its 12-1 momentum and its close against the 200-session average are both above 0.",
+    "full_definition": "Both measures come from the ETF's stored factor snapshot known at the date (factor definitions 0.1.0), at most 5 days old. Exactly 0 is not up. A missing or stale measure means not selected, with the reason.",
+    "formula": "momentum_12_1 > 0 and close_vs_sma_200 > 0",
+    "unit": "pass / fail",
+    "example": "XLE: 12-1 momentum +56.04%, 17.84% above its 200-session average: up.",
+    "direction": "Higher is better",
+    "interpretation": "Whether the ETF has been rising on two horizons.",
+    "why_it_matters": "Time-series momentum, the basis of the rotation.",
+    "source": "Rotation rules 0.1.0 (config/rotation_rules.yaml); domain/rotation.py; ADR-032",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/rotation_rules.yaml",
+    "as_of": "2026-10-16",
+    "update_cadence": "daily (11:15 SGT); targets change at month starts and defensive switches",
+    "caveats": "12-1 momentum starts in 2017 (it needs a year of closes). Total returns use Alpaca dividends with gaps (KI-10). Thresholds are Steven's defaults (Q1, Q2), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "momentum_12_1",
+      "close_vs_sma_200",
+      "etf_rotation"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "趨勢條件",
+    "hint_zh": "12-1 動能與相對 200 日均線都大於 0 才算趨勢向上；剛好等於 0 不算。"
   },
   "update_cadence": {
     "term_id": "update_cadence",

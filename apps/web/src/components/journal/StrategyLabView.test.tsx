@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { recordedJournal, recordedSignals } from "@/test/fixtures";
+import { recordedJournal, recordedRotation, recordedRotationSignals, recordedSignals } from "@/test/fixtures";
 import { unexplainedNumbers } from "@/test/numbers";
 
 import { StrategyLabView } from "./StrategyLabView";
@@ -38,6 +38,25 @@ describe("StrategyLabView with recorded API responses", () => {
 
   it("renders no unexplained number", () => {
     const { container } = render(<StrategyLabView journal={recordedJournal} signals={recordedSignals} />);
+    expect(unexplainedNumbers(container)).toEqual([]);
+  });
+
+  it("shows the S3 rotation and its signals beside the S1 signals (M2.4)", () => {
+    const { container } = render(
+      <StrategyLabView
+        journal={recordedJournal}
+        signals={{ ...recordedSignals, current: [...recordedSignals.current, ...recordedRotationSignals.current] }}
+        rotation={recordedRotation}
+      />,
+    );
+    const rotation = container.querySelector('#rotation[data-block="rotation"]');
+    expect(rotation?.querySelector("[data-target]")?.textContent).toContain("SPY");
+    const s3 = screen.getByRole("list", { name: "S3 rotation signals" });
+    const spy = s3.querySelector('li[data-signal="SPY"][data-strategy="S3"]');
+    expect(spy?.textContent).toContain("family 5 trend: 12-1 mom.");
+    expect(spy?.textContent).toContain("family 1 gate: NORMAL");
+    expect(spy?.textContent).not.toContain("Write a Thesis Card"); // ETFs cannot enter the journal yet
+    expect(spy?.querySelector("a")?.getAttribute("href")).toBe("/instruments/SPY#factors");
     expect(unexplainedNumbers(container)).toEqual([]);
   });
 });

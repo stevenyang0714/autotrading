@@ -1,0 +1,82 @@
+{
+  "recorded_at": "2026-10-16T04:26:24.554659+00:00",
+  "recorded_from": "recorded FRED vintages and Alpaca closes replayed into the integration test database (tests/integration/test_rotation.py)",
+  "endpoint": "/signals",
+  "params": {
+    "known_at": "2026-10-06T12:00:00Z",
+    "strategy": "S3"
+  },
+  "response": {
+    "known_at": "2026-10-06T12:00:00Z",
+    "rule_version": "0.3.0",
+    "rule_versions": {
+      "S1": "0.3.0",
+      "S3": "0.1.0"
+    },
+    "current": [
+      {
+        "id": "b165a368-955b-48ac-a34a-b5ef77559bf0",
+        "ticker": "SPY",
+        "family_id": 5,
+        "family": "Price / Trend / Factor",
+        "strategy_id": "S3",
+        "strategy": "Macro Regime / ETF Rotation",
+        "rule_version": "0.1.0",
+        "state": "rotation_target",
+        "weight_pct": "100.00",
+        "stress": "normal",
+        "score": "16.49",
+        "direction": "long",
+        "generated_at": "2026-10-06T12:00:00Z",
+        "valid_from": "2026-10-06T12:00:00Z",
+        "system_time": "2026-10-16T04:26:24.105068Z",
+        "observation_ids": [
+          {
+            "id": "58ff1e6d-bf7f-4620-a8a5-cff4436afd54",
+            "table": "rotation_assessments"
+          },
+          {
+            "id": "ec4879fd-1fb7-4ebc-a813-718ecc125224",
+            "table": "factor_snapshots"
+          }
+        ],
+        "source_quality": 1,
+        "evidence_independence": 2,
+        "execution_eligibility": "paper_only",
+        "backfilled": true
+      },
+      {
+        "id": "bd9ca2f4-b9d2-48e7-86f6-9ba9d708c8d2",
+        "ticker": "SPY",
+        "family_id": 1,
+        "family": "Macro Regime",
+        "strategy_id": "S3",
+        "strategy": "Macro Regime / ETF Rotation",
+        "rule_version": "0.1.0",
+        "state": "rotation_target",
+        "weight_pct": "100.00",
+        "stress": "normal",
+        "score": null,
+        "direction": "long",
+        "generated_at": "2026-10-06T12:00:00Z",
+        "valid_from": "2026-10-06T12:00:00Z",
+        "system_time": "2026-10-16T04:26:24.105068Z",
+        "observation_ids": [
+          {
+            "id": "58ff1e6d-bf7f-4620-a8a5-cff4436afd54",
+            "table": "rotation_assessments"
+          },
+          {
+            "id": "48f9e8a3-be93-4063-bb93-7c71a01f02eb",
+            "table": "regime_assessments"
+          }
+        ],
+        "source_quality": 1,
+        "evidence_independence": 1,
+        "execution_eligibility": "paper_only",
+        "backfilled": true
+      }
+    ],
+    "history": []
+  }
+}

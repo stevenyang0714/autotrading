@@ -227,7 +227,9 @@
             "enum": [
               "event",
               "level_change",
-              "regime"
+              "regime",
+              "portfolio",
+              "rotation"
             ],
             "title": "Kind",
             "type": "string"
@@ -396,7 +398,9 @@
             "enum": [
               "event",
               "level_change",
-              "regime"
+              "regime",
+              "portfolio",
+              "rotation"
             ],
             "title": "Kind",
             "type": "string"
@@ -1909,6 +1913,43 @@
         "title": "Closes",
         "type": "object"
       },
+      "CompanyCandidate": {
+        "properties": {
+          "alert_rule_version": {
+            "title": "Alert Rule Version",
+            "type": "string"
+          },
+          "buyback_rule_version": {
+            "title": "Buyback Rule Version",
+            "type": "string"
+          },
+          "convergence": {
+            "$ref": "#/components/schemas/CompanyLevel"
+          },
+          "strategy": {
+            "title": "Strategy",
+            "type": "string"
+          },
+          "strategy_id": {
+            "title": "Strategy Id",
+            "type": "string"
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticker",
+          "strategy_id",
+          "strategy",
+          "alert_rule_version",
+          "buyback_rule_version",
+          "convergence"
+        ],
+        "title": "CompanyCandidate",
+        "type": "object"
+      },
       "CompanyLevel": {
         "properties": {
           "backfilled": {
@@ -3168,6 +3209,202 @@
         "title": "EquityPoint",
         "type": "object"
       },
+      "EtfCandidate": {
+        "properties": {
+          "factor_definition_version": {
+            "title": "Factor Definition Version",
+            "type": "string"
+          },
+          "reading": {
+            "$ref": "#/components/schemas/EtfReading"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "regime_rule_version": {
+            "title": "Regime Rule Version",
+            "type": "string"
+          },
+          "rotation_id": {
+            "format": "uuid",
+            "title": "Rotation Id",
+            "type": "string"
+          },
+          "rotation_rule_version": {
+            "title": "Rotation Rule Version",
+            "type": "string"
+          },
+          "set_at": {
+            "format": "date-time",
+            "title": "Set At",
+            "type": "string"
+          },
+          "strategy": {
+            "title": "Strategy",
+            "type": "string"
+          },
+          "strategy_id": {
+            "title": "Strategy Id",
+            "type": "string"
+          },
+          "stress": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stress"
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          },
+          "weight_pct": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Weight Pct",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticker",
+          "strategy_id",
+          "strategy",
+          "weight_pct",
+          "rotation_id",
+          "rotation_rule_version",
+          "regime_rule_version",
+          "factor_definition_version",
+          "set_at",
+          "reason",
+          "stress",
+          "reading"
+        ],
+        "title": "EtfCandidate",
+        "type": "object"
+      },
+      "EtfReading": {
+        "description": "One ETF as read at T: its trend, beta and whether the stress state allows it.",
+        "properties": {
+          "allowed": {
+            "title": "Allowed",
+            "type": "boolean"
+          },
+          "beta": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Beta"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "eligible": {
+            "title": "Eligible",
+            "type": "boolean"
+          },
+          "feed_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feed Status"
+          },
+          "high_beta": {
+            "title": "High Beta",
+            "type": "boolean"
+          },
+          "last_close": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Close"
+          },
+          "sleeve": {
+            "enum": [
+              "risk",
+              "defensive"
+            ],
+            "title": "Sleeve",
+            "type": "string"
+          },
+          "snapshot_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snapshot Id"
+          },
+          "snapshot_known_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snapshot Known At"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "trend": {
+            "items": {
+              "$ref": "#/components/schemas/TrendReading"
+            },
+            "title": "Trend",
+            "type": "array"
+          },
+          "trend_up": {
+            "title": "Trend Up",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "symbol",
+          "sleeve",
+          "snapshot_id",
+          "snapshot_known_at",
+          "last_close",
+          "feed_status",
+          "trend",
+          "trend_up",
+          "beta",
+          "high_beta",
+          "allowed",
+          "eligible",
+          "detail"
+        ],
+        "title": "EtfReading",
+        "type": "object"
+      },
       "EvidenceOut": {
         "properties": {
           "kind": {
@@ -4056,6 +4293,32 @@
         "title": "Fundamentals",
         "type": "object"
       },
+      "Gate": {
+        "additionalProperties": false,
+        "properties": {
+          "high_beta": {
+            "title": "High Beta",
+            "type": "boolean"
+          },
+          "sleeves": {
+            "items": {
+              "enum": [
+                "risk",
+                "defensive"
+              ],
+              "type": "string"
+            },
+            "title": "Sleeves",
+            "type": "array"
+          }
+        },
+        "required": [
+          "sleeves",
+          "high_beta"
+        ],
+        "title": "Gate",
+        "type": "object"
+      },
       "GlossaryTermDetail": {
         "properties": {
           "term": {
@@ -4379,6 +4642,34 @@
           "values"
         ],
         "title": "HistoryPoint",
+        "type": "object"
+      },
+      "Holding": {
+        "properties": {
+          "sleeve": {
+            "enum": [
+              "risk",
+              "defensive"
+            ],
+            "title": "Sleeve",
+            "type": "string"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "weight_pct": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Weight Pct",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol",
+          "sleeve",
+          "weight_pct"
+        ],
+        "title": "Holding",
         "type": "object"
       },
       "Indicator": {
@@ -5728,6 +6019,55 @@
         "title": "MacroSeriesList",
         "type": "object"
       },
+      "MarketContext": {
+        "properties": {
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "quadrant": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quadrant"
+          },
+          "regime_id": {
+            "format": "uuid",
+            "title": "Regime Id",
+            "type": "string"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          },
+          "stress": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stress"
+          }
+        },
+        "required": [
+          "regime_id",
+          "known_at",
+          "rule_version",
+          "stress",
+          "quadrant"
+        ],
+        "title": "MarketContext",
+        "type": "object"
+      },
       "MarketState": {
         "properties": {
           "calendar_covered_until": {
@@ -6696,6 +7036,52 @@
           "first_release"
         ],
         "title": "ObservationOut",
+        "type": "object"
+      },
+      "OpportunityCandidatesOut": {
+        "properties": {
+          "companies": {
+            "items": {
+              "$ref": "#/components/schemas/CompanyCandidate"
+            },
+            "title": "Companies",
+            "type": "array"
+          },
+          "context": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MarketContext"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "detail": {
+            "default": "Long only (no short data, OD-5). What the rules flag as known at the date, not a buy list and not ranked: companies at L3 or L4 (S1) and the ETFs of the S3 rotation target. Thresholds are defaults, unvalidated (OD-7).",
+            "title": "Detail",
+            "type": "string"
+          },
+          "etfs": {
+            "items": {
+              "$ref": "#/components/schemas/EtfCandidate"
+            },
+            "title": "Etfs",
+            "type": "array"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "known_at",
+          "context",
+          "companies",
+          "etfs"
+        ],
+        "title": "OpportunityCandidatesOut",
         "type": "object"
       },
       "Overview": {
@@ -9259,6 +9645,319 @@
         "title": "RiskRuleSetOut",
         "type": "object"
       },
+      "Rotation": {
+        "description": "Everything a rotation assessment stores: recomputing it gives the same document.",
+        "properties": {
+          "cash_pct": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cash Pct"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "gate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Gate"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "previous_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Id"
+          },
+          "quadrant": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quadrant"
+          },
+          "readings": {
+            "items": {
+              "$ref": "#/components/schemas/EtfReading"
+            },
+            "title": "Readings",
+            "type": "array"
+          },
+          "reason": {
+            "enum": [
+              "month_start",
+              "defensive_switch",
+              "carried",
+              "unavailable"
+            ],
+            "title": "Reason",
+            "type": "string"
+          },
+          "rebalance": {
+            "title": "Rebalance",
+            "type": "boolean"
+          },
+          "regime_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Regime Id"
+          },
+          "regime_known_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Regime Known At"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          },
+          "set_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Set At"
+          },
+          "stress": {
+            "anyOf": [
+              {
+                "enum": [
+                  "normal",
+                  "elevated",
+                  "high",
+                  "crisis"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stress"
+          },
+          "stress_detail": {
+            "title": "Stress Detail",
+            "type": "string"
+          },
+          "target": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Holding"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target"
+          }
+        },
+        "required": [
+          "rule_version",
+          "known_at",
+          "regime_id",
+          "regime_known_at",
+          "stress",
+          "quadrant",
+          "stress_detail",
+          "gate",
+          "readings",
+          "rebalance",
+          "reason",
+          "detail",
+          "previous_id",
+          "set_at",
+          "target",
+          "cash_pct"
+        ],
+        "title": "Rotation",
+        "type": "object"
+      },
+      "RotationOut": {
+        "properties": {
+          "current": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StoredRotation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "detail": {
+            "default": "Research only (paper): each ETF against its own trend, gated by the market's stress state. No order, and no journal entry for ETFs yet. Thresholds are defaults, unvalidated (OD-7).",
+            "title": "Detail",
+            "type": "string"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/RotationPoint"
+            },
+            "title": "History",
+            "type": "array"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "known_at",
+          "rule_version",
+          "current",
+          "history"
+        ],
+        "title": "RotationOut",
+        "type": "object"
+      },
+      "RotationPoint": {
+        "description": "A target as it was set: at a month start or a defensive switch.",
+        "properties": {
+          "backfilled": {
+            "title": "Backfilled",
+            "type": "boolean"
+          },
+          "cash_pct": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Cash Pct",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "stress": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stress"
+          },
+          "target": {
+            "additionalProperties": {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            "title": "Target",
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "known_at",
+          "reason",
+          "stress",
+          "target",
+          "cash_pct",
+          "backfilled"
+        ],
+        "title": "RotationPoint",
+        "type": "object"
+      },
+      "RotationRuleSetOut": {
+        "properties": {
+          "content": {
+            "additionalProperties": true,
+            "title": "Content",
+            "type": "object"
+          },
+          "content_sha256": {
+            "title": "Content Sha256",
+            "type": "string"
+          },
+          "released": {
+            "format": "date",
+            "title": "Released",
+            "type": "string"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "retired"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rule_version",
+          "status",
+          "released",
+          "content",
+          "content_sha256"
+        ],
+        "title": "RotationRuleSetOut",
+        "type": "object"
+      },
       "RuleSetOut": {
         "properties": {
           "approved": {
@@ -9994,6 +10693,17 @@
             ],
             "title": "Strategy Id"
           },
+          "stress": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stress"
+          },
           "system_time": {
             "format": "date-time",
             "title": "System Time",
@@ -10007,6 +10717,18 @@
             "format": "date-time",
             "title": "Valid From",
             "type": "string"
+          },
+          "weight_pct": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weight Pct"
           }
         },
         "required": [
@@ -10056,11 +10778,19 @@
           "rule_version": {
             "title": "Rule Version",
             "type": "string"
+          },
+          "rule_versions": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Rule Versions",
+            "type": "object"
           }
         },
         "required": [
           "known_at",
           "rule_version",
+          "rule_versions",
           "current",
           "history"
         ],
@@ -10562,6 +11292,41 @@
         "title": "StoredRegime",
         "type": "object"
       },
+      "StoredRotation": {
+        "properties": {
+          "backfilled": {
+            "title": "Backfilled",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "rotation": {
+            "$ref": "#/components/schemas/Rotation"
+          },
+          "system_time": {
+            "format": "date-time",
+            "title": "System Time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "known_at",
+          "system_time",
+          "backfilled",
+          "rotation"
+        ],
+        "title": "StoredRotation",
+        "type": "object"
+      },
       "TradeReadyRule": {
         "additionalProperties": false,
         "properties": {
@@ -10591,6 +11356,53 @@
           "reachable"
         ],
         "title": "TradeReadyRule",
+        "type": "object"
+      },
+      "TrendReading": {
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "measure": {
+            "title": "Measure",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pass",
+              "fail",
+              "unavailable"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "threshold": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Threshold",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "measure",
+          "value",
+          "threshold",
+          "status",
+          "detail"
+        ],
+        "title": "TrendReading",
         "type": "object"
       },
       "ValidationError": {
@@ -11320,6 +12132,58 @@
         "summary": "Buyback Rules",
         "tags": [
           "buyback-states"
+        ]
+      }
+    },
+    "/candidates": {
+      "get": {
+        "operationId": "candidates_candidates_get",
+        "parameters": [
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpportunityCandidatesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Candidates",
+        "tags": [
+          "candidates"
         ]
       }
     },
@@ -13777,6 +14641,83 @@
         ]
       }
     },
+    "/rotation": {
+      "get": {
+        "operationId": "rotation_rotation_get",
+        "parameters": [
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RotationOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Rotation",
+        "tags": [
+          "rotation"
+        ]
+      }
+    },
+    "/rotation/rules": {
+      "get": {
+        "operationId": "rotation_rules_rotation_rules_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RotationRuleSetOut"
+                  },
+                  "title": "Response Rotation Rules Rotation Rules Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Rotation Rules",
+        "tags": [
+          "rotation"
+        ]
+      }
+    },
     "/signals": {
       "get": {
         "operationId": "signals_signals_get",
@@ -13814,6 +14755,29 @@
                 }
               ],
               "title": "Ticker"
+            }
+          },
+          {
+            "in": "query",
+            "name": "strategy",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "enum": [
+                      "S1",
+                      "S3"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Strategy"
             }
           },
           {

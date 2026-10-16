@@ -1,0 +1,65 @@
+{
+  "recorded_at": "2026-10-16T04:26:24.550525+00:00",
+  "recorded_from": "recorded FRED vintages and Alpaca closes replayed into the integration test database (tests/integration/test_rotation.py)",
+  "endpoint": "/candidates",
+  "params": {
+    "known_at": "2026-10-06T12:00:00Z"
+  },
+  "response": {
+    "known_at": "2026-10-06T12:00:00Z",
+    "context": {
+      "regime_id": "48f9e8a3-be93-4063-bb93-7c71a01f02eb",
+      "known_at": "2026-10-06T12:00:00Z",
+      "rule_version": "0.1.0",
+      "stress": "normal",
+      "quadrant": "stagflation"
+    },
+    "companies": [],
+    "etfs": [
+      {
+        "ticker": "SPY",
+        "strategy_id": "S3",
+        "strategy": "Macro Regime / ETF Rotation",
+        "weight_pct": "100.00",
+        "rotation_id": "58ff1e6d-bf7f-4620-a8a5-cff4436afd54",
+        "rotation_rule_version": "0.1.0",
+        "regime_rule_version": "0.1.0",
+        "factor_definition_version": "0.1.0",
+        "set_at": "2026-10-06T12:00:00Z",
+        "reason": "month_start",
+        "stress": "normal",
+        "reading": {
+          "symbol": "SPY",
+          "sleeve": "risk",
+          "snapshot_id": "ec4879fd-1fb7-4ebc-a813-718ecc125224",
+          "snapshot_known_at": "2026-10-06T12:00:00Z",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day",
+          "trend": [
+            {
+              "measure": "momentum_12_1",
+              "value": "16.49",
+              "threshold": "0",
+              "status": "pass",
+              "detail": "16.49 > 0"
+            },
+            {
+              "measure": "close_vs_sma_200",
+              "value": "7.47",
+              "threshold": "0",
+              "status": "pass",
+              "detail": "7.47 > 0"
+            }
+          ],
+          "trend_up": true,
+          "beta": "1.0",
+          "high_beta": false,
+          "allowed": true,
+          "eligible": true,
+          "detail": "trend up and allowed"
+        }
+      }
+    ],
+    "detail": "Long only (no short data, OD-5). What the rules flag as known at the date, not a buy list and not ranked: companies at L3 or L4 (S1) and the ETFs of the S3 rotation target. Thresholds are defaults, unvalidated (OD-7)."
+  }
+}

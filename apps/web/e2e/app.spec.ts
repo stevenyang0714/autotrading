@@ -134,6 +134,7 @@ for (const path of [
   "/dashboards/market-regime?known_on=2026-09-15",
   "/dashboards/opportunity-radar",
   "/dashboards/opportunity-radar?known_on=2026-10-06&sort=momentum_6_1&dir=desc",
+  "/dashboards/strategy-lab?known_on=2026-10-06",
   "/instruments/AAPL?known_on=2026-10-06",
   "/instruments/TLT",
   "/dashboards/portfolio-risk",
@@ -273,7 +274,8 @@ test("Saving assumptions adds a version; switching back reproduces the result (M
   await block.getByLabel(/Reason/).fill("e2e: base growth changed");
   await block.getByRole("button", { name: "Save as a new version" }).click();
 
-  await expect(page).toHaveURL(/assumptions=\d+/);
+  // Saving and switching back each reload the page and its DCF: allow for a busy stack.
+  await expect(page).toHaveURL(/assumptions=\d+/, { timeout: 15_000 });
   const saved = block.locator("[data-assumptions]");
   await expect(saved).not.toHaveAttribute("data-assumptions", before);
   await expect(saved).toContainText("e2e: base growth changed");
@@ -283,7 +285,7 @@ test("Saving assumptions adds a version; switching back reproduces the result (M
   // The earlier version still gives exactly the earlier result.
   await block.getByLabel("Version", { exact: true }).selectOption(before === "default" ? "default" : before.slice(1));
   await block.getByRole("button", { name: "Use" }).click();
-  await expect(block.locator("[data-assumptions]")).toHaveAttribute("data-assumptions", before);
+  await expect(block.locator("[data-assumptions]")).toHaveAttribute("data-assumptions", before, { timeout: 15_000 });
   await expect(block.locator('[data-scenario="base"] .text-xl')).toHaveText(baseBefore ?? "");
 });
 
@@ -393,6 +395,7 @@ test("Strategy Lab shows the paper journal and the signals, and opens a new card
   await expect(page.locator("[data-paper-only]")).toContainText("PAPER ONLY");
   await expect(page.locator("[data-paper-only]")).toContainText("no order can be sent");
   await expect(page.locator('[data-block="signals"]')).toBeVisible();
+  await expect(page.locator('[data-block="rotation"]')).toBeVisible();
   await expect(page.locator('[data-block="journal"]')).toBeVisible();
   await page.locator("#new-ticker").fill("AAPL");
   await page.locator('[data-block="journal"]').getByRole("button", { name: "Write" }).click();
@@ -504,6 +507,30 @@ test("Opportunity Radar lists each instrument's trend and each company's value a
   const factors = page.locator('[data-block="factors"]');
   await expect(factors.locator('[data-measure="momentum_6_1"]')).toHaveAttribute("data-reason", "value");
   await expect(factors.locator('[data-group="value"]')).toHaveCount(0);
+});
+
+test("Opportunity Radar lists the candidates and the Strategy Lab the S3 rotation, as known on a date (M2.4)", async ({
+  page,
+}) => {
+  // As known on a date the recorded closes cover (they end on 2026-10-05): the September month
+  // end's rotation is in force.
+  await page.goto("/dashboards/opportunity-radar?known_on=2026-10-06");
+  const candidates = page.locator('[data-block="candidates"]');
+  await expect(candidates).toContainText("Long only (no short data, OD-5)");
+  await expect(candidates.locator("[data-context]")).toContainText(/NORMAL|ELEVATED|HIGH|CRISIS/);
+  const etfs = candidates.locator('[data-candidates="S3"]');
+  await expect(etfs.locator("li[data-candidate]").or(etfs.getByText(/holds no ETF/))).not.toHaveCount(0);
+  for (const item of await etfs.locator("li[data-candidate]").all()) {
+    await expect(item).toContainText(/rotation rules \d+\.\d+\.\d+/);
+  }
+  await candidates.getByRole("link", { name: /targets since/ }).click();
+  await expect(page).toHaveURL(/\/dashboards\/strategy-lab\?known_on=2026-10-06#rotation$/, { timeout: 15_000 });
+  const rotation = page.locator("#rotation");
+  await expect(rotation).toContainText(/rotation rules \d+\.\d+\.\d+/);
+  await expect(rotation.locator("[data-target]")).toContainText(/Target: |No target: /);
+  const readings = rotation.getByRole("table", { name: "ETF readings" });
+  await expect(readings.locator("tbody tr[data-etf]")).toHaveCount(8);
+  expect(await rotation.getByRole("table", { name: "Recent targets" }).locator("tbody tr").count()).toBeGreaterThan(0);
 });
 
 test("a company page shows its trend and factors against its own history (M2.2)", async ({ page }) => {

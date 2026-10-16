@@ -16,10 +16,19 @@ export interface AlertFilters {
   includeBackfilled: boolean;
 }
 
-function LevelBadge({ level, name, market = false }: { level: number | null; name: string; market?: boolean }) {
+/** A company alert's level, or a market-wide alert's own state: stress (M2.1), portfolio
+ * drawdown (M2.3) or a new S3 rotation target (M2.4). */
+const MARKET_TERMS = {
+  regime: "stress_state",
+  portfolio: "portfolio_drawdown",
+  rotation: "rotation_alert",
+} as const;
+
+function LevelBadge({ level, name, kind }: { level: number | null; name: string; kind?: AlertEntry["kind"] }) {
+  const market = kind === "regime" || kind === "portfolio" || kind === "rotation" ? MARKET_TERMS[kind] : null;
   return (
     <span className={`inline-block rounded border px-1.5 py-0.5 text-xs ${levelClass(level)}`}>
-      <Metric termId={market ? "stress_state" : levelTerm(level)} icon={false}>
+      <Metric termId={market ?? levelTerm(level)} icon={false}>
         {name}
       </Metric>
     </span>
@@ -78,7 +87,7 @@ function AlertItem({ alert, acknowledge }: { alert: AlertEntry; acknowledge?: Re
       className="space-y-1 rounded border border-neutral-800 px-3 py-2 text-sm"
     >
       <div className="flex flex-wrap items-baseline gap-2">
-        <LevelBadge level={alert.level} name={alert.level_name} market={alert.kind === "regime"} />
+        <LevelBadge level={alert.level} name={alert.level_name} kind={alert.kind} />
         <Metric termId="alert" icon={false}>
           <span className="text-neutral-100">{alert.title}</span>
         </Metric>

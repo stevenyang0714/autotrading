@@ -64,6 +64,8 @@ METHODOLOGY = {
     "buyback_state_trade_ready": "0.2.0",
     "convergence_l4": "0.2.0",
     "risk_check": "0.2.0",
+    # M2.4 (ADR-032): signals come from the S3 rotation too.
+    "signal": "0.2.0",
 }
 
 # FRED series shown on the Macro page (M0.6): reported values with vintages, one term per
@@ -330,6 +332,22 @@ METRICS: tuple[MetricDefinition, ...] = (
                     "days_to_exit",
                 )
             },
+            # M2.4 (ADR-032): the S3 ETF rotation and the Opportunity Radar candidates.
+            **{
+                term_id: "rotation.assess"
+                for term_id in (
+                    "etf_rotation",
+                    "rotation_target",
+                    "trend_filter",
+                    "regime_gate",
+                    "risk_sleeve",
+                    "defensive_sleeve",
+                    "high_beta",
+                    "rotation_rebalance",
+                    "defensive_switch",
+                )
+            },
+            "rotation_alert": "rotation.rotation_alert",
         }.items()
     ),
     MetricDefinition(

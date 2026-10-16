@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { recordedFactors } from "@/test/fixtures";
+import { recordedCandidates, recordedFactors } from "@/test/fixtures";
 import { unexplainedNumbers } from "@/test/numbers";
 
 import { OpportunityRadarView } from "./OpportunityRadarView";
@@ -48,5 +48,17 @@ describe("OpportunityRadarView with the recorded factor table", () => {
     const { container } = render(<OpportunityRadarView data={recordedFactors} knownOn="2026-10-06" />);
     expect(screen.getAllByRole("note")[0].textContent).toContain("never ranked against the other instruments");
     expect(unexplainedNumbers(container)).toEqual([]);
+  });
+
+  it("puts the candidates above the tables when given (M2.4)", () => {
+    const { container } = render(<OpportunityRadarView data={recordedFactors} candidates={recordedCandidates} />);
+    const block = container.querySelector('[data-block="candidates"]');
+    expect(block?.querySelector('li[data-candidate="SPY"][data-strategy="S3"]')).toBeTruthy();
+    expect(block?.compareDocumentPosition(container.querySelector('[data-block="trend"]') as Node)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+    expect(unexplainedNumbers(container)).toEqual([]);
+    const { container: none } = render(<OpportunityRadarView data={recordedFactors} />);
+    expect(none.querySelector('[data-block="candidates"]')).toBeNull();
   });
 });
