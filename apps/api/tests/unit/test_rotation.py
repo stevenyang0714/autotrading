@@ -245,3 +245,17 @@ def test_the_same_inputs_give_the_same_document() -> None:
     one = assess(RULES, T, regime("elevated"), everything_up(), None)
     two = assess(RULES, T, regime("elevated"), everything_up(), None)
     assert one.model_dump(mode="json") == two.model_dump(mode="json")
+
+
+def test_the_alert_lists_the_previous_target_in_universe_order() -> None:
+    # A stored target is JSONB, whose keys come back sorted by length and then alphabetically.
+    stored = {"IWM": Decimal("50.00"), "SPY": Decimal("25.00"), "XLE": Decimal("25.00")}
+    result = assess(
+        RULES,
+        T,
+        regime("normal"),
+        everything_up(),
+        previous({"SPY": "100.00"}, T - timedelta(days=31), "normal"),
+    )
+    alert = rotation_alert(result, stored, "a-1")
+    assert alert is not None and alert.title.endswith("(was SPY, IWM, XLE)")

@@ -9,6 +9,7 @@ One assessment per T and rule version; re-running is harmless.
 
 from datetime import datetime, timedelta
 from functools import lru_cache
+from itertools import pairwise
 from pathlib import Path
 from uuid import UUID
 
@@ -210,3 +211,37 @@ def record_regime(
             backfilled,
         )
     return assessment_id
+
+
+def raise_alerts(session: Session, rules: RegimeRuleSet, system_time: datetime) -> int:
+    """The stress-change alerts of every stored assessment under the active alert rules, in
+    order of T (for `make alerts-backfill` after a new alert rule version); returns how many
+    were new."""
+    alert_rules = stored_alert_rules(session)
+    if (
+        alert_rules is None
+        or "stress_change" not in alert_rules.market_events
+        or alert_rules.regime_rule_version != rules.rule_version
+    ):
+        return 0
+    rows = session.scalars(
+        select(RegimeAssessment)
+        .where(RegimeAssessment.rule_version == rules.rule_version)
+        .order_by(RegimeAssessment.known_at)
+    ).all()
+    raised = 0
+    for before, row in pairwise(rows):
+        if before.stress is None or row.stress is None or before.stress == row.stress:
+            continue
+        regime = Regime.model_validate(row.assessment)
+        raised += insert_alert(
+            session,
+            alert_rules,
+            None,
+            None,
+            _stress_alert(regime, before.stress, row.id),
+            system_time,
+            None,
+            True,
+        )
+    return raised

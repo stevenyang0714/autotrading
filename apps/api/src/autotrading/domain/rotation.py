@@ -193,7 +193,7 @@ class PreviousTarget:
 # ---------- results ----------
 
 
-class Reading(BaseModel):
+class TrendReading(BaseModel):
     measure: str
     value: Decimal | None
     threshold: Decimal
@@ -210,7 +210,7 @@ class EtfReading(BaseModel):
     snapshot_known_at: datetime | None
     last_close: date | None
     feed_status: str | None
-    trend: list[Reading]
+    trend: list[TrendReading]
     trend_up: bool
     beta: Decimal | None
     high_beta: bool
@@ -260,13 +260,13 @@ def _ny_month(at: datetime) -> tuple[int, int]:
     return local.year, local.month
 
 
-def _trend(rules: RotationRuleSet, snapshot: SnapshotInput) -> list[Reading]:
-    out: list[Reading] = []
+def _trend(rules: RotationRuleSet, snapshot: SnapshotInput) -> list[TrendReading]:
+    out: list[TrendReading] = []
     for condition in rules.trend:
         measure = snapshot.measures.get(condition.measure)
         if measure is None or measure.value is None:
             out.append(
-                Reading(
+                TrendReading(
                     measure=condition.measure,
                     value=None,
                     threshold=condition.above,
@@ -277,7 +277,7 @@ def _trend(rules: RotationRuleSet, snapshot: SnapshotInput) -> list[Reading]:
             continue
         passed = measure.value > condition.above
         out.append(
-            Reading(
+            TrendReading(
                 measure=condition.measure,
                 value=measure.value,
                 threshold=condition.above,
@@ -520,6 +520,13 @@ def rotation_alert(
     if not rotation.rebalance or previous is None or rotation.weights() == dict(previous):
         return None
     sleeve = {r.symbol: r.sleeve for r in rotation.readings}
+    order = [r.symbol for r in rotation.readings]  # universe order (stored targets lose it)
+    previous = {
+        s: previous[s]
+        for s in sorted(
+            previous, key=lambda s: (s not in order, order.index(s) if s in order else 0, s)
+        )
+    }
     was = sum((w for s, w in previous.items() if sleeve.get(s) == "risk"), Decimal(0))
     down = rotation.risk_pct() < was
     why = "defensive switch" if rotation.reason == "defensive_switch" else "monthly target"

@@ -6,7 +6,9 @@
 Every stored assignment under the alert rules' buyback rule version gets its assessment, in
 order of T per company, as the database holds it now (marked backfilled); level changes raise
 backfilled alerts. Then the events of the last `event_lookback_days` raise their L0 alerts
-(ADR-028 A3).
+(ADR-028 A3). Since M2.4 (ADR-032) it also raises, under the active alert rules, the market-wide
+alerts of the stored regime assessments (stress changes) and rotation assessments (new targets),
+in order of T, so a new alert rule version keeps their history.
 """
 
 import sys
@@ -17,6 +19,7 @@ from sqlalchemy.orm import Session
 from autotrading.api.instruments import issuer_chain, universe_equities
 from autotrading.db.models import BuybackStateAssignment, ConvergenceAssessment
 from autotrading.jobs import actors
+from autotrading.repositories import regime, rotation
 from autotrading.repositories.convergence import (
     buyback_reading,
     record_convergence,
@@ -61,10 +64,25 @@ def backfill(session: Session) -> tuple[int, int]:
     return assessed, seeded
 
 
+def market_alerts(session: Session) -> tuple[int, int]:
+    """(stress-change alerts, rotation alerts) raised under the active alert rules."""
+    now = session.execute(select(func.now())).scalar_one()
+    regime_rules = regime.stored_regime_rules(session)
+    rotation_rules = rotation.stored_rotation_rules(session)
+    stress = regime.raise_alerts(session, regime_rules, now) if regime_rules else 0
+    targets = rotation.raise_alerts(session, rotation_rules, now) if rotation_rules else 0
+    session.commit()
+    return stress, targets
+
+
 def main() -> int:
     with actors.sessions()() as session:
         assessed, seeded = backfill(session)
-    print(f"Stored {assessed} convergence assessments; seeded {seeded} event alerts.")
+        stress, targets = market_alerts(session)
+    print(
+        f"Stored {assessed} convergence assessments; seeded {seeded} event alerts; raised "
+        f"{stress} stress-change and {targets} rotation alerts."
+    )
     return 0
 
 

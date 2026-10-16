@@ -21,7 +21,11 @@ from autotrading.api.valuation import known_at_or_now
 from autotrading.db.models import RotationAssessment
 from autotrading.db.models import RotationRuleSet as RotationRuleSetRow
 from autotrading.domain.rotation import Rotation
-from autotrading.repositories.rotation import active_rotation_version, load_rotation_rules
+from autotrading.repositories.rotation import (
+    active_rotation_version,
+    load_rotation_rules,
+    stored_rotation_rules,
+)
 
 router = APIRouter(tags=["rotation"])
 
@@ -85,6 +89,12 @@ def rotation_rules(session: SessionDep) -> list[RotationRuleSetOut]:
     ]
 
 
+def _ordered(target: dict[str, str], order: list[str]) -> dict[str, Decimal]:
+    """A stored target in universe order (JSONB keeps its own key order)."""
+    keys = sorted(target, key=lambda s: (order.index(s) if s in order else len(order), s))
+    return {s: Decimal(target[s]) for s in keys}
+
+
 def stored(row: RotationAssessment) -> StoredRotation:
     return StoredRotation(
         id=row.id,
@@ -111,6 +121,8 @@ def latest_rotation(session: SessionDep, at: datetime) -> RotationAssessment | N
 def rotation(session: SessionDep, known_at: KnownAt = None) -> RotationOut:
     at = known_at_or_now(session, known_at)
     version = active_rotation_version()
+    rules = stored_rotation_rules(session, version)
+    order = rules.sleeves.universe() if rules else []
     rows = session.scalars(
         select(RotationAssessment)
         .where(
@@ -126,7 +138,7 @@ def rotation(session: SessionDep, known_at: KnownAt = None) -> RotationOut:
             known_at=r.known_at,
             reason=r.reason,
             stress=r.stress,
-            target={symbol: Decimal(weight) for symbol, weight in (r.target or {}).items()},
+            target=_ordered(r.target or {}, order),
             cash_pct=Decimal(r.assessment["cash_pct"]),
             backfilled=r.backfilled,
         )

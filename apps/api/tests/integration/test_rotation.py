@@ -3,9 +3,12 @@ and factor snapshots read as known at (T, S), targets set at month starts and ca
 month, S3 signals beside other strategies, stored assessments recompute identically, the
 rotation API, and the rule set's sha guard."""
 
+import json
+import os
 from collections.abc import Callable, Iterator
 from datetime import UTC, date, datetime
 from decimal import Decimal
+from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
@@ -50,6 +53,7 @@ from autotrading.repositories.regime import (
     record_regime,
     stored_regime_rules,
 )
+from autotrading.repositories.regime import raise_alerts as regime_raise_alerts
 from autotrading.repositories.rotation import (
     load_rotation_rules,
     raise_alerts,
@@ -303,3 +307,103 @@ def test_a_changed_released_rule_set_is_refused(engine: Engine) -> None:
             sync_rotation_rules(session, file.model_copy(update={"rule_sets": [edited]}))
         session.rollback()
 
+
+def test_signals_list_the_target_in_force(
+    client: TestClient, sessions: sessionmaker[Session], stored: tuple[datetime, datetime]
+) -> None:
+    with sessions() as session:
+        october = rows(session)[-1]
+    target = october.target or {}
+    body = client.get("/signals", params={"known_at": iso(VALUED_AT), "strategy": "S3"}).json()
+    assert body["rule_versions"] == {"S1": "0.3.0", "S3": "0.1.0"}
+    current = body["current"]
+    assert len(current) == 2 * len(target)
+    for signal in current:
+        assert (signal["strategy_id"], signal["state"]) == ("S3", "rotation_target")
+        assert signal["family_id"] in (1, 5) and signal["generated_at"] == iso(VALUED_AT)
+        assert Decimal(signal["weight_pct"]) == Decimal(target[signal["ticker"]])
+        assert signal["stress"] == october.stress
+    both = client.get("/signals", params={"known_at": iso(VALUED_AT)}).json()
+    assert [s for s in both["current"] if s["strategy_id"] == "S3"] == current
+    history = client.get(
+        "/signals", params={"known_at": iso(VALUED_AT), "ticker": "SPY", "strategy": "S3"}
+    ).json()["history"]
+    times = [s["generated_at"] for s in history]
+    assert times == sorted(times, reverse=True)
+    assert all(s["ticker"] == "SPY" for s in history)
+
+
+def test_candidates_list_the_rotation_target_with_its_context(
+    client: TestClient, sessions: sessionmaker[Session], stored: tuple[datetime, datetime]
+) -> None:
+    with sessions() as session:
+        october = rows(session)[-1]
+    body = client.get("/candidates", params={"known_at": iso(VALUED_AT)}).json()
+    assert body["detail"].startswith("Long only (no short data, OD-5)")
+    assert body["companies"] == []  # no convergence assessment in this module
+    assert [e["ticker"] for e in body["etfs"]] == list(october.target or {})
+    for etf in body["etfs"]:
+        assert (etf["strategy_id"], etf["rotation_rule_version"]) == ("S3", "0.1.0")
+        assert (etf["regime_rule_version"], etf["factor_definition_version"]) == ("0.1.0", "0.1.0")
+        assert etf["reading"]["symbol"] == etf["ticker"] and etf["reading"]["eligible"]
+    assert body["context"]["stress"] == october.stress
+    before = client.get("/candidates", params={"known_at": "2026-07-01T00:00:00Z"}).json()
+    assert before["etfs"] == [] and before["context"] is None
+
+
+def test_the_market_alerts_are_raised_once(
+    sessions: sessionmaker[Session], stored: tuple[datetime, datetime]
+) -> None:
+    _, now = stored
+    with sessions() as session:
+        regime_rules = stored_regime_rules(session)
+        assert regime_rules is not None
+        assert regime_raise_alerts(session, regime_rules, now) == 0  # raised when stored
+        session.rollback()
+
+
+def test_rotation_alerts_are_listed_with_the_market_alerts(
+    client: TestClient, sessions: sessionmaker[Session], stored: tuple[datetime, datetime]
+) -> None:
+    with sessions() as session:
+        stored_count = len(session.scalars(select(Alert).where(Alert.kind == "rotation")).all())
+    body = client.get(
+        "/alerts",
+        params={"known_at": iso(VALUED_AT), "status": "all", "include_backfilled": True},
+    ).json()
+    rotation = [e for e in body["entries"] if e["kind"] == "rotation"]
+    assert len(rotation) == stored_count
+    for entry in rotation:
+        assert (entry["ticker"], entry["level_name"]) == (None, "S3 TARGET")
+        assert entry["title"].startswith("S3 rotation (")
+        assert entry["evidence"][0]["table"] == "rotation_assessments"
+
+
+# ---------- web fixtures (opt-in recorder) ----------
+
+
+@pytest.mark.skipif(
+    not os.environ.get("RECORD_WEB_FIXTURES"),
+    reason="recorder: set RECORD_WEB_FIXTURES=1 to refresh apps/web/tests/fixtures/api",
+)
+def test_record_web_fixtures(client: TestClient) -> None:
+    target = Path(__file__).resolve().parents[3] / "web" / "tests" / "fixtures" / "api"
+    at = iso(VALUED_AT)
+    recorded: tuple[tuple[str, str, Any], ...] = (
+        ("rotation", "/rotation", {"known_at": at}),
+        ("rotation-earlier", "/rotation", {"known_at": "2026-07-01T00:00:00Z"}),
+        ("candidates", "/candidates", {"known_at": at}),
+        ("signals-rotation", "/signals", {"known_at": at, "strategy": "S3"}),
+    )
+    for name, path, params in recorded:
+        response = client.get(path, params=params)
+        assert response.status_code == 200
+        record = {
+            "recorded_at": datetime.now(UTC).isoformat(),
+            "recorded_from": "recorded FRED vintages and Alpaca closes replayed into the "
+            "integration test database (tests/integration/test_rotation.py)",
+            "endpoint": path,
+            "params": params,
+            "response": response.json(),
+        }
+        (target / f"{name}.json").write_text(json.dumps(record, indent=2) + "\n")
