@@ -75,6 +75,7 @@ from autotrading.domain.splits import Split
 from autotrading.repositories.audit import set_actor
 from autotrading.repositories.facts import as_of_query
 from autotrading.repositories.prices import instruments_by_symbol
+from autotrading.repositories.risk import record_check, stored_risk_rules
 
 router = APIRouter(tags=["journal"])
 
@@ -165,6 +166,8 @@ class NewDecision(_Strict):
         if self.decision == "trade":
             if self.side is None or self.quantity is None or self.order_type is None:
                 raise ValueError("a TRADE needs a side, a quantity and an order type")
+            if self.max_loss is None:  # M2.3 (ADR-031 R1): the risk check needs it
+                raise ValueError("a TRADE states its maximum loss in USD")
             if self.no_trade_reason is not None:
                 raise ValueError("a TRADE has no NO TRADE reason")
             if (self.order_type == "limit") != (self.limit_price is not None):
@@ -910,16 +913,46 @@ def _commit(session: Session, conflict: str) -> None:
 
 
 def _paper(**fields: Any) -> TradeDecision:
-    """A decision row with the Phase 1 limits (the database checks them too)."""
+    """A paper decision row: paper mode, no broker, one user (the database checks them too); a
+    TRADE entry carries its passed risk check (ADR-031, P2-7), other decisions none."""
     return TradeDecision(
         mode="paper",
         broker=None,
-        risk_check_id=None,
-        portfolio_snapshot_id=None,
         approval_state="recorded",
         user_id=USER,
-        **fields,
+        **{"risk_check_id": None, "portfolio_snapshot_id": None, **fields},
     )
+
+
+def _risk_check(
+    session: Session, who: Subject, choice: NewDecision, when: Times
+) -> tuple[UUID, UUID]:
+    """Check a TRADE entry against the active risk rules at (T, S). A veto is stored and
+    committed, then the entry is refused (422) with every limit that failed."""
+    rules = stored_risk_rules(session)
+    if rules is None:
+        raise HTTPException(status_code=503, detail="risk rules are not loaded (make migrate)")
+    assert choice.side is not None and choice.quantity is not None
+    row, result = record_check(
+        session,
+        rules,
+        who.instrument.id,
+        who.ticker,
+        choice.side,
+        choice.quantity,
+        choice.max_loss,
+        when.at,
+        when.now,
+        "trade",
+    )
+    if result.verdict == "veto":
+        session.commit()  # the veto is recorded (ADR-031)
+        failed = "; ".join(f"{v.label}: {v.detail} (limit: {v.threshold})" for v in result.vetoes)
+        raise HTTPException(
+            status_code=422,
+            detail=f"vetoed by risk rules {rules.rule_version} (risk check {row.id}): {failed}",
+        )
+    return row.id, row.portfolio_snapshot_id
 
 
 @router.post("/journal", status_code=201)
@@ -935,11 +968,14 @@ def create_entry(body: NewEntry, session: SessionDep, pinned: WriteTime) -> Jour
         raise HTTPException(
             status_code=422, detail=f"no end-of-day close of {who.ticker} known now"
         )
+    checked = _risk_check(session, who, choice, when) if choice.decision == "trade" else None
     session.add(card)
     session.flush()
     session.add(
         _paper(
             thesis_card_id=card.id,
+            risk_check_id=checked[0] if checked else None,
+            portfolio_snapshot_id=checked[1] if checked else None,
             instrument_id=who.instrument.id,
             ticker=who.ticker,
             strategy_id=_strategy(session, card.signal_ids),

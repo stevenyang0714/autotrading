@@ -19,6 +19,7 @@ from autotrading.ingestion.schedule import (
     FRED,
     GDELT,
     NEWS_FEEDS,
+    PORTFOLIO,
     REFRESH_TIMEZONE,
     REGIME,
     SEC_EDGAR,
@@ -94,6 +95,15 @@ def main() -> None:
         lambda: actors.start_factor_evaluation(manual=False),
         CronTrigger(hour=FACTORS.hour, minute=FACTORS.minute, timezone=REFRESH_TIMEZONE),
         id="factors",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=12 * 3600,
+    )
+    # Paper portfolio (M2.3): daily at 11:10 SGT, with its drawdown alert.
+    scheduler.add_job(
+        lambda: actors.start_portfolio_snapshot(manual=False),
+        CronTrigger(hour=PORTFOLIO.hour, minute=PORTFOLIO.minute, timezone=REFRESH_TIMEZONE),
+        id="portfolio",
         max_instances=1,
         coalesce=True,
         misfire_grace_time=12 * 3600,

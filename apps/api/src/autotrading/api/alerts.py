@@ -44,8 +44,8 @@ router = APIRouter(tags=["alerts"])
 STRESS_NAMES = {order: name.upper() for name, order in STRESS_ORDER.items()}  # regime alerts
 
 IN_APP_ONLY = (
-    "In-app alerts only (P1-1). Levels are deterministic rules; none places an order, and L4 "
-    "is unreachable before the Phase 2 risk check."
+    "In-app alerts only (P1-1). Levels are deterministic rules; none places an order. L4 needs "
+    "the company's standard paper position to pass the risk check (paper only)."
 )
 URLS: dict[str, Any] = {"filings": Filing, "filing_buyback_statements": FilingBuybackStatement}
 

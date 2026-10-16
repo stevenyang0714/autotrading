@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-12T16:07:10.028040+00:00",
+  "recorded_at": "2026-10-15T09:41:17.149359+00:00",
   "recorded_from": "recorded SEC filings, Alpaca closes, FRED yields and news replayed into the integration test database (tests/integration/test_alerts.py)",
   "endpoint": "/alerts",
   "params": {
@@ -7,15 +7,15 @@
   },
   "response": {
     "known_at": "2026-10-06T12:00:00Z",
-    "rule_version": "0.2.0",
+    "rule_version": "0.3.0",
     "status": "open",
     "open_by_level": {
       "L0 Information": 2
     },
     "entries": [
       {
-        "id": "41f1843e-d65d-4773-9fb1-dd92cea94685",
-        "rule_version": "0.2.0",
+        "id": "2e734cba-5a8e-482d-8836-95016a233e9b",
+        "rule_version": "0.3.0",
         "ticker": "AAPL",
         "kind": "event",
         "level": 0,
@@ -24,12 +24,12 @@
         "direction": null,
         "title": "AAPL: Buyback state ACTIVE (was NONE)",
         "known_at": "2026-10-06T12:00:00Z",
-        "system_time": "2026-10-12T16:07:07.760133Z",
+        "system_time": "2026-10-15T09:41:15.835638Z",
         "backfilled": false,
         "evidence": [
           {
             "table": "buyback_state_assignments",
-            "id": "8402fde8-1147-4693-917c-715bb63cb6a9",
+            "id": "3cf41c20-8fe8-4f21-b3d4-54583a2f2184",
             "label": "Buyback state ACTIVE (was NONE)",
             "url": null
           }
@@ -38,8 +38,8 @@
         "acknowledgement": null
       },
       {
-        "id": "c9862204-7104-4061-b58b-8874e0ca6188",
-        "rule_version": "0.2.0",
+        "id": "94e12150-4525-42a4-beb2-23af9d243d79",
+        "rule_version": "0.3.0",
         "ticker": "XOM",
         "kind": "event",
         "level": 0,
@@ -48,12 +48,12 @@
         "direction": null,
         "title": "XOM: Buyback state ACTIVE (was WATCH)",
         "known_at": "2026-10-06T12:00:00Z",
-        "system_time": "2026-10-12T16:07:07.760133Z",
+        "system_time": "2026-10-15T09:41:15.835638Z",
         "backfilled": false,
         "evidence": [
           {
             "table": "buyback_state_assignments",
-            "id": "96250692-e966-4a55-9a2a-4b5c5f540dcb",
+            "id": "557ebd4a-b97f-4891-878c-68289e94e4d9",
             "label": "Buyback state ACTIVE (was WATCH)",
             "url": null
           }
@@ -62,6 +62,6 @@
         "acknowledgement": null
       }
     ],
-    "detail": "In-app alerts only (P1-1). Levels are deterministic rules; none places an order, and L4 is unreachable before the Phase 2 risk check."
+    "detail": "In-app alerts only (P1-1). Levels are deterministic rules; none places an order. L4 needs the company's standard paper position to pass the risk check (paper only)."
   }
 }

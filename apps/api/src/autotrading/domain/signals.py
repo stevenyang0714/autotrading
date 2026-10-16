@@ -20,7 +20,7 @@ from typing import Any, Literal
 
 BUYBACK_FAMILY = 2  # Corporate Actions & Capital Structure (domain/registries.py)
 BUYBACK_STRATEGY = "S1"  # Buyback + Value + Quality
-QUALIFYING_STATES = frozenset({"active", "high_conviction"})
+QUALIFYING_STATES = frozenset({"active", "high_conviction", "trade_ready"})  # M2.3
 SOURCE_QUALITY = 1
 Direction = Literal["long", "short", "neutral"]
 

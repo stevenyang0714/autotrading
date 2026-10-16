@@ -29,7 +29,9 @@ BASIS = {"table": "buyback_state_assignments", "id": "a1", "label": "Buyback sta
 PINNED = {
     "0.1.0": "9257f4512f7c5976dcbfd732adb95444a85b71ecb2983f63fe52560971163f7e",
     "0.2.0": "e1bcb09d496f9d5277b271ebedf7219b7869587c48d72104f753775216dcbff5",
+    "0.3.0": "92de2ab0ed6817b00ada52bc72df34553ce770a699ad9e88c8b1d4fbe5b3aedf",
 }
+PHASE1 = next(r.rule_set() for r in RULES.rule_sets if r.rule_version == "0.2.0")
 
 
 def buyback(state: str = "active", **statuses: str) -> BuybackReading:
@@ -38,6 +40,7 @@ def buyback(state: str = "active", **statuses: str) -> BuybackReading:
         "high_conviction.fcf_yield": "fail",
         "trade_ready.above_average": "fail",
         "trade_ready.relative_return": "fail",
+        "trade_ready.risk_check": "unavailable",
     } | {k.replace("__", "."): v for k, v in statuses.items()}
     return BuybackReading(
         assignment_id="a1",
@@ -60,11 +63,17 @@ def event(kind: str, days_ago: float, source: str, row: str = "r") -> Event:
 
 
 def test_every_released_rule_set_is_pinned() -> None:
-    # 0.2.0 added market events with defaults that keep 0.1.0's content and hash (ADR-029).
+    # 0.2.0 added market events and 0.3.0 L4 and portfolio events, with defaults that keep the
+    # earlier contents and hashes (ADR-029, ADR-031).
     assert {r.rule_version: r.rule_set().content_sha256() for r in RULES.rule_sets} == PINNED
     assert (ACTIVE.rule_version, ACTIVE.market_events, ACTIVE.regime_rule_version) == (
-        "0.2.0",
+        "0.3.0",
         ["stress_change"],
+        "0.1.0",
+    )
+    assert (ACTIVE.buyback_rule_version, ACTIVE.portfolio_events, ACTIVE.risk_rule_version) == (
+        "0.3.0",
+        ["drawdown"],
         "0.1.0",
     )
 
@@ -109,20 +118,32 @@ def test_thesis_needs_executed_buybacks_and_valuation_support() -> None:
     assert unknown.levels[2].status == "unavailable"
 
 
-def test_trade_candidate_adds_market_confirmation_and_l4_is_unreachable() -> None:
-    result = assess(
-        ACTIVE,
-        T,
-        buyback(
-            "high_conviction",
-            high_conviction__dcf_discount="pass",
-            trade_ready__relative_return="pass",
-        ),
-        [],
-    )
+def test_trade_candidate_adds_market_confirmation_and_l4_needs_the_risk_check() -> None:
+    confirmed = {"high_conviction__dcf_discount": "pass", "trade_ready__relative_return": "pass"}
+    result = assess(ACTIVE, T, buyback("high_conviction", **confirmed), [])
     assert (result.level, result.independent_families) == (3, [2, 3, 5])
     assert (result.levels[4].status, result.levels[4].detail) == (
         "unavailable",
+        "standard paper position risk check unavailable",
+    )
+    # M2.3 (ADR-031): L3 and a passed standard risk check is L4; a veto stays L3.
+    ready = assess(
+        ACTIVE, T, buyback("trade_ready", trade_ready__risk_check="pass", **confirmed), []
+    )
+    assert (ready.level, ready.levels[4].detail) == (4, "standard paper position risk check passes")
+    vetoed = assess(
+        ACTIVE, T, buyback("high_conviction", trade_ready__risk_check="fail", **confirmed), []
+    )
+    assert (vetoed.level, vetoed.levels[4].status) == (3, "fail")
+    # Without L3, no L4 whatever the risk check.
+    early = assess(ACTIVE, T, buyback("active", trade_ready__risk_check="pass"), [])
+    assert early.levels[4].status == "fail" and early.level == 0
+    # Rules 0.2.0 never reach it (P1-4).
+    before = assess(
+        PHASE1, T, buyback("high_conviction", trade_ready__risk_check="pass", **confirmed), []
+    )
+    assert (before.level, before.levels[4].detail) == (
+        3,
         "needs the Phase 2 risk check, liquidity, sizing and compliance (P1-4)",
     )
 

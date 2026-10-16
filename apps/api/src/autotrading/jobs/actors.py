@@ -32,7 +32,7 @@ from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.ingestion.schedule import market_calendar
 from autotrading.jobs.broker import WorkerHeartbeat, configure_broker
-from autotrading.repositories import factors, regime
+from autotrading.repositories import factors, regime, risk
 from autotrading.settings import get_settings
 
 logger = logging.getLogger(__name__)
@@ -333,6 +333,33 @@ def start_factor_backfill() -> int:
     for year in years:
         backfill_factors.send(year, now.isoformat())
     return len(years)
+
+
+# ---------- paper portfolio (M2.3) ----------
+
+
+@dramatiq.actor(queue_name=EVALUATION_QUEUE, max_retries=1, broker=broker)
+def snapshot_portfolio(trigger: str) -> None:
+    """The paper portfolio now (T = S = now) and its drawdown alert (ADR-031 R4)."""
+    with sessions()() as session:
+        now = _now(session)
+        rules = risk.stored_risk_rules(session)
+        if rules is None:
+            logger.warning("Risk rules not loaded (make migrate): no portfolio snapshot")
+            return
+        snapshot = risk.record_portfolio(session, rules, now, now, trigger)
+        session.commit()
+        logger.info(
+            "Paper portfolio at %s (%s): equity %s, drawdown %s%%",
+            now,
+            trigger,
+            snapshot.equity,
+            snapshot.drawdown_pct,
+        )
+
+
+def start_portfolio_snapshot(*, manual: bool) -> None:
+    snapshot_portfolio.send("manual" if manual else "schedule")
 
 
 def start_buyback_backfill() -> int:

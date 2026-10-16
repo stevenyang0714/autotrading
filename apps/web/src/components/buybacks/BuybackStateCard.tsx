@@ -181,6 +181,12 @@ export function BuybackStateCard({
   history: StatePoint[];
   ruleVersion: string;
 }) {
+  // Rules 0.1.0 and 0.2.0 never reach TRADE-READY (P1-4); 0.3.0 reads the standard risk check.
+  const phase1 = Boolean(
+    state?.assessment.conditions
+      .find((c) => c.condition_id === "trade_ready.risk_check")
+      ?.detail.includes("unreachable in Phase 1"),
+  );
   return (
     <div className="space-y-3 rounded border border-neutral-800 p-3" data-block="state">
       <h3 className="flex flex-wrap items-center gap-2 text-sm font-medium">
@@ -248,9 +254,15 @@ export function BuybackStateCard({
                     {result ? <StatusText status={result.status} /> : null}
                     <span className="text-xs text-neutral-500">{result?.rule}</span>
                     {level === "trade_ready" ? (
-                      <Metric termId="buyback_state_trade_ready" icon={false} className="text-xs text-neutral-500">
-                        Unreachable in Phase 1.
-                      </Metric>
+                      phase1 ? (
+                        <Metric termId="buyback_state_trade_ready" icon={false} className="text-xs text-neutral-500">
+                          Unreachable in Phase 1.
+                        </Metric>
+                      ) : (
+                        <Metric termId="standard_position_check" icon={false} className="text-xs text-neutral-500">
+                          Needs the standard paper position to pass the risk check.
+                        </Metric>
+                      )
                     ) : null}
                   </div>
                   <ul>

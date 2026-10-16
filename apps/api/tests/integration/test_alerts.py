@@ -25,10 +25,12 @@ from autotrading.api.instruments import issuer_chain
 from autotrading.config_sync import (
     AlertRulesVersionError,
     load_macro_series,
+    load_risk_rules,
     load_sources,
     sync_alert_rules,
     sync_buyback_rules,
     sync_macro_series,
+    sync_risk_rules,
     sync_sources,
 )
 from autotrading.db.models import (
@@ -82,6 +84,7 @@ def engine(database_factory: Callable[[], URL]) -> Iterator[Engine]:
     with Session(engine) as session:
         sync_sources(session, load_sources(CONFIG / "sources.yaml"))
         sync_macro_series(session, load_macro_series(CONFIG / "macro_series.yaml"))
+        sync_risk_rules(session, load_risk_rules(CONFIG / "risk_rules.yaml"))
         sync_buyback_rules(session, load_rules())
         sync_alert_rules(session, load_alert_rules())
         for source in session.scalars(select(Source)):
@@ -167,7 +170,7 @@ def test_each_assignment_has_its_convergence_level(
 ) -> None:
     with sessions() as session:
         assignments = session.scalars(
-            select(BuybackStateAssignment).where(BuybackStateAssignment.rule_version == "0.2.0")
+            select(BuybackStateAssignment).where(BuybackStateAssignment.rule_version == "0.3.0")
         ).all()
         assessments = {
             a.buyback_assignment_id: a for a in session.scalars(select(ConvergenceAssessment))
@@ -177,14 +180,16 @@ def test_each_assignment_has_its_convergence_level(
     for assignment in assignments:
         row = assessments[assignment.id]
         assert (row.rule_version, row.known_at, row.ticker) == (
-            "0.2.0",  # since M2.1: 0.1.0 plus market-wide alerts
+            "0.3.0",  # since M2.3: L4 with the standard risk check, portfolio alerts
             assignment.known_at,
             assignment.ticker,
         )
         levels = row.assessment["levels"]
         assert [c["level"] for c in levels] == [0, 1, 2, 3, 4]
-        assert levels[4]["status"] == "unavailable"
-        assert row.assessment["buyback_rule_version"] == "0.2.0"
+        # L4 reads the standard risk check (M2.3): fails without L3, passes or fails with it
+        assert levels[4]["status"] in ("pass", "fail", "unavailable")
+        assert levels[4]["detail"].startswith(("needs L3 first", "standard paper position"))
+        assert row.assessment["buyback_rule_version"] == "0.3.0"
         if assignment.state in ("none", "watch"):
             assert row.level is None or row.level <= 1  # no thesis without executed buybacks
 
@@ -253,7 +258,7 @@ def test_recomputing_at_the_same_times_gives_the_same_assessment(
             instrument.id,
             issuer_chain(session, instrument.entity_id).order,
             buyback_reading(
-                assignment.id, assignment.state, VALUED_AT, "0.2.0", assignment.assessment
+                assignment.id, assignment.state, VALUED_AT, "0.3.0", assignment.assessment
             ),
             VALUED_AT,
             now,
@@ -269,7 +274,7 @@ def test_every_alert_links_its_rule_version_and_evidence(client: TestClient) -> 
     kinds = {e["kind"] for e in entries}
     assert "event" in kinds
     for entry in entries:
-        assert entry["rule_version"] == "0.2.0"
+        assert entry["rule_version"] == "0.3.0"
         assert entry["evidence"] and all(e["label"] for e in entry["evidence"])
         for evidence in entry["evidence"]:
             if evidence["table"] in ("filings", "filing_buyback_statements"):
@@ -326,32 +331,30 @@ def test_acknowledging_is_audited_and_happens_once(
     assert labels["entries"][0]["object_label"] == f"acknowledged: {alert['title']}"
 
 
-def test_alerts_cannot_change_and_l4_is_refused(engine: Engine, stored: datetime) -> None:
+def test_alerts_cannot_change_and_levels_stop_at_l4(engine: Engine, stored: datetime) -> None:
     with engine.connect() as conn, pytest.raises(DBAPIError, match="append-only"):
         conn.execute(text("UPDATE alerts SET title = 'x'"))
     with engine.connect() as conn, pytest.raises(DBAPIError, match="append-only"):
         conn.execute(text("DELETE FROM alert_acknowledgements"))
-    with engine.connect() as conn, pytest.raises(IntegrityError, match="level_phase1"):
+    with engine.connect() as conn, pytest.raises(IntegrityError, match="level_range"):
         conn.execute(
             text(
                 "INSERT INTO convergence_assessments (instrument_id, ticker, known_at, "
                 "system_time, rule_version, level, assessment, backfilled, trigger) SELECT "
                 "instrument_id, ticker, known_at - interval '1 day', system_time, rule_version, "
-                "4, assessment, backfilled, trigger FROM convergence_assessments LIMIT 1"
+                "5, assessment, backfilled, trigger FROM convergence_assessments LIMIT 1"
             )
         )
 
 
 def test_each_company_level_as_known_on_a_date(client: TestClient) -> None:
     body = client.get("/convergence", params={"known_at": iso(VALUED_AT)}).json()
-    assert body["rule_version"] == "0.2.0"
+    assert body["rule_version"] == "0.3.0"
     companies = {c["ticker"]: c for c in body["companies"]}
     assert sorted(companies) == ["AAPL", "META", "XOM"]
     for company in companies.values():
         assert company["known_at"] == iso(VALUED_AT)
-        assert company["levels"][4]["detail"] == (
-            "needs the Phase 2 risk check, liquidity, sizing and compliance (P1-4)"
-        )
+        assert company["levels"][4]["detail"].startswith(("needs L3 first", "standard paper"))
     levels = [c["level"] if c["level"] is not None else -1 for c in body["companies"]]
     assert levels == sorted(levels, reverse=True)
     april = client.get("/convergence", params={"known_at": "2026-04-15T00:00:00Z"}).json()
@@ -365,14 +368,14 @@ def test_each_company_level_as_known_on_a_date(client: TestClient) -> None:
 def test_rule_sets_are_registered_once_and_never_change(engine: Engine) -> None:
     rules = load_alert_rules()
     with Session(engine) as session:
-        assert sync_alert_rules(session, rules).unchanged == ["0.2.0", "0.1.0"]
+        assert sync_alert_rules(session, rules).unchanged == ["0.3.0", "0.2.0", "0.1.0"]
         entry = rules.rule_sets[0]
         edited = entry.model_copy(update={"event_lookback_days": 60})
-        with pytest.raises(AlertRulesVersionError, match=r"0\.2\.0 changed"):
+        with pytest.raises(AlertRulesVersionError, match=r"0\.3\.0 changed"):
             sync_alert_rules(session, rules.model_copy(update={"rule_sets": [edited]}))
-        bumped = edited.model_copy(update={"rule_version": "0.3.0", "status": "retired"})
+        bumped = edited.model_copy(update={"rule_version": "0.4.0", "status": "retired"})
         result = sync_alert_rules(session, rules.model_copy(update={"rule_sets": [entry, bumped]}))
-        assert result.created == ["0.3.0"]
+        assert result.created == ["0.4.0"]
         session.rollback()
 
 

@@ -91,6 +91,12 @@ factors-backfill: ## Queue factor snapshots at every session since 2016, marked 
 factors-verify: ## Recompute the latest 20 and 200 random stored factor snapshots (and those around splits)
 	$(COMPOSE) exec -T api python -m autotrading.jobs.factors_evaluate --verify 20 --sample 200
 
+portfolio-snapshot: ## Queue a paper portfolio snapshot (and its drawdown alert) now (M2.3)
+	$(COMPOSE) exec -T api python -m autotrading.jobs.risk_evaluate
+
+risk-verify: ## Recompute the latest 20 and 100 random stored risk checks and report any that differ
+	$(COMPOSE) exec -T api python -m autotrading.jobs.risk_evaluate --verify 20 --sample 100
+
 replay-fixtures: ## CI only: load the recorded SEC, FRED, Alpaca and news fixtures into the stack database
 	cd $(API) && uv run python -m tests.replay
 

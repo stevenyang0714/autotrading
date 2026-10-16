@@ -758,6 +758,88 @@ M2.2, one PR.
 
 ---
 
+## ADR-031 Paper portfolio and deterministic risk veto — Accepted (2026-10-15, approved by Steven with the M2.3 plan)
+M2.3, one PR.
+- **Decisions (Steven, 2026-10-15):**
+  - R1 The proposed limits (P2-4 and P2-5 decided):
+    - notional capital USD 100,000;
+    - a position at most 10% of capital;
+    - the stated maximum loss required, and at most 1% of capital;
+    - one GICS sector at most 30%;
+    - a trade at most 1% of the 20-session average volume;
+    - gross exposure at most 100% (no leverage);
+    - the last close end-of-day and at most 5 days old, so fixture and demo prices are vetoed (E4);
+    - a drawdown alert at 10%.
+  - R2 Sectors from a reviewed GICS table in the risk rules, each with its source. Changing a sector is a new rule version.
+  - R3 What unlocks TRADE-READY and L4 (P2-7 decided): a daily standard position check. For each company, a paper buy of 5% of capital with a 1% maximum loss is added to the book as known then; TRADE-READY and L4 need it to pass. A recorded TRADE runs its own check and is refused on a veto.
+  - R4 A portfolio drawdown crossing 10% (or recovering within it) raises an alert in the Alerts Center.
+- **Technical defaults:**
+  - Rules: `config/risk_rules.yaml` 0.1.0, loaded into `risk_rule_sets` (audited) by `make migrate` with its sha256; a changed released version is refused; hash pinned in a unit test.
+  - Sector table (as of 2026-10):
+    - information technology: AAPL, MSFT, NVDA, XLK;
+    - communication services: GOOGL, META;
+    - financials: JPM;
+    - energy: XOM, XLE;
+    - consumer discretionary: AZO, ORLY, LOW;
+    - broad market: SPY, QQQ, IWM; fixed income: TLT, IEF; commodity: GLD. These three are outside the sector limit.
+  - Book (`domain/risk.py`, mypy --strict): the journal's TRADEs known at T and recorded before S, marked at the last close known at T on T's split basis (domain/splits). An exit is a reverse TRADE that realizes the P&L.
+  - The book's measures:
+    - positions with weight, P&L, beta (the latest stored 252-session beta) and days to exit at 1% of the average volume;
+    - realized and open P&L, equity and cash;
+    - gross, net and beta-weighted exposure, and exposure by sector;
+    - a daily equity curve from the first trade, its peak and the drawdown.
+  - Check: the proposed trade is added to the book and every limit is computed with its value, threshold and detail. Limits compare exact values; percents are rounded for display only. Any veto vetoes the trade. An exit is never checked. The same book, prices and rule version always give the same verdict.
+  - Storage (migration 0024, append-only):
+    - `portfolio_snapshots`: one row per T, S and rule version, shared by the checks at that point.
+    - `risk_checks`: the trigger (trade, on_demand, standard), the proposal, the price, the verdict and every limit. Trade and on-demand checks are audited; standard checks are not (10 a day).
+  - Journal: a TRADE entry requires `max_loss` and a passed check. `POST /journal` checks at the entry's (T, S):
+    - on a veto it stores the check and answers 422 with each failed limit, and no card is stored;
+    - on a pass it stores the check and the entry cites `risk_check_id` and `portfolio_snapshot_id`.
+  - Database guard: a CHECK requires `risk_check_id` on every TRADE entry. A BEFORE INSERT trigger requires the cited check to have passed and to match the ticker, side and quantity. `paper_mode`, `no_broker` and `approval_state = 'recorded'` stay.
+  - Unlocks:
+    - Buyback rules 0.3.0: 0.2.0 plus `reachable: true` and `risk_rule_version: 0.1.0`. The standard check is computed and stored with each assignment, and `trade_ready.risk_check` reads it. S1 signals include trade_ready.
+    - Alert rules 0.3.0: 0.2.0 plus L4 = L3 and a passed `trade_ready.risk_check` read from the stored assignment. It also adds `portfolio_events: [drawdown]` and the risk rule version.
+    - The 0.1.0 and 0.2.0 hashes of both rule sets are unchanged.
+    - Migration 0025 allows `trade_ready`, levels 0 to 4, and the alert kind `portfolio`.
+  - Schedule:
+    - A portfolio snapshot daily at 11:10 SGT, after buybacks at 11:00 and factors at 11:05.
+    - `make portfolio-snapshot` and `make risk-verify` (recompute stored checks).
+    - The buyback and alert backfills re-run under 0.3.0.
+    - The CI replay stores snapshots at the same points.
+- **API and web:**
+  - Endpoints:
+    - `GET /portfolio` (the book at (T, now) with its limits);
+    - `GET /risk/rules`;
+    - `GET /risk/checks` (filter by T, ticker and triggers) and `GET /risk/checks/{id}`;
+    - `POST /risk/checks` (a tried trade is stored and audited; no journal entry).
+  - Pages:
+    - `/dashboards/portfolio-risk` is live (PAPER ONLY), with: the tiles and equity curve; each limit's use; positions and sectors; the journal's and tried checks, kept apart from the standard checks; a try-a-trade form; As known on.
+    - The journal form requires the maximum loss and shows each failed limit on a veto.
+    - The buyback card and Alerts Center show TRADE-READY and L4.
+    - Every new term has a glossary entry and a Chinese hint.
+  - The no-order-path test allows `POST /risk/checks` only.
+- **Live check 2026-10-15:**
+  - Buyback backfill under 0.3.0: 700 assignments (none 230, watch 128, active 285, high conviction 15, trade-ready 42), each with its standard check stored; all 700 standard checks pass (the book is empty, KI-13).
+  - Convergence under 0.3.0: L0 156, L1 407, L2 33, L4 75, none 29. Every L3 company of 0.2.0 became L4, because its standard check passed. Alerts: 265 backfilled level changes, 2 live.
+  - The first TRADE-READY and L4: ORLY at the end of February 2021, AZO at the end of March 2021.
+  - `make risk-verify`: 118 stored checks recomputed, all identical; `make buyback-verify`: 20 identical.
+  - Tried trades, as known on 2026-10-15 (computed, not stored):
+    - buy 20 AAPL at USD 342.96 passes;
+    - 60 AAPL is vetoed (position 20.58%);
+    - JPM without a maximum loss is vetoed;
+    - JPM with a USD 1,500 maximum loss is vetoed (1.50%);
+    - 400 NVDA is vetoed on position and sector (88.52%).
+  - No TRADE was recorded in the local journal, because entries are append-only. The integration tests record and exit one.
+  - Endpoints: `/portfolio` 0.05 s, `/risk/checks` 0.01 s, `/risk/rules` 0.01 s.
+- **Known gaps:**
+  - The limits are defaults, unvalidated (KI-2).
+  - With an empty book, the standard check almost always passes (KI-13).
+  - Broad-market ETFs are not split by sector (KI-14).
+  - There is no VaR, ES, stress test, cost, slippage or currency exposure (KI-15).
+  - Costs come with M2.5 (P2-6).
+
+---
+
 ## Open decisions (owner: Steven)
 
 | ID | Decision | Needed by | Default until decided |
@@ -775,4 +857,5 @@ M2.2, one PR.
 - OD-1 (2026-10-06): Steven confirmed ADR-001: a personal tool, with no redistribution of data. ADR-001 is Accepted.
 - Phase 1 scope (2026-10-06): Steven accepted the Phase 0 exit report and decided OD-2 and OD-3 for Phase 1 (in-app alerts only; no consensus provider yet). Both stay open for later phases. See ADR-020.
 - Phase 2 entry (2026-10-12): Steven accepted the Phase 1 exit report; P2-1 decided (Massive not activated); OD-7 narrowed to a commercial dataset comparison. See ADR-029.
+- P2-4, P2-5 and P2-7 (2026-10-15): Steven accepted the proposed paper portfolio, risk limits and unlocks, with a reviewed sector table and a portfolio drawdown alert. See ADR-031.
 - OD-7 for now (2026-10-13): Steven decided not to buy a survivorship-free dataset yet; OD-7 stays open for M2.5. The problems are recorded in `docs/KNOWN_ISSUES.md`.

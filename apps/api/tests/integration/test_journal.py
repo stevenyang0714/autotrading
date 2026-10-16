@@ -31,15 +31,18 @@ from autotrading.api.buyback_states import (
 from autotrading.api.journal import resolve, subject, write_time
 from autotrading.config_sync import (
     load_macro_series,
+    load_risk_rules,
     load_sources,
     sync_buyback_rules,
     sync_macro_series,
+    sync_risk_rules,
     sync_sources,
 )
 from autotrading.db.models import (
     AuditLog,
     FinancialFact,
     PriceBar,
+    RiskCheck,
     Source,
     ThesisCard,
     TradeDecision,
@@ -55,6 +58,7 @@ from autotrading.ingestion.runner import IngestionRunner
 from autotrading.main import create_app
 from autotrading.repositories.facts import FinancialFactRepository
 from autotrading.repositories.prices import BarIn, PriceRepository
+from autotrading.repositories.risk import recompute
 from autotrading.settings import get_settings
 from tests import alpaca_replay, fred_replay, news_replay
 from tests.integration.conftest import alembic_config
@@ -86,6 +90,7 @@ def engine(database_factory: Callable[[], URL]) -> Iterator[Engine]:
         sync_sources(session, load_sources(CONFIG / "sources.yaml"))
         sync_macro_series(session, load_macro_series(CONFIG / "macro_series.yaml"))
         sync_buyback_rules(session, load_rules())
+        sync_risk_rules(session, load_risk_rules(CONFIG / "risk_rules.yaml"))
         for source in session.scalars(select(Source)):
             source.rate_limit_per_second, source.rate_limit_burst = 100, 100  # type: ignore[assignment]
         session.commit()
@@ -350,6 +355,144 @@ def test_the_journal_is_point_in_time(client: TestClient) -> None:
     assert [v["version"] for v in at_first["versions"]] == [1]
 
 
+def test_a_recorded_trade_cites_its_passed_risk_check(
+    client: TestClient, sessions: sessionmaker[Session]
+) -> None:
+    # M2.3 (ADR-031): every paper TRADE entry passed a risk check at its own (T, S).
+    entry_id = STATE["trade"]["decisions"][0]["id"]
+    with sessions() as session:
+        decision = session.get_one(TradeDecision, UUID(entry_id))
+        assert decision.risk_check_id is not None and decision.portfolio_snapshot_id is not None
+        check = session.get_one(RiskCheck, decision.risk_check_id)
+        assert (check.verdict, check.trigger, check.ticker, check.quantity) == (
+            "pass",
+            "trade",
+            "AAPL",
+            Decimal(10),
+        )
+        assert (
+            check.known_at == WRITE_AT
+            and check.portfolio_snapshot_id == decision.portfolio_snapshot_id
+        )
+        again = recompute(session, check)
+        assert again is not None and again.model_dump(mode="json") == check.risk_check
+
+
+def test_a_vetoed_trade_is_refused_and_the_veto_recorded(
+    client: TestClient, sessions: sessionmaker[Session]
+) -> None:
+    # Acceptance 2: a vetoed paper TRADE is refused and the veto is recorded.
+    with sessions() as session:
+        before = session.scalar(select(func.count()).select_from(TradeDecision))
+    body = {
+        "ticker": "AAPL",
+        "thesis": "Too big.",
+        "evidence": evidence(client),
+        "invalidation": "n/a",
+        "decision": {**TRADE, "quantity": "1000", "max_loss": "5000"},
+    }
+    response = client.post("/journal", json=body)
+    assert response.status_code == 422, response.text
+    detail = response.json()["detail"]
+    assert "vetoed by risk rules 0.1.0" in detail
+    assert "Position size" in detail and "Maximum loss" in detail
+    with sessions() as session:
+        assert session.scalar(select(func.count()).select_from(TradeDecision)) == before
+        veto = session.scalars(
+            select(RiskCheck)
+            .where(RiskCheck.verdict == "veto")
+            .order_by(RiskCheck.recorded_at.desc())
+        ).first()
+        assert veto is not None and veto.quantity == 1000 and veto.trigger == "trade"
+        audited = session.scalar(
+            select(func.count())
+            .select_from(AuditLog)
+            .where(AuditLog.object_type == "risk_checks", AuditLog.object_id == str(veto.id))
+        )
+        assert audited == 1
+    # A TRADE without a maximum loss is refused before any check.
+    no_loss = {**body, "decision": {k: v for k, v in TRADE.items() if k != "max_loss"}}
+    refused = client.post("/journal", json=no_loss)
+    assert refused.status_code == 422 and "maximum loss" in refused.text
+
+
+def test_the_database_refuses_a_trade_without_a_passed_check(
+    client: TestClient, engine: Engine
+) -> None:
+    copy = (
+        "INSERT INTO trade_decisions (thesis_card_id, instrument_id, ticker, signal_ids, "
+        "decision, side, quantity, order_type, max_loss, entry_close, mode, approval_state, "
+        "known_at, system_time, user_id, risk_check_id) SELECT thesis_card_id, instrument_id, "
+        "ticker, signal_ids, 'trade', 'buy', {quantity}, 'market', 100, entry_close, mode, "
+        "approval_state, known_at, system_time, user_id, {check} FROM trade_decisions "
+        "WHERE decision = 'trade' AND exits_decision_id IS NULL LIMIT 1"
+    )
+    with engine.connect() as conn, pytest.raises(DBAPIError, match="passed risk check"):
+        conn.execute(text(copy.format(quantity=10, check="NULL")))
+    # A NO TRADE never carries a risk check.
+    no_trade = (
+        "INSERT INTO trade_decisions (thesis_card_id, instrument_id, ticker, signal_ids, "
+        "decision, no_trade_reason, mode, approval_state, known_at, system_time, user_id, "
+        "risk_check_id) SELECT thesis_card_id, instrument_id, ticker, signal_ids, decision, "
+        "no_trade_reason, mode, approval_state, known_at, system_time, user_id, "
+        "(SELECT id FROM risk_checks LIMIT 1) FROM trade_decisions WHERE decision = 'no_trade' "
+        "LIMIT 1"
+    )
+    with engine.connect() as conn, pytest.raises(IntegrityError, match="risk_check_on_entries"):
+        conn.execute(text(no_trade))
+    vetoed = "(SELECT id FROM risk_checks WHERE verdict = 'veto' LIMIT 1)"
+    with engine.connect() as conn, pytest.raises(DBAPIError, match="passed risk check"):
+        conn.execute(text(copy.format(quantity=1000, check=vetoed)))
+    passed = "(SELECT id FROM risk_checks WHERE verdict = 'pass' AND trigger = 'trade' LIMIT 1)"
+    with engine.connect() as conn, pytest.raises(DBAPIError, match="another trade"):
+        conn.execute(text(copy.format(quantity=11, check=passed)))
+    with engine.connect() as conn, pytest.raises(DBAPIError, match="append-only"):
+        conn.execute(text("UPDATE risk_checks SET verdict = 'pass'"))
+
+
+def test_the_paper_portfolio_and_an_on_demand_check(
+    client: TestClient, sessions: sessionmaker[Session]
+) -> None:
+    book = client.get("/portfolio", params={"known_at": iso(WRITE_AT)}).json()
+    assert book["rules"]["rule_version"] == "0.1.0" and "PAPER ONLY" in book["detail"]
+    position = book["portfolio"]["positions"][0]
+    assert (position["ticker"], position["side"], position["sector"]) == (
+        "AAPL",
+        "buy",
+        "information_technology",
+    )
+    assert Decimal(book["portfolio"]["gross"]) == Decimal(position["market_value"])
+    # Before the entry the book is empty.
+    empty = client.get("/portfolio", params={"known_at": iso(WRITE_AT - timedelta(days=1))}).json()
+    assert empty["portfolio"]["positions"] == []
+    tried = client.post(
+        "/risk/checks", json={"ticker": "AAPL", "side": "buy", "quantity": "5", "max_loss": "50"}
+    )
+    assert tried.status_code == 201, tried.text
+    found = tried.json()
+    assert found["trigger"] == "on_demand"
+    assert {r["limit_id"] for r in found["check"]["limits"]} == {
+        "price",
+        "max_loss_stated",
+        "max_loss",
+        "position",
+        "sector",
+        "volume",
+        "gross",
+    }
+    listed = client.get("/risk/checks", params={"trigger": "on_demand"}).json()["checks"]
+    assert [c["id"] for c in listed][:1] == [found["id"]]
+    mixed = client.get("/risk/checks", params=[("trigger", "trade"), ("trigger", "on_demand")])
+    assert {c["trigger"] for c in mixed.json()["checks"]} <= {"trade", "on_demand"}
+    assert found["id"] in [c["id"] for c in mixed.json()["checks"]]
+    assert (
+        client.post(
+            "/risk/checks", json={"ticker": "AAPL", "side": "buy", "quantity": "5", "broker": "x"}
+        ).status_code
+        == 422
+    )
+
+
 @pytest.mark.parametrize(
     ("change", "message"),
     [
@@ -421,6 +564,8 @@ def test_no_path_can_send_an_order(client: TestClient, engine: Engine) -> None:
         "/journal/{card_id}/versions",
         "/journal/decisions/{decision_id}/exit",
     }
+    # M2.3: trying a trade against the risk limits records a check, never a decision
+    assert {p for p, m in paths if m == "POST" and p.startswith("/risk")} == {"/risk/checks"}
     copy = (
         "INSERT INTO trade_decisions (thesis_card_id, instrument_id, ticker, signal_ids, "
         "decision, no_trade_reason, mode, broker, approval_state, known_at, system_time, "
@@ -560,6 +705,31 @@ def test_record_web_fixtures(client: TestClient) -> None:
         ("journal-replay", f"/journal/{card_id}/replay", {}),
         ("evidence-aapl", "/instruments/AAPL/evidence", {"known_at": iso(WRITE_AT)}),
         ("signals", "/signals", {"known_at": iso(VALUED_AT), "ticker": "AAPL"}),
+    ):
+        response = client.get(path, params=params)
+        assert response.status_code == 200
+        record = {
+            "recorded_at": datetime.now(UTC).isoformat(),
+            "recorded_from": "recorded SEC filings, Alpaca closes, FRED yields and news replayed "
+            "into the integration test database (tests/integration/test_journal.py)",
+            "endpoint": path,
+            "params": params,
+            "response": response.json(),
+        }
+        (target / f"{name}.json").write_text(json.dumps(record, indent=2) + "\n")
+
+
+@pytest.mark.skipif(
+    not os.environ.get("RECORD_WEB_FIXTURES"),
+    reason="recorder: set RECORD_WEB_FIXTURES=1 to refresh apps/web/tests/fixtures/api",
+)
+def test_record_risk_web_fixtures(client: TestClient) -> None:
+    # M2.3: the paper book with the AAPL TRADE open, and the risk checks (pass, veto, tried).
+    target = Path(__file__).resolve().parents[3] / "web" / "tests" / "fixtures" / "api"
+    for name, path, params in (
+        ("portfolio", "/portfolio", {"known_at": iso(WRITE_AT + timedelta(days=1))}),
+        ("portfolio-empty", "/portfolio", {"known_at": iso(WRITE_AT - timedelta(days=1))}),
+        ("risk-checks", "/risk/checks", {"limit": 10}),
     ):
         response = client.get(path, params=params)
         assert response.status_code == 200

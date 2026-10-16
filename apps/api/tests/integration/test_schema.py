@@ -71,6 +71,11 @@ APP_TABLES = {
     "alert_acknowledgements",
     "regime_rule_sets",
     "regime_assessments",
+    "factor_definition_sets",
+    "factor_snapshots",
+    "risk_rule_sets",
+    "portfolio_snapshots",
+    "risk_checks",
 }
 FEB = datetime(2025, 2, 1, 21, 5, tzinfo=UTC)
 AUG = datetime(2025, 8, 1, 20, 30, tzinfo=UTC)
@@ -225,6 +230,18 @@ def test_guardrails_exist(engine: Engine) -> None:
         "regime_rule_sets_audit",
         "regime_assessments_append_only",
         "regime_assessments_no_truncate",
+        "factor_definition_sets_append_only",
+        "factor_definition_sets_audit",
+        "factor_snapshots_append_only",
+        "factor_snapshots_no_truncate",
+        "risk_rule_sets_append_only",
+        "risk_rule_sets_audit",
+        "portfolio_snapshots_append_only",
+        "portfolio_snapshots_no_truncate",
+        "risk_checks_append_only",
+        "risk_checks_no_truncate",
+        "risk_checks_audit",
+        "trade_decisions_risk_check",
     } <= triggers
     assert exclusions == {"ex_identifiers_value_period", "ex_identifiers_subject_period"}
 

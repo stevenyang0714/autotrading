@@ -512,7 +512,7 @@
       "AlertsOut": {
         "properties": {
           "detail": {
-            "default": "In-app alerts only (P1-1). Levels are deterministic rules; none places an order, and L4 is unreachable before the Phase 2 risk check.",
+            "default": "In-app alerts only (P1-1). Levels are deterministic rules; none places an order. L4 needs the company's standard paper position to pass the risk check (paper only).",
             "title": "Detail",
             "type": "string"
           },
@@ -1676,6 +1676,142 @@
         "title": "ChartPoint",
         "type": "object"
       },
+      "Check": {
+        "description": "A risk check: the proposed trade, its price, every limit and the verdict.",
+        "properties": {
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "limits": {
+            "items": {
+              "$ref": "#/components/schemas/LimitResult"
+            },
+            "title": "Limits",
+            "type": "array"
+          },
+          "notional": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notional"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price"
+          },
+          "price_day": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Day"
+          },
+          "proposal": {
+            "$ref": "#/components/schemas/Proposal"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          },
+          "verdict": {
+            "enum": [
+              "pass",
+              "veto"
+            ],
+            "title": "Verdict",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rule_version",
+          "known_at",
+          "proposal",
+          "price",
+          "price_day",
+          "notional",
+          "verdict",
+          "limits"
+        ],
+        "title": "Check",
+        "type": "object"
+      },
+      "CheckIn": {
+        "additionalProperties": false,
+        "properties": {
+          "max_loss": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Loss"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 1000000000.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "side": {
+            "enum": [
+              "buy",
+              "sell"
+            ],
+            "title": "Side",
+            "type": "string"
+          },
+          "ticker": {
+            "maxLength": 10,
+            "minLength": 1,
+            "title": "Ticker",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticker",
+          "side",
+          "quantity"
+        ],
+        "title": "CheckIn",
+        "type": "object"
+      },
       "CloseOut": {
         "properties": {
           "close": {
@@ -2143,7 +2279,7 @@
             "type": "array"
           },
           "detail": {
-            "default": "In-app alerts only (P1-1). Levels are deterministic rules; none places an order, and L4 is unreachable before the Phase 2 risk check.",
+            "default": "In-app alerts only (P1-1). Levels are deterministic rules; none places an order. L4 needs the company's standard paper position to pass the risk check (paper only).",
             "title": "Detail",
             "type": "string"
           },
@@ -3010,6 +3146,26 @@
           "role"
         ],
         "title": "EntityOut",
+        "type": "object"
+      },
+      "EquityPoint": {
+        "properties": {
+          "day": {
+            "format": "date",
+            "title": "Day",
+            "type": "string"
+          },
+          "equity": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Equity",
+            "type": "string"
+          }
+        },
+        "required": [
+          "day",
+          "equity"
+        ],
+        "title": "EquityPoint",
         "type": "object"
       },
       "EvidenceOut": {
@@ -5419,6 +5575,107 @@
         "title": "Limit",
         "type": "object"
       },
+      "LimitResult": {
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "limit_id": {
+            "title": "Limit Id",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pass",
+              "veto"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "threshold": {
+            "title": "Threshold",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "limit_id",
+          "label",
+          "status",
+          "value",
+          "threshold",
+          "detail"
+        ],
+        "title": "LimitResult",
+        "type": "object"
+      },
+      "Limits": {
+        "additionalProperties": false,
+        "properties": {
+          "gross_pct": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Gross Pct",
+            "type": "string"
+          },
+          "max_loss_pct": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Max Loss Pct",
+            "type": "string"
+          },
+          "position_pct": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Position Pct",
+            "type": "string"
+          },
+          "sector_pct": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Sector Pct",
+            "type": "string"
+          },
+          "stale_after_days": {
+            "exclusiveMinimum": 0.0,
+            "title": "Stale After Days",
+            "type": "integer"
+          },
+          "volume_pct": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Volume Pct",
+            "type": "string"
+          },
+          "volume_sessions": {
+            "exclusiveMinimum": 0.0,
+            "title": "Volume Sessions",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "position_pct",
+          "max_loss_pct",
+          "sector_pct",
+          "volume_pct",
+          "volume_sessions",
+          "gross_pct",
+          "stale_after_days"
+        ],
+        "title": "Limits",
+        "type": "object"
+      },
       "LogOut": {
         "properties": {
           "date": {
@@ -6680,6 +6937,335 @@
         "title": "PhaseOut",
         "type": "object"
       },
+      "Portfolio": {
+        "description": "The paper portfolio at T: everything a portfolio snapshot stores.",
+        "properties": {
+          "beta_exposure": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Beta Exposure"
+          },
+          "capital": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Capital",
+            "type": "string"
+          },
+          "cash": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Cash",
+            "type": "string"
+          },
+          "curve": {
+            "items": {
+              "$ref": "#/components/schemas/EquityPoint"
+            },
+            "title": "Curve",
+            "type": "array"
+          },
+          "drawdown_pct": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Drawdown Pct",
+            "type": "string"
+          },
+          "equity": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Equity",
+            "type": "string"
+          },
+          "gross": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Gross",
+            "type": "string"
+          },
+          "gross_pct": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Gross Pct",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "net": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Net",
+            "type": "string"
+          },
+          "net_pct": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Net Pct",
+            "type": "string"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
+          "peak_equity": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Peak Equity",
+            "type": "string"
+          },
+          "positions": {
+            "items": {
+              "$ref": "#/components/schemas/Position"
+            },
+            "title": "Positions",
+            "type": "array"
+          },
+          "realized_pnl": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Realized Pnl",
+            "type": "string"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          },
+          "sectors": {
+            "items": {
+              "$ref": "#/components/schemas/SectorExposure"
+            },
+            "title": "Sectors",
+            "type": "array"
+          },
+          "unrealized_pnl": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Unrealized Pnl",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rule_version",
+          "known_at",
+          "capital",
+          "positions",
+          "realized_pnl",
+          "unrealized_pnl",
+          "equity",
+          "cash",
+          "gross",
+          "net",
+          "gross_pct",
+          "net_pct",
+          "beta_exposure",
+          "sectors",
+          "curve",
+          "peak_equity",
+          "drawdown_pct",
+          "notes"
+        ],
+        "title": "Portfolio",
+        "type": "object"
+      },
+      "PortfolioOut": {
+        "properties": {
+          "detail": {
+            "default": "PAPER ONLY: a notional portfolio built from the journal's paper decisions. No order is placed or prepared; limits are defaults, unvalidated (OD-7).",
+            "title": "Detail",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "portfolio": {
+            "$ref": "#/components/schemas/Portfolio"
+          },
+          "rules": {
+            "$ref": "#/components/schemas/RulesOut"
+          },
+          "vetoes": {
+            "title": "Vetoes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "known_at",
+          "rules",
+          "portfolio",
+          "vetoes"
+        ],
+        "title": "PortfolioOut",
+        "type": "object"
+      },
+      "Position": {
+        "properties": {
+          "beta": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Beta"
+          },
+          "days_to_exit": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days To Exit"
+          },
+          "decision_id": {
+            "title": "Decision Id",
+            "type": "string"
+          },
+          "entry_day": {
+            "format": "date",
+            "title": "Entry Day",
+            "type": "string"
+          },
+          "entry_price": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Entry Price",
+            "type": "string"
+          },
+          "mark": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mark"
+          },
+          "mark_day": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mark Day"
+          },
+          "market_value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market Value"
+          },
+          "max_loss": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Loss"
+          },
+          "pnl": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pnl"
+          },
+          "sector": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sector"
+          },
+          "shares": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Shares",
+            "type": "string"
+          },
+          "side": {
+            "enum": [
+              "buy",
+              "sell"
+            ],
+            "title": "Side",
+            "type": "string"
+          },
+          "stale": {
+            "title": "Stale",
+            "type": "boolean"
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          },
+          "weight_pct": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weight Pct"
+          }
+        },
+        "required": [
+          "decision_id",
+          "ticker",
+          "side",
+          "shares",
+          "entry_price",
+          "entry_day",
+          "mark",
+          "mark_day",
+          "market_value",
+          "weight_pct",
+          "pnl",
+          "beta",
+          "sector",
+          "days_to_exit",
+          "stale",
+          "max_loss"
+        ],
+        "title": "Position",
+        "type": "object"
+      },
       "PreviousVersion": {
         "properties": {
           "filing": {
@@ -6953,6 +7539,47 @@
           "log"
         ],
         "title": "Progress",
+        "type": "object"
+      },
+      "Proposal": {
+        "properties": {
+          "max_loss": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Loss"
+          },
+          "quantity": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Quantity",
+            "type": "string"
+          },
+          "side": {
+            "enum": [
+              "buy",
+              "sell"
+            ],
+            "title": "Side",
+            "type": "string"
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticker",
+          "side",
+          "quantity",
+          "max_loss"
+        ],
+        "title": "Proposal",
         "type": "object"
       },
       "QuarterRow": {
@@ -8465,6 +9092,98 @@
         "title": "ReverseDcf",
         "type": "object"
       },
+      "RiskCheckOut": {
+        "properties": {
+          "backfilled": {
+            "title": "Backfilled",
+            "type": "boolean"
+          },
+          "check": {
+            "$ref": "#/components/schemas/Check"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "portfolio_snapshot_id": {
+            "format": "uuid",
+            "title": "Portfolio Snapshot Id",
+            "type": "string"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          },
+          "system_time": {
+            "format": "date-time",
+            "title": "System Time",
+            "type": "string"
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          },
+          "trigger": {
+            "enum": [
+              "trade",
+              "on_demand",
+              "standard"
+            ],
+            "title": "Trigger",
+            "type": "string"
+          },
+          "verdict": {
+            "enum": [
+              "pass",
+              "veto"
+            ],
+            "title": "Verdict",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "known_at",
+          "system_time",
+          "rule_version",
+          "trigger",
+          "ticker",
+          "verdict",
+          "backfilled",
+          "portfolio_snapshot_id",
+          "check"
+        ],
+        "title": "RiskCheckOut",
+        "type": "object"
+      },
+      "RiskChecksOut": {
+        "properties": {
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/RiskCheckOut"
+            },
+            "title": "Checks",
+            "type": "array"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "known_at",
+          "checks"
+        ],
+        "title": "RiskChecksOut",
+        "type": "object"
+      },
       "RiskFreeOut": {
         "properties": {
           "observation_date": {
@@ -8499,6 +9218,45 @@
           "source_url"
         ],
         "title": "RiskFreeOut",
+        "type": "object"
+      },
+      "RiskRuleSetOut": {
+        "properties": {
+          "content": {
+            "additionalProperties": true,
+            "title": "Content",
+            "type": "object"
+          },
+          "content_sha256": {
+            "title": "Content Sha256",
+            "type": "string"
+          },
+          "released": {
+            "format": "date",
+            "title": "Released",
+            "type": "string"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "retired"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rule_version",
+          "status",
+          "released",
+          "content",
+          "content_sha256"
+        ],
+        "title": "RiskRuleSetOut",
         "type": "object"
       },
       "RuleSetOut": {
@@ -8560,6 +9318,55 @@
           "score"
         ],
         "title": "RuleSetOut",
+        "type": "object"
+      },
+      "RulesOut": {
+        "properties": {
+          "capital": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Capital",
+            "type": "string"
+          },
+          "drawdown_alert_pct": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Drawdown Alert Pct",
+            "type": "string"
+          },
+          "limits": {
+            "$ref": "#/components/schemas/Limits"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          },
+          "sectors": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Sectors",
+            "type": "object"
+          },
+          "standard": {
+            "$ref": "#/components/schemas/Standard"
+          },
+          "unlimited_sectors": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Unlimited Sectors",
+            "type": "array"
+          }
+        },
+        "required": [
+          "rule_version",
+          "capital",
+          "limits",
+          "drawdown_alert_pct",
+          "standard",
+          "unlimited_sectors",
+          "sectors"
+        ],
+        "title": "RulesOut",
         "type": "object"
       },
       "RunOut": {
@@ -8910,6 +9717,36 @@
           "discipline"
         ],
         "title": "ScoreRule",
+        "type": "object"
+      },
+      "SectorExposure": {
+        "properties": {
+          "gross": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Gross",
+            "type": "string"
+          },
+          "limited": {
+            "title": "Limited",
+            "type": "boolean"
+          },
+          "pct": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Pct",
+            "type": "string"
+          },
+          "sector": {
+            "title": "Sector",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sector",
+          "gross",
+          "pct",
+          "limited"
+        ],
+        "title": "SectorExposure",
         "type": "object"
       },
       "SeriesObservations": {
@@ -9544,6 +10381,27 @@
         "title": "SplitOut",
         "type": "object"
       },
+      "Standard": {
+        "additionalProperties": false,
+        "properties": {
+          "max_loss_pct": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Max Loss Pct",
+            "type": "string"
+          },
+          "position_pct": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Position Pct",
+            "type": "string"
+          }
+        },
+        "required": [
+          "position_pct",
+          "max_loss_pct"
+        ],
+        "title": "Standard",
+        "type": "object"
+      },
       "StateAssignmentOut": {
         "properties": {
           "assessment": {
@@ -9717,7 +10575,6 @@
             "type": "integer"
           },
           "reachable": {
-            "const": false,
             "title": "Reachable",
             "type": "boolean"
           },
@@ -12339,6 +13196,58 @@
         ]
       }
     },
+    "/portfolio": {
+      "get": {
+        "operationId": "paper_portfolio_portfolio_get",
+        "parameters": [
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortfolioOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Paper Portfolio",
+        "tags": [
+          "risk"
+        ]
+      }
+    },
     "/prices/latest": {
       "get": {
         "operationId": "prices_latest_prices_latest_get",
@@ -12653,6 +13562,218 @@
         "summary": "Research Dashboard",
         "tags": [
           "research"
+        ]
+      }
+    },
+    "/risk/checks": {
+      "get": {
+        "operationId": "risk_checks_risk_checks_get",
+        "parameters": [
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          },
+          {
+            "in": "query",
+            "name": "ticker",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Ticker"
+            }
+          },
+          {
+            "in": "query",
+            "name": "trigger",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "enum": [
+                      "trade",
+                      "on_demand",
+                      "standard"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Trigger"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 30,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskChecksOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Risk Checks",
+        "tags": [
+          "risk"
+        ]
+      },
+      "post": {
+        "description": "Try a paper trade against the active limits now (T = S = now). Stored and audited; no\ndecision is recorded and nothing is sent anywhere.",
+        "operationId": "try_check_risk_checks_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskCheckOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Try Check",
+        "tags": [
+          "risk"
+        ]
+      }
+    },
+    "/risk/checks/{check_id}": {
+      "get": {
+        "operationId": "risk_check_risk_checks__check_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "check_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Check Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskCheckOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Risk Check",
+        "tags": [
+          "risk"
+        ]
+      }
+    },
+    "/risk/rules": {
+      "get": {
+        "operationId": "risk_rules_risk_rules_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RiskRuleSetOut"
+                  },
+                  "title": "Response Risk Rules Risk Rules Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Risk Rules",
+        "tags": [
+          "risk"
         ]
       }
     },

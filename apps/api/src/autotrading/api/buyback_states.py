@@ -29,7 +29,7 @@ from uuid import UUID
 import yaml
 from fastapi import APIRouter
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
@@ -72,6 +72,7 @@ from autotrading.domain.buyback_states import (
     Evidence,
     Level,
     Measure,
+    RiskVerdict,
     RuleSet,
     RulesFile,
     ScoreRule,
@@ -90,7 +91,10 @@ from autotrading.repositories.convergence import (
     record_convergence,
 )
 from autotrading.repositories.facts import row_key, visible_in_system_time
+from autotrading.repositories.identifiers import current_identifier_of
 from autotrading.repositories.prices import daily_bars, instruments_by_symbol
+from autotrading.repositories.risk import evaluate as evaluate_risk
+from autotrading.repositories.risk import record_check, stored_risk_rules
 from autotrading.repositories.signals import record_signal
 from autotrading.settings import get_settings
 
@@ -406,8 +410,45 @@ def evaluate(
         else [],
         dcf=dcf,
         benchmark_closes=_benchmark(session, rules.trade_ready.benchmark, at, system_time),
+        risk=_standard_risk(session, instrument, rule_set, at, system_time),
     )
     return assessment_out(session, assess(rule_set, evidence), dcf, extractor_version, chain.order)
+
+
+def _standard_risk(
+    session: Session,
+    instrument: Instrument,
+    rule_set: RuleSet,
+    at: datetime,
+    system_time: datetime | None,
+) -> RiskVerdict | None:
+    """The company's standard paper position against the risk rules the buyback rules name, at
+    (T, S) (M2.3, ADR-031 R3); None before rules 0.3.0 or when those risk rules are missing."""
+    if not rule_set.states.trade_ready.reachable or rule_set.risk_rule_version is None:
+        return None
+    risk_rules = stored_risk_rules(session, rule_set.risk_rule_version)
+    ticker = _alpaca_ticker(session, instrument)
+    if risk_rules is None or ticker is None:
+        return None
+    held = system_time or session.execute(select(func.now())).scalar_one()
+    result, _ = evaluate_risk(
+        session, risk_rules, instrument.id, ticker, "buy", None, None, at, held
+    )
+    failed = [f"{v.label}: {v.detail}" for v in result.vetoes]
+    return RiskVerdict(
+        result.verdict,
+        risk_rules.rule_version,
+        "all limits pass" if not failed else "; ".join(failed),
+    )
+
+
+def _alpaca_ticker(session: Session, instrument: Instrument) -> str | None:
+    """The instrument's current ticker: Alpaca's, else SEC's."""
+    for namespace in ("alpaca", "sec"):
+        found = current_identifier_of(session, "ticker", namespace, instrument_id=instrument.id)
+        if found is not None:
+            return found.id_value
+    return None
 
 
 def record_assignment(
@@ -432,6 +473,7 @@ def record_assignment(
     if exists is not None:
         return False
     found = evaluate(session, instrument, at, system_time, rule_set)
+    _store_standard_check(session, instrument, ticker, rule_set, at, system_time)
     assessment = found.model_dump(mode="json")
     inserted = session.execute(
         insert(BuybackStateAssignment)
@@ -478,6 +520,33 @@ def record_assignment(
             trigger,
         )
     return True
+
+
+def _store_standard_check(
+    session: Session,
+    instrument: Instrument,
+    ticker: str,
+    rule_set: RuleSet,
+    at: datetime,
+    system_time: datetime,
+) -> None:
+    """Keep the standard risk check the assignment read (one per company and T)."""
+    if not rule_set.states.trade_ready.reachable or rule_set.risk_rule_version is None:
+        return
+    risk_rules = stored_risk_rules(session, rule_set.risk_rule_version)
+    if risk_rules is not None:
+        record_check(
+            session,
+            risk_rules,
+            instrument.id,
+            _alpaca_ticker(session, instrument) or ticker,
+            "buy",
+            None,
+            None,
+            at,
+            system_time,
+            "standard",
+        )
 
 
 def evaluate_universe(

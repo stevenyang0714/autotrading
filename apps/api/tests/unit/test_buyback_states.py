@@ -12,6 +12,7 @@ from autotrading.domain.buyback import AnnouncementSource, Event
 from autotrading.domain.buyback_states import (
     DcfContext,
     Evidence,
+    RiskVerdict,
     RulesFile,
     assess,
     linear,
@@ -25,6 +26,7 @@ RULES_PATH = Path(__file__).resolve().parents[4] / "config" / "buyback_rules.yam
 RELEASED = {
     "0.1.0": "ce338c414407608f2844fde3d265bfc96d114586a23efbfb13eb9a42310b5465",
     "0.2.0": "7966ec40c8503ac2cb5347fea3d48f8c938a48cb6ecbc3b422a20432b33ae7d0",
+    "0.3.0": "7bd2bd62701d72006f9df5faef4f1007740765307372f7b881ebe716ef71d7a1",
 }
 
 
@@ -200,7 +202,7 @@ def conditions(result: object) -> dict[str, object]:
 
 def test_released_rule_sets_never_change(rules: RulesFile) -> None:
     assert {r.rule_version: r.content_sha256() for r in rules.rule_sets} == RELEASED
-    assert rules.active().rule_version == "0.2.0"
+    assert rules.active().rule_version == "0.3.0"
 
 
 def test_a_company_meeting_every_condition_is_a_high_conviction_candidate(
@@ -307,17 +309,36 @@ def test_funding_and_valuation_context(rules: RulesFile) -> None:
     assert short.state == "active"
 
 
-def test_trade_ready_is_unreachable_even_with_market_confirmation(rules: RulesFile) -> None:
+def test_trade_ready_needs_market_confirmation_and_a_passed_standard_risk_check(
+    rules: RulesFile,
+) -> None:
     rising = [
         close(str(d("2026-05-01") + timedelta(days=i)), f"{15 + i / 20:.2f}") for i in range(106)
     ]
     spy = [close(c.day.isoformat(), "500") for c in rising]
-    result = assess(rules.active(), evidence(closes=rising, benchmark_closes=spy))
+    confirmed = evidence(closes=rising, benchmark_closes=spy)
+    # No standard risk check at T: unavailable, never a pass.
+    result = assess(rules.active(), confirmed)
     found = conditions(result)
     assert found["trade_ready.above_average"].status == "pass"  # type: ignore[attr-defined]
     assert found["trade_ready.relative_return"].status == "pass"  # type: ignore[attr-defined]
     assert found["trade_ready.risk_check"].status == "unavailable"  # type: ignore[attr-defined]
     assert result.state == "high_conviction"
+    # M2.3 (ADR-031): a passed standard position makes TRADE-READY, a veto does not.
+    passed = assess(
+        rules.active(), replace(confirmed, risk=RiskVerdict("pass", "0.1.0", "all limits pass"))
+    )
+    assert passed.state == "trade_ready"
+    vetoed = assess(
+        rules.active(), replace(confirmed, risk=RiskVerdict("veto", "0.1.0", "Usable price: stale"))
+    )
+    assert conditions(vetoed)["trade_ready.risk_check"].status == "fail"  # type: ignore[attr-defined]
+    assert vetoed.state == "high_conviction"
+    # Rules 0.2.0 (P1-4) never read it.
+    old = next(r.rule_set() for r in rules.rule_sets if r.rule_version == "0.2.0")
+    before = assess(old, replace(confirmed, risk=RiskVerdict("pass", "0.1.0", "all limits pass")))
+    assert before.state == "high_conviction"
+    assert "unreachable in Phase 1" in conditions(before)["trade_ready.risk_check"].detail  # type: ignore[attr-defined]
 
 
 def test_score_components_map_linearly_and_any_gap_leaves_the_total_unavailable(

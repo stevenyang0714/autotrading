@@ -137,9 +137,10 @@ export const DASHBOARDS: readonly DashboardDef[] = [
     slug: "portfolio-risk",
     label: "Portfolio Risk",
     termId: "dashboard_portfolio_risk",
-    purpose: "Exposure, stress, drawdown and hedges.",
+    purpose: "The paper portfolio's exposures, limits, drawdown and risk checks.",
     plannedPhase: 2,
     group: "dashboards",
+    live: true,
   },
   {
     id: "alerts_center",

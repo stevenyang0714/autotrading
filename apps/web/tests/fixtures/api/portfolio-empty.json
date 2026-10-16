@@ -1,0 +1,76 @@
+{
+  "recorded_at": "2026-10-15T08:08:41.810337+00:00",
+  "recorded_from": "recorded SEC filings, Alpaca closes, FRED yields and news replayed into the integration test database (tests/integration/test_journal.py)",
+  "endpoint": "/portfolio",
+  "params": {
+    "known_at": "2026-09-14T12:00:00Z"
+  },
+  "response": {
+    "known_at": "2026-09-14T12:00:00Z",
+    "rules": {
+      "rule_version": "0.1.0",
+      "capital": "100000",
+      "limits": {
+        "position_pct": "10",
+        "max_loss_pct": "1",
+        "sector_pct": "30",
+        "volume_pct": "1",
+        "volume_sessions": 20,
+        "gross_pct": "100",
+        "stale_after_days": 5
+      },
+      "drawdown_alert_pct": "10",
+      "standard": {
+        "position_pct": "5",
+        "max_loss_pct": "1"
+      },
+      "unlimited_sectors": [
+        "broad_market",
+        "fixed_income",
+        "commodity"
+      ],
+      "sectors": {
+        "AZO": "consumer_discretionary",
+        "GLD": "commodity",
+        "IEF": "fixed_income",
+        "IWM": "broad_market",
+        "JPM": "financials",
+        "LOW": "consumer_discretionary",
+        "QQQ": "broad_market",
+        "SPY": "broad_market",
+        "TLT": "fixed_income",
+        "XLE": "energy",
+        "XLK": "information_technology",
+        "XOM": "energy",
+        "AAPL": "information_technology",
+        "META": "communication_services",
+        "MSFT": "information_technology",
+        "NVDA": "information_technology",
+        "ORLY": "consumer_discretionary",
+        "GOOGL": "communication_services"
+      }
+    },
+    "portfolio": {
+      "rule_version": "0.1.0",
+      "known_at": "2026-09-14T12:00:00Z",
+      "capital": "100000",
+      "positions": [],
+      "realized_pnl": "0.00",
+      "unrealized_pnl": "0.00",
+      "equity": "100000.00",
+      "cash": "100000.00",
+      "gross": "0.00",
+      "net": "0.00",
+      "gross_pct": "0.00",
+      "net_pct": "0.00",
+      "beta_exposure": "0.00",
+      "sectors": [],
+      "curve": [],
+      "peak_equity": "100000.00",
+      "drawdown_pct": "0.00",
+      "notes": []
+    },
+    "vetoes": 0,
+    "detail": "PAPER ONLY: a notional portfolio built from the journal's paper decisions. No order is placed or prepared; limits are defaults, unvalidated (OD-7)."
+  }
+}

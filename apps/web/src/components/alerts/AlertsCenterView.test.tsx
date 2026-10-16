@@ -9,15 +9,15 @@ import { type AlertFilters, AlertsCenterView } from "./AlertsCenterView";
 const ALL: AlertFilters = { status: "all", levelMin: 0, includeBackfilled: true };
 
 describe("AlertsCenterView with recorded API responses", () => {
-  it("shows each company's level with every check, L4 unavailable", () => {
+  it("shows each company's level with every check, L4 reading the standard risk check", () => {
     render(<AlertsCenterView alerts={recordedAlerts} convergence={recordedConvergence} filters={ALL} />);
     const apple = within(screen.getByRole("list", { name: "Convergence by company" }))
       .getByText("AAPL")
       .closest("li");
     expect(apple?.textContent).toContain("L1 Watch");
     expect(apple?.querySelector('[data-check="2"]')?.textContent).toContain("no valuation support");
-    expect(apple?.querySelector('[data-check="4"]')?.getAttribute("data-status")).toBe("unavailable");
-    expect(apple?.querySelector('[data-check="4"]')?.textContent).toContain("Phase 2 risk check");
+    expect(apple?.querySelector('[data-check="4"]')?.getAttribute("data-status")).toBe("fail");
+    expect(apple?.querySelector('[data-check="4"]')?.textContent).toContain("needs L3 first (standard risk check passes)");
     expect(apple?.textContent).toContain("Buyback state ACTIVE · Market confirmation");
   });
 
@@ -26,12 +26,13 @@ describe("AlertsCenterView with recorded API responses", () => {
     const list = screen.getByRole("list", { name: "Alerts" });
     const level = list.querySelector('[data-kind="level_change"]');
     expect(level?.textContent).toContain("AAPL reached L1 Watch");
-    expect(level?.textContent).toContain("alert rules 0.2.0");
+    expect(level?.textContent).toContain("alert rules 0.3.0");
     expect(level?.textContent).toContain("backfilled");
     const link = level?.querySelector('a[href="/instruments/AAPL#buybacks"]');
     expect(link?.textContent).toBe("Buyback state ACTIVE");
     expect(list.querySelector('[data-kind="event"]')?.textContent).toContain("L0 Information");
     expect(document.querySelector("[data-in-app]")?.textContent).toContain("IN-APP ONLY");
+    expect(document.querySelector("[data-in-app]")?.textContent).toContain("standard paper position");
   });
 
   it("offers acknowledgement on open alerts and shows it once given", () => {
