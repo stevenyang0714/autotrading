@@ -6,6 +6,8 @@ Phase 1: `M1_fundamentals.md` was approved on 2026-10-06 together with the Phase
 
 Phase 2: `M2_regime_risk.md` was approved on 2026-10-12 together with the Phase 1 exit report (`docs/reports/phase1_exit.md`); entry decisions in ADR-029.
 
+Phase 3: `M3_world_policy.md` was proposed on 2026-10-18 with the Phase 2 exit report (`docs/reports/phase2_exit.md`); the exit decisions (OD-8, P2-8, ADR-009 accepted) are in ADR-034. Not approved yet.
+
 | Phase | Scope (02 §29) | Entry gate | Exit criteria | Blocking open decisions |
 |---|---|---|---|---|
 | 1 | Fundamental Research Record, valuation (DCF / reverse DCF / multiples with visible assumptions), Buyback engine (authorization vs actual vs net share reduction), Earnings (actual vs prior + guidance + reaction), paper journal | Phase 0 exit report accepted on 2026-10-06 | Financial facts reconcile to filings; buyback states are versioned deterministic rules (errata E7); every fair value shows assumptions and as-of; paper journal records hypothetical decisions with full trace | None for Phase 1 (OD-2, OD-3 decided for Phase 1 in ADR-020) |
@@ -21,7 +23,7 @@ The phase is the first one in which the dashboard shows real content; until then
 | Dashboard (02 §21) | Phase | Note |
 |---|---|---|
 | Global Monitor | 3 | Not named in the phase table; inferred from the world/physical scope |
-| Market Regime | 2 | Live since M2.1 (2026-10-12) |
+| Market Regime | 2 | Live since M2.1 (2026-10-13) |
 | Opportunity Radar | 2 | Live since M2.2 (2026-10-13) with the factor table; candidates since M2.4 (2026-10-16) |
 | Fundamental Research | 1 | Live since M1.3b (2026-10-09) |
 | Corporate Actions | 1 | Buybacks first; Form 4 insider activity added in Phase 4 |
