@@ -1,6 +1,6 @@
 # Phase 2 — Macro regime, momentum and factors, portfolio risk, walk-forward
 
-**Status:** Approved 2026-10-12 (ADR-029): Steven accepted the Phase 1 exit report, decided P2-1 and chose the OD-7 direction; Phase 2 is in progress (M2.1 to M2.3 merged; M2.4 built). Proposed by Claude on 2026-10-12 with the Phase 1 exit report (`docs/reports/phase1_exit.md`). Each sub-milestone still starts in plan mode and is approved before it is built; P2-3 to P2-8 are answered in the plan of the sub-milestone that needs them.
+**Status:** Approved 2026-10-12 (ADR-029): Steven accepted the Phase 1 exit report, decided P2-1 and chose the OD-7 direction; Phase 2 is in progress (M2.1 to M2.4 merged; M2.5 built). Proposed by Claude on 2026-10-12 with the Phase 1 exit report (`docs/reports/phase1_exit.md`). Each sub-milestone still starts in plan mode and is approved before it is built; P2-3 to P2-8 are answered in the plan of the sub-milestone that needs them.
 
 **Goal:** turn the Phase 1 research record into tested, point-in-time context for decisions:
 - a deterministic macro regime, reproducible as known on any date;
@@ -33,7 +33,7 @@ Work one sub-milestone at a time, in order. Each one ends with the Build Output 
 | P2-3 | **Universe for factors** | **Decided 2026-10-13 with M2.2 (ADR-030): as proposed.** Keep the 10 equities and 8 ETFs: time-series measures (each instrument against its own history and SPY). Cross-sectional factor ranks wait for OD-7 |
 | P2-4 | **Paper portfolio** for the risk cockpit | **Decided 2026-10-15 with M2.3 (ADR-031): as proposed.** Notional capital USD 100,000; the open paper TRADEs of the journal are the positions, marked at end-of-day closes |
 | P2-5 | **Risk limits (defaults, versioned like the buyback rules)** | **Decided 2026-10-15 with M2.3 (ADR-031): as proposed, plus gross exposure ≤ 100% (no leverage), a required maximum loss, a usable end-of-day close (E4) and a reviewed GICS sector table.** Position ≤ 10% of capital; loss at the stated maximum ≤ 1% of capital; one sector ≤ 30%; order size ≤ 1% of the 20-session average volume; a drawdown alert at 10% |
-| P2-6 | **Cost model** for backtests | No commission; half the spread plus slippage of 5 basis points per side for the equities, 2 for the ETFs; a sensitivity at double cost |
+| P2-6 | **Cost model** for backtests | **Decided 2026-10-17 with M2.5 (ADR-033 B2): no commission; a fixed half-spread (equities 2 bps, ETFs 1 bp) plus slippage (5 and 2 bps) per side, as no historical spread is stored; a double-cost scenario.** Proposed: no commission; half the spread plus slippage of 5 basis points per side for the equities, 2 for the ETFs; a sensitivity at double cost |
 | P2-7 | **What the risk check unlocks** | **Decided 2026-10-15 with M2.3 (ADR-031): a daily standard position check (5% of capital, 1% maximum loss) unlocks TRADE-READY and L4; a recorded TRADE runs its own check and is refused on a veto.** TRADE-READY (buyback) and L4 (alerts) become reachable for **paper** decisions once a risk check passes. A paper TRADE records its `risk_check_id` (the Phase 1 database check is relaxed for it only); `mode = paper` and no broker stay enforced |
 | P2-8 | **Alert defaults** (ADR-028 A1–A4, built overnight in M1.7) | Confirm, or say what to change (a new alert rule version) |
 
@@ -89,6 +89,8 @@ Work one sub-milestone at a time, in order. Each one ends with the Build Output 
 - [x] Every candidate and rotation signal cites its rule versions and inputs as known at its date.
 
 ## M2.5 Strategy Lab: walk-forward backtests with costs
+**Decided (ADR-033, B1–B7):** performance withheld (OD-7); fixed half-spread plus slippage costs with a double-cost scenario; S4 = each company's 12-1 momentum and momentum against SPY above zero; yearly folds, out-of-sample after each rule release; S1 holds its signal states; ETF journal entries still deferred; monthly runs.
+
 **Build**
 - **Backtest engine** (02 §23) on stored point-in-time data only: signals as they would have been generated at each date, rebalancing on closes, the cost model (P2-6), walk-forward folds with the out-of-sample period marked.
 - **Strategies:** S1 (buyback states and score), S3 (ETF rotation), S4 (medium-term momentum), each with its rule versions.
@@ -96,8 +98,8 @@ Work one sub-milestone at a time, in order. Each one ends with the Build Output 
 - **Strategy Lab:** backtest runs next to the paper journal; runs are stored and reproducible.
 
 **Acceptance**
-- [ ] A backtest uses only data known at each simulated date (look-ahead tests: a later restatement, revision or close does not change a stored run).
-- [ ] Costs are applied and the out-of-sample period is shown; performance is reported only when OD-7 allows.
+- [x] A backtest uses only data known at each simulated date (look-ahead tests: a later restatement, revision or close does not change a stored run).
+- [x] Costs are applied and the out-of-sample period is shown; performance is reported only when OD-7 allows.
 
 ## M2.6 Phase 2 exit report
 Write `docs/reports/phase2_exit.md` in the format of `phase1_exit.md`. Then propose `docs/milestones/M3_*.md` for approval.

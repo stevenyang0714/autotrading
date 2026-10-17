@@ -913,6 +913,69 @@ M2.4, one PR.
 
 ---
 
+## ADR-033 Walk-forward backtests with costs, performance withheld — Accepted (2026-10-17, approved by Steven with the M2.5 plan)
+M2.5, one PR.
+- **Decisions (Steven, 2026-10-17):**
+  - B1 Performance is withheld for every strategy (OD-7, KI-1, KI-16).
+    - A run shows the method, every trade (date, symbol, weight change, fill close, cost), turnover, holding periods, exposure and the sample periods.
+    - CAGR, volatility, Sharpe, Sortino, maximum drawdown, hit rate, profit factor, tail loss, performance by regime and trade P&L are never computed; they are stored as empty and shown as Data unavailable (errata E6).
+  - B2 The cost model (P2-6 decided): no commission; a fixed half-spread plus slippage per side. Equities 2 + 5 = 7 bps, ETFs 1 + 2 = 3 bps, plus a double-cost scenario. No historical spread is stored.
+  - B3 S4 (medium-term momentum):
+    - each of the 10 companies is held when its 12-1 momentum and its 12-1 momentum against SPY are both above 0;
+    - equal weights, monthly targets;
+    - no ranking (P2-3) and no stress gate.
+  - B4 Each calendar year is a fold. History before a strategy's rule release is in-sample: the rules were set after seeing it. Only sessions after the release are out-of-sample.
+  - B5 S1 holds the S1 signal states (ACTIVE, HIGH-CONVICTION, TRADE-READY), in equal weights, monthly, from 2021.
+  - B6 ETF journal entries and ETF position limits stay deferred. Backtests follow the strategy weights and only report which targets would break risk rules 0.1.0.
+  - B7 Runs happen once a month after the month's first rotation assessment, and on demand with `make backtest-run`. Pages only read stored runs.
+- **Technical defaults:**
+  - Rules: `config/momentum_rules.yaml` 0.1.0 (pins factor definitions 0.1.0) and `config/backtest_rules.yaml` 0.1.0.
+    - The backtest rules pin buyback rules 0.3.0, rotation rules 0.1.0, momentum rules 0.1.0 and risk rules 0.1.0.
+    - Both sets go into `momentum_rule_sets` and `backtest_rule_sets` (audited, sha guard, hashes pinned).
+  - Events: a strategy's targets as known at each T and recorded by the run's S. Rows are never filtered by T's recorded time, since a backfilled row was computed from inputs known at T.
+    - S1: the latest buyback assignment of each company at each month end (at most 35 days old).
+    - S3: every rotation target set.
+    - S4: the momentum rules on the full factor snapshots at each month end.
+  - Engine (`domain/backtest.py`, mypy --strict):
+    - Fills happen at the first session close published after T, so a month-end target fills at the next session's close.
+    - Shares drift between targets; splits multiply them on the ex-date; cash dividends wait in cash for the next target.
+    - Changes under 0.01% of the portfolio are not traded, and a target without a close on its fill day stays in cash.
+    - Sessions are the benchmark's close days. The portfolio value is normalized and never leaves the simulation.
+  - Storage (migration 0027): `backtest_runs` (append-only), one row per strategy, T, backtest rule version and strategy rule version, with its S. A CHECK keeps `performance_reported` false.
+  - Factor overlap is read from the latest runs: the share of S4's companies also held by S1 on the same day, and each strategy's average sectors and weighted beta.
+  - Jobs: `run_backtests` is checked daily at 11:20 SGT and skips a New York month that already has a run; `make backtest-run` and `make backtest-verify`. The CI replay stores the runs last.
+- **API and web:**
+  - API (read-only): `GET /backtests` (latest per strategy, plus overlap), `GET /backtests/{id}`, `GET /backtests/rules`, `GET /momentum/rules`.
+  - Strategy Lab has a Backtests block (`#backtests`) with one card per strategy:
+    - method, in-sample and out-of-sample periods, the withheld metrics and why;
+    - yearly folds (rebalances, trades, turnover, cost per year, exposure) and both cost scenarios;
+    - the latest target, the risk limits for reference, and the trades (latest 20 and 200, all stored);
+    - plus the factor overlap.
+  - Glossary: 17 new terms, `look_ahead_bias` and `survivorship_bias` completed, `dashboard_strategy_lab` 0.4.0, all with Chinese hints.
+- **Live check 2026-10-17:**
+  - Runs at T = S = 2026-10-17 took about 9 s in all (S1 5.4 s, S3 0.8 s, S4 1.6 s). `make backtest-verify`: 3 recomputed, all identical.
+  - Per strategy:
+
+    | Strategy | Rebalances | Trades | Turnover a year | Costs a year (double) | Targets over a risk limit |
+    |---|---|---|---|---|---|
+    | S1 (2021-02-01 to 2026-10-16) | 69 | 351 | about 294% | 20.6 bps (41.1) | 68 |
+    | S3 (2017-02-01 to 2026-10-16) | 118 | 587 | about 565% | 17.0 bps (33.9) | 113 |
+    | S4 (2017-02-01 to 2026-10-16) | 117 | 745 | about 492% | 34.5 bps (68.9) | 111 |
+
+    Most of the limit breaks are the 10% position limit, broken by equal weights over a few holdings.
+  - Out-of-sample: S1 one session; S3 and S4 none yet.
+  - Overlap: on average S4 held 50.78% of its companies in common with S1 (66 months). Average beta: S1 0.871, S3 0.759, S4 1.124. S4 is 35% information technology.
+  - `/backtests` 0.09 s (570 KB).
+- **Known gaps:**
+  - Performance is withheld (KI-1, KI-16).
+  - Costs are fixed assumptions, with no market impact and fills at closes only (KI-19).
+  - ETF journal entries and limits are deferred (KI-20).
+  - S4 has no live signal (KI-21).
+  - Out-of-sample periods have barely started, and there are no ablation studies (KI-22).
+  - Dividend gaps (KI-10).
+
+---
+
 ## Open decisions (owner: Steven)
 
 | ID | Decision | Needed by | Default until decided |
@@ -930,6 +993,7 @@ M2.4, one PR.
 - OD-1 (2026-10-06): Steven confirmed ADR-001: a personal tool, with no redistribution of data. ADR-001 is Accepted.
 - Phase 1 scope (2026-10-06): Steven accepted the Phase 0 exit report and decided OD-2 and OD-3 for Phase 1 (in-app alerts only; no consensus provider yet). Both stay open for later phases. See ADR-020.
 - Phase 2 entry (2026-10-12): Steven accepted the Phase 1 exit report; P2-1 decided (Massive not activated); OD-7 narrowed to a commercial dataset comparison. See ADR-029.
+- M2.5 scope (2026-10-17): Steven withheld backtest performance (OD-7), chose fixed half-spread plus slippage costs (P2-6), the S4 rule, yearly folds with out-of-sample after each rule release, S1's holding states, kept ETF journal entries deferred and monthly runs. See ADR-033.
 - M2.4 scope (2026-10-16): Steven chose the S3 rule (each ETF's own trend, gated by stress), monthly targets with a defensive switch, the Radar candidates (L3/L4 companies and the S3 ETFs) and no ETF journal yet. See ADR-032.
 - P2-4, P2-5 and P2-7 (2026-10-15): Steven accepted the proposed paper portfolio, risk limits and unlocks, with a reviewed sector table and a portfolio drawdown alert. See ADR-031.
 - OD-7 for now (2026-10-13): Steven decided not to buy a survivorship-free dataset yet; OD-7 stays open for M2.5. The problems are recorded in `docs/KNOWN_ISSUES.md`.
