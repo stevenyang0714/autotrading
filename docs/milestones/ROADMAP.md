@@ -33,7 +33,7 @@ The phase is the first one in which the dashboard shows real content; until then
 | Options & Vol | 5 | |
 | Portfolio Risk | 2 | Live since M2.3 (2026-10-15): the paper book, limits and risk checks; paper only |
 | Alerts Center | 1 | In-app only until OD-2 is decided |
-| Strategy Lab | 1 | Paper journal in Phase 1; the S3 ETF rotation since M2.4; walk-forward with M2.5 |
+| Strategy Lab | 1 | Paper journal in Phase 1; the S3 ETF rotation since M2.4; walk-forward backtests with costs since M2.5 (performance withheld, OD-7) |
 | Execution | 5 | |
 
 The Phase 0 screens from M0.9 (Data Health, Instrument, Macro, News feed, Audit log) are not among the 15 dashboards. They go in a separate "System" nav group. All five were delivered by M0.9 (2026-10-06); Phase 0 closes with the M0.10 exit report.

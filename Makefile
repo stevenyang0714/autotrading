@@ -15,7 +15,7 @@ export NEXT_TELEMETRY_DISABLED := 1
 export COREPACK_ENABLE_DOWNLOAD_PROMPT := 0
 
 .DEFAULT_GOAL := help
-.PHONY: help setup up down ps logs migrate sec-refresh fred-refresh prices-refresh prices-backfill news-refresh news-backfill buyback-evaluate buyback-backfill buyback-verify signals-backfill alerts-backfill regime-evaluate regime-backfill regime-verify factors-evaluate factors-backfill factors-verify portfolio-snapshot risk-verify rotation-evaluate rotation-backfill rotation-verify replay-fixtures gen test test-unit test-integration e2e lint lint-api lint-web fmt dev-web
+.PHONY: help setup up down ps logs migrate sec-refresh fred-refresh prices-refresh prices-backfill news-refresh news-backfill buyback-evaluate buyback-backfill buyback-verify signals-backfill alerts-backfill regime-evaluate regime-backfill regime-verify factors-evaluate factors-backfill factors-verify portfolio-snapshot risk-verify rotation-evaluate rotation-backfill rotation-verify backtest-run backtest-verify replay-fixtures gen test test-unit test-integration e2e lint lint-api lint-web fmt dev-web
 
 help: ## Show available targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  %-18s %s\n", $$1, $$2}'
@@ -105,6 +105,12 @@ rotation-backfill: ## Queue the S3 rotation at every month end since 2017, in or
 
 rotation-verify: ## Recompute the latest 200 stored rotation assessments and report any that differ
 	$(COMPOSE) exec -T api python -m autotrading.jobs.rotation_evaluate --verify 200
+
+backtest-run: ## Queue the backtests of S1, S3 and S4 now (M2.5; performance withheld, OD-7)
+	$(COMPOSE) exec -T api python -m autotrading.jobs.backtest_evaluate
+
+backtest-verify: ## Recompute the latest 30 stored backtest runs and report any that differ
+	$(COMPOSE) exec -T api python -m autotrading.jobs.backtest_evaluate --verify 30
 
 replay-fixtures: ## CI only: load the recorded SEC, FRED, Alpaca and news fixtures into the stack database
 	cd $(API) && uv run python -m tests.replay

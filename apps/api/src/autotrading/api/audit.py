@@ -24,6 +24,7 @@ from autotrading.db.models import (
     AlertAcknowledgement,
     AlertRuleSet,
     AuditLog,
+    BacktestRuleSet,
     DeadLetter,
     Entity,
     EntityRelationship,
@@ -33,6 +34,7 @@ from autotrading.db.models import (
     Instrument,
     MacroObservation,
     MacroSeries,
+    MomentumRuleSet,
     PriceBar,
     RegimeRuleSet,
     RiskCheck,
@@ -200,6 +202,18 @@ def _labels(session: Session, table: str, ids: list[str]) -> dict[str, str]:
         "risk_checks": lambda: [
             (row.id, f"risk check {row.ticker} {row.side} {row.quantity}: {row.verdict}")
             for row in session.scalars(select(RiskCheck).where(RiskCheck.id.in_(_uuids(ids))))
+        ],
+        "momentum_rule_sets": lambda: [
+            (row.id, f"momentum rules {row.rule_version}")
+            for row in session.scalars(
+                select(MomentumRuleSet).where(MomentumRuleSet.id.in_(_uuids(ids)))
+            )
+        ],
+        "backtest_rule_sets": lambda: [
+            (row.id, f"backtest rules {row.rule_version}")
+            for row in session.scalars(
+                select(BacktestRuleSet).where(BacktestRuleSet.id.in_(_uuids(ids)))
+            )
         ],
         "rotation_rule_sets": lambda: [
             (row.id, f"rotation rules {row.rule_version}")

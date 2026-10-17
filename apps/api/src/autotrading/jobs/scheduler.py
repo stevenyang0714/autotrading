@@ -13,6 +13,7 @@ from apscheduler.triggers.cron import CronTrigger
 from autotrading.infra.heartbeat import HEARTBEAT_INTERVAL_SECONDS, write_heartbeat
 from autotrading.infra.redis_client import make_redis
 from autotrading.ingestion.schedule import (
+    BACKTESTS,
     BUYBACK_STATES,
     DAILY_BARS,
     FACTORS,
@@ -105,6 +106,15 @@ def main() -> None:
         lambda: actors.start_portfolio_snapshot(manual=False),
         CronTrigger(hour=PORTFOLIO.hour, minute=PORTFOLIO.minute, timezone=REFRESH_TIMEZONE),
         id="portfolio",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=12 * 3600,
+    )
+    # Backtests (M2.5): checked daily at 11:20 SGT, run once a month (after the rotation).
+    scheduler.add_job(
+        lambda: actors.start_backtests(manual=False),
+        CronTrigger(hour=BACKTESTS.hour, minute=BACKTESTS.minute, timezone=REFRESH_TIMEZONE),
+        id="backtests",
         max_instances=1,
         coalesce=True,
         misfire_grace_time=12 * 3600,

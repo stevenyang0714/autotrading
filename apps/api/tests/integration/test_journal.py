@@ -566,6 +566,11 @@ def test_no_path_can_send_an_order(client: TestClient, engine: Engine) -> None:
     }
     # M2.3: trying a trade against the risk limits records a check, never a decision
     assert {p for p, m in paths if m == "POST" and p.startswith("/risk")} == {"/risk/checks"}
+    # M2.4-M2.5: rotation, candidates and backtests are read-only
+    assert not any(
+        m != "GET" and p.startswith(("/rotation", "/candidates", "/backtests", "/momentum"))
+        for p, m in paths
+    )
     copy = (
         "INSERT INTO trade_decisions (thesis_card_id, instrument_id, ticker, signal_ids, "
         "decision, no_trade_reason, mode, broker, approval_state, known_at, system_time, "

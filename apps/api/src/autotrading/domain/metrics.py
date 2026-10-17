@@ -348,6 +348,26 @@ METRICS: tuple[MetricDefinition, ...] = (
                 )
             },
             "rotation_alert": "rotation.rotation_alert",
+            # M2.5 (ADR-033): backtests without performance, and S4.
+            **{
+                term_id: "backtest.run"
+                for term_id in (
+                    "backtest",
+                    "walk_forward",
+                    "in_sample",
+                    "out_of_sample",
+                    "cost_model",
+                    "half_spread",
+                    "slippage",
+                    "turnover",
+                    "holding_period",
+                    "cost_drag",
+                    "performance_withheld",
+                    "next_close_fill",
+                    "risk_overlay",
+                )
+            },
+            "medium_term_momentum": "momentum.assess",
         }.items()
     ),
     MetricDefinition(

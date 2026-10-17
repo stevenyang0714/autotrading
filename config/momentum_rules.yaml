@@ -1,0 +1,32 @@
+# Medium-term momentum rules, strategy S4 (M2.5, ADR-033; build spec 02 §13, §18).
+#
+# Deterministic and versioned like config/rotation_rules.yaml: a released rule_version is
+# immutable (`make migrate` refuses changed content under an existing version, and a unit test
+# pins each version's sha256). Every backtest of S4 stores the rule_version it used.
+#
+# Each company is judged against its own history and SPY only (no ranking across companies:
+# P2-3, KI-1): it is held when every condition is above its threshold. The selected companies are
+# held in equal weights; the rest is cash. The target changes at the first assessment of each
+# New York month. No stress gate: that is S3's job. Inputs are the stored factor snapshots known
+# at T, as the database held them at S, under the definition version named here.
+#
+# Research only: backtests without performance figures (OD-7) and no live signal yet.
+# Thresholds are Steven's defaults (B3), unvalidated (OD-7): a change is a new version.
+version: 0.1.0
+rule_sets:
+  - rule_version: 0.1.0
+    status: active  # active: used for new backtests; retired: kept for the stored ones
+    released: "2026-10-17"
+    note: >-
+      Steven's decision B3 (ADR-033): each of the 10 companies held when its 12-1 momentum and
+      its 12-1 momentum against SPY are both above zero; equal weights, monthly targets, no
+      ranking and no stress gate.
+    factor_definition_version: 0.1.0
+    universe: [AAPL, MSFT, GOOGL, META, NVDA, JPM, XOM, AZO, ORLY, LOW]
+    conditions:  # all must be above (strictly)
+      - measure: momentum_12_1
+        above: 0
+      - measure: relative_momentum_12_1
+        above: 0
+    weight_quantum_pct: 0.01  # equal weights rounded down to this; the remainder stays in cash
+    factor_stale_after_days: 5

@@ -1021,3 +1021,28 @@ export async function loadCandidates(knownAt?: string): Promise<OpportunityCandi
     return null;
   }
 }
+
+// ---------- backtests (M2.5, ADR-033) ----------
+
+export type BacktestsResponse = components["schemas"]["BacktestsOut"];
+export type StoredBacktest = components["schemas"]["StoredRun"];
+export type BacktestRun = components["schemas"]["Run"];
+export type BacktestFold = components["schemas"]["Fold"];
+export type BacktestTrade = components["schemas"]["Trade"];
+export type BacktestRebalance = components["schemas"]["Rebalance"];
+export type BacktestOverlap = components["schemas"]["Overlap"];
+
+/** Each strategy's latest stored backtest as known at `knownAt` and their factor overlap, or
+ * null when the API is down. Performance is withheld (OD-7). */
+export async function loadBacktests(knownAt?: string): Promise<BacktestsResponse | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/backtests", {
+      params: { query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}

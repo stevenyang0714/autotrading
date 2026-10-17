@@ -69,6 +69,7 @@ import factorsNvdaEarlier from "../../tests/fixtures/api/factors-nvda-earlier.js
 import factorsNvda from "../../tests/fixtures/api/factors-nvda.json";
 import factorsTlt from "../../tests/fixtures/api/factors-tlt.json";
 import factors from "../../tests/fixtures/api/factors.json";
+import backtests from "../../tests/fixtures/api/backtests.json";
 import candidates from "../../tests/fixtures/api/candidates.json";
 import rotationEarlier from "../../tests/fixtures/api/rotation-earlier.json";
 import rotation from "../../tests/fixtures/api/rotation.json";
@@ -76,6 +77,7 @@ import signalsRotation from "../../tests/fixtures/api/signals-rotation.json";
 
 import type {
   AlertDetail,
+  BacktestsResponse,
   OpportunityCandidates,
   RotationResponse,
   RegimeResponse,
@@ -285,3 +287,8 @@ export const recordedRotation = rotation.response as unknown as RotationResponse
 export const recordedRotationEarlier = rotationEarlier.response as unknown as RotationResponse;
 export const recordedCandidates = candidates.response as unknown as OpportunityCandidates;
 export const recordedRotationSignals = signalsRotation.response as unknown as Signals;
+
+/** The backtests (M2.5) from tests/integration/test_backtests.py, as known on 2026-10-06: S1
+ * without buyback states and S4 without a year of closes for most companies (cash only), S3
+ * holding SPY; performance withheld. */
+export const recordedBacktests = backtests.response as unknown as BacktestsResponse;
