@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from autotrading.api.alerts import router as alerts_router
 from autotrading.api.audit import router as audit_router
+from autotrading.api.backtests import router as backtests_router
 from autotrading.api.buyback_states import router as buyback_states_router
 from autotrading.api.buybacks import router as buybacks_router
 from autotrading.api.candidates import router as candidates_router
@@ -95,6 +96,7 @@ def create_app(
     app.include_router(risk_router)
     app.include_router(rotation_router)
     app.include_router(candidates_router)
+    app.include_router(backtests_router)
     return app
 
 

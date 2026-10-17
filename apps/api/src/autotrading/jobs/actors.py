@@ -32,7 +32,7 @@ from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.ingestion.schedule import market_calendar
 from autotrading.jobs.broker import WorkerHeartbeat, configure_broker
-from autotrading.repositories import factors, regime, risk, rotation
+from autotrading.repositories import backtest, factors, regime, risk, rotation
 from autotrading.settings import get_settings
 
 logger = logging.getLogger(__name__)
@@ -414,6 +414,34 @@ def start_rotation_backfill() -> int:
         now = _now(session)
     backfill_rotation.send(now.isoformat())
     return len(month_ends(ROTATION_BACKFILL_SINCE, now))
+
+
+# ---------- backtests (M2.5) ----------
+
+BACKTEST_TIME_LIMIT_MS = 60 * 60 * 1000  # three strategies since 2016
+
+
+@dramatiq.actor(
+    queue_name=EVALUATION_QUEUE, max_retries=1, time_limit=BACKTEST_TIME_LIMIT_MS, broker=broker
+)
+def run_backtests(trigger: str) -> None:
+    """Every strategy's backtest now (T = S = now). The schedule runs once a month: it skips
+    when a run is known in this New York month (ADR-033 B7)."""
+    with sessions()() as session:
+        now = _now(session)
+        rules = backtest.stored_backtest_rules(session)
+        if rules is None:
+            logger.warning("Backtest rules not loaded (make migrate): nothing run")
+            return
+        if trigger == "schedule" and backtest.ran_this_month(session, rules, now):
+            logger.info("Backtests at %s: already run this month", now)
+            return
+        stored = backtest.record_all(session, rules, now, now, trigger)  # type: ignore[arg-type]
+    logger.info("Backtests at %s (%s): %d runs stored", now, trigger, len(stored))
+
+
+def start_backtests(*, manual: bool) -> None:
+    run_backtests.send("manual" if manual else "schedule")
 
 
 def start_buyback_backfill() -> int:

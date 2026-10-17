@@ -1664,6 +1664,90 @@ class RotationAssessment(Base):
     )
 
 
+class MomentumRuleSet(Base):
+    """One released rule_version of config/momentum_rules.yaml (S4, ADR-033), loaded by `make
+    migrate` with the sha256 of its content. Append-only and audited, like the rotation rules."""
+
+    __tablename__ = "momentum_rule_sets"
+    __table_args__ = (
+        CheckConstraint(r"rule_version ~ '^\d+\.\d+\.\d+$'", name="rule_version_format"),
+        CheckConstraint("content_sha256 ~ '^[0-9a-f]{64}$'", name="content_sha256_format"),
+        UniqueConstraint("rule_version", name="uq_momentum_rule_sets_rule_version"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    rule_version: Mapped[str] = mapped_column(Text)
+    content: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    content_sha256: Mapped[str] = mapped_column(Text)
+    released: Mapped[date] = mapped_column(Date)
+    loaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class BacktestRuleSet(Base):
+    """One released rule_version of config/backtest_rules.yaml (ADR-033): fills, costs, folds and
+    the strategy rule versions a run replays. Append-only and audited."""
+
+    __tablename__ = "backtest_rule_sets"
+    __table_args__ = (
+        CheckConstraint(r"rule_version ~ '^\d+\.\d+\.\d+$'", name="rule_version_format"),
+        CheckConstraint("content_sha256 ~ '^[0-9a-f]{64}$'", name="content_sha256_format"),
+        UniqueConstraint("rule_version", name="uq_backtest_rule_sets_rule_version"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    rule_version: Mapped[str] = mapped_column(Text)
+    content: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    content_sha256: Mapped[str] = mapped_column(Text)
+    released: Mapped[date] = mapped_column(Date)
+    loaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class BacktestRun(Base):
+    """One strategy's backtest at a time T (known_at) as the database held it at system_time,
+    under one backtest and one strategy rule version (ADR-033): the method, trades, costs,
+    exposure and folds. Performance is withheld (OD-7): `performance_reported` is always false.
+    Append-only."""
+
+    __tablename__ = "backtest_runs"
+    __table_args__ = (
+        CheckConstraint(sql_in("trigger", ASSESSMENT_TRIGGERS), name="trigger"),
+        CheckConstraint("system_time >= known_at", name="system_time_after_known_at"),
+        CheckConstraint("performance_reported = false", name="performance_withheld"),
+        UniqueConstraint(
+            "strategy_id",
+            "known_at",
+            "rule_version",
+            "strategy_rule_version",
+            name="uq_backtest_runs_point",
+        ),
+        Index("ix_backtest_runs_known_at", "known_at"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    known_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    system_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    rule_version: Mapped[str] = mapped_column(Text, ForeignKey("backtest_rule_sets.rule_version"))
+    strategy_id: Mapped[str] = mapped_column(Text, ForeignKey("strategies.id"))
+    strategy_rule_version: Mapped[str] = mapped_column(Text)
+    start: Mapped[date | None] = mapped_column(Date)
+    end: Mapped[date | None] = mapped_column(Date)
+    trigger: Mapped[str] = mapped_column(Text)
+    performance_reported: Mapped[bool] = mapped_column(Boolean)
+    document: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
 FACTOR_SCOPES = ("price", "all")
 
 

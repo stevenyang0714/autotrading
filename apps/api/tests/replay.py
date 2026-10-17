@@ -21,6 +21,7 @@ from autotrading.ingestion.rate_limit import TokenBucketLimiter
 from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.ingestion.schedule import refresh_window
+from autotrading.repositories.backtest import record_all, stored_backtest_rules
 from autotrading.repositories.factors import record_universe, stored_definitions
 from autotrading.repositories.regime import record_regime, stored_regime_rules
 from autotrading.repositories.risk import record_portfolio, stored_risk_rules
@@ -88,9 +89,14 @@ def main() -> None:
         assert rotation_rules is not None, "rotation rules not loaded: run `make migrate` first"
         held = session.execute(select(func.now())).scalar_one()
         rotations = record_points(session, rotation_rules, points, held, "replay")
+        # The backtests (M2.5) now, at a later system time again, so they read everything above.
+        backtest_rules = stored_backtest_rules(session)
+        assert backtest_rules is not None, "backtest rules not loaded: run `make migrate` first"
+        ran = session.execute(select(func.now())).scalar_one()
+        runs = len(record_all(session, backtest_rules, ran, ran, "replay"))
     print(
         f"stored {stored} buyback state assignments, {regimes} regime assessments, "
-        f"{snapshots} factor snapshots and {rotations} rotation assessments"
+        f"{snapshots} factor snapshots, {rotations} rotation assessments and {runs} backtest runs"
     )
 
 

@@ -240,7 +240,7 @@ class Fold(BaseModel):
     average_gross_pct: Decimal
 
 
-class Position(BaseModel):
+class HeldPosition(BaseModel):
     symbol: str
     entry: date
     exit: date | None  # None: still held at the end
@@ -275,7 +275,7 @@ class Run(BaseModel):
     cost_bps: dict[str, Decimal]  # per side, base scenario, by instrument type
     rebalances: list[Rebalance]
     trades: list[Trade]
-    positions: list[Position]
+    positions: list[HeldPosition]
     scenarios: list[ScenarioResult]
     withheld: list[Withheld]
     withheld_reason: str
@@ -301,7 +301,7 @@ class _FoldAcc:
 class _Sim:
     trades: list[Trade]
     rebalances: list[Rebalance]
-    positions: list[Position]
+    positions: list[HeldPosition]
     folds: list[Fold]
 
 
@@ -433,7 +433,7 @@ def simulate(
     cash = Decimal(1)
     trades: list[Trade] = []
     rebalances: list[Rebalance] = []
-    positions: list[Position] = []
+    positions: list[HeldPosition] = []
     folds: dict[tuple[int, Sample], _FoldAcc] = {}
     started = False
 
@@ -496,7 +496,7 @@ def simulate(
                     shares.pop(symbol, None)
                     if symbol in entries:
                         positions.append(
-                            Position(
+                            HeldPosition(
                                 symbol=symbol,
                                 entry=entries.pop(symbol),
                                 exit=day,
@@ -555,7 +555,7 @@ def simulate(
         fold.gross += gross
     for symbol in sorted(entries):
         positions.append(
-            Position(
+            HeldPosition(
                 symbol=symbol,
                 entry=entries[symbol],
                 exit=None,
