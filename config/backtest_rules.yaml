@@ -1,0 +1,53 @@
+# Backtest rules (M2.5, ADR-033; build spec 02 §23, research report 01 §23).
+#
+# Deterministic and versioned like config/risk_rules.yaml: a released rule_version is immutable
+# (`make migrate` refuses changed content under an existing version, and a unit test pins each
+# version's sha256). Every stored backtest run cites the rule_version it used.
+#
+# A backtest replays a strategy's targets as they were known at each date (stored assessments
+# and factor snapshots read at T and recorded by the run's system time S) and fills them at the
+# first session close after T, charging the cost model below on every trade. Splits adjust the
+# shares; cash dividends go to cash until the next target. Folds are calendar years; history
+# before a strategy's rule release is in-sample (the rules were set after seeing it), after it
+# out-of-sample.
+#
+# Performance is withheld (OD-7, KI-1, KI-16): no return, drawdown, hit rate or ratio is computed
+# or stored; the pages say why. Paper only: nothing here places or prepares an order.
+#
+# Costs are basis points of the traded value per side (P2-6, Steven's decision B2): no
+# commission, a fixed half-spread plus slippage. Unvalidated defaults: a change is a new version.
+version: 0.1.0
+rule_sets:
+  - rule_version: 0.1.0
+    status: active  # active: used for new runs; retired: kept for the stored ones
+    released: "2026-10-17"
+    note: >-
+      Steven's decisions B1-B7 (ADR-033): performance withheld, fixed half-spread plus slippage
+      (equities 2 + 5 bps, ETFs 1 + 2 bps per side) and a double-cost scenario, fills at the next
+      session close, yearly folds with out-of-sample from each rule release, monthly runs.
+    capital: 100000  # notional, for sizing only; never reported as a result
+    benchmark: SPY  # for the sessions and beta only, never for returns
+    costs:
+      commission_bps: 0
+      equity: {half_spread_bps: 2, slippage_bps: 5}
+      etf: {half_spread_bps: 1, slippage_bps: 2}
+      scenarios: {base: 1, double: 2}  # multipliers of the costs above
+    strategies:
+      S1:
+        rules: buyback
+        rule_version: 0.3.0
+        released: "2026-10-15"
+        holds: [active, high_conviction, trade_ready]  # the S1 signal states (B5)
+        since: "2021-01-01"
+        state_stale_after_days: 35
+      S3:
+        rules: rotation
+        rule_version: 0.1.0
+        released: "2026-10-16"
+        since: "2017-01-01"
+      S4:
+        rules: momentum
+        rule_version: 0.1.0
+        released: "2026-10-17"
+        since: "2017-01-01"
+    risk_rule_version: 0.1.0  # the limits each target is compared with, for reference only (B6)
