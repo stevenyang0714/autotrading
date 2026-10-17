@@ -1,9 +1,10 @@
 import { AsKnownOnForm } from "@/components/AsKnownOnForm";
+import { BacktestsView } from "@/components/backtests/BacktestsView";
 import { Metric } from "@/components/Metric";
 import { JournalTable } from "@/components/journal/JournalTable";
 import { SignalList } from "@/components/journal/SignalList";
 import { RotationView } from "@/components/rotation/RotationView";
-import type { Journal, RotationResponse, Signals } from "@/lib/api";
+import type { BacktestsResponse, Journal, RotationResponse, Signals } from "@/lib/api";
 import { formatSgtEt } from "@/lib/time";
 
 const HREF = "/dashboards/strategy-lab";
@@ -33,12 +34,15 @@ export function StrategyLabView({
   journal,
   signals,
   rotation = null,
+  backtests,
   knownOn,
   invalidKnownOn = false,
 }: {
   journal: Journal;
   signals: Signals | null;
   rotation?: RotationResponse | null;
+  /** Omitted: no backtests block (undefined); null: the API could not load them. */
+  backtests?: BacktestsResponse | null;
   knownOn?: string;
   invalidKnownOn?: boolean;
 }) {
@@ -56,11 +60,15 @@ export function StrategyLabView({
           <Metric termId="etf_rotation" icon={false}>
             S3 ETF rotation
           </Metric>
-          . Backtests and walk-forward validation come with{" "}
-          <Metric termId="planned_phase" icon={false}>
-            <span data-identifier="">M2.5</span>
+          , with walk-forward{" "}
+          <Metric termId="backtest" icon={false}>
+            backtests
+          </Metric>{" "}
+          of each strategy (performance withheld until{" "}
+          <Metric termId="performance_withheld" icon={false}>
+            <span data-identifier="">OD-7</span>
           </Metric>
-          .
+          ).
         </p>
         <PaperOnlyNotice detail={journal.detail} />
         <AsKnownOnForm href={HREF} knownOn={knownOn} invalid={invalidKnownOn} />
@@ -93,6 +101,16 @@ export function StrategyLabView({
         </h2>
         <RotationView data={rotation} knownOn={knownOn} />
       </div>
+      {backtests !== undefined ? (
+        <div className="space-y-2 scroll-mt-4" data-block="backtests" id="backtests">
+          <h2 className="text-lg font-medium">
+            <Metric termId="backtest" zh>
+              Backtests
+            </Metric>
+          </h2>
+          <BacktestsView data={backtests} />
+        </div>
+      ) : null}
       <div className="space-y-2" data-block="journal">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="text-lg font-medium">

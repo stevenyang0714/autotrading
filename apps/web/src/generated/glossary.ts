@@ -16,6 +16,8 @@ export type CompleteTermId =
   | "audit_actor"
   | "average_daily_volume"
   | "backfilled_evaluation"
+  | "backtest"
+  | "backtest_rule_set"
   | "balance_identity"
   | "basic_shares"
   | "beta_252d"
@@ -57,6 +59,8 @@ export type CompleteTermId =
   | "convergence_l4"
   | "convergence_level"
   | "core_pce_inflation_yoy"
+  | "cost_drag"
+  | "cost_model"
   | "cpi_inflation_yoy"
   | "dashboard_alerts_center"
   | "dashboard_congress_trades"
@@ -110,6 +114,7 @@ export type CompleteTermId =
   | "evidence_item"
   | "execution_eligibility"
   | "factor_definition_set"
+  | "factor_overlap"
   | "factor_percentile"
   | "factor_snapshot"
   | "fair_value_dcf"
@@ -128,9 +133,12 @@ export type CompleteTermId =
   | "gross_margin"
   | "gross_profit"
   | "guidance_statement"
+  | "half_spread"
   | "high_beta"
+  | "holding_period"
   | "hy_oas_percentile"
   | "implied_upside"
+  | "in_sample"
   | "income_tax_expense"
   | "independent_evidence"
   | "ingestion_note"
@@ -144,6 +152,7 @@ export type CompleteTermId =
   | "license_status"
   | "long_term_debt_current"
   | "long_term_debt_noncurrent"
+  | "look_ahead_bias"
   | "macro_core_pce"
   | "macro_cpi"
   | "macro_curve_10y_2y"
@@ -166,11 +175,13 @@ export type CompleteTermId =
   | "market_confirmation"
   | "market_session"
   | "max_loss"
+  | "medium_term_momentum"
   | "mega_cap"
   | "milestone_status"
   | "model_output"
   | "momentum_12_1"
   | "momentum_6_1"
+  | "momentum_rule_set"
   | "multiple_percentile"
   | "net_debt"
   | "net_debt_change_yoy"
@@ -182,6 +193,7 @@ export type CompleteTermId =
   | "net_share_reduction"
   | "net_share_reduction_pct"
   | "news_time_basis"
+  | "next_close_fill"
   | "next_refresh"
   | "no_trade"
   | "nopat"
@@ -192,6 +204,7 @@ export type CompleteTermId =
   | "operating_income"
   | "operating_margin"
   | "opportunity_candidate"
+  | "out_of_sample"
   | "owner_fcf"
   | "page_audit_log"
   | "page_data_health"
@@ -208,6 +221,7 @@ export type CompleteTermId =
   | "payrolls_prior_month_revision"
   | "pct_below_52w_high"
   | "pe_ratio_ttm"
+  | "performance_withheld"
   | "planned_phase"
   | "point_in_time"
   | "portfolio_drawdown"
@@ -256,6 +270,7 @@ export type CompleteTermId =
   | "risk_limit_price"
   | "risk_limit_sector"
   | "risk_limit_volume"
+  | "risk_overlay"
   | "risk_rule_set"
   | "risk_sleeve"
   | "risk_veto"
@@ -274,6 +289,7 @@ export type CompleteTermId =
   | "shares_outstanding_cover"
   | "shares_repurchased"
   | "signal"
+  | "slippage"
   | "source_tier"
   | "split_adjusted"
   | "split_event"
@@ -295,6 +311,7 @@ export type CompleteTermId =
   | "stress_high"
   | "stress_normal"
   | "stress_state"
+  | "survivorship_bias"
   | "terminal_growth"
   | "thesis_card"
   | "threshold_review"
@@ -303,6 +320,7 @@ export type CompleteTermId =
   | "trade_decision"
   | "trailing_twelve_months"
   | "trend_filter"
+  | "turnover"
   | "update_cadence"
   | "valuation_assumptions"
   | "valuation_price"
@@ -311,6 +329,7 @@ export type CompleteTermId =
   | "vix_percentile_1y"
   | "volatility_60d"
   | "volume"
+  | "walk_forward"
   | "yield_curve_inversion";
 
 export interface GlossaryTerm {
@@ -615,6 +634,58 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "補算評定",
     "hint_zh": "事後用當時已公開的資料算出的月底狀態。"
+  },
+  "backtest": {
+    "term_id": "backtest",
+    "display_name": "Backtest",
+    "category": "methodology",
+    "short_definition": "A strategy replayed on stored point-in-time data: the targets as known at each date, filled at the next close, with costs.",
+    "full_definition": "Each run reads every target as it was known at its date T and recorded by the run's system time S, fills it at the first session close after T, moves the shares through splits, credits dividends to cash and charges the cost model. It stores the method, trades, turnover, holding periods, exposure, costs and yearly folds, and recomputes identically. Performance is withheld until OD-7 (ADR-033 B1).",
+    "formula": "targets known at T -> fills at the next close, minus costs",
+    "unit": "run",
+    "example": "S3 since February 2017: 118 targets, 587 trades, about 17 bps of costs a year.",
+    "direction": "N/A",
+    "interpretation": "How a rule would have traded, what it would have cost and how often it changed, not how much it earned.",
+    "why_it_matters": "The Phase 2 exit needs walk-forward backtests with costs (02 §23, §29).",
+    "source": "Backtest rules 0.1.0 (config/backtest_rules.yaml); domain/backtest.py; ADR-033",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/backtest_rules.yaml",
+    "as_of": "2026-10-17",
+    "update_cadence": "once a month, after the month's first rotation assessment (11:20 SGT)",
+    "caveats": "Performance is withheld (OD-7, KI-1, KI-16). Fills at closes only; no market impact; current universe only (KI-1).",
+    "related_terms": [
+      "walk_forward",
+      "cost_model",
+      "performance_withheld",
+      "look_ahead_bias"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "回測",
+    "hint_zh": "用當時已知的資料重播策略：在下一個收盤成交並扣成本；只顯示交易、成本與曝險，不顯示報酬。"
+  },
+  "backtest_rule_set": {
+    "term_id": "backtest_rule_set",
+    "display_name": "Backtest Rule Version",
+    "category": "methodology",
+    "short_definition": "The released version of the backtest rules (fills, costs, folds, strategy versions) each run cites.",
+    "full_definition": "config/backtest_rules.yaml, loaded by make migrate with the sha256 of its content; a changed released version is refused.",
+    "formula": "rule_version + sha256 of the content",
+    "unit": "version",
+    "example": "Backtest rules 0.1.0: costs 7 and 3 bps, S1 since 2021, S3 and S4 since 2017.",
+    "direction": "N/A",
+    "interpretation": "Which method produced a run.",
+    "why_it_matters": "A stored run recomputes identically under its own versions.",
+    "source": "Backtest rules 0.1.0 (config/backtest_rules.yaml); domain/backtest.py; ADR-033",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/backtest_rules.yaml",
+    "as_of": "2026-10-17",
+    "update_cadence": "per release",
+    "caveats": "Steven's defaults (B1-B7), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "backtest",
+      "cost_model"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "回測規則版本",
+    "hint_zh": "每次回測所用的方法版本：成交、成本、測試段與各策略規則版本。"
   },
   "balance_identity": {
     "term_id": "balance_identity",
@@ -1665,6 +1736,57 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "核心 PCE 年增率",
     "hint_zh": "核心 PCE 與 12 個月前相比的變動百分比，對照聯準會 2% 目標。"
   },
+  "cost_drag": {
+    "term_id": "cost_drag",
+    "display_name": "Cost per Year",
+    "category": "methodology",
+    "short_definition": "Backtest trading costs as basis points of the portfolio per year of sessions.",
+    "full_definition": "A fold's costs (in bps of the portfolio at each target) scaled to 252 sessions. A cost, not a return.",
+    "formula": "Σ cost bps × 252 / sessions",
+    "unit": "bps per year",
+    "example": "S4: about 34 bps a year at base costs, 69 at double.",
+    "direction": "Lower is cheaper",
+    "interpretation": "The yearly price of following the rule.",
+    "why_it_matters": "Shows whether a strategy trades too much for its costs.",
+    "source": "Backtest rules 0.1.0 (config/backtest_rules.yaml); domain/backtest.py; ADR-033",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/backtest_rules.yaml",
+    "as_of": "2026-10-17",
+    "update_cadence": "once a month, after the month's first rotation assessment (11:20 SGT)",
+    "caveats": "Steven's defaults (B1-B7), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "cost_model",
+      "turnover"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "每年成本",
+    "hint_zh": "交易成本換算成每年占組合的 bps；是成本，不是報酬。"
+  },
+  "cost_model": {
+    "term_id": "cost_model",
+    "display_name": "Cost Model",
+    "category": "methodology",
+    "short_definition": "The costs charged on every backtest trade: no commission, a half-spread plus slippage per side.",
+    "full_definition": "Basis points of the traded value per side: equities 2 (half-spread) + 5 (slippage) = 7, ETFs 1 + 2 = 3. A second scenario doubles them. No historical spread is stored, so the half-spread is a fixed assumption (P2-6, ADR-033 B2).",
+    "formula": "cost = traded value × (half-spread + slippage) × scenario",
+    "unit": "bps",
+    "example": "Buying 50% of the portfolio in an equity: 50% × 7 bps = 3.5 bps of the portfolio.",
+    "direction": "Lower is cheaper",
+    "interpretation": "What trading the targets would have cost.",
+    "why_it_matters": "Costs separate a rule that works on paper from one that works after trading.",
+    "source": "Backtest rules 0.1.0 (config/backtest_rules.yaml); domain/backtest.py; ADR-033",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/backtest_rules.yaml",
+    "as_of": "2026-10-17",
+    "update_cadence": "per release",
+    "caveats": "Fixed, not market-dependent; no market impact or short costs (long only, OD-5). Steven's defaults (B1-B7), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "half_spread",
+      "slippage",
+      "cost_drag"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "成本模型",
+    "hint_zh": "每筆交易每邊的成本：不收手續費，個股 7 bps、ETF 3 bps，另有雙倍情境。"
+  },
   "cpi_inflation_yoy": {
     "term_id": "cpi_inflation_yoy",
     "display_name": "CPI Inflation (y/y)",
@@ -2021,8 +2143,8 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "term_id": "dashboard_strategy_lab",
     "display_name": "Strategy Lab",
     "category": "navigation",
-    "short_definition": "Paper journal, backtests, walk-forward validation and paper trading.",
-    "full_definition": "Live from M1.6 as the paper journal: every Thesis Card with its decision and paper return against SPY, the current signals, and a link to write a new card. Since M2.4 (ADR-032) also the S3 ETF rotation: the target in force, each ETF's trend and gate, and every target set since 2017. Point-in-time backtests with costs and walk-forward validation follow in M2.5 (02 §23).",
+    "short_definition": "Paper journal, signals, the ETF rotation and walk-forward backtests with costs.",
+    "full_definition": "Live from M1.6 as the paper journal: every Thesis Card with its decision and paper return against SPY, the current signals, and a link to write a new card. Since M2.4 the S3 ETF rotation, and since M2.5 (ADR-033) the backtests of S1, S3 and S4: method, in-sample and out-of-sample periods, yearly folds, costs, trades and factor overlap, with performance withheld (OD-7).",
     "formula": "not a calculation; dashboard defined in build spec 02 §21",
     "unit": "page",
     "example": "An AAPL NO TRADE next to an AAPL paper TRADE; the S3 rotation holding SPY, QQQ, XLE and XLK.",
@@ -2031,18 +2153,18 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "why_it_matters": "No strategy can be unlocked without out-of-sample evidence; the journal records judgement until then.",
     "source": "Build spec 02 §21; research report 01 §21; ROADMAP dashboard map; ADR-027",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/spec/02_master_build_prompt_v2.md",
-    "as_of": "2026-10-16",
+    "as_of": "2026-10-17",
     "update_cadence": "per release",
-    "caveats": "Paper only. ETFs cannot enter the journal yet (ADR-032 Q4). Backtests and walk-forward validation arrive in M2.5.",
+    "caveats": "Paper only. Backtest performance is withheld (OD-7); ETFs cannot enter the journal yet (ADR-032 Q4, ADR-033 B6).",
     "related_terms": [
       "journal_entry",
       "signal",
-      "paper_return",
-      "etf_rotation"
+      "etf_rotation",
+      "backtest"
     ],
-    "methodology_version": "0.3.0",
+    "methodology_version": "0.4.0",
     "name_zh": "策略實驗室",
-    "hint_zh": "模擬交易日誌、目前的訊號，以及 S3 ETF 輪動的目標與歷史；回測在 M2.5。"
+    "hint_zh": "模擬交易日誌、訊號、S3 ETF 輪動，以及 S1、S3、S4 的 walk-forward 回測（含成本，不顯示績效）。"
   },
   "dashboard_x_expert_watch": {
     "term_id": "dashboard_x_expert_watch",
@@ -3017,6 +3139,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "因子定義版本",
     "hint_zh": "每個快照所用的因子定義版本；已發布的版本不會改。"
   },
+  "factor_overlap": {
+    "term_id": "factor_overlap",
+    "display_name": "Factor Overlap",
+    "category": "methodology",
+    "short_definition": "How much strategies hold the same things: S4's companies also held by S1, and each strategy's sectors and beta.",
+    "full_definition": "Read from the latest runs: for each S4 target, the share of its companies in the S1 target in force on the same day; for each strategy, the average sector weights and weighted beta of its targets.",
+    "formula": "|S4 ∩ S1| / |S4|, averaged over months",
+    "unit": "percent",
+    "example": "S4 held about half of its companies in common with S1.",
+    "direction": "N/A",
+    "interpretation": "Whether two strategies are really one bet.",
+    "why_it_matters": "S4 unlocks on factor overlap and out-of-sample stability (02 §18; 01 §30).",
+    "source": "api/backtests.py; ADR-033",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/api/backtests.py",
+    "as_of": "2026-10-17",
+    "update_cadence": "once a month, after the month's first rotation assessment (11:20 SGT)",
+    "caveats": "Sectors from the reviewed GICS table; broad ETFs not split (KI-14).",
+    "related_terms": [
+      "medium_term_momentum",
+      "gics_sector",
+      "beta_252d"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "因子重疊",
+    "hint_zh": "S4 有多少公司同時被 S1 持有，以及各策略的產業曝險與平均 beta。"
+  },
   "factor_percentile": {
     "term_id": "factor_percentile",
     "display_name": "Percentile in Own History",
@@ -3478,6 +3626,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "財報指引",
     "hint_zh": "公司自己給的營收、EPS、利潤率數字或區間，引用原文句子。"
   },
+  "half_spread": {
+    "term_id": "half_spread",
+    "display_name": "Half-spread",
+    "category": "methodology",
+    "short_definition": "Half the gap between bid and ask: the cost of crossing to the other side once.",
+    "full_definition": "Fixed per instrument type in the cost model (equities 2 bps, ETFs 1 bp) because no consolidated historical quotes are stored.",
+    "formula": "(ask - bid) / 2 / mid",
+    "unit": "bps",
+    "example": "A 0.04% wide quote costs 2 bps per side.",
+    "direction": "Lower is cheaper",
+    "interpretation": "Part of every trade's cost.",
+    "why_it_matters": "Large caps and big ETFs trade at tight spreads; these are assumptions.",
+    "source": "Backtest rules 0.1.0 (config/backtest_rules.yaml); domain/backtest.py; ADR-033",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/backtest_rules.yaml",
+    "as_of": "2026-10-17",
+    "update_cadence": "per release",
+    "caveats": "Steven's defaults (B1-B7), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "cost_model",
+      "slippage"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "半價差",
+    "hint_zh": "買賣價差的一半；沒有歷史報價，所以個股固定 2 bps、ETF 1 bp。"
+  },
   "high_beta": {
     "term_id": "high_beta",
     "display_name": "High Beta",
@@ -3502,6 +3675,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "高 beta",
     "hint_zh": "相對 SPY 的 252 日 beta ≥ 1.10；SPY 視為 1.00，未知的 beta 當作高 beta。"
+  },
+  "holding_period": {
+    "term_id": "holding_period",
+    "display_name": "Holding Period",
+    "category": "methodology",
+    "short_definition": "How many sessions a backtest held a position, from its entry close to its exit close.",
+    "full_definition": "Each position from the session it was bought to the session it was sold; positions still held at the end are counted as open.",
+    "formula": "exit session - entry session",
+    "unit": "sessions",
+    "example": "Held from the close of 10-01 to the close of 10-13: eight sessions.",
+    "direction": "N/A",
+    "interpretation": "How long the strategy keeps what it buys.",
+    "why_it_matters": "Short holding periods mean more trading and cost.",
+    "source": "Backtest rules 0.1.0 (config/backtest_rules.yaml); domain/backtest.py; ADR-033",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/backtest_rules.yaml",
+    "as_of": "2026-10-17",
+    "update_cadence": "once a month, after the month's first rotation assessment (11:20 SGT)",
+    "caveats": "Re-weighting does not end a position.",
+    "related_terms": [
+      "turnover",
+      "backtest"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "持有期間",
+    "hint_zh": "從買進那天的收盤到賣出那天的收盤，經過幾個交易日。"
   },
   "hy_oas_percentile": {
     "term_id": "hy_oas_percentile",
@@ -3553,6 +3751,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "隱含漲跌幅",
     "hint_zh": "base 每股價值 ÷ 估值股價 − 1。"
+  },
+  "in_sample": {
+    "term_id": "in_sample",
+    "display_name": "In-sample",
+    "category": "methodology",
+    "short_definition": "History the rules were set after seeing: everything before the rule version's release.",
+    "full_definition": "Thresholds were chosen by Steven with that history visible (regime rules reviewed since 2016, rotation backfill shown before release), so results there cannot validate them.",
+    "formula": "fill day <= rule release",
+    "unit": "period",
+    "example": "S1: from 2021-02-01 to 2026-10-15, its buyback rules' release.",
+    "direction": "N/A",
+    "interpretation": "Description, not validation.",
+    "why_it_matters": "Avoids presenting tuned history as evidence.",
+    "source": "Backtest rules 0.1.0 (config/backtest_rules.yaml); domain/backtest.py; ADR-033",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/backtest_rules.yaml",
+    "as_of": "2026-10-17",
+    "update_cadence": "once a month, after the month's first rotation assessment (11:20 SGT)",
+    "caveats": "Steven's defaults (B1-B7), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "out_of_sample",
+      "walk_forward"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "樣本內",
+    "hint_zh": "規則發布前的歷史：規則是看過這段才訂的，不能拿來驗證。"
   },
   "income_tax_expense": {
     "term_id": "income_tax_expense",
@@ -3885,6 +4108,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "長期負債（非流動）",
     "hint_zh": "一年後才到期的借款。"
+  },
+  "look_ahead_bias": {
+    "term_id": "look_ahead_bias",
+    "display_name": "Look-ahead Bias",
+    "category": "methodology",
+    "short_definition": "Future information leaking into a historical test.",
+    "full_definition": "Every backtest reads targets known at their date and recorded by the run's system time, and fills at the next close; a later close, revision or snapshot never changes a stored run (tested).",
+    "formula": "validation failure",
+    "unit": "concept",
+    "example": "Filling a month-end target at that day's close would be look-ahead; it fills at the next close.",
+    "direction": "N/A",
+    "interpretation": "Inflates backtest results unrealistically.",
+    "why_it_matters": "Backtests with this bias cannot be trusted.",
+    "source": "ADR-012; ADR-033",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/backtest_rules.yaml",
+    "as_of": "2026-10-17",
+    "update_cadence": "N/A",
+    "caveats": "Often subtle (e.g. restated data, period end instead of filing date).",
+    "related_terms": [
+      "point_in_time",
+      "next_close_fill",
+      "survivorship_bias"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "前視偏誤",
+    "hint_zh": "回測用到當時還不知道的資訊；這裡用當時已知的資料並在下一個收盤成交來避免。"
   },
   "macro_core_pce": {
     "term_id": "macro_core_pce",
@@ -4431,6 +4680,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "最大損失",
     "hint_zh": "紙上交易事先寫下願意承受的損失（美元）；一定要填，且不得超過資本 1%。"
   },
+  "medium_term_momentum": {
+    "term_id": "medium_term_momentum",
+    "display_name": "Medium-term Momentum (S4)",
+    "category": "signal",
+    "short_definition": "Strategy S4: hold each company whose 12-1 momentum and 12-1 momentum against SPY are both above zero.",
+    "full_definition": "Each of the 10 companies is judged on its own history and SPY only (no ranking, P2-3). The selected ones are held in equal weights, set monthly; no stress gate. Backtested from 2017; no live signal yet (ADR-033 B3).",
+    "formula": "momentum_12_1 > 0 and relative_momentum_12_1 > 0 -> equal weight",
+    "unit": "target",
+    "example": "Five of ten selected: 20% each.",
+    "direction": "N/A",
+    "interpretation": "Which companies have risen on their own and against the market.",
+    "why_it_matters": "Medium-term momentum is a documented effect; here it is a paper research rule.",
+    "source": "Momentum rules 0.1.0 (config/momentum_rules.yaml); domain/momentum.py; ADR-033",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/momentum_rules.yaml",
+    "as_of": "2026-10-17",
+    "update_cadence": "once a month, after the month's first rotation assessment (11:20 SGT)",
+    "caveats": "Current universe only (KI-1); 12-1 momentum starts in 2017. Steven's defaults (B1-B7), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "momentum_12_1",
+      "relative_momentum_12_1",
+      "factor_overlap"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "中期動能（S4）",
+    "hint_zh": "10 家公司各看自己：12-1 動能與相對 SPY 的 12-1 動能都大於 0 就等權持有。"
+  },
   "mega_cap": {
     "term_id": "mega_cap",
     "display_name": "Mega Cap",
@@ -4559,6 +4834,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "6-1 個月動能",
     "hint_zh": "從 6 個月前到 1 個月前的總報酬（含股利），跳過最近一個月。"
+  },
+  "momentum_rule_set": {
+    "term_id": "momentum_rule_set",
+    "display_name": "Momentum Rule Version",
+    "category": "signal",
+    "short_definition": "The released version of the S4 rules each backtest cites.",
+    "full_definition": "config/momentum_rules.yaml, loaded by make migrate with the sha256 of its content; a changed released version is refused.",
+    "formula": "rule_version + sha256 of the content",
+    "unit": "version",
+    "example": "Momentum rules 0.1.0 read factor definitions 0.1.0.",
+    "direction": "N/A",
+    "interpretation": "Which rules produced a target.",
+    "why_it_matters": "A stored backtest recomputes identically.",
+    "source": "Momentum rules 0.1.0; ADR-033",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/momentum_rules.yaml",
+    "as_of": "2026-10-17",
+    "update_cadence": "per release",
+    "caveats": "Steven's defaults (B1-B7), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "medium_term_momentum",
+      "factor_definition_set"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "動能規則版本",
+    "hint_zh": "S4 回測所用的規則版本；已發布的不會改。"
   },
   "multiple_percentile": {
     "term_id": "multiple_percentile",
@@ -4841,6 +5141,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "新聞時間",
     "hint_zh": "發布者自己的發布時間，或 GDELT 第一次看到的時間（不會早於發布）。"
   },
+  "next_close_fill": {
+    "term_id": "next_close_fill",
+    "display_name": "Next-close Fill",
+    "category": "methodology",
+    "short_definition": "A backtest target is filled at the first session close published after it was known.",
+    "full_definition": "A month-end target is known at the end of that day's session, so its own close is never used: it fills at the next session's close. A target known before a session's close fills at that close.",
+    "formula": "fill = first close with published_at > T",
+    "unit": "session",
+    "example": "Targets of the September month end fill at the close of 2026-10-01.",
+    "direction": "N/A",
+    "interpretation": "No trade uses a price that was not public yet.",
+    "why_it_matters": "Prevents look-ahead bias in the fills.",
+    "source": "Backtest rules 0.1.0 (config/backtest_rules.yaml); domain/backtest.py; ADR-033",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/backtest_rules.yaml",
+    "as_of": "2026-10-17",
+    "update_cadence": "once a month, after the month's first rotation assessment (11:20 SGT)",
+    "caveats": "No intraday fills or market impact.",
+    "related_terms": [
+      "look_ahead_bias",
+      "backtest"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "下一個收盤成交",
+    "hint_zh": "目標在被知道之後的第一個收盤成交，絕不使用當天已經公開的收盤。"
+  },
   "next_refresh": {
     "term_id": "next_refresh",
     "display_name": "Next Refresh",
@@ -5093,6 +5418,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "候選",
     "hint_zh": "規則在當時標出的標的：L3/L4 的公司（S1）或 S3 目標持有的 ETF；不打分、不排名、只做多。"
+  },
+  "out_of_sample": {
+    "term_id": "out_of_sample",
+    "display_name": "Out-of-sample",
+    "category": "methodology",
+    "short_definition": "Sessions after the rule version's release: the only period that can test the rules.",
+    "full_definition": "Marked on every run and fold. Until enough months pass, the out-of-sample period is short or has no session yet.",
+    "formula": "fill day > rule release",
+    "unit": "period",
+    "example": "S3's rotation rules were released on 2026-10-16: out-of-sample starts with the next session.",
+    "direction": "N/A",
+    "interpretation": "Evidence the rules were not fitted to.",
+    "why_it_matters": "02 §18: strategies unlock on out-of-sample stability.",
+    "source": "Backtest rules 0.1.0 (config/backtest_rules.yaml); domain/backtest.py; ADR-033",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/backtest_rules.yaml",
+    "as_of": "2026-10-17",
+    "update_cadence": "once a month, after the month's first rotation assessment (11:20 SGT)",
+    "caveats": "Performance is withheld (OD-7, KI-1, KI-16).",
+    "related_terms": [
+      "in_sample",
+      "walk_forward"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "樣本外",
+    "hint_zh": "規則發布之後的交易日，才是真正能檢驗規則的期間。"
   },
   "owner_fcf": {
     "term_id": "owner_fcf",
@@ -5507,6 +5857,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "本益比（TTM）",
     "hint_zh": "股價 ÷ 近四季稀釋 EPS；EPS 為負時無意義。"
+  },
+  "performance_withheld": {
+    "term_id": "performance_withheld",
+    "display_name": "Performance Withheld",
+    "category": "methodology",
+    "short_definition": "Backtest returns, ratios, drawdowns and hit rates are not computed or shown until OD-7 is decided.",
+    "full_definition": "The history holds only today's survivors (KI-1) and ETFs chosen today (KI-16), so returns would look better than they were. CAGR, volatility, Sharpe, Sortino, maximum drawdown, hit rate, profit factor, tail loss, performance by regime and trade P&L are stored as empty, and the database refuses a run that reports performance (errata E6, ADR-033 B1).",
+    "formula": "performance_reported = false",
+    "unit": "status",
+    "example": "Every run: Data unavailable for all ten metrics.",
+    "direction": "N/A",
+    "interpretation": "No performance number exists to be trusted yet.",
+    "why_it_matters": "Never publish a backtest result without point-in-time controls (01 §26).",
+    "source": "Backtest rules 0.1.0 (config/backtest_rules.yaml); domain/backtest.py; ADR-033",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/backtest_rules.yaml",
+    "as_of": "2026-10-17",
+    "update_cadence": "per release",
+    "caveats": "Lifted only by a decision on OD-7 and a new backtest rule version.",
+    "related_terms": [
+      "survivorship_bias",
+      "backtest"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "績效不顯示",
+    "hint_zh": "沒有含下市公司的資料（OD-7），報酬、比率、回撤與勝率都不計算也不顯示。"
   },
   "planned_phase": {
     "term_id": "planned_phase",
@@ -6724,6 +7099,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "流動性上限",
     "hint_zh": "單筆股數不得超過 20 日平均成交量的 1%。"
   },
+  "risk_overlay": {
+    "term_id": "risk_overlay",
+    "display_name": "Risk Limits for Reference",
+    "category": "risk",
+    "short_definition": "The backtest targets that would break the risk limits (position, sector, gross, volume), shown but not applied.",
+    "full_definition": "Each target is compared with risk rules 0.1.0. Equal-weight strategies of a few holdings exceed the 10% position limit, so most targets would be vetoed; the backtest still follows the strategy, and ETF limits wait (ADR-033 B6).",
+    "formula": "target weight vs each limit",
+    "unit": "count",
+    "example": "S1: 68 of 69 targets would break the position limit.",
+    "direction": "N/A",
+    "interpretation": "How far a strategy is from what the paper journal would accept.",
+    "why_it_matters": "Shows the gap before ETF limits and paper trades are decided.",
+    "source": "Backtest rules 0.1.0 (config/backtest_rules.yaml); domain/backtest.py; ADR-033",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/backtest_rules.yaml",
+    "as_of": "2026-10-17",
+    "update_cadence": "once a month, after the month's first rotation assessment (11:20 SGT)",
+    "caveats": "Limits are defaults (KI-2); the volume check sizes trades on the notional capital.",
+    "related_terms": [
+      "risk_veto",
+      "risk_limit_position"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "風險規則參考",
+    "hint_zh": "列出哪些回測目標會違反風險上限，只作參考，回測仍照策略進行。"
+  },
   "risk_rule_set": {
     "term_id": "risk_rule_set",
     "display_name": "Risk Rule Version",
@@ -7177,6 +7577,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.2.0",
     "name_zh": "訊號",
     "hint_zh": "規則自動產生的「值得研究」提示，一律只能模擬：S1 來自回購狀態，S3 來自 ETF 輪動的新目標（每檔趨勢與壓力各一個）。"
+  },
+  "slippage": {
+    "term_id": "slippage",
+    "display_name": "Slippage",
+    "category": "methodology",
+    "short_definition": "The extra cost of trading at a worse price than the reference close.",
+    "full_definition": "Fixed per instrument type in the cost model: equities 5 bps, ETFs 2 bps per side.",
+    "formula": "fill price vs reference price",
+    "unit": "bps",
+    "example": "5 bps on a 10,000 USD trade is 5 USD.",
+    "direction": "Lower is cheaper",
+    "interpretation": "Part of every trade's cost.",
+    "why_it_matters": "Fills at the close are not free.",
+    "source": "Backtest rules 0.1.0 (config/backtest_rules.yaml); domain/backtest.py; ADR-033",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/backtest_rules.yaml",
+    "as_of": "2026-10-17",
+    "update_cadence": "per release",
+    "caveats": "Steven's defaults (B1-B7), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "cost_model",
+      "half_spread"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "滑價",
+    "hint_zh": "比參考收盤價更差的成交成本；個股 5 bps、ETF 2 bps。"
   },
   "source_tier": {
     "term_id": "source_tier",
@@ -7702,6 +8127,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "壓力狀態",
     "hint_zh": "正常／升高／高／危機：同時亮起幾個壓力旗標。"
   },
+  "survivorship_bias": {
+    "term_id": "survivorship_bias",
+    "display_name": "Survivorship Bias",
+    "category": "methodology",
+    "short_definition": "Excluding companies that were delisted or acquired.",
+    "full_definition": "The database holds only today's 10 companies and 8 ETFs (KI-1, KI-16): a backtest on them sees only survivors, so its returns would look better than reality. Performance is withheld until OD-7.",
+    "formula": "validation failure",
+    "unit": "concept",
+    "example": "A 2017 universe of today's winners.",
+    "direction": "N/A",
+    "interpretation": "Makes historical performance look better than reality.",
+    "why_it_matters": "Backtests need universes that include dead names (01 §23).",
+    "source": "KNOWN_ISSUES KI-1; ADR-029; ADR-033",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/backtest_rules.yaml",
+    "as_of": "2026-10-17",
+    "update_cadence": "N/A",
+    "caveats": "Requires a dataset with delisted securities (OD-7).",
+    "related_terms": [
+      "look_ahead_bias",
+      "performance_withheld"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "倖存者偏誤",
+    "hint_zh": "只看今天還在的公司，歷史績效會看起來比實際好；所以回測不顯示績效。"
+  },
   "terminal_growth": {
     "term_id": "terminal_growth",
     "display_name": "Terminal Growth",
@@ -7910,6 +8360,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "趨勢條件",
     "hint_zh": "12-1 動能與相對 200 日均線都大於 0 才算趨勢向上；剛好等於 0 不算。"
   },
+  "turnover": {
+    "term_id": "turnover",
+    "display_name": "Turnover",
+    "category": "methodology",
+    "short_definition": "Buys plus sells as a percent of the portfolio.",
+    "full_definition": "Per target and summed per fold. Buying a portfolio from cash is about 100%; switching all of it to other holdings is about 200%.",
+    "formula": "(Σ |traded value|) / portfolio × 100",
+    "unit": "percent",
+    "example": "S3: about 565% a year.",
+    "direction": "Lower trades less",
+    "interpretation": "How much a strategy trades.",
+    "why_it_matters": "Costs grow with turnover (01 §30: turnover controls).",
+    "source": "Backtest rules 0.1.0 (config/backtest_rules.yaml); domain/backtest.py; ADR-033",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/backtest_rules.yaml",
+    "as_of": "2026-10-17",
+    "update_cadence": "once a month, after the month's first rotation assessment (11:20 SGT)",
+    "caveats": "Re-equalizing drifted weights counts too.",
+    "related_terms": [
+      "cost_drag",
+      "backtest"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "換手率",
+    "hint_zh": "買進加賣出占組合的百分比；從現金全部買進約 100%。"
+  },
   "update_cadence": {
     "term_id": "update_cadence",
     "display_name": "Update Cadence",
@@ -8112,6 +8587,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "成交量",
     "hint_zh": "期間內成交的股數；IEX 只是全市場的一小部分。"
+  },
+  "walk_forward": {
+    "term_id": "walk_forward",
+    "display_name": "Walk-forward",
+    "category": "methodology",
+    "short_definition": "Testing a strategy one period after another: here each calendar year is a fold.",
+    "full_definition": "The rules have no fitted parameters, so a fold only partitions time: each calendar year shows its targets, trades, turnover, costs and average exposure. The year of a rule's release splits at the release into an in-sample and an out-of-sample fold (ADR-033 B4).",
+    "formula": "one fold per calendar year; split at the rule release",
+    "unit": "fold",
+    "example": "S4: folds 2017 to 2026, all in-sample until the release on 2026-10-17.",
+    "direction": "N/A",
+    "interpretation": "How the strategy behaved year by year.",
+    "why_it_matters": "Never optimize and evaluate on the same period (02 §23).",
+    "source": "Backtest rules 0.1.0 (config/backtest_rules.yaml); domain/backtest.py; ADR-033",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/backtest_rules.yaml",
+    "as_of": "2026-10-17",
+    "update_cadence": "once a month, after the month's first rotation assessment (11:20 SGT)",
+    "caveats": "Nothing is fitted, so train and validate periods are not separated; Steven's defaults (B1-B7), unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "in_sample",
+      "out_of_sample",
+      "backtest"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "逐段測試",
+    "hint_zh": "每個日曆年是一段；規則發布那年在發布日切成樣本內與樣本外。"
   },
   "yield_curve_inversion": {
     "term_id": "yield_curve_inversion",

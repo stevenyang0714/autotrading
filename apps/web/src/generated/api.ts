@@ -92,6 +92,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/backtests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Backtests */
+        get: operations["backtests_backtests_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/backtests/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Backtest Rules */
+        get: operations["backtest_rules_backtests_rules_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/backtests/{run_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Backtest */
+        get: operations["backtest_backtests__run_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/buybacks": {
         parameters: {
             query?: never;
@@ -652,6 +703,23 @@ export interface paths {
         };
         /** Series Observations */
         get: operations["series_observations_macro_series__series_id__observations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/momentum/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Momentum Rules */
+        get: operations["momentum_rules_momentum_rules_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1322,6 +1390,45 @@ export interface components {
             matching: number;
             /** Next Before Id */
             next_before_id: number | null;
+        };
+        /** BacktestRuleSetOut */
+        BacktestRuleSetOut: {
+            /** Content */
+            content: {
+                [key: string]: unknown;
+            };
+            /** Content Sha256 */
+            content_sha256: string;
+            /**
+             * Released
+             * Format: date
+             */
+            released: string;
+            /** Rule Version */
+            rule_version: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "active" | "retired";
+        };
+        /** BacktestsOut */
+        BacktestsOut: {
+            /**
+             * Detail
+             * @default Backtests on stored point-in-time data, filled at the next session close, with costs. Performance is withheld (OD-7): the history holds only today's survivors (KI-1) and ETFs chosen today (KI-16), so returns would look better than they were. No return, ratio, drawdown or hit rate is computed or stored.
+             */
+            detail: string;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            overlap: components["schemas"]["Overlap"] | null;
+            /** Rule Version */
+            rule_version: string;
+            /** Runs */
+            runs: components["schemas"]["StoredRun"][];
         };
         /** Block */
         Block: {
@@ -2366,6 +2473,42 @@ export interface components {
             /** Value */
             value: string | null;
         };
+        /** Fold */
+        Fold: {
+            /** Average Gross Pct */
+            average_gross_pct: string;
+            /** Cost Bps */
+            cost_bps: string;
+            /** Cost Bps Per Year */
+            cost_bps_per_year: string;
+            /**
+             * End
+             * Format: date
+             */
+            end: string;
+            /** Label */
+            label: string;
+            /** Rebalances */
+            rebalances: number;
+            /**
+             * Sample
+             * @enum {string}
+             */
+            sample: "in_sample" | "out_of_sample";
+            /** Sessions */
+            sessions: number;
+            /**
+             * Start
+             * Format: date
+             */
+            start: string;
+            /** Trades */
+            trades: number;
+            /** Turnover Pct */
+            turnover_pct: string;
+            /** Year */
+            year: number;
+        };
         /** Fundamentals */
         Fundamentals: {
             annual: components["schemas"]["FactTable"];
@@ -2503,6 +2646,20 @@ export interface components {
              * @enum {string}
              */
             status: "ok" | "degraded" | "down";
+        };
+        /** HeldPosition */
+        HeldPosition: {
+            /**
+             * Entry
+             * Format: date
+             */
+            entry: string;
+            /** Exit */
+            exit: string | null;
+            /** Sessions */
+            sessions: number;
+            /** Symbol */
+            symbol: string;
         };
         /** HighConvictionRule */
         HighConvictionRule: {
@@ -3308,6 +3465,19 @@ export interface components {
              */
             known_at: string;
         };
+        /**
+         * Overlap
+         * @description Factor overlap (01 §30, S4's unlock): how much S4 holds what S1 holds on the same days,
+         *     and each strategy's average sectors and beta.
+         */
+        Overlap: {
+            /** Shared Months */
+            shared_months: number;
+            /** Shared Pct */
+            shared_pct: string | null;
+            /** Strategies */
+            strategies: components["schemas"]["StrategyOverlap"][];
+        };
         /** Overview */
         Overview: {
             /** Blocks */
@@ -3666,6 +3836,42 @@ export interface components {
             unit: string;
             /** Value */
             value: string | null;
+        };
+        /** Rebalance */
+        Rebalance: {
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /** Beta */
+            beta: string | null;
+            /** Cost Bps */
+            cost_bps: string;
+            /** Fill Day */
+            fill_day: string | null;
+            /** Gross Pct */
+            gross_pct: string;
+            /** Reason */
+            reason: string;
+            /** Sectors */
+            sectors: {
+                [key: string]: string;
+            };
+            /** Skipped */
+            skipped: string[];
+            /** Source */
+            source: {
+                [key: string]: string;
+            };
+            /** Target */
+            target: {
+                [key: string]: string;
+            };
+            /** Turnover Pct */
+            turnover_pct: string;
+            /** Vetoes */
+            vetoes: components["schemas"]["Veto"][];
         };
         /** ReconciliationDetail */
         ReconciliationDetail: {
@@ -4285,6 +4491,55 @@ export interface components {
             /** Unlimited Sectors */
             unlimited_sectors: string[];
         };
+        /**
+         * Run
+         * @description Everything a stored backtest run holds: recomputing it gives the same document.
+         */
+        Run: {
+            /** Cost Bps */
+            cost_bps: {
+                [key: string]: string;
+            };
+            /** End */
+            end: string | null;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Notes */
+            notes: string[];
+            /** Positions */
+            positions: components["schemas"]["HeldPosition"][];
+            /** Rebalances */
+            rebalances: components["schemas"]["Rebalance"][];
+            /**
+             * Released
+             * Format: date
+             */
+            released: string;
+            /** Rule Version */
+            rule_version: string;
+            /** Scenarios */
+            scenarios: components["schemas"]["ScenarioResult"][];
+            /**
+             * Since
+             * Format: date
+             */
+            since: string;
+            /** Start */
+            start: string | null;
+            /** Strategy Id */
+            strategy_id: string;
+            /** Strategy Rule Version */
+            strategy_rule_version: string;
+            /** Trades */
+            trades: components["schemas"]["Trade"][];
+            /** Withheld */
+            withheld: components["schemas"]["Withheld"][];
+            /** Withheld Reason */
+            withheld_reason: string;
+        };
         /** RunOut */
         RunOut: {
             /** Attempt */
@@ -4349,6 +4604,21 @@ export interface components {
             scenario: "bear" | "base" | "bull";
             /** Terminal Value */
             terminal_value: string;
+        };
+        /** ScenarioResult */
+        ScenarioResult: {
+            /** Cost Bps */
+            cost_bps: string;
+            /** Folds */
+            folds: components["schemas"]["Fold"][];
+            /** Multiplier */
+            multiplier: string;
+            /** Scenario */
+            scenario: string;
+            /** Trades */
+            trades: number;
+            /** Turnover Pct */
+            turnover_pct: string;
         };
         /** ScoreComponentRule */
         ScoreComponentRule: {
@@ -4725,6 +4995,67 @@ export interface components {
              */
             system_time: string;
         };
+        /** StoredRun */
+        StoredRun: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Performance Reported */
+            performance_reported: boolean;
+            run: components["schemas"]["Run"];
+            /**
+             * System Time
+             * Format: date-time
+             */
+            system_time: string;
+            /** Trigger */
+            trigger: string;
+        };
+        /** StrategyOverlap */
+        StrategyOverlap: {
+            /** Average Beta */
+            average_beta: string | null;
+            /** Rebalances */
+            rebalances: number;
+            /** Sectors */
+            sectors: {
+                [key: string]: string;
+            };
+            /** Strategy Id */
+            strategy_id: string;
+        };
+        /** Trade */
+        Trade: {
+            /** Cost Bps */
+            cost_bps: string;
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Portfolio Cost Bps */
+            portfolio_cost_bps: string;
+            /** Price */
+            price: string;
+            /**
+             * Side
+             * @enum {string}
+             */
+            side: "buy" | "sell";
+            /** Symbol */
+            symbol: string;
+            /** Weight After */
+            weight_after: string;
+            /** Weight Before */
+            weight_before: string;
+        };
         /** TradeReadyRule */
         TradeReadyRule: {
             /** Benchmark */
@@ -4812,6 +5143,20 @@ export interface components {
             /** Version */
             version: number;
         };
+        /** Veto */
+        Veto: {
+            /**
+             * Limit
+             * @enum {string}
+             */
+            limit: "position" | "sector" | "gross" | "volume";
+            /** Subject */
+            subject: string;
+            /** Threshold */
+            threshold: string;
+            /** Value */
+            value: string;
+        };
         /** WatchRule */
         WatchRule: {
             /** Announcement Days */
@@ -4820,6 +5165,13 @@ export interface components {
             announcement_kinds: ("new" | "increase" | "plan")[];
             /** Remaining To Market Cap Min */
             remaining_to_market_cap_min: string;
+        };
+        /** Withheld */
+        Withheld: {
+            /** Metric */
+            metric: string;
+            /** Value */
+            value?: null;
         };
     };
     responses: never;
@@ -4982,6 +5334,89 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AuditLogPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    backtests_backtests_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BacktestsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    backtest_rules_backtests_rules_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BacktestRuleSetOut"][];
+                };
+            };
+        };
+    };
+    backtest_backtests__run_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StoredRun"];
                 };
             };
             /** @description Validation Error */
@@ -6047,6 +6482,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    momentum_rules_momentum_rules_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BacktestRuleSetOut"][];
                 };
             };
         };

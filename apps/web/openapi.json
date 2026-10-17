@@ -1167,6 +1167,88 @@
         "title": "AuditLogPage",
         "type": "object"
       },
+      "BacktestRuleSetOut": {
+        "properties": {
+          "content": {
+            "additionalProperties": true,
+            "title": "Content",
+            "type": "object"
+          },
+          "content_sha256": {
+            "title": "Content Sha256",
+            "type": "string"
+          },
+          "released": {
+            "format": "date",
+            "title": "Released",
+            "type": "string"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "retired"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rule_version",
+          "status",
+          "released",
+          "content",
+          "content_sha256"
+        ],
+        "title": "BacktestRuleSetOut",
+        "type": "object"
+      },
+      "BacktestsOut": {
+        "properties": {
+          "detail": {
+            "default": "Backtests on stored point-in-time data, filled at the next session close, with costs. Performance is withheld (OD-7): the history holds only today's survivors (KI-1) and ETFs chosen today (KI-16), so returns would look better than they were. No return, ratio, drawdown or hit rate is computed or stored.",
+            "title": "Detail",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "overlap": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Overlap"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          },
+          "runs": {
+            "items": {
+              "$ref": "#/components/schemas/StoredRun"
+            },
+            "title": "Runs",
+            "type": "array"
+          }
+        },
+        "required": [
+          "known_at",
+          "rule_version",
+          "runs",
+          "overlap"
+        ],
+        "title": "BacktestsOut",
+        "type": "object"
+      },
       "Block": {
         "properties": {
           "charts": {
@@ -4205,6 +4287,84 @@
         "title": "Flag",
         "type": "object"
       },
+      "Fold": {
+        "properties": {
+          "average_gross_pct": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Average Gross Pct",
+            "type": "string"
+          },
+          "cost_bps": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Cost Bps",
+            "type": "string"
+          },
+          "cost_bps_per_year": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Cost Bps Per Year",
+            "type": "string"
+          },
+          "end": {
+            "format": "date",
+            "title": "End",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "rebalances": {
+            "title": "Rebalances",
+            "type": "integer"
+          },
+          "sample": {
+            "enum": [
+              "in_sample",
+              "out_of_sample"
+            ],
+            "title": "Sample",
+            "type": "string"
+          },
+          "sessions": {
+            "title": "Sessions",
+            "type": "integer"
+          },
+          "start": {
+            "format": "date",
+            "title": "Start",
+            "type": "string"
+          },
+          "trades": {
+            "title": "Trades",
+            "type": "integer"
+          },
+          "turnover_pct": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Turnover Pct",
+            "type": "string"
+          },
+          "year": {
+            "title": "Year",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "label",
+          "year",
+          "sample",
+          "start",
+          "end",
+          "sessions",
+          "rebalances",
+          "trades",
+          "turnover_pct",
+          "cost_bps",
+          "cost_bps_per_year",
+          "average_gross_pct"
+        ],
+        "title": "Fold",
+        "type": "object"
+      },
       "Fundamentals": {
         "properties": {
           "annual": {
@@ -4568,6 +4728,43 @@
           "components"
         ],
         "title": "HealthReport",
+        "type": "object"
+      },
+      "HeldPosition": {
+        "properties": {
+          "entry": {
+            "format": "date",
+            "title": "Entry",
+            "type": "string"
+          },
+          "exit": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exit"
+          },
+          "sessions": {
+            "title": "Sessions",
+            "type": "integer"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol",
+          "entry",
+          "exit",
+          "sessions"
+        ],
+        "title": "HeldPosition",
         "type": "object"
       },
       "HighConvictionRule": {
@@ -7084,6 +7281,41 @@
         "title": "OpportunityCandidatesOut",
         "type": "object"
       },
+      "Overlap": {
+        "description": "Factor overlap (01 \u00a730, S4's unlock): how much S4 holds what S1 holds on the same days,\nand each strategy's average sectors and beta.",
+        "properties": {
+          "shared_months": {
+            "title": "Shared Months",
+            "type": "integer"
+          },
+          "shared_pct": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shared Pct"
+          },
+          "strategies": {
+            "items": {
+              "$ref": "#/components/schemas/StrategyOverlap"
+            },
+            "title": "Strategies",
+            "type": "array"
+          }
+        },
+        "required": [
+          "shared_months",
+          "shared_pct",
+          "strategies"
+        ],
+        "title": "Overlap",
+        "type": "object"
+      },
       "Overview": {
         "properties": {
           "blocks": {
@@ -8451,6 +8683,111 @@
           "inputs"
         ],
         "title": "Reading",
+        "type": "object"
+      },
+      "Rebalance": {
+        "properties": {
+          "at": {
+            "format": "date-time",
+            "title": "At",
+            "type": "string"
+          },
+          "beta": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Beta"
+          },
+          "cost_bps": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Cost Bps",
+            "type": "string"
+          },
+          "fill_day": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fill Day"
+          },
+          "gross_pct": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Gross Pct",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "sectors": {
+            "additionalProperties": {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            "title": "Sectors",
+            "type": "object"
+          },
+          "skipped": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Skipped",
+            "type": "array"
+          },
+          "source": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Source",
+            "type": "object"
+          },
+          "target": {
+            "additionalProperties": {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            "title": "Target",
+            "type": "object"
+          },
+          "turnover_pct": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Turnover Pct",
+            "type": "string"
+          },
+          "vetoes": {
+            "items": {
+              "$ref": "#/components/schemas/Veto"
+            },
+            "title": "Vetoes",
+            "type": "array"
+          }
+        },
+        "required": [
+          "at",
+          "fill_day",
+          "reason",
+          "source",
+          "target",
+          "skipped",
+          "turnover_pct",
+          "cost_bps",
+          "gross_pct",
+          "beta",
+          "sectors",
+          "vetoes"
+        ],
+        "title": "Rebalance",
         "type": "object"
       },
       "ReconciliationDetail": {
@@ -10068,6 +10405,136 @@
         "title": "RulesOut",
         "type": "object"
       },
+      "Run": {
+        "description": "Everything a stored backtest run holds: recomputing it gives the same document.",
+        "properties": {
+          "cost_bps": {
+            "additionalProperties": {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            "title": "Cost Bps",
+            "type": "object"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
+          "positions": {
+            "items": {
+              "$ref": "#/components/schemas/HeldPosition"
+            },
+            "title": "Positions",
+            "type": "array"
+          },
+          "rebalances": {
+            "items": {
+              "$ref": "#/components/schemas/Rebalance"
+            },
+            "title": "Rebalances",
+            "type": "array"
+          },
+          "released": {
+            "format": "date",
+            "title": "Released",
+            "type": "string"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          },
+          "scenarios": {
+            "items": {
+              "$ref": "#/components/schemas/ScenarioResult"
+            },
+            "title": "Scenarios",
+            "type": "array"
+          },
+          "since": {
+            "format": "date",
+            "title": "Since",
+            "type": "string"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start"
+          },
+          "strategy_id": {
+            "title": "Strategy Id",
+            "type": "string"
+          },
+          "strategy_rule_version": {
+            "title": "Strategy Rule Version",
+            "type": "string"
+          },
+          "trades": {
+            "items": {
+              "$ref": "#/components/schemas/Trade"
+            },
+            "title": "Trades",
+            "type": "array"
+          },
+          "withheld": {
+            "items": {
+              "$ref": "#/components/schemas/Withheld"
+            },
+            "title": "Withheld",
+            "type": "array"
+          },
+          "withheld_reason": {
+            "title": "Withheld Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rule_version",
+          "strategy_id",
+          "strategy_rule_version",
+          "known_at",
+          "released",
+          "since",
+          "start",
+          "end",
+          "cost_bps",
+          "rebalances",
+          "trades",
+          "positions",
+          "scenarios",
+          "withheld",
+          "withheld_reason",
+          "notes"
+        ],
+        "title": "Run",
+        "type": "object"
+      },
       "RunOut": {
         "properties": {
           "attempt": {
@@ -10267,6 +10734,50 @@
           "terminal_value"
         ],
         "title": "ScenarioOut",
+        "type": "object"
+      },
+      "ScenarioResult": {
+        "properties": {
+          "cost_bps": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Cost Bps",
+            "type": "string"
+          },
+          "folds": {
+            "items": {
+              "$ref": "#/components/schemas/Fold"
+            },
+            "title": "Folds",
+            "type": "array"
+          },
+          "multiplier": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Multiplier",
+            "type": "string"
+          },
+          "scenario": {
+            "title": "Scenario",
+            "type": "string"
+          },
+          "trades": {
+            "title": "Trades",
+            "type": "integer"
+          },
+          "turnover_pct": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Turnover Pct",
+            "type": "string"
+          }
+        },
+        "required": [
+          "scenario",
+          "multiplier",
+          "folds",
+          "trades",
+          "turnover_pct",
+          "cost_bps"
+        ],
+        "title": "ScenarioResult",
         "type": "object"
       },
       "ScoreComponentRule": {
@@ -11327,6 +11838,144 @@
         "title": "StoredRotation",
         "type": "object"
       },
+      "StoredRun": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "performance_reported": {
+            "title": "Performance Reported",
+            "type": "boolean"
+          },
+          "run": {
+            "$ref": "#/components/schemas/Run"
+          },
+          "system_time": {
+            "format": "date-time",
+            "title": "System Time",
+            "type": "string"
+          },
+          "trigger": {
+            "title": "Trigger",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "known_at",
+          "system_time",
+          "trigger",
+          "performance_reported",
+          "run"
+        ],
+        "title": "StoredRun",
+        "type": "object"
+      },
+      "StrategyOverlap": {
+        "properties": {
+          "average_beta": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Beta"
+          },
+          "rebalances": {
+            "title": "Rebalances",
+            "type": "integer"
+          },
+          "sectors": {
+            "additionalProperties": {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            "title": "Sectors",
+            "type": "object"
+          },
+          "strategy_id": {
+            "title": "Strategy Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "strategy_id",
+          "rebalances",
+          "average_beta",
+          "sectors"
+        ],
+        "title": "StrategyOverlap",
+        "type": "object"
+      },
+      "Trade": {
+        "properties": {
+          "cost_bps": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Cost Bps",
+            "type": "string"
+          },
+          "day": {
+            "format": "date",
+            "title": "Day",
+            "type": "string"
+          },
+          "portfolio_cost_bps": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Portfolio Cost Bps",
+            "type": "string"
+          },
+          "price": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Price",
+            "type": "string"
+          },
+          "side": {
+            "enum": [
+              "buy",
+              "sell"
+            ],
+            "title": "Side",
+            "type": "string"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "weight_after": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Weight After",
+            "type": "string"
+          },
+          "weight_before": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Weight Before",
+            "type": "string"
+          }
+        },
+        "required": [
+          "day",
+          "symbol",
+          "side",
+          "weight_before",
+          "weight_after",
+          "price",
+          "cost_bps",
+          "portfolio_cost_bps"
+        ],
+        "title": "Trade",
+        "type": "object"
+      },
       "TradeReadyRule": {
         "additionalProperties": false,
         "properties": {
@@ -11603,6 +12252,42 @@
         "title": "VersionOut",
         "type": "object"
       },
+      "Veto": {
+        "properties": {
+          "limit": {
+            "enum": [
+              "position",
+              "sector",
+              "gross",
+              "volume"
+            ],
+            "title": "Limit",
+            "type": "string"
+          },
+          "subject": {
+            "title": "Subject",
+            "type": "string"
+          },
+          "threshold": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Threshold",
+            "type": "string"
+          },
+          "value": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "limit",
+          "subject",
+          "value",
+          "threshold"
+        ],
+        "title": "Veto",
+        "type": "object"
+      },
       "WatchRule": {
         "additionalProperties": false,
         "properties": {
@@ -11635,6 +12320,23 @@
           "remaining_to_market_cap_min"
         ],
         "title": "WatchRule",
+        "type": "object"
+      },
+      "Withheld": {
+        "properties": {
+          "metric": {
+            "title": "Metric",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "null"
+          }
+        },
+        "required": [
+          "metric"
+        ],
+        "title": "Withheld",
         "type": "object"
       }
     }
@@ -12055,6 +12757,126 @@
         "summary": "Audit Log",
         "tags": [
           "audit"
+        ]
+      }
+    },
+    "/backtests": {
+      "get": {
+        "operationId": "backtests_backtests_get",
+        "parameters": [
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BacktestsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Backtests",
+        "tags": [
+          "backtests"
+        ]
+      }
+    },
+    "/backtests/rules": {
+      "get": {
+        "operationId": "backtest_rules_backtests_rules_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BacktestRuleSetOut"
+                  },
+                  "title": "Response Backtest Rules Backtests Rules Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Backtest Rules",
+        "tags": [
+          "backtests"
+        ]
+      }
+    },
+    "/backtests/{run_id}": {
+      "get": {
+        "operationId": "backtest_backtests__run_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoredRun"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Backtest",
+        "tags": [
+          "backtests"
         ]
       }
     },
@@ -13866,6 +14688,31 @@
         "summary": "Series Observations",
         "tags": [
           "macro"
+        ]
+      }
+    },
+    "/momentum/rules": {
+      "get": {
+        "operationId": "momentum_rules_momentum_rules_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BacktestRuleSetOut"
+                  },
+                  "title": "Response Momentum Rules Momentum Rules Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Momentum Rules",
+        "tags": [
+          "backtests"
         ]
       }
     },

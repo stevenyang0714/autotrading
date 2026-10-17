@@ -396,6 +396,11 @@ test("Strategy Lab shows the paper journal and the signals, and opens a new card
   await expect(page.locator("[data-paper-only]")).toContainText("no order can be sent");
   await expect(page.locator('[data-block="signals"]')).toBeVisible();
   await expect(page.locator('[data-block="rotation"]')).toBeVisible();
+  // M2.5: each strategy's latest backtest, performance withheld (OD-7)
+  const backtests = page.locator('[data-block="backtests"]');
+  await expect(backtests.locator("li[data-backtest]")).toHaveCount(3);
+  await expect(backtests.locator("[data-withheld]").first()).toContainText("Data unavailable");
+  await expect(backtests.locator("[data-samples]").first()).toContainText("out-of-sample after");
   await expect(page.locator('[data-block="journal"]')).toBeVisible();
   await page.locator("#new-ticker").fill("AAPL");
   await page.locator('[data-block="journal"]').getByRole("button", { name: "Write" }).click();

@@ -1,7 +1,13 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { recordedJournal, recordedRotation, recordedRotationSignals, recordedSignals } from "@/test/fixtures";
+import {
+  recordedBacktests,
+  recordedJournal,
+  recordedRotation,
+  recordedRotationSignals,
+  recordedSignals,
+} from "@/test/fixtures";
 import { unexplainedNumbers } from "@/test/numbers";
 
 import { StrategyLabView } from "./StrategyLabView";
@@ -58,5 +64,16 @@ describe("StrategyLabView with recorded API responses", () => {
     expect(spy?.textContent).not.toContain("Write a Thesis Card"); // ETFs cannot enter the journal yet
     expect(spy?.querySelector("a")?.getAttribute("href")).toBe("/instruments/SPY#factors");
     expect(unexplainedNumbers(container)).toEqual([]);
+  });
+
+  it("shows the backtests block when given (M2.5)", () => {
+    const { container } = render(
+      <StrategyLabView journal={recordedJournal} signals={recordedSignals} backtests={recordedBacktests} />,
+    );
+    const block = container.querySelector('#backtests[data-block="backtests"]');
+    expect(block?.querySelectorAll("li[data-backtest]")).toHaveLength(3);
+    expect(unexplainedNumbers(container)).toEqual([]);
+    const { container: none } = render(<StrategyLabView journal={recordedJournal} signals={recordedSignals} />);
+    expect(none.querySelector('[data-block="backtests"]')).toBeNull();
   });
 });

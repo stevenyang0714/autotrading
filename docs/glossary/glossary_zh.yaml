@@ -56,7 +56,7 @@ terms:
   dashboard_options_vol: {name: 選擇權與波動率, hint: 選擇權分析與避險（Phase 5）。}
   dashboard_portfolio_risk: {name: 組合風險, hint: 紙上組合的曝險、各上限使用率、回撤與風險檢查紀錄，可試算一筆交易。}
   dashboard_alerts_center: {name: 警示中心, hint: "公司收斂等級與警示，加上市場層級警示（壓力、組合回撤、S3 輪動目標）；只在 App 內。"}
-  dashboard_strategy_lab: {name: 策略實驗室, hint: "模擬交易日誌、目前的訊號，以及 S3 ETF 輪動的目標與歷史；回測在 M2.5。"}
+  dashboard_strategy_lab: {name: 策略實驗室, hint: "模擬交易日誌、訊號、S3 ETF 輪動，以及 S1、S3、S4 的 walk-forward 回測（含成本，不顯示績效）。"}
   dashboard_execution: {name: 下單執行, hint: 下單預覽與模擬帳戶（Phase 5）。}
 
   # audit log and macro chart (M0.9)
@@ -325,6 +325,25 @@ terms:
   risk_veto: {name: 風控否決, hint: 任一條上限不過就否決，交易不會被記錄，但檢查本身會存下。}
   standard_position_check: {name: 標準部位檢查, hint: 每天替每家公司試算一筆標準紙上部位（資本 5%、最大損失 1%），通過才可達 TRADE-READY 與 L4。}
   risk_rule_set: {name: 風險規則版本, hint: 每個組合快照與風險檢查所用的規則版本；已發布的版本不會改。}
+  survivorship_bias: {name: 倖存者偏誤, hint: "只看今天還在的公司，歷史績效會看起來比實際好；所以回測不顯示績效。"}
+  look_ahead_bias: {name: 前視偏誤, hint: "回測用到當時還不知道的資訊；這裡用當時已知的資料並在下一個收盤成交來避免。"}
+  risk_overlay: {name: 風險規則參考, hint: "列出哪些回測目標會違反風險上限，只作參考，回測仍照策略進行。"}
+  next_close_fill: {name: 下一個收盤成交, hint: "目標在被知道之後的第一個收盤成交，絕不使用當天已經公開的收盤。"}
+  backtest_rule_set: {name: 回測規則版本, hint: "每次回測所用的方法版本：成交、成本、測試段與各策略規則版本。"}
+  momentum_rule_set: {name: 動能規則版本, hint: "S4 回測所用的規則版本；已發布的不會改。"}
+  medium_term_momentum: {name: 中期動能（S4）, hint: "10 家公司各看自己：12-1 動能與相對 SPY 的 12-1 動能都大於 0 就等權持有。"}
+  factor_overlap: {name: 因子重疊, hint: "S4 有多少公司同時被 S1 持有，以及各策略的產業曝險與平均 beta。"}
+  performance_withheld: {name: 績效不顯示, hint: "沒有含下市公司的資料（OD-7），報酬、比率、回撤與勝率都不計算也不顯示。"}
+  cost_drag: {name: 每年成本, hint: "交易成本換算成每年占組合的 bps；是成本，不是報酬。"}
+  holding_period: {name: 持有期間, hint: "從買進那天的收盤到賣出那天的收盤，經過幾個交易日。"}
+  turnover: {name: 換手率, hint: "買進加賣出占組合的百分比；從現金全部買進約 100%。"}
+  slippage: {name: 滑價, hint: "比參考收盤價更差的成交成本；個股 5 bps、ETF 2 bps。"}
+  half_spread: {name: 半價差, hint: "買賣價差的一半；沒有歷史報價，所以個股固定 2 bps、ETF 1 bp。"}
+  cost_model: {name: 成本模型, hint: "每筆交易每邊的成本：不收手續費，個股 7 bps、ETF 3 bps，另有雙倍情境。"}
+  out_of_sample: {name: 樣本外, hint: "規則發布之後的交易日，才是真正能檢驗規則的期間。"}
+  in_sample: {name: 樣本內, hint: "規則發布前的歷史：規則是看過這段才訂的，不能拿來驗證。"}
+  walk_forward: {name: 逐段測試, hint: "每個日曆年是一段；規則發布那年在發布日切成樣本內與樣本外。"}
+  backtest: {name: 回測, hint: "用當時已知的資料重播策略：在下一個收盤成交並扣成本；只顯示交易、成本與曝險，不顯示報酬。"}
   rotation_alert: {name: 輪動警示, hint: "S3 設定的新目標和上一次不同時發出的市場層級警示。"}
   opportunity_candidate: {name: 候選, hint: "規則在當時標出的標的：L3/L4 的公司（S1）或 S3 目標持有的 ETF；不打分、不排名、只做多。"}
   defensive_switch: {name: 轉防守, hint: "月中壓力升到 HIGH 或 CRISIS 時立刻改成防守型；壓力下降要等下個月才換回。"}
