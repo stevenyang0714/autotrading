@@ -711,6 +711,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/momentum": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Momentum */
+        get: operations["momentum_momentum_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/momentum/rules": {
         parameters: {
             query?: never;
@@ -1727,6 +1744,21 @@ export interface components {
             levels: components["schemas"]["LevelCheck"][];
             /** Ticker */
             ticker: string;
+        };
+        /** CompanyReading */
+        CompanyReading: {
+            /** Conditions */
+            conditions: components["schemas"]["TrendReading"][];
+            /** Detail */
+            detail: string;
+            /** Selected */
+            selected: boolean;
+            /** Snapshot Id */
+            snapshot_id: string | null;
+            /** Snapshot Known At */
+            snapshot_known_at: string | null;
+            /** Symbol */
+            symbol: string;
         };
         /** CompanyStates */
         CompanyStates: {
@@ -3259,6 +3291,112 @@ export interface components {
             /** Total */
             total: number;
         };
+        /**
+         * MomentumAssessment
+         * @description Everything a stored S4 assessment holds: recomputing it gives the same document.
+         */
+        MomentumAssessment: {
+            /** Cash Pct */
+            cash_pct: string | null;
+            /** Detail */
+            detail: string;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Previous Id */
+            previous_id: string | null;
+            /** Readings */
+            readings: components["schemas"]["CompanyReading"][];
+            /**
+             * Reason
+             * @enum {string}
+             */
+            reason: "month_start" | "carried" | "unavailable";
+            /** Rebalance */
+            rebalance: boolean;
+            /** Rule Version */
+            rule_version: string;
+            /** Set At */
+            set_at: string | null;
+            /** Target */
+            target: {
+                [key: string]: string;
+            } | null;
+        };
+        /** MomentumCandidate */
+        MomentumCandidate: {
+            /** Factor Definition Version */
+            factor_definition_version: string;
+            /**
+             * Momentum Id
+             * Format: uuid
+             */
+            momentum_id: string;
+            /** Momentum Rule Version */
+            momentum_rule_version: string;
+            reading: components["schemas"]["CompanyReading"];
+            /** Reason */
+            reason: string;
+            /**
+             * Set At
+             * Format: date-time
+             */
+            set_at: string;
+            /** Strategy */
+            strategy: string;
+            /** Strategy Id */
+            strategy_id: string;
+            /** Ticker */
+            ticker: string;
+            /** Weight Pct */
+            weight_pct: string;
+        };
+        /** MomentumOut */
+        MomentumOut: {
+            current: components["schemas"]["StoredMomentum"] | null;
+            /**
+             * Detail
+             * @default Research only (paper): each company's 12-1 momentum, alone and against SPY, against its own history; no ranking across companies. No order. Thresholds are defaults, unvalidated (OD-7).
+             */
+            detail: string;
+            /** History */
+            history: components["schemas"]["MomentumPoint"][];
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Rule Version */
+            rule_version: string;
+        };
+        /**
+         * MomentumPoint
+         * @description A target as it was set, at the first assessment of a month.
+         */
+        MomentumPoint: {
+            /** Backfilled */
+            backfilled: boolean;
+            /** Cash Pct */
+            cash_pct: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Reason */
+            reason: string;
+            /** Target */
+            target: {
+                [key: string]: string;
+            };
+        };
         /** NewAssumptions */
         NewAssumptions: {
             parameters: components["schemas"]["Assumptions-Input"];
@@ -3454,7 +3592,7 @@ export interface components {
             context: components["schemas"]["MarketContext"] | null;
             /**
              * Detail
-             * @default Long only (no short data, OD-5). What the rules flag as known at the date, not a buy list and not ranked: companies at L3 or L4 (S1) and the ETFs of the S3 rotation target. Thresholds are defaults, unvalidated (OD-7).
+             * @default Long only (no short data, OD-5). What the rules flag as known at the date, not a buy list and not ranked: companies at L3 or L4 (S1), the ETFs of the S3 rotation target and the companies of the S4 momentum target. Thresholds are defaults, unvalidated (OD-7).
              */
             detail: string;
             /** Etfs */
@@ -3464,6 +3602,8 @@ export interface components {
              * Format: date-time
              */
             known_at: string;
+            /** Momentum */
+            momentum: components["schemas"]["MomentumCandidate"][];
         };
         /**
          * Overlap
@@ -4952,6 +5092,27 @@ export interface components {
             high_conviction: components["schemas"]["HighConvictionRule"];
             trade_ready: components["schemas"]["TradeReadyRule"];
             watch: components["schemas"]["WatchRule"];
+        };
+        /** StoredMomentum */
+        StoredMomentum: {
+            /** Backfilled */
+            backfilled: boolean;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            momentum: components["schemas"]["MomentumAssessment"];
+            /**
+             * System Time
+             * Format: date-time
+             */
+            system_time: string;
         };
         /** StoredRegime */
         StoredRegime: {
@@ -6486,6 +6647,38 @@ export interface operations {
             };
         };
     };
+    momentum_momentum_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MomentumOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     momentum_rules_momentum_rules_get: {
         parameters: {
             query?: never;
@@ -6987,7 +7180,7 @@ export interface operations {
                 /** @description Point in time (ADR-012); default now */
                 known_at?: string | null;
                 ticker?: string | null;
-                strategy?: ("S1" | "S3")[] | null;
+                strategy?: ("S1" | "S3" | "S4")[] | null;
                 limit?: number;
             };
             header?: never;

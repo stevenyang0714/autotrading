@@ -319,7 +319,7 @@ def test_signals_list_the_target_in_force(
         october = rows(session)[-1]
     target = october.target or {}
     body = client.get("/signals", params={"known_at": iso(VALUED_AT), "strategy": "S3"}).json()
-    assert body["rule_versions"] == {"S1": "0.3.0", "S3": "0.2.0"}
+    assert body["rule_versions"] == {"S1": "0.3.0", "S3": "0.2.0", "S4": "0.1.0"}
     current = body["current"]
     assert len(current) == 2 * len(target)
     for signal in current:

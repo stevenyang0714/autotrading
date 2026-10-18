@@ -21,7 +21,12 @@ from autotrading.ingestion.rate_limit import TokenBucketLimiter
 from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.ingestion.schedule import refresh_window
-from autotrading.repositories.backtest import record_all, stored_backtest_rules
+from autotrading.repositories import momentum
+from autotrading.repositories.backtest import (
+    record_all,
+    stored_backtest_rules,
+    stored_momentum_rules,
+)
 from autotrading.repositories.factors import record_universe, stored_definitions
 from autotrading.repositories.regime import record_regime, stored_regime_rules
 from autotrading.repositories.risk import record_portfolio, stored_risk_rules
@@ -89,6 +94,11 @@ def main() -> None:
         assert rotation_rules is not None, "rotation rules not loaded: run `make migrate` first"
         held = session.execute(select(func.now())).scalar_one()
         rotations = record_points(session, rotation_rules, points, held, "replay")
+        # S4 momentum (M3.0) at the same points and system time, in order, as
+        # `make momentum-backfill`.
+        momentum_rules = stored_momentum_rules(session)
+        assert momentum_rules is not None, "momentum rules not loaded: run `make migrate` first"
+        momenta = momentum.record_points(session, momentum_rules, points, held, "replay")
         # The backtests (M2.5) now, at a later system time again, so they read everything above.
         backtest_rules = stored_backtest_rules(session)
         assert backtest_rules is not None, "backtest rules not loaded: run `make migrate` first"
@@ -96,7 +106,8 @@ def main() -> None:
         runs = len(record_all(session, backtest_rules, ran, ran, "replay"))
     print(
         f"stored {stored} buyback state assignments, {regimes} regime assessments, "
-        f"{snapshots} factor snapshots, {rotations} rotation assessments and {runs} backtest runs"
+        f"{snapshots} factor snapshots, {rotations} rotation assessments, {momenta} S4 "
+        f"assessments and {runs} backtest runs"
     )
 
 

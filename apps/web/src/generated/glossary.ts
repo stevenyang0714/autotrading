@@ -6469,10 +6469,10 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "Growth x Inflation",
     "category": "regime",
     "short_definition": "Goldilocks, reflation, stagflation or disinflationary slowdown, from the growth and inflation states.",
-    "full_definition": "Expanding growth with inflation near or below target is goldilocks; expanding with above-target or hot inflation is reflation; slowing or contracting with above-target inflation is stagflation; slowing or contracting with inflation near or below target is a disinflationary slowdown.",
-    "formula": "growth state x inflation state",
+    "full_definition": "Expanding growth with low inflation is goldilocks; expanding with high inflation is reflation; slowing or contracting with high inflation is stagflation; slowing or contracting with low inflation is a disinflationary slowdown. Inflation counts as high when it is hot, or above target and not falling (regime rules 0.2.0; under 0.1.0 above target counted as high even while falling).",
+    "formula": "growth state x (inflation hot, or above target and not falling)",
     "unit": "label",
-    "example": "As known on 2026-10-06: stagflation (growth slowing, inflation above target).",
+    "example": "As known on 2026-10-19: disinflationary slowdown (growth slowing; core PCE 3.01% but falling, 2.05% annualized over 3 months).",
     "direction": "N/A",
     "interpretation": "A shorthand for the macro mix, not a forecast.",
     "why_it_matters": "Asset classes behave differently in each mix.",
@@ -6480,14 +6480,14 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
     "as_of": "2026-10-13",
     "update_cadence": "with growth and inflation",
-    "caveats": "A label from two states; slowing growth with 3% inflation already reads stagflation.",
+    "caveats": "A label from two states. Under 0.1.0, slowing growth with falling 2.6% inflation read stagflation in most months since December 2023 (KI-7); 0.2.0 reads the direction.",
     "related_terms": [
       "regime_growth",
       "regime_inflation"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "成長×通膨象限",
-    "hint_zh": "金髮女孩／再通膨／停滯性通膨／通縮放緩；是標籤，不是預測。"
+    "hint_zh": "金髮女孩／再通膨／停滯性通膨／通縮放緩；0.2.0 起通膨高於目標但在下降不算高通膨。是標籤，不是預測。"
   },
   "regime_rule_set": {
     "term_id": "regime_rule_set",
@@ -7905,26 +7905,26 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "term_id": "stress_flag_nfci",
     "display_name": "Financial Conditions Flag",
     "category": "regime",
-    "short_definition": "On when the Chicago Fed NFCI is above 0 (tighter than average).",
-    "full_definition": "On when the Chicago Fed NFCI is above 0 (tighter than average). Without its inputs at the date the flag is unavailable and not counted.",
-    "formula": "NFCI > 0",
+    "short_definition": "On when the Chicago Fed NFCI is above -0.25 (tightening toward average).",
+    "full_definition": "On when the Chicago Fed NFCI is above -0.25 under regime rules 0.2.0 (0 under 0.1.0, which no month end since 2016 reached: KI-4). Zero is average conditions; the index is negative in loose markets. Without its inputs at the date the flag is unavailable and not counted.",
+    "formula": "NFCI > -0.25 (0.1.0: > 0)",
     "unit": "on / off / unavailable",
-    "example": "As known on 2026-10-06: off.",
+    "example": "On at the ends of March 2020, mid-2022 and March 2023; off on 2026-10-19 (-0.50).",
     "direction": "On = stress",
     "interpretation": "One of nine stress signals (02 §15).",
     "why_it_matters": "Several flags together are what matters, not any single one.",
-    "source": "Regime rules 0.1.0 (config/regime_rules.yaml); FRED vintages and Alpaca closes",
+    "source": "Regime rules 0.2.0 (config/regime_rules.yaml); FRED vintages",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
-    "as_of": "2026-10-13",
+    "as_of": "2026-10-19",
     "update_cadence": "daily or weekly",
     "caveats": "Thresholds are defaults, unvalidated (OD-7); a description of conditions, not a forecast.",
     "related_terms": [
       "macro_nfci",
       "stress_state"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "金融情勢旗標",
-    "hint_zh": "NFCI 高於 0（比平均更緊）。"
+    "hint_zh": "NFCI 高於 −0.25（0.2.0；0.1.0 為 0）：金融情勢正在收緊。"
   },
   "stress_flag_oil": {
     "term_id": "stress_flag_oil",
@@ -8104,18 +8104,18 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "Stress State",
     "category": "regime",
     "short_definition": "Normal, elevated, high or crisis: how many stress flags are on together (02 §15).",
-    "full_definition": "Normal with 0-1 flags; elevated with 2-3; high with 4 or more, credit distressed or VIX above 30; crisis when credit is distressed, VIX is above 40 and SPY is more than 20% below its 52-week high. Flags without inputs are not counted, and the detail says how many were judged. A change raises a market-wide alert.",
+    "full_definition": "Normal with 0-1 flags; elevated with 2-3; high with 4 or more, or credit distressed, or VIX above 30 with at least two flags on (VIX above 30 with fewer is elevated); crisis when two of three hold: credit distressed, VIX above 40, SPY more than 20% below its 52-week high. That is regime rules 0.2.0 (ADR-036); under 0.1.0 VIX above 30 alone was high and crisis needed all three. Flags without inputs are not counted, and the detail says how many were judged. A change raises a market-wide alert.",
     "formula": "count of the nine flags, with high and crisis overrides",
     "unit": "state",
-    "example": "As known on 2026-10-06: normal (0 of 9 flags).",
+    "example": "Under 0.2.0 the end of March 2020 is crisis (VIX 53.5, SPY 23.9% below its high); 2026-10-19 is normal.",
     "direction": "Higher = more stress",
     "interpretation": "Higher states call for less new risk and more hedging (02 §15).",
     "why_it_matters": "Detects fragility; it does not predict black swans.",
-    "source": "Regime rules 0.1.0 (config/regime_rules.yaml); FRED vintages and Alpaca closes",
+    "source": "Regime rules 0.2.0 (config/regime_rules.yaml); FRED vintages and Alpaca closes",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
-    "as_of": "2026-10-13",
+    "as_of": "2026-10-19",
     "update_cadence": "daily",
-    "caveats": "Thresholds are defaults, unvalidated (OD-7); a description of conditions, not a forecast.",
+    "caveats": "Thresholds are defaults reviewed against 2016-2026 only, unvalidated (OD-7); a description of conditions, not a forecast. Signals arrive with the stress, not before it.",
     "related_terms": [
       "stress_normal",
       "stress_elevated",
@@ -8123,9 +8123,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "stress_crisis",
       "regime"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "壓力狀態",
-    "hint_zh": "正常／升高／高／危機：同時亮起幾個壓力旗標。"
+    "hint_zh": "正常／升高／高／危機：同時亮起幾個壓力旗標；0.2.0 起危機只需三個條件中的兩個。偵測脆弱，不預測黑天鵝。"
   },
   "survivorship_bias": {
     "term_id": "survivorship_bias",

@@ -6,7 +6,8 @@ system time S; the stored runs.
   most `state_stale_after_days` old) under the pinned buyback rules; the S1 states hold.
 - S3: every rotation target set (month starts and defensive switches) under the pinned
   rotation rules.
-- S4: at each month end, the momentum rules on the factor snapshots known then.
+- S4: at each month end, the momentum rules on the factor snapshots known then (backtest rules
+  0.1.0); since 0.2.0 every target set by the stored daily S4 assessments (ADR-036 D7).
 
 Rows count when known at T and recorded by S, never by T: a backfilled row was computed later
 from inputs known at T. `record_run` stores one run per strategy, T and rule versions;
@@ -14,7 +15,7 @@ re-running is harmless. Performance is withheld (OD-7).
 """
 
 from collections.abc import Iterable, Sequence
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from functools import lru_cache
 from pathlib import Path
@@ -32,6 +33,7 @@ from autotrading.db.models import (
     BuybackStateAssignment,
     DividendEvent,
     FactorSnapshot,
+    MomentumAssessment,
     RotationAssessment,
     SplitEvent,
 )
@@ -301,6 +303,10 @@ def s4_events(
     momentum = stored_momentum_rules(session, spec.rule_version)
     if momentum is None:
         return []
+    if spec.targets_from == "momentum_assessments":
+        return _s4_assessed(
+            session, spec.since, spec.rule_version, momentum.universe, at, system_time
+        )
     snapshots = _snapshots(
         session, momentum.factor_definition_version, momentum.universe, at, system_time
     )
@@ -318,6 +324,51 @@ def s4_events(
                 reason="month_start",
                 source={"table": "factor_snapshots", "at": point.isoformat()},
                 betas={s: _beta(found.get(s)) for s in result.target},
+            )
+        )
+    return events
+
+
+def _s4_assessed(
+    session: Session,
+    since_day: date,
+    rule_version: str,
+    universe: Sequence[str],
+    at: datetime,
+    system_time: datetime,
+) -> list[Event]:
+    """Every S4 target set by the stored daily assessments known at T and recorded by S."""
+    since = datetime.combine(since_day, datetime.min.time(), tzinfo=NEW_YORK)
+    rows = session.scalars(
+        select(MomentumAssessment)
+        .where(
+            MomentumAssessment.rule_version == rule_version,
+            MomentumAssessment.rebalance,
+            MomentumAssessment.known_at >= since,
+            MomentumAssessment.known_at <= at,
+            MomentumAssessment.recorded_at <= system_time,
+        )
+        .order_by(MomentumAssessment.known_at)
+    ).all()
+    events: list[Event] = []
+    for row in rows:
+        target = row.target or {}
+        readings = {r["symbol"]: r for r in row.assessment.get("readings", [])}
+        symbols = [s for s in universe if s in target]
+        snapshot_ids = [readings[s]["snapshot_id"] for s in symbols if s in readings]
+        found = {
+            s.symbol: s
+            for s in session.scalars(
+                select(FactorSnapshot).where(FactorSnapshot.id.in_(snapshot_ids))
+            )
+        }
+        events.append(
+            Event(
+                at=row.known_at,
+                weights={s: Decimal(target[s]) for s in symbols},
+                reason=row.reason,
+                source={"table": "momentum_assessments", "id": str(row.id)},
+                betas={s: _beta(found.get(s)) for s in symbols},
             )
         )
     return events
@@ -345,7 +396,7 @@ def _limits(session: Session, rules: BacktestRuleSet) -> tuple[Limits | None, di
     return limits, {s: e.sector for s, e in risk.sectors.items()}
 
 
-NOTES = {
+NOTES_0_1_0 = {
     "S1": [
         "Buyback states exist at month ends since 2021 only.",
         "TRADE-READY read the standard risk check against the journal's book at T, which was "
@@ -361,6 +412,23 @@ NOTES = {
         "Only today's 10 companies: no delisted company (KI-1).",
     ],
 }
+# Each backtest rule version's notes are part of its stored runs, so they never change.
+NOTES = {
+    "0.1.0": NOTES_0_1_0,
+    "0.2.0": {
+        "S1": NOTES_0_1_0["S1"],
+        "S3": [
+            "Assessed at every session since 2017 under regime rules 0.2.0 (ADR-036): defensive "
+            "switches inside a month are in the history.",
+            "The 8 ETFs were chosen today (KI-16).",
+        ],
+        "S4": [
+            "12-1 momentum starts in 2017; the targets are the stored daily S4 assessments, set "
+            "at the first assessment of each month (ADR-036 D7).",
+            "Only today's 10 companies: no delisted company (KI-1).",
+        ],
+    },
+}
 
 
 def run_strategy(
@@ -375,7 +443,9 @@ def run_strategy(
     limits, sectors = _limits(session, rules)
     symbols = {rules.benchmark} | {s for e in events for s in e.weights}
     instruments = instruments_at(session, symbols, sectors, at, system_time)
-    return run(rules, strategy_id, at, events, instruments, limits, NOTES[strategy_id])
+    return run(
+        rules, strategy_id, at, events, instruments, limits, NOTES[rules.rule_version][strategy_id]
+    )
 
 
 def record_run(

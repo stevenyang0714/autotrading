@@ -32,7 +32,7 @@ from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.ingestion.schedule import market_calendar
 from autotrading.jobs.broker import WorkerHeartbeat, configure_broker
-from autotrading.repositories import backtest, factors, regime, risk, rotation
+from autotrading.repositories import backtest, factors, momentum, regime, risk, rotation
 from autotrading.settings import get_settings
 
 logger = logging.getLogger(__name__)
@@ -419,6 +419,62 @@ def start_rotation_backfill() -> int:
         now = _now(session)
         points = factors.session_points(session, REGIME_CALENDAR, ROTATION_BACKFILL_SINCE, now)
     backfill_rotation.send(now.isoformat())
+    return len(points)
+
+
+# ---------- S4 momentum (M3.0) ----------
+
+MOMENTUM_BACKFILL_SINCE = date(2017, 1, 1)  # ADR-033: 12-1 momentum needs a year of closes
+MOMENTUM_TIME_LIMIT_MS = 60 * 60 * 1000  # every session since 2017, in order
+
+
+@dramatiq.actor(queue_name=EVALUATION_QUEUE, max_retries=1, broker=broker)
+def evaluate_momentum(trigger: str) -> None:
+    """S4 now (T = S = now) and the signals of a newly set target (ADR-036 D7)."""
+    with sessions()() as session:
+        now = _now(session)
+        rules = backtest.stored_momentum_rules(session)
+        if rules is None:
+            logger.warning("Momentum rules not loaded (make migrate): nothing assessed")
+            return
+        row = momentum.record_momentum(session, rules, now, now, trigger)
+        session.commit()
+    logger.info(
+        "S4 momentum at %s (%s): %s",
+        now,
+        trigger,
+        f"{row.reason}, target {row.target}" if row is not None else "already stored",
+    )
+
+
+@dramatiq.actor(
+    queue_name=EVALUATION_QUEUE, max_retries=1, time_limit=MOMENTUM_TIME_LIMIT_MS, broker=broker
+)
+def backfill_momentum(system_time: str) -> None:
+    """S4 at every session close and month end since 2017, in order, as the database held it
+    at `system_time` (each carries the previous point of the run)."""
+    held = datetime.fromisoformat(system_time)
+    with sessions()() as session:
+        rules = backtest.stored_momentum_rules(session)
+        if rules is None:
+            logger.warning("Momentum rules not loaded (make migrate): nothing assessed")
+            return
+        points = factors.session_points(session, REGIME_CALENDAR, MOMENTUM_BACKFILL_SINCE, held)
+        stored = momentum.record_points(session, rules, points, held, "backfill")
+    logger.info("S4 momentum backfill: %d points, %d stored", len(points), stored)
+
+
+def start_momentum_evaluation(*, manual: bool) -> None:
+    evaluate_momentum.send("manual" if manual else "schedule")
+
+
+def start_momentum_backfill() -> int:
+    """One message for every session close and month end since 2017 (in order), with one
+    system time (now)."""
+    with sessions()() as session:
+        now = _now(session)
+        points = factors.session_points(session, REGIME_CALENDAR, MOMENTUM_BACKFILL_SINCE, now)
+    backfill_momentum.send(now.isoformat())
     return len(points)
 
 

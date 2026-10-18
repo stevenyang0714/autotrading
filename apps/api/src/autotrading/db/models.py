@@ -1686,6 +1686,48 @@ class MomentumRuleSet(Base):
     loaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
+MOMENTUM_REASONS = ("month_start", "carried", "unavailable")
+
+
+class MomentumAssessment(Base):
+    """Strategy S4 at a time T (known_at) as the database held it at system_time, under one
+    momentum rule version (M3.0, ADR-036 D7): every company's reading, the target in force and
+    why. One row per T and rule version; `previous_id` is the assessment whose target it carried.
+    Append-only, not audited (like the rotation assessments)."""
+
+    __tablename__ = "momentum_assessments"
+    __table_args__ = (
+        CheckConstraint(sql_in("reason", MOMENTUM_REASONS), name="reason"),
+        CheckConstraint(sql_in("trigger", ASSESSMENT_TRIGGERS), name="trigger"),
+        CheckConstraint("system_time >= known_at", name="system_time_after_known_at"),
+        CheckConstraint(
+            "(reason = 'unavailable') = (target IS NULL)", name="target_when_available"
+        ),
+        CheckConstraint("rebalance = (reason = 'month_start')", name="rebalance_at_month_start"),
+        UniqueConstraint("known_at", "rule_version", name="uq_momentum_assessments_known_at_rule"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    known_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    system_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    rule_version: Mapped[str] = mapped_column(Text, ForeignKey("momentum_rule_sets.rule_version"))
+    rebalance: Mapped[bool] = mapped_column(Boolean)
+    reason: Mapped[str] = mapped_column(Text)
+    target: Mapped[dict[str, str] | None] = mapped_column(JSONB)  # symbol -> weight (percent)
+    previous_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("momentum_assessments.id")
+    )
+    assessment: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    backfilled: Mapped[bool] = mapped_column(Boolean)
+    trigger: Mapped[str] = mapped_column(Text)
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
 class BacktestRuleSet(Base):
     """One released rule_version of config/backtest_rules.yaml (ADR-033): fills, costs, folds and
     the strategy rule versions a run replays. Append-only and audited."""
