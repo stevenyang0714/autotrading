@@ -1,13 +1,13 @@
 {
-  "recorded_at": "2026-10-11T10:03:02.139363+00:00",
+  "recorded_at": "2026-10-18T16:50:16.225333+00:00",
   "recorded_from": "recorded SEC filings, Alpaca closes, FRED yields and news replayed into the integration test database (tests/integration/test_journal.py)",
-  "endpoint": "/journal/025781e9-2bbf-4170-8c1f-44af653e8cbb/replay",
+  "endpoint": "/journal/f887f4fd-9408-4bdd-b7ee-baed75357cc2/replay",
   "params": {},
   "response": {
-    "card_id": "025781e9-2bbf-4170-8c1f-44af653e8cbb",
+    "card_id": "f887f4fd-9408-4bdd-b7ee-baed75357cc2",
     "version": 1,
     "known_at": "2026-09-15T12:00:00Z",
-    "system_time": "2026-10-11T10:03:00.127398Z",
+    "system_time": "2026-10-18T16:50:14.061150Z",
     "identical": true,
     "evidence": [
       {
@@ -18,7 +18,7 @@
         "stored": {
           "unit": "USD",
           "value": "416161000000",
-          "row_id": "4d9cdb99-09a7-4c1c-8af7-b7868bb624b6",
+          "row_id": "ad98d962-5a69-48f6-bbe8-14cc0ef1ea32",
           "version": 1,
           "metric_id": "revenue",
           "period_end": "2025-09-27",
@@ -28,7 +28,7 @@
           "fiscal_period": "FY-2025"
         },
         "again": {
-          "row_id": "4d9cdb99-09a7-4c1c-8af7-b7868bb624b6",
+          "row_id": "ad98d962-5a69-48f6-bbe8-14cc0ef1ea32",
           "metric_id": "revenue",
           "value": "416161000000",
           "unit": "USD",
@@ -48,7 +48,7 @@
         "stored": {
           "form": "10-Q",
           "items": null,
-          "row_id": "d0f86286-1f8f-426d-b406-7ef9396ff17a",
+          "row_id": "f6887f49-8b9e-48ae-b863-d7d5cbb9de74",
           "accepted_at": "2026-07-31T10:01:02Z",
           "filing_date": "2026-07-31",
           "report_date": "2026-06-27",
@@ -56,7 +56,7 @@
           "accession_number": "0000320193-26-000020"
         },
         "again": {
-          "row_id": "d0f86286-1f8f-426d-b406-7ef9396ff17a",
+          "row_id": "f6887f49-8b9e-48ae-b863-d7d5cbb9de74",
           "form": "10-Q",
           "accession_number": "0000320193-26-000020",
           "filing_date": "2026-07-31",
@@ -68,25 +68,25 @@
       },
       {
         "kind": "buyback_state",
-        "label": "Buyback state under rules 0.2.0",
+        "label": "Buyback state under rules 0.3.0",
         "status": "identical",
         "changed": [],
         "stored": {
           "score": null,
           "state": "active",
-          "row_id": "2a697ea8-9cbd-46ec-93b5-fb90aa87af55",
+          "row_id": "245c80d6-afa9-42a7-a9c6-ccd5c01ffb68",
           "known_at": "2026-09-15T12:00:00Z",
           "backfilled": true,
-          "system_time": "2026-10-11T10:02:59.540767Z",
-          "rule_version": "0.2.0"
+          "system_time": "2026-10-18T16:50:13.424072Z",
+          "rule_version": "0.3.0"
         },
         "again": {
-          "row_id": "2a697ea8-9cbd-46ec-93b5-fb90aa87af55",
-          "rule_version": "0.2.0",
+          "row_id": "245c80d6-afa9-42a7-a9c6-ccd5c01ffb68",
+          "rule_version": "0.3.0",
           "state": "active",
           "score": null,
           "known_at": "2026-09-15T12:00:00Z",
-          "system_time": "2026-10-11T10:02:59.540767Z",
+          "system_time": "2026-10-18T16:50:13.424072Z",
           "backfilled": true
         }
       },
@@ -98,14 +98,14 @@
         "stored": {
           "day": "2026-09-14",
           "close": "333.08",
-          "row_id": "f1ad71a4-c967-4db1-a155-3fe629edfefe",
+          "row_id": "261e7f50-d927-41d2-9d2d-8f000ad58c08",
           "volume": 39524847,
           "version": 1,
           "feed_status": "end_of_day",
           "published_at": "2026-09-15T03:59:59.999999Z"
         },
         "again": {
-          "row_id": "f1ad71a4-c967-4db1-a155-3fe629edfefe",
+          "row_id": "261e7f50-d927-41d2-9d2d-8f000ad58c08",
           "day": "2026-09-14",
           "close": "333.08",
           "volume": 39524847,
@@ -122,7 +122,7 @@
         "stored": {
           "unit": "USD",
           "value": "12715000000",
-          "row_id": "4259267e-eae3-452b-a971-59af1b51b546",
+          "row_id": "5030f679-2629-4d84-8777-beda13abf282",
           "version": 1,
           "metric_id": "capex",
           "period_end": "2025-09-27",
@@ -132,7 +132,7 @@
           "fiscal_period": "FY-2025"
         },
         "again": {
-          "row_id": "4259267e-eae3-452b-a971-59af1b51b546",
+          "row_id": "5030f679-2629-4d84-8777-beda13abf282",
           "metric_id": "capex",
           "value": "12715000000",
           "unit": "USD",
@@ -182,7 +182,7 @@
             "day": "2026-09-14",
             "close": "333.08",
             "stale": false,
-            "row_id": "f1ad71a4-c967-4db1-a155-3fe629edfefe",
+            "row_id": "261e7f50-d927-41d2-9d2d-8f000ad58c08",
             "symbol": "AAPL",
             "feed_status": "end_of_day",
             "published_at": "2026-09-15T03:59:59.999999Z"
@@ -191,7 +191,7 @@
             "day": "2026-09-14",
             "close": "760.88",
             "stale": false,
-            "row_id": "14244405-882d-4973-9d84-5a5e7b894e48",
+            "row_id": "90081449-7a9c-424e-ab2c-52eae4d0760c",
             "symbol": "SPY",
             "feed_status": "end_of_day",
             "published_at": "2026-09-15T03:59:59.999999Z"
@@ -205,7 +205,7 @@
             "published_at": "2026-09-15T03:59:59.999999Z",
             "feed_status": "end_of_day",
             "stale": false,
-            "row_id": "f1ad71a4-c967-4db1-a155-3fe629edfefe"
+            "row_id": "261e7f50-d927-41d2-9d2d-8f000ad58c08"
           },
           "benchmark": {
             "symbol": "SPY",
@@ -214,7 +214,7 @@
             "published_at": "2026-09-15T03:59:59.999999Z",
             "feed_status": "end_of_day",
             "stale": false,
-            "row_id": "14244405-882d-4973-9d84-5a5e7b894e48"
+            "row_id": "90081449-7a9c-424e-ab2c-52eae4d0760c"
           }
         }
       },
@@ -228,7 +228,7 @@
             "day": "2026-10-05",
             "close": "332.89",
             "stale": false,
-            "row_id": "4c247235-da6d-4045-8e07-58605eb59a5c",
+            "row_id": "227e7861-fbe7-4761-a1c4-c791b89747d4",
             "symbol": "AAPL",
             "feed_status": "end_of_day",
             "published_at": "2026-10-06T03:59:59.999999Z"
@@ -237,7 +237,7 @@
             "day": "2026-10-05",
             "close": "774.83",
             "stale": false,
-            "row_id": "f70c617f-5072-4b5d-822a-3168bd042e3e",
+            "row_id": "a040113b-f2ee-4c7a-93bc-df8063fbd565",
             "symbol": "SPY",
             "feed_status": "end_of_day",
             "published_at": "2026-10-06T03:59:59.999999Z"
@@ -251,7 +251,7 @@
             "published_at": "2026-10-06T03:59:59.999999Z",
             "feed_status": "end_of_day",
             "stale": false,
-            "row_id": "4c247235-da6d-4045-8e07-58605eb59a5c"
+            "row_id": "227e7861-fbe7-4761-a1c4-c791b89747d4"
           },
           "benchmark": {
             "symbol": "SPY",
@@ -260,7 +260,7 @@
             "published_at": "2026-10-06T03:59:59.999999Z",
             "feed_status": "end_of_day",
             "stale": false,
-            "row_id": "f70c617f-5072-4b5d-822a-3168bd042e3e"
+            "row_id": "a040113b-f2ee-4c7a-93bc-df8063fbd565"
           }
         }
       }

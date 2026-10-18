@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-16T04:26:24.537507+00:00",
+  "recorded_at": "2026-10-18T16:53:26.082218+00:00",
   "recorded_from": "recorded FRED vintages and Alpaca closes replayed into the integration test database (tests/integration/test_rotation.py)",
   "endpoint": "/rotation",
   "params": {
@@ -7,19 +7,19 @@
   },
   "response": {
     "known_at": "2026-10-06T12:00:00Z",
-    "rule_version": "0.1.0",
+    "rule_version": "0.2.0",
     "current": {
-      "id": "58ff1e6d-bf7f-4620-a8a5-cff4436afd54",
+      "id": "0183c448-9215-48d6-ba81-25b8afe96058",
       "known_at": "2026-10-06T12:00:00Z",
-      "system_time": "2026-10-16T04:26:24.105068Z",
+      "system_time": "2026-10-18T16:53:25.635348Z",
       "backfilled": true,
       "rotation": {
-        "rule_version": "0.1.0",
+        "rule_version": "0.2.0",
         "known_at": "2026-10-06T12:00:00Z",
-        "regime_id": "48f9e8a3-be93-4063-bb93-7c71a01f02eb",
+        "regime_id": "748c5ef4-05a8-4125-a87b-f0e83fb0c8e7",
         "regime_known_at": "2026-10-06T12:00:00Z",
         "stress": "normal",
-        "quadrant": "stagflation",
+        "quadrant": "disinflationary_slowdown",
         "stress_detail": "0 of 9 available flags on",
         "gate": {
           "sleeves": [
@@ -32,7 +32,7 @@
           {
             "symbol": "SPY",
             "sleeve": "risk",
-            "snapshot_id": "ec4879fd-1fb7-4ebc-a813-718ecc125224",
+            "snapshot_id": "dc1564c9-1976-4351-913f-b8e59533bd9d",
             "snapshot_known_at": "2026-10-06T12:00:00Z",
             "last_close": "2026-10-05",
             "feed_status": "end_of_day",
@@ -62,7 +62,7 @@
           {
             "symbol": "QQQ",
             "sleeve": "risk",
-            "snapshot_id": "6f5f8720-a159-4d86-965a-c0d1a898bf53",
+            "snapshot_id": "b00887d0-4cf1-4fd6-a698-88de8747be9b",
             "snapshot_known_at": "2026-10-06T12:00:00Z",
             "last_close": "2026-10-05",
             "feed_status": "end_of_day",
@@ -92,7 +92,7 @@
           {
             "symbol": "IWM",
             "sleeve": "risk",
-            "snapshot_id": "530938b9-e49b-4566-8490-e5b2db8c5ddc",
+            "snapshot_id": "100a34ef-3b93-42cd-9694-2c8d3bf34487",
             "snapshot_known_at": "2026-10-06T12:00:00Z",
             "last_close": "2026-10-05",
             "feed_status": "end_of_day",
@@ -122,7 +122,7 @@
           {
             "symbol": "XLK",
             "sleeve": "risk",
-            "snapshot_id": "7887c4a1-652a-4ddd-9d41-049fa281c233",
+            "snapshot_id": "353ce381-182a-4b63-bdad-9d4a176dcaf3",
             "snapshot_known_at": "2026-10-06T12:00:00Z",
             "last_close": "2026-10-05",
             "feed_status": "end_of_day",
@@ -152,7 +152,7 @@
           {
             "symbol": "XLE",
             "sleeve": "risk",
-            "snapshot_id": "74f45990-bd12-48ec-a8f8-0dd01bd8d784",
+            "snapshot_id": "556bcde1-75d1-421a-acd6-eb56185e97f9",
             "snapshot_known_at": "2026-10-06T12:00:00Z",
             "last_close": "2026-10-05",
             "feed_status": "end_of_day",
@@ -182,7 +182,7 @@
           {
             "symbol": "TLT",
             "sleeve": "defensive",
-            "snapshot_id": "0688a3b5-81c4-4d2b-9ebd-87f73d77d312",
+            "snapshot_id": "d55a4076-65c5-417b-9730-6d86dce8013a",
             "snapshot_known_at": "2026-10-06T12:00:00Z",
             "last_close": "2026-10-05",
             "feed_status": "end_of_day",
@@ -212,7 +212,7 @@
           {
             "symbol": "IEF",
             "sleeve": "defensive",
-            "snapshot_id": "7b05469f-a0e2-40a3-806e-a69b687d9641",
+            "snapshot_id": "56d9a76e-3b86-40fb-878b-d4d4a3174e66",
             "snapshot_known_at": "2026-10-06T12:00:00Z",
             "last_close": "2026-10-05",
             "feed_status": "end_of_day",
@@ -242,7 +242,7 @@
           {
             "symbol": "GLD",
             "sleeve": "defensive",
-            "snapshot_id": "29d79c0a-7e9d-43b5-b85a-cfe968868cdc",
+            "snapshot_id": "9a00c2a3-cfbd-45f3-b0d3-f257de0707e2",
             "snapshot_known_at": "2026-10-06T12:00:00Z",
             "last_close": "2026-10-05",
             "feed_status": "end_of_day",
@@ -273,7 +273,7 @@
         "rebalance": true,
         "reason": "month_start",
         "detail": "first assessment of the month: SPY",
-        "previous_id": "7f630923-2b9d-4101-932a-7686f54d0036",
+        "previous_id": "e55d7dfe-7b49-47dc-b69c-7ce6af8d0a08",
         "set_at": "2026-10-06T12:00:00Z",
         "target": [
           {
@@ -287,7 +287,7 @@
     },
     "history": [
       {
-        "id": "8ca97116-9e74-4ca8-99cf-a380c46db600",
+        "id": "39e48168-4966-49b0-81fc-eed8080139d3",
         "known_at": "2026-08-01T03:59:59.999999Z",
         "reason": "month_start",
         "stress": "normal",
@@ -298,7 +298,7 @@
         "backfilled": true
       },
       {
-        "id": "0c2b083b-49b5-467f-bf3f-8c9b4f2bef48",
+        "id": "ba071325-6f9c-425b-bc0c-41e77f2ec96b",
         "known_at": "2026-09-01T03:59:59.999999Z",
         "reason": "month_start",
         "stress": "normal",
@@ -309,7 +309,7 @@
         "backfilled": true
       },
       {
-        "id": "b197dc9b-9213-4d9f-b82d-57da62dde69e",
+        "id": "1b6e8fea-397c-44f0-9193-62f56c370bce",
         "known_at": "2026-09-16T03:59:59.999999Z",
         "reason": "month_start",
         "stress": "normal",
@@ -320,7 +320,7 @@
         "backfilled": true
       },
       {
-        "id": "58ff1e6d-bf7f-4620-a8a5-cff4436afd54",
+        "id": "0183c448-9215-48d6-ba81-25b8afe96058",
         "known_at": "2026-10-06T12:00:00Z",
         "reason": "month_start",
         "stress": "normal",

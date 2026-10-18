@@ -37,7 +37,7 @@ describe("StrategyLabView with recorded API responses", () => {
       .getByText("AAPL")
       .closest("li");
     expect(signal?.textContent).toContain("ACTIVE · long");
-    expect(signal?.textContent).toContain("rules 0.2.0");
+    expect(signal?.textContent).toContain("rules 0.3.0");
     expect(signal?.textContent).toContain("paper only");
     expect(signal?.querySelector('a[href^="/journal/new?ticker=AAPL&signal="]')).not.toBeNull();
   });

@@ -1,26 +1,26 @@
 {
-  "recorded_at": "2026-10-15T08:08:41.815100+00:00",
+  "recorded_at": "2026-10-18T16:50:16.296942+00:00",
   "recorded_from": "recorded SEC filings, Alpaca closes, FRED yields and news replayed into the integration test database (tests/integration/test_journal.py)",
   "endpoint": "/risk/checks",
   "params": {
     "limit": 10
   },
   "response": {
-    "known_at": "2026-10-15T08:08:41.811627Z",
+    "known_at": "2026-10-18T16:50:16.292791Z",
     "checks": [
       {
-        "id": "36d06027-c16a-40f9-affd-4b7f318cb9ad",
-        "known_at": "2026-10-15T08:08:40.319649Z",
-        "system_time": "2026-10-15T08:08:40.319649Z",
+        "id": "48a264d6-4b83-4c4f-8cc1-756ce3e5747c",
+        "known_at": "2026-10-18T16:50:14.657429Z",
+        "system_time": "2026-10-18T16:50:14.657429Z",
         "rule_version": "0.1.0",
         "trigger": "on_demand",
         "ticker": "AAPL",
         "verdict": "veto",
         "backfilled": false,
-        "portfolio_snapshot_id": "19d53227-1a81-45f6-b9e9-5961c0c76ba5",
+        "portfolio_snapshot_id": "fe8ae918-c782-4fba-b980-57ce279d944c",
         "check": {
           "rule_version": "0.1.0",
-          "known_at": "2026-10-15T08:08:40.319649Z",
+          "known_at": "2026-10-18T16:50:14.657429Z",
           "proposal": {
             "ticker": "AAPL",
             "side": "buy",
@@ -36,9 +36,9 @@
               "limit_id": "price",
               "label": "Usable price",
               "status": "veto",
-              "value": "10",
+              "value": "13",
               "threshold": "an end-of-day close at most 5 days old",
-              "detail": "close 2026-10-05 (end_of_day), 10 days before the date"
+              "detail": "close 2026-10-05 (end_of_day), 13 days before the date"
             },
             {
               "limit_id": "max_loss_stated",
@@ -92,15 +92,15 @@
         }
       },
       {
-        "id": "78135b92-5c7e-4c91-a094-0ff177dc58fb",
+        "id": "727f8f3e-9219-4016-82d8-3eec0a7aa100",
         "known_at": "2026-10-06T12:00:00Z",
-        "system_time": "2026-10-15T08:08:41.344848Z",
+        "system_time": "2026-10-18T16:50:15.679033Z",
         "rule_version": "0.1.0",
         "trigger": "standard",
         "ticker": "AAPL",
         "verdict": "pass",
         "backfilled": true,
-        "portfolio_snapshot_id": "a838a704-0a52-4748-b005-0bc4b42a9469",
+        "portfolio_snapshot_id": "a860bf72-8d57-45f6-8ff9-401998e659c3",
         "check": {
           "rule_version": "0.1.0",
           "known_at": "2026-10-06T12:00:00Z",
@@ -175,15 +175,15 @@
         }
       },
       {
-        "id": "bdd38e05-b8e5-4ba4-b6d0-ab8d0bc02b39",
+        "id": "408cb90d-4b04-4692-a6ec-0dd80950993d",
         "known_at": "2026-09-15T12:00:00Z",
-        "system_time": "2026-10-15T08:08:40.208941Z",
+        "system_time": "2026-10-18T16:50:14.483173Z",
         "rule_version": "0.1.0",
         "trigger": "trade",
         "ticker": "AAPL",
         "verdict": "veto",
         "backfilled": true,
-        "portfolio_snapshot_id": "18b1d4b7-2fd3-4e11-82dd-5d2aba8defd3",
+        "portfolio_snapshot_id": "c3fd550f-e83b-4c4b-a614-ae4b2591154b",
         "check": {
           "rule_version": "0.1.0",
           "known_at": "2026-09-15T12:00:00Z",
@@ -258,15 +258,15 @@
         }
       },
       {
-        "id": "0d09a578-cff4-478d-96c6-151b1a4d6f87",
+        "id": "e87ab1a4-ac51-46a7-98a2-0c6f9883facc",
         "known_at": "2026-09-15T12:00:00Z",
-        "system_time": "2026-10-15T08:08:39.816723Z",
+        "system_time": "2026-10-18T16:50:14.061150Z",
         "rule_version": "0.1.0",
         "trigger": "trade",
         "ticker": "AAPL",
         "verdict": "pass",
         "backfilled": true,
-        "portfolio_snapshot_id": "47cb75e3-0e81-43e1-b566-2301858d0f84",
+        "portfolio_snapshot_id": "18589d52-51e1-4974-b6ce-d4c77f6767a8",
         "check": {
           "rule_version": "0.1.0",
           "known_at": "2026-09-15T12:00:00Z",
@@ -341,15 +341,15 @@
         }
       },
       {
-        "id": "838f03fb-78bc-4398-bc9d-9e74b3924a18",
+        "id": "e4234efb-a3aa-44cc-a372-a4aca6187c06",
         "known_at": "2026-09-15T12:00:00Z",
-        "system_time": "2026-10-15T08:08:39.255452Z",
+        "system_time": "2026-10-18T16:50:13.424072Z",
         "rule_version": "0.1.0",
         "trigger": "standard",
         "ticker": "AAPL",
         "verdict": "pass",
         "backfilled": true,
-        "portfolio_snapshot_id": "2aacf410-d9ee-40c8-83b2-33859cc9791b",
+        "portfolio_snapshot_id": "bb0d33b3-0117-4d55-86fd-dc918f7daed2",
         "check": {
           "rule_version": "0.1.0",
           "known_at": "2026-09-15T12:00:00Z",

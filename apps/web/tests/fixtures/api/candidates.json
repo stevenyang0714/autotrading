@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-16T04:26:24.550525+00:00",
+  "recorded_at": "2026-10-18T16:53:26.095156+00:00",
   "recorded_from": "recorded FRED vintages and Alpaca closes replayed into the integration test database (tests/integration/test_rotation.py)",
   "endpoint": "/candidates",
   "params": {
@@ -8,11 +8,11 @@
   "response": {
     "known_at": "2026-10-06T12:00:00Z",
     "context": {
-      "regime_id": "48f9e8a3-be93-4063-bb93-7c71a01f02eb",
+      "regime_id": "748c5ef4-05a8-4125-a87b-f0e83fb0c8e7",
       "known_at": "2026-10-06T12:00:00Z",
-      "rule_version": "0.1.0",
+      "rule_version": "0.2.0",
       "stress": "normal",
-      "quadrant": "stagflation"
+      "quadrant": "disinflationary_slowdown"
     },
     "companies": [],
     "etfs": [
@@ -21,9 +21,9 @@
         "strategy_id": "S3",
         "strategy": "Macro Regime / ETF Rotation",
         "weight_pct": "100.00",
-        "rotation_id": "58ff1e6d-bf7f-4620-a8a5-cff4436afd54",
-        "rotation_rule_version": "0.1.0",
-        "regime_rule_version": "0.1.0",
+        "rotation_id": "0183c448-9215-48d6-ba81-25b8afe96058",
+        "rotation_rule_version": "0.2.0",
+        "regime_rule_version": "0.2.0",
         "factor_definition_version": "0.1.0",
         "set_at": "2026-10-06T12:00:00Z",
         "reason": "month_start",
@@ -31,7 +31,7 @@
         "reading": {
           "symbol": "SPY",
           "sleeve": "risk",
-          "snapshot_id": "ec4879fd-1fb7-4ebc-a813-718ecc125224",
+          "snapshot_id": "dc1564c9-1976-4351-913f-b8e59533bd9d",
           "snapshot_known_at": "2026-10-06T12:00:00Z",
           "last_close": "2026-10-05",
           "feed_status": "end_of_day",
@@ -60,6 +60,7 @@
         }
       }
     ],
-    "detail": "Long only (no short data, OD-5). What the rules flag as known at the date, not a buy list and not ranked: companies at L3 or L4 (S1) and the ETFs of the S3 rotation target. Thresholds are defaults, unvalidated (OD-7)."
+    "momentum": [],
+    "detail": "Long only (no short data, OD-5). What the rules flag as known at the date, not a buy list and not ranked: companies at L3 or L4 (S1), the ETFs of the S3 rotation target and the companies of the S4 momentum target. Thresholds are defaults, unvalidated (OD-7)."
   }
 }

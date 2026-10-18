@@ -2,8 +2,9 @@ import Link from "next/link";
 
 import { Metric } from "@/components/Metric";
 import { StressContext } from "@/components/rotation/RotationView";
-import type { CompanyCandidate, EtfCandidate, OpportunityCandidates } from "@/lib/api";
+import type { CompanyCandidate, EtfCandidate, MomentumCandidate, OpportunityCandidates } from "@/lib/api";
 import { levelClass, levelTerm } from "@/lib/alerts";
+import { MOMENTUM_REASONS } from "@/lib/momentum";
 import { REASONS, beta, trendText, weight } from "@/lib/rotation";
 import { formatSgtEt } from "@/lib/time";
 
@@ -122,10 +123,59 @@ function Etf({ candidate, knownOn }: { candidate: EtfCandidate; knownOn?: string
   );
 }
 
+function Momentum({ candidate, knownOn }: { candidate: MomentumCandidate; knownOn?: string }) {
+  const reading = candidate.reading;
+  const reason = MOMENTUM_REASONS[candidate.reason] ?? MOMENTUM_REASONS.carried;
+  return (
+    <li
+      data-candidate={candidate.ticker}
+      data-strategy={candidate.strategy_id}
+      className="space-y-1 rounded border border-neutral-800 px-3 py-2 text-sm"
+    >
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <Link
+          href={`/instruments/${candidate.ticker}${suffix(knownOn)}#factors`}
+          data-identifier=""
+          className="font-medium underline-offset-2 hover:underline"
+        >
+          {candidate.ticker}
+        </Link>
+        <Metric termId="momentum_target" icon={false} className="text-xs">
+          {weight(candidate.weight_pct)}
+        </Metric>
+      </div>
+      <p className="text-xs text-neutral-400">
+        <Metric termId="medium_term_momentum" icon={false}>
+          {candidate.strategy_id} {candidate.strategy}
+        </Metric>
+      </p>
+      <p className="text-xs text-neutral-400">
+        <Metric termId="momentum_12_1" icon={false}>
+          {reading.conditions.length > 0 ? reading.conditions.map(trendText).join(" · ") : "no reading"}
+        </Metric>
+      </p>
+      <p className="text-xs text-neutral-500">
+        <Metric termId={reason.termId} icon={false}>
+          {reason.label}, set {formatSgtEt(candidate.set_at)}
+        </Metric>{" "}
+        ·{" "}
+        <Metric termId="momentum_rule_set" icon={false}>
+          momentum rules {candidate.momentum_rule_version}
+        </Metric>
+        {" · "}
+        <Metric termId="factor_definition_set" icon={false}>
+          factor definitions {candidate.factor_definition_version}
+        </Metric>
+      </p>
+    </li>
+  );
+}
+
 /**
  * Opportunity Radar candidates (M2.4, ADR-032 Q3): what the rules flag as known on the chosen
- * date, companies at L3 or L4 (S1) and the ETFs of the S3 rotation target, with the market's
- * stress state as context. Long only; no score and no ranking across instruments.
+ * date, companies at L3 or L4 (S1), the ETFs of the S3 rotation target and, since M3.0, the
+ * companies of the S4 momentum target, with the market's stress state as context. Long only;
+ * no score and no ranking across instruments.
  */
 export function CandidatesView({ data, knownOn }: { data: OpportunityCandidates | null; knownOn?: string }) {
   if (data === null) {
@@ -196,6 +246,31 @@ export function CandidatesView({ data, knownOn }: { data: OpportunityCandidates 
           <Link href={`/dashboards/strategy-lab${suffix(knownOn)}#rotation`} className="underline-offset-2 hover:underline">
             <Metric termId="etf_rotation" icon={false}>
               Every ETF&apos;s trend and gate, and the targets since 2017
+            </Metric>
+          </Link>
+        </p>
+      </div>
+      <div className="space-y-2" data-candidates="S4">
+        <h3 className="text-sm font-medium text-neutral-300">
+          <Metric termId="medium_term_momentum">Companies of the momentum target (S4)</Metric>
+        </h3>
+        {(data.momentum ?? []).length > 0 ? (
+          <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4" aria-label="Momentum candidates">
+            {(data.momentum ?? []).map((m) => (
+              <Momentum key={m.ticker} candidate={m} knownOn={knownOn} />
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-neutral-400">
+            <Metric termId="momentum_target" icon={false}>
+              S4 holds no company at this date (cash only, or not assessed).
+            </Metric>
+          </p>
+        )}
+        <p className="text-xs text-neutral-500">
+          <Link href={`/dashboards/strategy-lab${suffix(knownOn)}#momentum`} className="underline-offset-2 hover:underline">
+            <Metric termId="medium_term_momentum" icon={false}>
+              Every company&apos;s momentum, and the targets since 2017
             </Metric>
           </Link>
         </p>

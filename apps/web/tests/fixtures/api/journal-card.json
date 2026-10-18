@@ -1,25 +1,25 @@
 {
-  "recorded_at": "2026-10-11T10:03:02.072251+00:00",
+  "recorded_at": "2026-10-18T16:50:16.157471+00:00",
   "recorded_from": "recorded SEC filings, Alpaca closes, FRED yields and news replayed into the integration test database (tests/integration/test_journal.py)",
-  "endpoint": "/journal/025781e9-2bbf-4170-8c1f-44af653e8cbb",
+  "endpoint": "/journal/f887f4fd-9408-4bdd-b7ee-baed75357cc2",
   "params": {
     "known_at": "2026-10-06T12:00:00Z"
   },
   "response": {
     "known_at": "2026-10-06T12:00:00Z",
     "card": {
-      "id": "2512d7e1-2bc8-421b-b7dc-e7ddbf14be46",
-      "card_id": "025781e9-2bbf-4170-8c1f-44af653e8cbb",
+      "id": "5e6145ec-6b64-42c4-9677-7625527f1e41",
+      "card_id": "f887f4fd-9408-4bdd-b7ee-baed75357cc2",
       "version": 1,
       "ticker": "AAPL",
       "known_at": "2026-09-15T12:00:00Z",
-      "system_time": "2026-10-11T10:03:00.127398Z",
+      "system_time": "2026-10-18T16:50:14.061150Z",
       "thesis": "Buy the buyback compounder.",
       "evidence": [
         {
           "kind": "financial_fact",
           "ref": {
-            "id": "4d9cdb99-09a7-4c1c-8af7-b7868bb624b6"
+            "id": "ad98d962-5a69-48f6-bbe8-14cc0ef1ea32"
           },
           "label": "revenue 2024-09-29 to 2025-09-27",
           "summary": "416161000000 USD",
@@ -29,7 +29,7 @@
           "snapshot": {
             "unit": "USD",
             "value": "416161000000",
-            "row_id": "4d9cdb99-09a7-4c1c-8af7-b7868bb624b6",
+            "row_id": "ad98d962-5a69-48f6-bbe8-14cc0ef1ea32",
             "version": 1,
             "metric_id": "revenue",
             "period_end": "2025-09-27",
@@ -42,7 +42,7 @@
         {
           "kind": "filing",
           "ref": {
-            "id": "d0f86286-1f8f-426d-b406-7ef9396ff17a"
+            "id": "f6887f49-8b9e-48ae-b863-d7d5cbb9de74"
           },
           "label": "10-Q 0000320193-26-000020",
           "summary": "filed 2026-07-31, period 2026-06-27",
@@ -52,7 +52,7 @@
           "snapshot": {
             "form": "10-Q",
             "items": null,
-            "row_id": "d0f86286-1f8f-426d-b406-7ef9396ff17a",
+            "row_id": "f6887f49-8b9e-48ae-b863-d7d5cbb9de74",
             "accepted_at": "2026-07-31T10:01:02Z",
             "filing_date": "2026-07-31",
             "report_date": "2026-06-27",
@@ -63,9 +63,9 @@
         {
           "kind": "buyback_state",
           "ref": {
-            "id": "2a697ea8-9cbd-46ec-93b5-fb90aa87af55"
+            "id": "245c80d6-afa9-42a7-a9c6-ccd5c01ffb68"
           },
-          "label": "Buyback state under rules 0.2.0",
+          "label": "Buyback state under rules 0.3.0",
           "summary": "ACTIVE",
           "note": "the rule's own reading",
           "published_at": "2026-09-15T12:00:00Z",
@@ -73,11 +73,11 @@
           "snapshot": {
             "score": null,
             "state": "active",
-            "row_id": "2a697ea8-9cbd-46ec-93b5-fb90aa87af55",
+            "row_id": "245c80d6-afa9-42a7-a9c6-ccd5c01ffb68",
             "known_at": "2026-09-15T12:00:00Z",
             "backfilled": true,
-            "system_time": "2026-10-11T10:02:59.540767Z",
-            "rule_version": "0.2.0"
+            "system_time": "2026-10-18T16:50:13.424072Z",
+            "rule_version": "0.3.0"
           }
         },
         {
@@ -93,7 +93,7 @@
           "snapshot": {
             "day": "2026-09-14",
             "close": "333.08",
-            "row_id": "f1ad71a4-c967-4db1-a155-3fe629edfefe",
+            "row_id": "261e7f50-d927-41d2-9d2d-8f000ad58c08",
             "volume": 39524847,
             "version": 1,
             "feed_status": "end_of_day",
@@ -103,7 +103,7 @@
         {
           "kind": "financial_fact",
           "ref": {
-            "id": "4259267e-eae3-452b-a971-59af1b51b546"
+            "id": "5030f679-2629-4d84-8777-beda13abf282"
           },
           "label": "capex 2024-09-29 to 2025-09-27",
           "summary": "12715000000 USD",
@@ -113,7 +113,7 @@
           "snapshot": {
             "unit": "USD",
             "value": "12715000000",
-            "row_id": "4259267e-eae3-452b-a971-59af1b51b546",
+            "row_id": "5030f679-2629-4d84-8777-beda13abf282",
             "version": 1,
             "metric_id": "capex",
             "period_end": "2025-09-27",
@@ -142,23 +142,23 @@
         "implied_upside": "-61.01"
       },
       "signal_ids": [
-        "47168d4a-1ccc-4aaf-bae3-a513e58ebc13"
+        "15e099c9-3abd-44c5-840f-fe6bd1f14c86"
       ],
       "notes": "Valuation is not cheap.",
       "author": "web",
-      "created_at": "2026-10-11T10:03:00.127398Z"
+      "created_at": "2026-10-18T16:50:14.061150Z"
     },
     "versions": [
       {
-        "id": "2512d7e1-2bc8-421b-b7dc-e7ddbf14be46",
+        "id": "5e6145ec-6b64-42c4-9677-7625527f1e41",
         "version": 1,
         "known_at": "2026-09-15T12:00:00Z"
       }
     ],
     "decisions": [
       {
-        "id": "272f3f3f-21c1-4338-ba93-fa8934c11081",
-        "thesis_card_id": "2512d7e1-2bc8-421b-b7dc-e7ddbf14be46",
+        "id": "9d762abd-269d-4fb4-8218-518cdba75b67",
+        "thesis_card_id": "5e6145ec-6b64-42c4-9677-7625527f1e41",
         "card_version": 1,
         "decision": "trade",
         "side": "buy",
@@ -169,7 +169,7 @@
         "no_trade_reason": null,
         "note": null,
         "exits_decision_id": null,
-        "exited_by": "8cd22ad4-2277-4e2b-a03c-41f867475460",
+        "exited_by": "6eec80af-0dc4-4ece-966b-4b92a521c0b0",
         "closes": {
           "stock": {
             "symbol": "AAPL",
@@ -178,7 +178,7 @@
             "published_at": "2026-09-15T03:59:59.999999Z",
             "feed_status": "end_of_day",
             "stale": false,
-            "row_id": "f1ad71a4-c967-4db1-a155-3fe629edfefe"
+            "row_id": "261e7f50-d927-41d2-9d2d-8f000ad58c08"
           },
           "benchmark": {
             "symbol": "SPY",
@@ -187,17 +187,17 @@
             "published_at": "2026-09-15T03:59:59.999999Z",
             "feed_status": "end_of_day",
             "stale": false,
-            "row_id": "14244405-882d-4973-9d84-5a5e7b894e48"
+            "row_id": "90081449-7a9c-424e-ab2c-52eae4d0760c"
           }
         },
         "strategy_id": "S1",
         "signal_ids": [
-          "47168d4a-1ccc-4aaf-bae3-a513e58ebc13"
+          "15e099c9-3abd-44c5-840f-fe6bd1f14c86"
         ],
         "mode": "paper",
         "approval_state": "recorded",
         "known_at": "2026-09-15T12:00:00Z",
-        "system_time": "2026-10-11T10:03:00.127398Z",
+        "system_time": "2026-10-18T16:50:14.061150Z",
         "performance": {
           "status": "ok",
           "detail": null,
@@ -209,7 +209,7 @@
             "published_at": "2026-09-15T03:59:59.999999Z",
             "feed_status": "end_of_day",
             "stale": false,
-            "row_id": "f1ad71a4-c967-4db1-a155-3fe629edfefe"
+            "row_id": "261e7f50-d927-41d2-9d2d-8f000ad58c08"
           },
           "mark": {
             "symbol": "AAPL",
@@ -218,7 +218,7 @@
             "published_at": "2026-10-06T03:59:59.999999Z",
             "feed_status": "end_of_day",
             "stale": false,
-            "row_id": "4c247235-da6d-4045-8e07-58605eb59a5c"
+            "row_id": "227e7861-fbe7-4761-a1c4-c791b89747d4"
           },
           "split_factor": "1",
           "entry_basis": "333.080000",
@@ -231,8 +231,8 @@
         }
       },
       {
-        "id": "8cd22ad4-2277-4e2b-a03c-41f867475460",
-        "thesis_card_id": "2512d7e1-2bc8-421b-b7dc-e7ddbf14be46",
+        "id": "6eec80af-0dc4-4ece-966b-4b92a521c0b0",
+        "thesis_card_id": "5e6145ec-6b64-42c4-9677-7625527f1e41",
         "card_version": 1,
         "decision": "trade",
         "side": "sell",
@@ -242,7 +242,7 @@
         "max_loss": null,
         "no_trade_reason": null,
         "note": "Target met.",
-        "exits_decision_id": "272f3f3f-21c1-4338-ba93-fa8934c11081",
+        "exits_decision_id": "9d762abd-269d-4fb4-8218-518cdba75b67",
         "exited_by": null,
         "closes": {
           "stock": {
@@ -252,7 +252,7 @@
             "published_at": "2026-10-06T03:59:59.999999Z",
             "feed_status": "end_of_day",
             "stale": false,
-            "row_id": "4c247235-da6d-4045-8e07-58605eb59a5c"
+            "row_id": "227e7861-fbe7-4761-a1c4-c791b89747d4"
           },
           "benchmark": {
             "symbol": "SPY",
@@ -261,17 +261,17 @@
             "published_at": "2026-10-06T03:59:59.999999Z",
             "feed_status": "end_of_day",
             "stale": false,
-            "row_id": "f70c617f-5072-4b5d-822a-3168bd042e3e"
+            "row_id": "a040113b-f2ee-4c7a-93bc-df8063fbd565"
           }
         },
         "strategy_id": "S1",
         "signal_ids": [
-          "47168d4a-1ccc-4aaf-bae3-a513e58ebc13"
+          "15e099c9-3abd-44c5-840f-fe6bd1f14c86"
         ],
         "mode": "paper",
         "approval_state": "recorded",
         "known_at": "2026-10-06T12:00:00Z",
-        "system_time": "2026-10-11T10:03:00.283402Z",
+        "system_time": "2026-10-18T16:50:14.245687Z",
         "performance": null
       }
     ],

@@ -74,10 +74,15 @@ import candidates from "../../tests/fixtures/api/candidates.json";
 import rotationEarlier from "../../tests/fixtures/api/rotation-earlier.json";
 import rotation from "../../tests/fixtures/api/rotation.json";
 import signalsRotation from "../../tests/fixtures/api/signals-rotation.json";
+import candidatesMomentum from "../../tests/fixtures/api/candidates-momentum.json";
+import momentumCarried from "../../tests/fixtures/api/momentum-carried.json";
+import momentum from "../../tests/fixtures/api/momentum.json";
+import signalsMomentum from "../../tests/fixtures/api/signals-momentum.json";
 
 import type {
   AlertDetail,
   BacktestsResponse,
+  MomentumResponse,
   OpportunityCandidates,
   RotationResponse,
   RegimeResponse,
@@ -289,6 +294,15 @@ export const recordedCandidates = candidates.response as unknown as OpportunityC
 export const recordedRotationSignals = signalsRotation.response as unknown as Signals;
 
 /** The backtests (M2.5) from tests/integration/test_backtests.py, as known on 2026-10-06: S1
- * without buyback states and S4 without a year of closes for most companies (cash only), S3
- * holding SPY; performance withheld. */
+ * without buyback states, S3 holding SPY and S4 (from its stored daily assessments, M3.0)
+ * holding NVDA, the one company with closes long enough for 12-1 momentum; performance
+ * withheld. */
 export const recordedBacktests = backtests.response as unknown as BacktestsResponse;
+
+/** S4 momentum (M3.0) from tests/integration/test_backtests.py: the October month start as known
+ * on 2026-10-06 (NVDA 100%; the other companies without a year of recorded closes or without
+ * snapshots), the target carried a day later, the S4 signals and the Radar with S3 and S4. */
+export const recordedMomentum = momentum.response as unknown as MomentumResponse;
+export const recordedMomentumCarried = momentumCarried.response as unknown as MomentumResponse;
+export const recordedMomentumSignals = signalsMomentum.response as unknown as Signals;
+export const recordedMomentumCandidates = candidatesMomentum.response as unknown as OpportunityCandidates;

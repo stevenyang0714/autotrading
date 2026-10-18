@@ -458,14 +458,24 @@ def test_a_changed_released_rule_set_is_refused(engine: Engine) -> None:
 )
 def test_record_web_fixtures(client: TestClient) -> None:
     target = Path(__file__).resolve().parents[3] / "web" / "tests" / "fixtures" / "api"
-    response = client.get("/backtests", params={"known_at": iso(VALUED_AT)})
-    assert response.status_code == 200
-    record = {
-        "recorded_at": datetime.now(UTC).isoformat(),
-        "recorded_from": "recorded FRED vintages and Alpaca closes replayed into the "
-        "integration test database (tests/integration/test_backtests.py)",
-        "endpoint": "/backtests",
-        "params": {"known_at": iso(VALUED_AT)},
-        "response": response.json(),
-    }
-    (target / "backtests.json").write_text(json.dumps(record, indent=2) + "\n")
+    at = iso(VALUED_AT)
+    recorded: tuple[tuple[str, str, dict[str, str]], ...] = (
+        ("backtests", "/backtests", {"known_at": at}),
+        # S4 (M3.0): the daily assessment, its signals and the Radar with S3 and S4 candidates
+        ("momentum", "/momentum", {"known_at": at}),
+        ("momentum-carried", "/momentum", {"known_at": iso(CARRIED_AT)}),
+        ("signals-momentum", "/signals", {"known_at": at, "strategy": "S4"}),
+        ("candidates-momentum", "/candidates", {"known_at": at}),
+    )
+    for name, path, params in recorded:
+        response = client.get(path, params=params)
+        assert response.status_code == 200
+        record = {
+            "recorded_at": datetime.now(UTC).isoformat(),
+            "recorded_from": "recorded FRED vintages and Alpaca closes replayed into the "
+            "integration test database (tests/integration/test_backtests.py)",
+            "endpoint": path,
+            "params": params,
+            "response": response.json(),
+        }
+        (target / f"{name}.json").write_text(json.dumps(record, indent=2) + "\n")

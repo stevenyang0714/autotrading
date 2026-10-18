@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-16T04:26:24.554659+00:00",
+  "recorded_at": "2026-10-18T16:53:26.098919+00:00",
   "recorded_from": "recorded FRED vintages and Alpaca closes replayed into the integration test database (tests/integration/test_rotation.py)",
   "endpoint": "/signals",
   "params": {
@@ -11,17 +11,18 @@
     "rule_version": "0.3.0",
     "rule_versions": {
       "S1": "0.3.0",
-      "S3": "0.1.0"
+      "S3": "0.2.0",
+      "S4": "0.1.0"
     },
     "current": [
       {
-        "id": "b165a368-955b-48ac-a34a-b5ef77559bf0",
+        "id": "6d48097f-ac73-46c9-946f-153efa2401a5",
         "ticker": "SPY",
         "family_id": 5,
         "family": "Price / Trend / Factor",
         "strategy_id": "S3",
         "strategy": "Macro Regime / ETF Rotation",
-        "rule_version": "0.1.0",
+        "rule_version": "0.2.0",
         "state": "rotation_target",
         "weight_pct": "100.00",
         "stress": "normal",
@@ -29,14 +30,14 @@
         "direction": "long",
         "generated_at": "2026-10-06T12:00:00Z",
         "valid_from": "2026-10-06T12:00:00Z",
-        "system_time": "2026-10-16T04:26:24.105068Z",
+        "system_time": "2026-10-18T16:53:25.635348Z",
         "observation_ids": [
           {
-            "id": "58ff1e6d-bf7f-4620-a8a5-cff4436afd54",
+            "id": "0183c448-9215-48d6-ba81-25b8afe96058",
             "table": "rotation_assessments"
           },
           {
-            "id": "ec4879fd-1fb7-4ebc-a813-718ecc125224",
+            "id": "dc1564c9-1976-4351-913f-b8e59533bd9d",
             "table": "factor_snapshots"
           }
         ],
@@ -46,13 +47,13 @@
         "backfilled": true
       },
       {
-        "id": "bd9ca2f4-b9d2-48e7-86f6-9ba9d708c8d2",
+        "id": "bc098cb3-16de-4b11-8029-8838e7731bfa",
         "ticker": "SPY",
         "family_id": 1,
         "family": "Macro Regime",
         "strategy_id": "S3",
         "strategy": "Macro Regime / ETF Rotation",
-        "rule_version": "0.1.0",
+        "rule_version": "0.2.0",
         "state": "rotation_target",
         "weight_pct": "100.00",
         "stress": "normal",
@@ -60,14 +61,14 @@
         "direction": "long",
         "generated_at": "2026-10-06T12:00:00Z",
         "valid_from": "2026-10-06T12:00:00Z",
-        "system_time": "2026-10-16T04:26:24.105068Z",
+        "system_time": "2026-10-18T16:53:25.635348Z",
         "observation_ids": [
           {
-            "id": "58ff1e6d-bf7f-4620-a8a5-cff4436afd54",
+            "id": "0183c448-9215-48d6-ba81-25b8afe96058",
             "table": "rotation_assessments"
           },
           {
-            "id": "48f9e8a3-be93-4063-bb93-7c71a01f02eb",
+            "id": "748c5ef4-05a8-4125-a87b-f0e83fb0c8e7",
             "table": "regime_assessments"
           }
         ],

@@ -541,6 +541,27 @@ test("Opportunity Radar lists the candidates and the Strategy Lab the S3 rotatio
   expect(await rotation.getByRole("table", { name: "Recent targets" }).locator("tbody tr").count()).toBeGreaterThan(0);
 });
 
+test("the Radar lists the S4 momentum target and the Strategy Lab its daily assessment, as known on a date (M3.0)", async ({
+  page,
+}) => {
+  await page.goto("/dashboards/opportunity-radar?known_on=2026-10-06");
+  const s4 = page.locator('[data-block="candidates"] [data-candidates="S4"]');
+  await expect(s4.locator("li[data-candidate]").or(s4.getByText(/holds no company/))).not.toHaveCount(0);
+  for (const item of await s4.locator("li[data-candidate]").all()) {
+    await expect(item).toContainText(/momentum rules \d+\.\d+\.\d+/);
+  }
+  await s4.getByRole("link", { name: /momentum, and the targets since/ }).click();
+  await expect(page).toHaveURL(/\/dashboards\/strategy-lab\?known_on=2026-10-06#momentum$/, { timeout: 15_000 });
+  const momentum = page.locator("#momentum");
+  await expect(momentum).toContainText(/momentum rules \d+\.\d+\.\d+/);
+  await expect(momentum.locator("[data-target]").or(momentum.getByText(/No S4 assessment/))).not.toHaveCount(0);
+  if ((await momentum.locator("[data-target]").textContent())?.includes("Target: ")) {
+    const readings = momentum.getByRole("table", { name: "Company readings" });
+    await expect(readings.locator("tbody tr[data-company]")).toHaveCount(10);
+    expect(await momentum.getByRole("table", { name: "Recent S4 targets" }).locator("tbody tr").count()).toBeGreaterThan(0);
+  }
+});
+
 test("a company page shows its trend and factors against its own history (M2.2)", async ({ page }) => {
   await page.goto("/instruments/AAPL?known_on=2026-10-06#factors");
   const factors = page.locator('[data-block="factors"]');

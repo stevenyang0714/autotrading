@@ -3,8 +3,9 @@ import { BacktestsView } from "@/components/backtests/BacktestsView";
 import { Metric } from "@/components/Metric";
 import { JournalTable } from "@/components/journal/JournalTable";
 import { SignalList } from "@/components/journal/SignalList";
+import { MomentumView } from "@/components/momentum/MomentumView";
 import { RotationView } from "@/components/rotation/RotationView";
-import type { BacktestsResponse, Journal, RotationResponse, Signals } from "@/lib/api";
+import type { BacktestsResponse, Journal, MomentumResponse, RotationResponse, Signals } from "@/lib/api";
 import { formatSgtEt } from "@/lib/time";
 
 const HREF = "/dashboards/strategy-lab";
@@ -27,13 +28,14 @@ export function PaperOnlyNotice({ detail }: { detail: string }) {
 
 /**
  * Strategy Lab (M1.6, ADR-027): the paper journal as known on the chosen date, the current
- * signals, where to write a new Thesis Card, and since M2.4 the S3 ETF rotation (ADR-032).
- * Backtests arrive with M2.5.
+ * signals, where to write a new Thesis Card, since M2.4 the S3 ETF rotation (ADR-032), since
+ * M2.5 the backtests (ADR-033) and since M3.0 the daily S4 momentum assessment (ADR-036).
  */
 export function StrategyLabView({
   journal,
   signals,
   rotation = null,
+  momentum,
   backtests,
   knownOn,
   invalidKnownOn = false,
@@ -41,6 +43,8 @@ export function StrategyLabView({
   journal: Journal;
   signals: Signals | null;
   rotation?: RotationResponse | null;
+  /** Omitted: no S4 block (undefined); null: the API could not load it. */
+  momentum?: MomentumResponse | null;
   /** Omitted: no backtests block (undefined); null: the API could not load them. */
   backtests?: BacktestsResponse | null;
   knownOn?: string;
@@ -59,6 +63,10 @@ export function StrategyLabView({
           and the{" "}
           <Metric termId="etf_rotation" icon={false}>
             S3 ETF rotation
+          </Metric>{" "}
+          and{" "}
+          <Metric termId="medium_term_momentum" icon={false}>
+            S4 momentum
           </Metric>
           , with walk-forward{" "}
           <Metric termId="backtest" icon={false}>
@@ -101,6 +109,16 @@ export function StrategyLabView({
         </h2>
         <RotationView data={rotation} knownOn={knownOn} />
       </div>
+      {momentum !== undefined ? (
+        <div className="space-y-2 scroll-mt-4" data-block="momentum" id="momentum">
+          <h2 className="text-lg font-medium">
+            <Metric termId="medium_term_momentum" zh>
+              Momentum (S4)
+            </Metric>
+          </h2>
+          <MomentumView data={momentum} knownOn={knownOn} />
+        </div>
+      ) : null}
       {backtests !== undefined ? (
         <div className="space-y-2 scroll-mt-4" data-block="backtests" id="backtests">
           <h2 className="text-lg font-medium">
