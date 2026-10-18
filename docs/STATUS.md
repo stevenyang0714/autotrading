@@ -3,11 +3,11 @@
 Update at the end of every session (Claude Code) — newest entry on top of the log.
 
 ## Current
-- Phase: 2 — Macro regime, factors, portfolio risk, walk-forward (Phase 1 closed 2026-10-12, ADR-029); the Phase 2 exit report is written
-- Sub-milestone: M2.6 Phase 2 exit report, backups and the M3 proposal — done (PR pending); M2.5 done (#30, CI #64); M2.4 done (#29); M2.3 done (#28); M2.2 done (#27); M2.1 done (#26)
-- Next: Steven accepts the Phase 2 exit report and approves `docs/milestones/M3_world_policy.md` (P3-1 to P3-6); then M3.0 or M3.1 in plan mode
+- Phase: 3 — Policy, events and the world (Phase 2 closed 2026-10-18, ADR-034; Phase 3 approved 2026-10-19, ADR-035)
+- Sub-milestone: M3.0 Phase 2 carry-overs (regime rules 0.2.0, S4 daily) — in progress; M2.6 done (#31)
+- Next: M3.1 language-model foundation (usage ledger, budget circuit breaker, extraction contract) in plan mode
 - Blockers: none
-- Open decisions due soon: the M3 proposal (P3-1 to P3-6); OD-6 (physical data) by M3.5; OD-7 for backtest performance; the regime thresholds (KI-3 to KI-7) and the standard position size (KI-13) when Steven wants regime or risk rules 0.2.0
+- Open decisions due soon: none for M3.0 (Claude decides reversible choices, ADR-035); the NASA FIRMS key (Steven registers it) before M3.5; OD-7 for backtest performance; the standard position size (KI-13) and ETF limits (KI-20) for risk rules 0.2.0
 
 ## Log
 | Date | Sub-milestone | Result | Notes / known gaps |

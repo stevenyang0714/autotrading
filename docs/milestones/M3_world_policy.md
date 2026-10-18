@@ -1,6 +1,6 @@
 # Phase 3 — Policy, events and the world: causal evidence without execution
 
-**Status:** Proposed by Claude on 2026-10-18 with the Phase 2 exit report (`docs/reports/phase2_exit.md`). Not approved yet: Steven answers the decisions below and approves this file before anything is built. The entry gate is met: Phase 2 exit (pending Steven's acceptance of the report) and ADR-009 accepted (2026-10-18, ADR-034). Steven chose the order on 2026-10-18 (ADR-034 E4): policy first, then the causal graph, then the physical data.
+**Status:** Approved 2026-10-19 (ADR-035): Steven answered P3-1 to P3-6 with the proposed defaults and decided OD-6 (P3-5). Proposed by Claude on 2026-10-18 with the Phase 2 exit report (`docs/reports/phase2_exit.md`). The entry gate is met: the Phase 2 exit (#31) and ADR-009 accepted (ADR-034). Order: M3.0 carry-overs, then policy, the causal graph and the physical data (ADR-034 E4). Each sub-milestone still starts in plan mode; Claude decides its scope and thresholds (ADR-035).
 
 **Goal:** turn official policy actions and news events into cited, time-stamped evidence about who is exposed, without ever trading on a headline:
 - a Policy Monitor that follows each US policy action through its lifecycle, from official sources only;
@@ -14,7 +14,7 @@
 - 02 §29: "Causal evidence; policy lifecycle; no event-only execution."
 - 01 §29: "causal evidence; policy lifecycle correctness; no direct execution from headline."
 
-**Entry gate:** "Phase 2 exit; ADR-009 accepted" (ROADMAP). ADR-009 was accepted on 2026-10-18; the Phase 2 exit waits for Steven's acceptance of the report.
+**Entry gate:** "Phase 2 exit; ADR-009 accepted" (ROADMAP). Met: ADR-009 accepted on 2026-10-18 (ADR-034), the Phase 2 exit merged on 2026-10-18 (#31).
 
 **Out of scope for Phase 3:**
 - **Phase 4:** X, Congress PTR, Form 4 insiders.
@@ -28,20 +28,20 @@ Work one sub-milestone at a time, in order. Each one ends with the Build Output 
 
 ---
 
-## Decisions for Steven (proposed defaults; nothing is built until answered)
+## Decisions (all decided 2026-10-19, ADR-035)
 
 | # | Question | Proposed default |
 |---|---|---|
-| P3-1 | **Policy sources:** which official sources feed the Policy Monitor? Adding a provider needs Steven's approval. | The White House actions feed (already ingested) and the **Federal Register API** (free, official, no key): executive orders, proclamations and the notices of USTR, Commerce (BIS export controls) and Treasury. USTR press releases by RSS. OFAC sanctions lists later. |
-| P3-2 | **Language-model tasks and evaluation** | Two tasks only: (1) extract a policy object from an official document (status, effective date, affected goods, sectors, countries and the universe instruments), each field with the sentence it came from; (2) link a news event to universe companies, with the sentence. A small, cheap model by default (from `LLM_MODEL`), a larger one only when the small one is unsure. A labelled evaluation set of about 50 documents and 50 events, released as a version; a prompt or model change is a new version with its evaluation. Target: at least 90% correct status and effective date, and no uncited field. |
-| P3-3 | **Policy scope** | Tariffs, export controls (semiconductors and other critical technology), sanctions and critical minerals. Mapped to the 10 companies and 8 ETFs through a reviewed table of goods and sectors, for example NVDA with export controls, XOM and XLE with energy sanctions, LOW, AZO and ORLY with tariffs on imported goods. |
-| P3-4 | **Causal graph edges** | Node types: event, policy, good or sector, company, instrument. Edge types: triggers, affects, exposes, confirmed by price. Every edge cites a source sentence or a stored row and has a timestamp. Exposure is a range (low, base, high), never one forecast. Price confirmation reads the stored factor snapshots. Edges proposed by rules or extraction are marked as such. |
-| P3-5 | **OD-6 physical data** | NASA FIRMS active fires (free, a key in `.env`) and NOAA's ENSO index (free), for energy and agriculture exposure. Shipping and port data stay out (paid vendors). The Global Monitor shows `Data unavailable` for any layer not decided. |
-| P3-6 | **Phase 2 carry-overs before the new features** | A short **M3.0**: regime rules 0.2.0 (KI-3, KI-4, KI-5, KI-7: credit fallback, the NFCI threshold, VIX alone, the stagflation band) with a backfill and the alerts raised again, and S4's daily assessment with family 5 signals and Radar candidates (KI-21). Risk rules 0.2.0 (KI-13, KI-20) wait for OD-7. |
+| P3-1 | **Policy sources:** which official sources feed the Policy Monitor? Adding a provider needs Steven's approval. | **Decided 2026-10-19 (ADR-035): as proposed.** The White House actions feed (already ingested) and the **Federal Register API** (free, official, no key): executive orders, proclamations and the notices of USTR, Commerce (BIS export controls) and Treasury. USTR press releases by RSS. OFAC sanctions lists later. |
+| P3-2 | **Language-model tasks and evaluation** | **Decided 2026-10-19 (ADR-035): as proposed.** Two tasks only: (1) extract a policy object from an official document (status, effective date, affected goods, sectors, countries and the universe instruments), each field with the sentence it came from; (2) link a news event to universe companies, with the sentence. A small, cheap model by default (from `LLM_MODEL`), a larger one only when the small one is unsure. A labelled evaluation set of about 50 documents and 50 events, released as a version; a prompt or model change is a new version with its evaluation. Target: at least 90% correct status and effective date, and no uncited field. |
+| P3-3 | **Policy scope** | **Decided 2026-10-19 (ADR-035): as proposed.** Tariffs, export controls (semiconductors and other critical technology), sanctions and critical minerals. Mapped to the 10 companies and 8 ETFs through a reviewed table of goods and sectors, for example NVDA with export controls, XOM and XLE with energy sanctions, LOW, AZO and ORLY with tariffs on imported goods. |
+| P3-4 | **Causal graph edges** | **Decided 2026-10-19 (ADR-035): as proposed.** Node types: event, policy, good or sector, company, instrument. Edge types: triggers, affects, exposes, confirmed by price. Every edge cites a source sentence or a stored row and has a timestamp. Exposure is a range (low, base, high), never one forecast. Price confirmation reads the stored factor snapshots. Edges proposed by rules or extraction are marked as such. |
+| P3-5 | **OD-6 physical data** | **Decided 2026-10-19 (ADR-035): as proposed.** NASA FIRMS active fires (free, a key in `.env`) and NOAA's ENSO index (free), for energy and agriculture exposure. Shipping and port data stay out (paid vendors). The Global Monitor shows `Data unavailable` for any layer not decided. |
+| P3-6 | **Phase 2 carry-overs before the new features** | **Decided 2026-10-19 (ADR-035): as proposed.** A short **M3.0**: regime rules 0.2.0 (KI-3, KI-4, KI-5, KI-7: credit fallback, the NFCI threshold, VIX alone, the stagflation band) with a backfill and the alerts raised again, and S4's daily assessment with family 5 signals and Radar candidates (KI-21). Risk rules 0.2.0 (KI-13, KI-20) wait for OD-7. |
 
 ---
 
-## M3.0 Phase 2 carry-overs (if P3-6 is accepted)
+## M3.0 Phase 2 carry-overs
 **Build**
 - **Regime rules 0.2.0:** the thresholds Steven reviews against the history since 2016 (KI-3, KI-4, KI-5, KI-7), a backfill under the new version, rotation and alerts recomputed on it.
 - **S4 daily:** the momentum assessment stored daily, family 5 signals for S4, S4 candidates on the Opportunity Radar.

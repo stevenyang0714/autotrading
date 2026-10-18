@@ -995,6 +995,22 @@ M2.6, with the Phase 2 exit report (`docs/reports/phase2_exit.md`).
 
 ---
 
+## ADR-035 Phase 3 approved, and Claude's autonomy — Accepted (2026-10-19, Steven)
+Steven approved `docs/milestones/M3_world_policy.md` after M2.6 (#31) merged, answering P3-1 to P3-6 with the proposed defaults:
+- P3-1 policy sources: the White House actions feed (already ingested) and the Federal Register API (free, official, no key); USTR press releases by RSS; OFAC sanctions lists later. The Federal Register adapter is the one new provider this approves (M3.2).
+- P3-2 language-model tasks: two only, policy extraction and event-to-company links, each field with the sentence it came from; a small model by default and a larger one only when the small one is unsure; a labelled evaluation set of about 50 documents and 50 events, at least 90% correct status and effective date and no uncited field.
+- P3-3 policy scope: tariffs, export controls, sanctions and critical minerals, mapped to the universe through a reviewed table of goods and sectors.
+- P3-4 graph edges: rules and extraction may both propose an edge, marked by who proposed it; every edge cites its evidence and time; exposure is a range; no per-edge approval by Steven.
+- P3-5 OD-6 decided: NASA FIRMS active fires and NOAA's ENSO index (both free). FIRMS needs a free key that Steven registers himself and puts in `.env` before M3.5; shipping and port data stay out (paid).
+- P3-6: a short M3.0 first (regime rules 0.2.0 and S4's daily assessment, ADR-036).
+
+**Autonomy (Steven, 2026-10-19).** Asked whether Claude can choose the best options itself, Steven chose the widest scope offered: from now on Claude decides scope, order and every reversible choice (rule thresholds, technical design, which sub-milestone next) without asking him option by option.
+- Each milestone still starts in plan mode; the plan approval is Steven's review point. Each plan and ADR lists the decisions Claude made, with their evidence, so Steven can overrule any of them; an overrule is a new rule version, since released versions and stored rows never change.
+- Claude still stops and asks before: spending money; a new external provider, account or API key (Steven registers keys himself); deleting data; broker or order code; and the rest of the CLAUDE.md stop-and-ask list (canonical decisions, IDs, schema contracts, score directions). Steven still publishes branches and merges, after Claude reports "可以 merge" on a green CI.
+- Risks Steven accepted: Claude's thresholds shape what the platform concludes; rows written under a version are permanent; fewer questions mean fewer assumptions he has looked at. Mitigation: the "decisions Claude made" list in every plan, ADR and report.
+
+---
+
 ## Open decisions (owner: Steven)
 
 | ID | Decision | Needed by | Default until decided |
@@ -1003,11 +1019,11 @@ M2.6, with the Phase 2 exit report (`docs/reports/phase2_exit.md`).
 | OD-3 | Point-in-time consensus estimates provider | Before consensus-based earnings and S2 (Phase 1 runs without, ADR-020) | Consensus shown as `Data unavailable` |
 | OD-4 | Options data provider and budget. Candidate (checked 2026-10-05; re-verify before paying): Unusual Whales API. Basic USD 150/month gives REST access to real-time flow; Advanced USD 375/month adds WebSocket streaming; a 15-minute-delayed tier is cheaper. Personal use only, no redistribution (fits ADR-001). Its free website flow is delayed, and scraping it is not allowed. | Phase 5, or earlier if Steven pulls options flow forward | No options data |
 | OD-5 | Short interest / borrow data provider | Before SHORT eligibility | SHORT ideas alert-only |
-| OD-6 | Physical data sources (candidates to evaluate: NASA FIRMS fire data, NOAA climate data, port/shipping data vendors) | Phase 3 | Not ingested |
 | OD-7 | Survivorship-free historical dataset including delisted names. Steven compared commercial datasets (`docs/reports/od7_datasets.md`) and decided on 2026-10-13 not to buy for now (ADR-029, KNOWN_ISSUES KI-1); first candidate if revisited: Sharadar Prices (USD 299 a year, checked 2026-10-12; re-verify before paying) | Before any backtest reports performance (M2.5 shipped with it withheld, ADR-033) | Backtests withhold performance |
 | OD-9 | Verify account eligibility from Singapore for Interactive Brokers (data + paper). The Alpaca part was verified on 2026-10-06 (paper account; market data reachable from Singapore). | Phase 5 | No broker |
 
 ## Decided
+- Phase 3 approved (2026-10-19): Steven answered P3-1 to P3-6 with the proposed defaults; OD-6 decided (NASA FIRMS and NOAA ENSO, FIRMS key registered by Steven before M3.5); Claude decides scope and reversible choices from now on. See ADR-035.
 - OD-1 (2026-10-06): Steven confirmed ADR-001: a personal tool, with no redistribution of data. ADR-001 is Accepted.
 - Phase 1 scope (2026-10-06): Steven accepted the Phase 0 exit report and decided OD-2 and OD-3 for Phase 1 (in-app alerts only; no consensus provider yet). Both stay open for later phases. See ADR-020.
 - Phase 2 entry (2026-10-12): Steven accepted the Phase 1 exit report; P2-1 decided (Massive not activated); OD-7 narrowed to a commercial dataset comparison. See ADR-029.

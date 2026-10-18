@@ -18,7 +18,7 @@ Never silently resolve a conflict. If two sources disagree and the errata does n
 
 ## Where we are
 - Current phase and milestone: `docs/STATUS.md` (read it at the start of every session; update it at the end).
-- Active milestone plan: `docs/milestones/M0_foundation.md`. Later phases: `docs/milestones/ROADMAP.md`.
+- Active milestone plan: `docs/milestones/M3_world_policy.md` (Phase 3, approved 2026-10-19). Later phases: `docs/milestones/ROADMAP.md`.
 
 ## Workflow (every milestone)
 1. Read `docs/STATUS.md` and the milestone file. Work on **one sub-milestone at a time** (e.g. M0.3), never several.
@@ -27,7 +27,9 @@ Never silently resolve a conflict. If two sources disagree and the errata does n
 4. Finish with the Build Output Contract (02 §31): status, file tree delta, migrations, API changes, tests + results, acceptance results, known gaps, data freshness status.
 5. Update `docs/STATUS.md`, then commit with a conventional message (`feat(m0.3): ...`). One sub-milestone per branch/PR.
 
-**Stop and ask the user before:** spending money or provisioning a paid plan; adding/changing an external provider; changing any canonical decision, ID, schema contract or score direction; touching broker or order code before Phase 5; anything that needs a credential that is not already in `.env`.
+**Autonomy (ADR-035, 2026-10-19):** Claude decides scope, order and every reversible choice (rule thresholds, technical design) without asking; the plan is still approved through plan mode, and each plan and ADR lists the decisions Claude made with their evidence so Steven can overrule them (an overrule is a new rule version). Steven still publishes branches and merges.
+
+**Stop and ask the user before (unchanged by ADR-035):** spending money or provisioning a paid plan; adding/changing an external provider; changing any canonical decision, ID, schema contract or score direction; touching broker or order code before Phase 5; anything that needs a credential that is not already in `.env`.
 
 ## Non-negotiables
 - **No fabricated data.** Never invent prices, filings, news, posts, positions or backtest numbers. If real data is missing, the UI shows `Data unavailable` or a visible `DEMO DATA` banner. Test fixtures must be recorded real responses stored under `apps/api/tests/fixtures/` (and recorded API answers under `apps/web/tests/fixtures/`) and are never rendered as live.
