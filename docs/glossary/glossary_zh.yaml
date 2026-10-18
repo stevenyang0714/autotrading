@@ -187,15 +187,15 @@ terms:
   regime_policy: {name: 政策與流動性, hint: 寬鬆／中性／緊縮：實質聯邦基金利率、NFCI、殖利率曲線。}
   regime_credit: {name: 信用, hint: 平靜／正常／緊張／困境：高收益債利差（之前用 NFCI 信用子指數）。}
   regime_volatility: {name: 波動, hint: 平靜／正常／升高／緊張：VIX 與期限結構。}
-  regime_quadrant: {name: 成長×通膨象限, hint: 金髮女孩／再通膨／停滯性通膨／通縮放緩；是標籤，不是預測。}
-  stress_state: {name: 壓力狀態, hint: 正常／升高／高／危機：同時亮起幾個壓力旗標。}
+  regime_quadrant: {name: 成長×通膨象限, hint: 金髮女孩／再通膨／停滯性通膨／通縮放緩；0.2.0 起通膨高於目標但在下降不算高通膨。是標籤，不是預測。}
+  stress_state: {name: 壓力狀態, hint: 正常／升高／高／危機：同時亮起幾個壓力旗標；0.2.0 起危機只需三個條件中的兩個。偵測脆弱，不預測黑天鵝。}
   stress_normal: {name: 正常, hint: 0–1 個旗標；一般策略資格。}
   stress_elevated: {name: 升高, hint: 2–3 個旗標；減少新的高 beta 部位。}
   stress_high: {name: 高, hint: 4 個以上旗標、信用困境或 VIX 超過 30；加避險、降總部位。}
   stress_crisis: {name: 危機, hint: 信用困境、VIX 超過 40 且 SPY 回撤超過 20%；只做風險降低。}
   stress_flag_credit: {name: 信用旗標, hint: 信用狀態為緊張或困境。}
   stress_flag_volatility: {name: 波動旗標, hint: 波動狀態為升高或緊張。}
-  stress_flag_nfci: {name: 金融情勢旗標, hint: NFCI 高於 0（比平均更緊）。}
+  stress_flag_nfci: {name: 金融情勢旗標, hint: NFCI 高於 −0.25（0.2.0；0.1.0 為 0）：金融情勢正在收緊。}
   stress_flag_stlfsi: {name: 金融壓力旗標, hint: 聖路易壓力指數高於 1。}
   stress_flag_vix_term: {name: VIX 期限旗標, hint: VIX 高於 VIX 3 個月（期限結構倒掛）。}
   stress_flag_drawdown: {name: 回撤旗標, hint: SPY 低於 252 個交易日最高收盤 10% 以上。}

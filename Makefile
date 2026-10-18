@@ -76,10 +76,10 @@ alerts-backfill: ## Store convergence levels and alerts for buyback assignments 
 regime-evaluate: ## Queue a macro regime assessment now (M2.1)
 	$(COMPOSE) exec -T api python -m autotrading.jobs.regime_evaluate
 
-regime-backfill: ## Queue regime assessments at every month end since 2016, marked backfilled (run once)
+regime-backfill: ## Queue regime assessments at every session close and month end since 2016, marked backfilled (once per rule version)
 	$(COMPOSE) exec -T api python -m autotrading.jobs.regime_evaluate --backfill
 
-regime-verify: ## Recompute the latest 20 stored regime assessments and report any that differ
+regime-verify: ## Recompute the latest 20 stored regime assessments of each rule version and report any that differ
 	$(COMPOSE) exec -T api python -m autotrading.jobs.regime_evaluate --verify 20
 
 factors-evaluate: ## Queue factor snapshots of every universe instrument now (M2.2)
@@ -100,10 +100,10 @@ risk-verify: ## Recompute the latest 20 and 100 random stored risk checks and re
 rotation-evaluate: ## Queue an S3 ETF rotation assessment now (M2.4)
 	$(COMPOSE) exec -T api python -m autotrading.jobs.rotation_evaluate
 
-rotation-backfill: ## Queue the S3 rotation at every month end since 2017, in order, marked backfilled (run once)
+rotation-backfill: ## Queue the S3 rotation at every session close and month end since 2017, in order, marked backfilled (once per rule version)
 	$(COMPOSE) exec -T api python -m autotrading.jobs.rotation_evaluate --backfill
 
-rotation-verify: ## Recompute the latest 200 stored rotation assessments and report any that differ
+rotation-verify: ## Recompute the latest 200 stored rotation assessments of each rule version and report any that differ
 	$(COMPOSE) exec -T api python -m autotrading.jobs.rotation_evaluate --verify 200
 
 backtest-run: ## Queue the backtests of S1, S3 and S4 now (M2.5; performance withheld, OD-7)

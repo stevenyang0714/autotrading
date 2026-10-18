@@ -6,16 +6,73 @@
 #
 # Every input is read as known at the assessment's time T, from the ALFRED vintage public then,
 # and as this database held it at its system time S, so a stored regime always recomputes the
-# same. The thresholds are defaults, unvalidated (OD-7): Steven reviews them against the history
-# since 2016 (R5); a change is a new rule_version. Labels describe conditions; none is a forecast.
+# same. The thresholds are defaults, unvalidated (OD-7); 0.2.0 is 0.1.0 reviewed against the stored
+# history since 2016 (ADR-036). A change is a new rule_version. Labels describe conditions; none
+# is a forecast.
 #
 # Units: percent values in percent (2.0 = 2%); index values in their own units; payrolls in
 # thousands of jobs; changes over "a month" compare the latest value with the one at or before
 # 30 calendar days earlier.
 version: 0.1.0
 rule_sets:
-  - rule_version: 0.1.0
+  - rule_version: 0.2.0
     status: active  # active: evaluated daily; retired: kept for the stored assessments
+    released: "2026-10-19"
+    note: >-
+      0.1.0 reviewed by Claude against the stored month ends since 2016 (ADR-036, M3.0): CRISIS
+      on two of the three crisis conditions (KI-3), the NFCI flag above -0.25 (KI-4), VIX above
+      30 makes HIGH only with at least two flags on and ELEVATED otherwise (KI-5), and above-target
+      inflation that is falling is not high inflation in the quadrant (KI-7). Every other
+      threshold is 0.1.0's. Assessed at every session close since 2016 (KI-6).
+    growth:
+      sahm_contracting: 0.50
+      sahm_slowing: 0.30
+      payrolls_contracting: 0
+      payrolls_slowing: 100
+      gdp_contracting: 0.0
+      gdp_slowing: 1.0
+    inflation:
+      target: 2.0
+      near_band: 0.5
+      hot: 3.5
+      direction_band: 0.25
+      quadrant_uses_direction: true  # KI-7
+    policy:
+      real_rate_tight: 1.5
+      real_rate_easy: 0.0
+      nfci_tight: 0.0
+      nfci_easy: -0.5
+      inversion_tight_observations: 60
+    credit:
+      hy_calm: 3.5
+      hy_normal: 5.0
+      hy_stressed: 8.0
+      hy_jump: 1.0
+      nfci_credit_calm: -0.25
+      nfci_credit_normal: 0.25
+      nfci_credit_stressed: 1.0
+    volatility:
+      vix_calm: 15
+      vix_normal: 20
+      vix_elevated: 30
+      inversion_ratio: 1.0
+    stress:
+      nfci_flag: -0.25  # KI-4 (0.1.0: 0.0)
+      stlfsi_flag: 1.0
+      drawdown_flag: 10
+      dollar_flag: 3
+      oil_flag: 30
+      correlation_sessions: 60
+      correlation_flag: 0.0
+      elevated_flags: 2
+      high_flags: 4
+      high_vix: 30
+      high_vix_min_flags: 2  # KI-5 (0.1.0: VIX alone)
+      crisis_vix: 40
+      crisis_drawdown: 20
+      crisis_conditions: 2  # KI-3 (0.1.0: all three)
+  - rule_version: 0.1.0
+    status: retired
     released: "2026-10-12"
     note: >-
       Claude's defaults (ADR-029 R5) for Steven's review against the history since 2016.

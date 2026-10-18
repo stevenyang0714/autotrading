@@ -15,8 +15,39 @@
 # Thresholds are Steven's defaults (Q1, Q2), unvalidated (OD-7): a change is a new version.
 version: 0.1.0
 rule_sets:
-  - rule_version: 0.1.0
+  - rule_version: 0.2.0
     status: active  # active: used for new assessments; retired: kept for the stored ones
+    released: "2026-10-19"
+    note: >-
+      0.1.0 under regime rules 0.2.0 (ADR-036 D6): the stress gates read the reviewed stress
+      state; sleeves, trend, gates and weights are unchanged. Backfilled at every session since
+      2017, so defensive switches inside a month are in the history (KI-17).
+    regime_rule_version: 0.2.0
+    factor_definition_version: 0.1.0
+    sleeves:  # universe order is the order shown
+      risk: [SPY, QQQ, IWM, XLK, XLE]
+      defensive: [TLT, IEF, GLD]
+    trend:  # both must be above (strictly) for the trend to be up
+      - measure: momentum_12_1
+        above: 0
+      - measure: close_vs_sma_200
+        above: 0
+    high_beta:
+      measure: beta_252d
+      at_least: 1.10
+      benchmark: SPY  # the benchmark's beta to itself is not stored; it counts as 1.00
+      benchmark_beta: 1.00
+    gates:  # the sleeves each stress state allows, and whether high-beta ETFs may be held
+      normal: {sleeves: [risk, defensive], high_beta: true}
+      elevated: {sleeves: [risk, defensive], high_beta: false}
+      high: {sleeves: [defensive], high_beta: false}
+      crisis: {sleeves: [defensive], high_beta: false}
+    defensive_switch: [high, crisis]  # rising into one of these resets the target mid-month
+    weight_quantum_pct: 0.01  # equal weights rounded down to this; the remainder stays in cash
+    regime_stale_after_days: 3
+    factor_stale_after_days: 5
+  - rule_version: 0.1.0
+    status: retired
     released: "2026-10-16"
     note: >-
       Steven's decisions Q1-Q2 (ADR-032): each ETF's own trend (12-1 momentum and the close

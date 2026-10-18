@@ -1011,6 +1011,49 @@ Steven approved `docs/milestones/M3_world_policy.md` after M2.6 (#31) merged, an
 
 ---
 
+## ADR-036 M3.0: regime rules 0.2.0 and S4's daily assessment — Accepted (2026-10-19, Claude's decisions under ADR-035, plan approved by Steven)
+Phase 2's carry-overs (P3-6). Claude reviewed regime rules 0.1.0 against the 129 stored month-end assessments since 2016 and decided each change from that history (ADR-035); Steven approved the plan.
+- **D1 KI-3, crisis:** CRISIS on two of the three conditions (distressed credit, VIX above 40, SPY more than 20% below its 52-week high) instead of all three (`crisis_conditions: 2`).
+  - Recomputed: only the end of March 2020 becomes CRISIS (VIX 53.5, drawdown 23.9%, credit calm).
+  - The end of September 2022 (drawdown 25.2%, VIX 31.6) stays HIGH.
+  - The NFCI credit thresholds are unchanged.
+- **D2 KI-4, NFCI flag:** above -0.25 instead of 0 (no month end since 2016 reached 0).
+  - It fires at the ends of March and April 2020; May, June, July, September, October and December 2022; and March 2023 (the bank failures).
+  - On 2026-10-19 the NFCI is -0.50.
+- **D3 KI-5, VIX alone:** VIX above 30 makes HIGH only with at least two flags on; with fewer it makes ELEVATED (`high_vix_min_flags: 2`).
+  - The ends of June 2020 and January 2021 (only the volatility flag on) move from HIGH to ELEVATED.
+  - The ends of October 2020 and February 2022 stay HIGH.
+- **D4 KI-7, quadrant:** inflation counts as high when it is hot, or above target and not falling (`quadrant_uses_direction: true`); the inflation state itself is unchanged.
+  - 13 of the 28 stagflation month ends since November 2023 become disinflationary slowdowns.
+  - Two reflation month ends become goldilocks.
+  - 2022 (hot) is unchanged.
+  - Today reads disinflationary slowdown: core PCE 3.01% a year, 2.05% annualized over 3 months.
+- **Combined effect on the month ends since 2016:**
+  - Stress states: 0.1.0 had 105 normal, 15 elevated, 9 high and 0 crisis; 0.2.0 has 104, 16, 8 and 1.
+  - Quadrants: 0.1.0 had 46 goldilocks, 31 reflation, 34 stagflation and 18 disinflationary slowdown; 0.2.0 has 48, 29, 21 and 31.
+- **The new fields' defaults reproduce 0.1.0.** 0.1.0's content and sha256 are therefore unchanged, and its stored rows still recompute identically.
+  - The fields are `crisis_conditions` 3, `high_vix_min_flags` 0 and `quadrant_uses_direction` false.
+  - Under 0.1.0, the crisis detail keeps its old wording.
+- **D5 KI-6, KI-17, daily history:**
+  - The 0.2.0 backfill assesses every session SPY closed since 2016, plus every month end (`factors.session_points`, the factor backfill's points).
+  - Rotation 0.2.0 does the same since 2017, in order, so defensive switches inside a month enter the history and S3's backtest.
+  - Backfilled assessments raise no alert themselves, because their messages run concurrently. `make alerts-backfill` then pairs them in order of T, and those alerts are hidden by default as backfilled.
+  - `regime-verify` and `rotation-verify` check the latest rows of every version, so 0.1.0's rows keep being verified.
+- **D6 versions that follow:**
+  - Rotation rules 0.2.0: 0.1.0 under regime rules 0.2.0, nothing else changed.
+  - Alert rules 0.5.0: 0.4.0 under regime and rotation rules 0.2.0.
+  - Backtest rules 0.2.0: S3 on rotation 0.2.0; S4 from its stored assessments.
+  - Every earlier version is retired with its rows unchanged.
+  - Without the switch, rotation 0.1.0 would turn unavailable 3 days after daily regime 0.1.0 assessments stopped.
+- **D7 KI-21, S4 daily:** momentum rules stay 0.1.0 (unchanged content).
+  - A daily assessment at 11:17 SGT is stored in `momentum_assessments` (migration 0028). The target is set at the first assessment of each New York month and carried otherwise, as S3 and the backtests do.
+  - Family 5 paper signals are made only when a target is set: one per company held, citing the assessment and its factor snapshot.
+  - S4 candidates appear on the Opportunity Radar, and Strategy Lab gets `#momentum`.
+  - The backfill covers every session since 2017.
+- **Live check:** see the M3.0 row of `docs/STATUS.md`.
+
+---
+
 ## Open decisions (owner: Steven)
 
 | ID | Decision | Needed by | Default until decided |

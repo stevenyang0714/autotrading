@@ -162,7 +162,8 @@ def record_regime(
 ) -> UUID | None:
     """Store the regime at T and, when the stress state changed since the previous assessment,
     a market-wide alert under the active alert rules (if they ask for it); None when T is
-    assessed already."""
+    assessed already. A backfill raises no alert here: its messages run concurrently, so
+    `raise_alerts` pairs the stored assessments in order afterwards (ADR-036 D5)."""
     set_actor(session, ACTOR)
     previous = session.scalar(
         select(RegimeAssessment.stress)
@@ -193,7 +194,8 @@ def record_regime(
         return None
     alert_rules = stored_alert_rules(session)
     if (
-        alert_rules is not None
+        trigger != "backfill"
+        and alert_rules is not None
         and "stress_change" in alert_rules.market_events
         and alert_rules.regime_rule_version == rules.rule_version
         and previous is not None
