@@ -1,6 +1,6 @@
 # Phase 2 — Macro regime, momentum and factors, portfolio risk, walk-forward
 
-**Status:** Approved 2026-10-12 (ADR-029): Steven accepted the Phase 1 exit report, decided P2-1 and chose the OD-7 direction; Phase 2 is in progress (M2.1 to M2.4 merged; M2.5 built). Proposed by Claude on 2026-10-12 with the Phase 1 exit report (`docs/reports/phase1_exit.md`). Each sub-milestone still starts in plan mode and is approved before it is built; P2-3 to P2-8 are answered in the plan of the sub-milestone that needs them.
+**Status:** Approved 2026-10-12 (ADR-029): Steven accepted the Phase 1 exit report, decided P2-1 and chose the OD-7 direction; Phase 2 is complete (M2.1 to M2.5 merged; the exit report M2.6 written, ADR-034). Proposed by Claude on 2026-10-12 with the Phase 1 exit report (`docs/reports/phase1_exit.md`). Each sub-milestone still starts in plan mode and is approved before it is built; P2-3 to P2-8 are answered in the plan of the sub-milestone that needs them.
 
 **Goal:** turn the Phase 1 research record into tested, point-in-time context for decisions:
 - a deterministic macro regime, reproducible as known on any date;
@@ -35,7 +35,7 @@ Work one sub-milestone at a time, in order. Each one ends with the Build Output 
 | P2-5 | **Risk limits (defaults, versioned like the buyback rules)** | **Decided 2026-10-15 with M2.3 (ADR-031): as proposed, plus gross exposure ≤ 100% (no leverage), a required maximum loss, a usable end-of-day close (E4) and a reviewed GICS sector table.** Position ≤ 10% of capital; loss at the stated maximum ≤ 1% of capital; one sector ≤ 30%; order size ≤ 1% of the 20-session average volume; a drawdown alert at 10% |
 | P2-6 | **Cost model** for backtests | **Decided 2026-10-17 with M2.5 (ADR-033 B2): no commission; a fixed half-spread (equities 2 bps, ETFs 1 bp) plus slippage (5 and 2 bps) per side, as no historical spread is stored; a double-cost scenario.** Proposed: no commission; half the spread plus slippage of 5 basis points per side for the equities, 2 for the ETFs; a sensitivity at double cost |
 | P2-7 | **What the risk check unlocks** | **Decided 2026-10-15 with M2.3 (ADR-031): a daily standard position check (5% of capital, 1% maximum loss) unlocks TRADE-READY and L4; a recorded TRADE runs its own check and is refused on a veto.** TRADE-READY (buyback) and L4 (alerts) become reachable for **paper** decisions once a risk check passes. A paper TRADE records its `risk_check_id` (the Phase 1 database check is relaxed for it only); `mode = paper` and no broker stay enforced |
-| P2-8 | **Alert defaults** (ADR-028 A1–A4, built overnight in M1.7) | Confirm, or say what to change (a new alert rule version) |
+| P2-8 | **Alert defaults** (ADR-028 A1–A4, built overnight in M1.7) | **Decided 2026-10-18 at the Phase 2 exit (ADR-034 E2): confirmed as built; ADR-028 accepted.** Proposed: confirm, or say what to change (a new alert rule version) |
 
 ---
 
@@ -103,3 +103,10 @@ Work one sub-milestone at a time, in order. Each one ends with the Build Output 
 
 ## M2.6 Phase 2 exit report
 Write `docs/reports/phase2_exit.md` in the format of `phase1_exit.md`. Then propose `docs/milestones/M3_*.md` for approval.
+
+**Decided (ADR-034, E1–E4):** OD-8 local only with backups; ADR-028 accepted (P2-8); ADR-009 accepted with the USD 50 cap; Phase 3 starts with policy.
+
+**Acceptance**
+- [x] `docs/reports/phase2_exit.md` reports every Phase 2 exit criterion with its evidence (verify targets run twice).
+- [x] Backups and a restore check exist and pass (`make db-backup`, `make db-restore-check`).
+- [x] `docs/milestones/M3_world_policy.md` proposed for approval, with decisions P3-1 to P3-6.

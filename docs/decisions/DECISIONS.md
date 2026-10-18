@@ -67,11 +67,13 @@ Store UTC (`timestamptz`) everywhere. Display Asia/Singapore by default; show Am
 - No broker credentials of any kind before Phase 5. Live broker credentials only after Phase 6 gates, in a separate env file and DB schema.
 - `LIVE_TRADING_ENABLED=false` is enforced in code.
 
-## ADR-009 LLM usage — Proposed
+## ADR-009 LLM usage — Accepted (2026-10-18, Steven, with the Phase 2 exit; ADR-034 E3)
 - Provider: Anthropic API; model name from `LLM_MODEL` env, never hard-coded.
 - Not on the Phase 0 critical path (Phase 0 entity extraction is rule-based with the SEC ticker dictionary).
 - From Phase 3: extraction, linking, synthesis only. Every LLM call logged to a usage ledger (tokens, cost estimate, purpose, object IDs).
-- Proposed cap: USD 50/month with 70/90/100% alerts and a circuit breaker.
+- Cap: USD 50/month with 70/90/100% alerts and a circuit breaker that stops every call at 100% (decided 2026-10-18).
+- Never decides a trade, an eligibility or a risk verdict (02 §24); valuation, factors, risk and sizing stay deterministic.
+- The key stays in `.env` (`ANTHROPIC_API_KEY`); the ledger, the budget and the circuit breaker are built in M3.1 before the first call.
 
 ## ADR-010 Seed universe — Accepted
 `config/universe.yaml`, user-editable, kept small in Phase 0 to bound API usage. Seed tickers are for data-coverage testing, not investment views.
@@ -660,7 +662,7 @@ M1.6, one PR.
 
 ---
 
-## ADR-028 Alerts Center: convergence levels and acknowledgement — Proposed (2026-10-12, Claude's defaults pending Steven's review)
+## ADR-028 Alerts Center: convergence levels and acknowledgement — Accepted (2026-10-18, Steven confirmed A1–A4 as built with the Phase 2 exit, P2-8; proposed 2026-10-12 as Claude's defaults)
 M1.7, one PR. Steven asked on 2026-10-12 for the work to continue overnight without stopping for plan approval; the decisions below are the options Claude would have recommended, recorded for Steven to confirm or change. Changing them is a new alert rule version (the stored assessments and alerts keep theirs).
 - **Decisions (defaults, to confirm):**
   - A1 Events: earnings releases (8-K Item 2.02), 10-K and 10-Q filings, buyback announcements (authorization and increase statements) and buyback state changes. Other 8-Ks and news are not alerts (news has its own page).
@@ -976,6 +978,23 @@ M2.5, one PR.
 
 ---
 
+## ADR-034 Phase 2 exit: local only with backups, alert defaults and LLM usage accepted — Accepted (2026-10-18, Steven)
+M2.6, with the Phase 2 exit report (`docs/reports/phase2_exit.md`).
+- **Decisions (Steven, 2026-10-18):**
+  - E1 OD-8 decided: the platform stays local on Steven's Mac in Phase 3 (no cloud cost, no sign-in), with local backups and a restore check from now on. Cloud deployment and authentication are decided when the platform must be reached from outside (for example alert delivery to a phone, OD-2) or before Phase 5, in their own ADR; a deployed instance is never reachable without authentication (errata E12).
+  - E2 P2-8 decided: ADR-028 A1–A4 are confirmed as built; ADR-028 is accepted and the alert rules are not changed.
+  - E3 ADR-009 accepted (the Phase 3 entry gate): Anthropic API, the model from `LLM_MODEL`, every call in a usage ledger, USD 50 a month with alerts at 70%, 90% and 100% and a circuit breaker at 100%; language models extract, link and summarize, never decide a trade.
+  - E4 Phase 3 order: policy first (Policy Monitor), then the Event Transmission causal graph, then the physical data and Global Monitor (OD-6).
+- **Backups (E1):**
+  - `make db-backup` writes `$BACKUP_DIR/<UTC time>/` (default `~/autotrading-backups`, refused inside the repository): `db.dump` (`pg_dump -Fc` in the db container), `objects.tar.gz` (every raw payload of the object store, streamed by `python -m autotrading.jobs.backup_objects` in the api container), `table_counts.tsv` (every table's exact rows) and `manifest.json` (time, git commit, alembic version, sizes, object count).
+  - `make db-restore-check` restores the latest backup into a throwaway database (`autotrading_restore_check`), compares every table's rows and the alembic version with the backup, and the archive's entries with the manifest, then drops the throwaway database. The application database is never touched.
+  - Nothing deletes old backups: the script says when more than 14 exist, and Steven removes old ones by hand.
+  - No `.env` or credential is copied. Backups hold licensed data (SEC, FRED, Alpaca, news): personal use only (ADR-001), never shared.
+  - Suggested rhythm: weekly, and before any large backfill or migration. Redis is not backed up (a queue; rebuilt on start).
+- **Live check 2026-10-18:** see the Phase 2 exit report, section 10.
+
+---
+
 ## Open decisions (owner: Steven)
 
 | ID | Decision | Needed by | Default until decided |
@@ -985,14 +1004,14 @@ M2.5, one PR.
 | OD-4 | Options data provider and budget. Candidate (checked 2026-10-05; re-verify before paying): Unusual Whales API. Basic USD 150/month gives REST access to real-time flow; Advanced USD 375/month adds WebSocket streaming; a 15-minute-delayed tier is cheaper. Personal use only, no redistribution (fits ADR-001). Its free website flow is delayed, and scraping it is not allowed. | Phase 5, or earlier if Steven pulls options flow forward | No options data |
 | OD-5 | Short interest / borrow data provider | Before SHORT eligibility | SHORT ideas alert-only |
 | OD-6 | Physical data sources (candidates to evaluate: NASA FIRMS fire data, NOAA climate data, port/shipping data vendors) | Phase 3 | Not ingested |
-| OD-7 | Survivorship-free historical dataset including delisted names. Steven compared commercial datasets (`docs/reports/od7_datasets.md`) and decided on 2026-10-13 not to buy for now (ADR-029, KNOWN_ISSUES KI-1); first candidate if revisited: Sharadar Prices (USD 299 a year, checked 2026-10-12; re-verify before paying) | Before M2.5 reports backtest performance | Backtests blocked from reporting performance |
-| OD-8 | Cloud provider, auth method, backups | Phase 2 exit | Local only |
+| OD-7 | Survivorship-free historical dataset including delisted names. Steven compared commercial datasets (`docs/reports/od7_datasets.md`) and decided on 2026-10-13 not to buy for now (ADR-029, KNOWN_ISSUES KI-1); first candidate if revisited: Sharadar Prices (USD 299 a year, checked 2026-10-12; re-verify before paying) | Before any backtest reports performance (M2.5 shipped with it withheld, ADR-033) | Backtests withhold performance |
 | OD-9 | Verify account eligibility from Singapore for Interactive Brokers (data + paper). The Alpaca part was verified on 2026-10-06 (paper account; market data reachable from Singapore). | Phase 5 | No broker |
 
 ## Decided
 - OD-1 (2026-10-06): Steven confirmed ADR-001: a personal tool, with no redistribution of data. ADR-001 is Accepted.
 - Phase 1 scope (2026-10-06): Steven accepted the Phase 0 exit report and decided OD-2 and OD-3 for Phase 1 (in-app alerts only; no consensus provider yet). Both stay open for later phases. See ADR-020.
 - Phase 2 entry (2026-10-12): Steven accepted the Phase 1 exit report; P2-1 decided (Massive not activated); OD-7 narrowed to a commercial dataset comparison. See ADR-029.
+- Phase 2 exit (2026-10-18): OD-8 decided (local only with backups; cloud and sign-in later in their own ADR), ADR-028 accepted (P2-8), ADR-009 accepted with its USD 50 cap (the Phase 3 entry gate), Phase 3 starts with policy. See ADR-034.
 - M2.5 scope (2026-10-17): Steven withheld backtest performance (OD-7), chose fixed half-spread plus slippage costs (P2-6), the S4 rule, yearly folds with out-of-sample after each rule release, S1's holding states, kept ETF journal entries deferred and monthly runs. See ADR-033.
 - M2.4 scope (2026-10-16): Steven chose the S3 rule (each ETF's own trend, gated by stress), monthly targets with a defensive switch, the Radar candidates (L3/L4 companies and the S3 ETFs) and no ETF journal yet. See ADR-032.
 - P2-4, P2-5 and P2-7 (2026-10-15): Steven accepted the proposed paper portfolio, risk limits and unlocks, with a reviewed sector table and a portfolio drawdown alert. See ADR-031.
