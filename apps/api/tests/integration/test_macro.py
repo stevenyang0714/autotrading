@@ -298,7 +298,7 @@ def test_progress_reads_the_project_documents(client: TestClient) -> None:
     assert milestones["M0.1"]["status"] == "done"
     assert milestones["M0.6"]["done"] == milestones["M0.6"]["total"] > 0
     assert [p["number"] for p in body["phases"]] == [1, 2, 3, 4, 5, 6]
-    assert body["open_decisions"][0]["id"] == "OD-2"  # OD-1 decided 2026-10-06
+    assert body["open_decisions"][0]["id"] == "OD-3"  # OD-1 and OD-2 decided (ADR-035)
     assert body["current"]["Phase"][:1].isdigit()  # any phase, not pinned to the current one
     assert milestones["M1.1"]["status"] in ("proposed", "not_started", "in_progress", "done")
 

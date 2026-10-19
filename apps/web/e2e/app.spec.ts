@@ -528,7 +528,7 @@ test("Opportunity Radar lists the candidates and the Strategy Lab the S3 rotatio
   for (const item of await etfs.locator("li[data-candidate]").all()) {
     await expect(item).toContainText(/rotation rules \d+\.\d+\.\d+/);
   }
-  await candidates.getByRole("link", { name: /targets since/ }).click();
+  await etfs.getByRole("link", { name: /targets since/ }).click();
   await expect(page).toHaveURL(/\/dashboards\/strategy-lab\?known_on=2026-10-06#rotation$/, { timeout: 15_000 });
   const rotation = page.locator("#rotation");
   await expect(rotation).toContainText(/rotation rules \d+\.\d+\.\d+/);
@@ -674,7 +674,7 @@ test("pages show how fresh their data is", async ({ page }) => {
 test("Build Progress reads the milestones", async ({ page }) => {
   await page.goto("/system/progress");
   await expect(page.locator('[data-milestone="M0.1"]')).toHaveAttribute("data-status", "done");
-  await expect(page.getByRole("list", { name: "Open decisions" })).toContainText("OD-2");
+  await expect(page.getByRole("list", { name: "Open decisions" })).toContainText("OD-3");
 });
 
 test.describe("Chinese hints", () => {

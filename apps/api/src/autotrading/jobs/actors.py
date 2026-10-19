@@ -382,13 +382,11 @@ def evaluate_rotation(trigger: str) -> None:
             logger.warning("Rotation rules not loaded (make migrate): nothing assessed")
             return
         row = rotation.record_rotation(session, rules, now, now, trigger)
+        # read before the commit expires the row: a DetachedInstanceError here used to make
+        # dramatiq retry, storing a second assessment at a later T (KI-24)
+        stored = f"{row.reason}, target {row.target}" if row is not None else "already stored"
         session.commit()
-    logger.info(
-        "Rotation at %s (%s): %s",
-        now,
-        trigger,
-        f"{row.reason}, target {row.target}" if row is not None else "already stored",
-    )
+    logger.info("Rotation at %s (%s): %s", now, trigger, stored)
 
 
 @dramatiq.actor(
@@ -438,13 +436,9 @@ def evaluate_momentum(trigger: str) -> None:
             logger.warning("Momentum rules not loaded (make migrate): nothing assessed")
             return
         row = momentum.record_momentum(session, rules, now, now, trigger)
-        session.commit()
-    logger.info(
-        "S4 momentum at %s (%s): %s",
-        now,
-        trigger,
-        f"{row.reason}, target {row.target}" if row is not None else "already stored",
-    )
+        stored = f"{row.reason}, target {row.target}" if row is not None else "already stored"
+        session.commit()  # after reading the row (KI-24)
+    logger.info("S4 momentum at %s (%s): %s", now, trigger, stored)
 
 
 @dramatiq.actor(

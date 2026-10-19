@@ -17,6 +17,7 @@ from sqlalchemy import Engine, create_engine, func, select, text
 from sqlalchemy.engine import URL
 from sqlalchemy.orm import Session, sessionmaker
 
+from autotrading.api.regime import regime as regime_endpoint
 from autotrading.config_sync import (
     RegimeRulesVersionError,
     load_macro_series,
@@ -209,6 +210,29 @@ def test_the_regime_as_known_on_a_date(client: TestClient) -> None:
         ("0.1.0", "retired"),
         ("0.2.0", "active"),
     ]
+
+
+def test_the_history_keeps_each_months_highest_stress(
+    sessions: sessionmaker[Session], stored: datetime
+) -> None:
+    # ADR-036 D5: daily assessments, one history point per New York month at its worst
+    with sessions() as session:
+        session.execute(
+            text(
+                "INSERT INTO regime_assessments (known_at, system_time, rule_version, stress, "
+                "quadrant, flags_on, flags_available, assessment, backfilled, trigger) SELECT "
+                "known_at - interval '2 days', system_time, rule_version, 'crisis', quadrant, "
+                "flags_on, flags_available, assessment, backfilled, trigger FROM "
+                "regime_assessments WHERE known_at = :at"
+            ),
+            {"at": VALUED_AT},
+        )
+        out = regime_endpoint(session, VALUED_AT)
+        session.rollback()
+    october = [p for p in out.history if p.known_at.month == 10]
+    assert [(p.known_at, p.stress) for p in october] == [(VALUED_AT - timedelta(days=2), "crisis")]
+    assert out.current is not None and out.current.known_at == VALUED_AT
+    assert [p.known_at for p in out.history] == sorted(p.known_at for p in out.history)
 
 
 def test_a_change_of_stress_raises_a_market_alert(

@@ -5133,13 +5133,13 @@ terms:
     direction: "N/A"
     interpretation: "How much risk the stress state allows (02 §15)."
     why_it_matters: "Keeps the rotation out of high-beta assets when stress rises."
-    source: "Rotation rules 0.1.0 (config/rotation_rules.yaml); domain/rotation.py; ADR-032"
+    source: "Rotation rules 0.2.0 (config/rotation_rules.yaml); domain/rotation.py; ADR-032, ADR-036"
     source_url: https://github.com/stevenyang0714/autotrading/blob/main/config/rotation_rules.yaml
-    as_of: "2026-10-16"
+    as_of: "2026-10-19"
     update_cadence: "daily (11:15 SGT); targets change at month starts and defensive switches"
-    caveats: "Stress thresholds are regime rules 0.1.0 defaults (KI-3 to KI-7): VIX above 30 alone gives HIGH (KI-5). Thresholds are Steven's defaults (Q1, Q2), unvalidated (OD-7); a change is a new rule version."
+    caveats: "Rotation rules 0.2.0 read regime rules 0.2.0 (ADR-036), reviewed against 2016-2026 only: VIX above 30 makes HIGH only with a second flag. Thresholds are Steven's defaults (Q1, Q2), unvalidated (OD-7); a change is a new rule version."
     related_terms: [stress_state, high_beta, defensive_sleeve, risk_sleeve]
-    methodology_version: 0.1.0
+    methodology_version: 0.2.0
     status: complete
 
   - term_id: risk_sleeve

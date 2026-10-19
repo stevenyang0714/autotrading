@@ -2,7 +2,10 @@
 every input and its vintage, and its history. Nothing is evaluated on request.
 
 - `GET /regime`: the latest assessment at or before T under the active rule version, and the
-  history of states (each assessment's T, stress, quadrant and dimension states).
+  history of states: one assessment per New York month, the one with the month's highest
+  stress (the latest of those on a tie), with its T, quadrant and dimension states. Since
+  regime rules 0.2.0 assess every session (ADR-036 D5), a spike inside a month shows in its
+  month; the latest assessment is `current`.
 - `GET /regime/rules`: the released regime rule sets.
 """
 
@@ -12,7 +15,8 @@ from uuid import UUID
 
 from fastapi import APIRouter
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import case, func, select
+from sqlalchemy.dialects.postgresql import distinct_on
 
 from autotrading.api.data_health import SessionDep
 from autotrading.api.research import KnownAt
@@ -23,6 +27,7 @@ from autotrading.domain.regime import Regime
 from autotrading.repositories.regime import active_regime_version, load_regime_rules
 
 router = APIRouter(tags=["regime"])
+NEW_YORK = "America/New_York"  # history months are New York months, like the month ends
 
 NOT_A_FORECAST = (
     "Deterministic rules on data known at the date: a description of conditions, not a "
@@ -86,9 +91,21 @@ def regime_rules(session: SessionDep) -> list[RegimeRuleSetOut]:
 def regime(session: SessionDep, known_at: KnownAt = None) -> RegimeOut:
     at = known_at_or_now(session, known_at)
     version = active_regime_version()
+    month = func.date_trunc("month", func.timezone(NEW_YORK, RegimeAssessment.known_at))
+    rank = case(
+        {state: i for i, state in enumerate(("normal", "elevated", "high", "crisis"))},
+        value=RegimeAssessment.stress,
+        else_=-1,
+    )
+    worst = (
+        select(RegimeAssessment.id)
+        .where(RegimeAssessment.rule_version == version, RegimeAssessment.known_at <= at)
+        .ext(distinct_on(month))
+        .order_by(month, rank.desc(), RegimeAssessment.known_at.desc())
+    )
     rows = session.scalars(
         select(RegimeAssessment)
-        .where(RegimeAssessment.rule_version == version, RegimeAssessment.known_at <= at)
+        .where(RegimeAssessment.id.in_(worst))
         .order_by(RegimeAssessment.known_at)
     ).all()
     history = [
@@ -103,7 +120,12 @@ def regime(session: SessionDep, known_at: KnownAt = None) -> RegimeOut:
         )
         for r in rows
     ]
-    last = rows[-1] if rows else None
+    last = session.scalars(
+        select(RegimeAssessment)
+        .where(RegimeAssessment.rule_version == version, RegimeAssessment.known_at <= at)
+        .order_by(RegimeAssessment.known_at.desc())
+        .limit(1)
+    ).first()
     return RegimeOut(
         known_at=at,
         rule_version=version,
