@@ -22,7 +22,7 @@ from autotrading.adapters.news import refresh as news_refresh
 from autotrading.adapters.sec import refresh as sec_refresh
 from autotrading.api import buyback_states
 from autotrading.domain.fair_value import month_ends
-from autotrading.infra.db import make_engine
+from autotrading.infra.db import make_background_engine
 from autotrading.infra.heartbeat import write_heartbeat
 from autotrading.infra.object_store import make_s3_client
 from autotrading.infra.redis_client import make_redis
@@ -53,7 +53,7 @@ def heartbeat() -> None:
 def ingestion_runner() -> IngestionRunner:
     """Created on first use inside the worker, so importing this module stays cheap."""
     return IngestionRunner(
-        sessionmaker(make_engine(_settings)),
+        sessions(),
         RawPayloadStore(make_s3_client(_settings), _settings.s3_bucket),
         TokenBucketLimiter(_redis),
     )
@@ -208,7 +208,9 @@ EVALUATION_QUEUE = "evaluation"
 
 @lru_cache
 def sessions() -> sessionmaker[Session]:
-    return sessionmaker(make_engine(_settings))
+    """One engine, so one connection pool, for every job in this process (worker or
+    scheduler)."""
+    return sessionmaker(make_background_engine(_settings))
 
 
 def _now(session: Session) -> datetime:
