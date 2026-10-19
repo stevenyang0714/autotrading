@@ -5,13 +5,15 @@ from sqlalchemy import Engine, NullPool, create_engine, text
 from autotrading.infra.probes import PROBE_TIMEOUT_SECONDS, ProbeResult, run_probe
 from autotrading.settings import Settings
 
-# Connection budget: the local Postgres allows 25 connections (timescaledb-tune sizes
-# max_connections from TS_TUNE_MEMORY=1GB). An instrument page makes 13 API calls at once,
-# so the API keeps 13 connections open for reuse instead of opening and closing them on
-# every page load; its ceiling stays 15, as before. The worker (2 threads) and the
-# scheduler keep 2 each; the scheduler's catch-up burst (up to 10 jobs at once on
-# APScheduler's threads) may briefly open more. That is about 17 connections in steady
-# state, which leaves room for the health probe, migrations, backups and test runs.
+# Connection budget: the local Postgres allows 64 connections (max_connections in
+# infra/docker-compose.yml). An instrument page makes 13 API calls at once, so the API
+# keeps 13 connections open for reuse instead of opening and closing them on every page
+# load; its ceiling stays 15, as before. The worker (2 threads) and the scheduler keep 2
+# each and may open up to 10 (the scheduler's catch-up burst runs up to 10 jobs at once
+# on APScheduler's threads; 6 of its jobs use the database). That is 17 connections in
+# steady state and 36 with every pool full; the health probe (1), a test run (6),
+# migrations or backups (3) and a second API container for testing a branch (16) bring
+# the worst case to 61. tests/unit/test_db_engines.py checks that this still fits.
 POOL_SIZE = 13
 MAX_OVERFLOW = 2
 BACKGROUND_POOL_SIZE = 2
