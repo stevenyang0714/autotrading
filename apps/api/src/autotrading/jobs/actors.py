@@ -32,7 +32,7 @@ from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.ingestion.schedule import market_calendar
 from autotrading.jobs.broker import WorkerHeartbeat, configure_broker
-from autotrading.repositories import backtest, factors, regime, risk, rotation
+from autotrading.repositories import backtest, factors, momentum, regime, risk, rotation
 from autotrading.settings import get_settings
 
 logger = logging.getLogger(__name__)
@@ -240,6 +240,7 @@ def start_buyback_evaluation(*, manual: bool) -> None:
 # ---------- macro regime (M2.1) ----------
 
 REGIME_BACKFILL_SINCE = date(2016, 1, 1)  # ADR-029 R3: ETF closes start in 2016
+REGIME_CALENDAR = "SPY"  # every session SPY closed, plus month ends (ADR-036 D5)
 
 
 def _record_regime(at: datetime, held: datetime, trigger: str) -> None:
@@ -263,7 +264,9 @@ def evaluate_regime(trigger: str) -> None:
 
 @dramatiq.actor(queue_name=EVALUATION_QUEUE, max_retries=1, broker=broker)
 def backfill_regime(known_at: str, system_time: str) -> None:
-    """The regime at one month end, as the database held it at `system_time`."""
+    """The regime at one session close or month end, as the database held it at
+    `system_time`. Its stress alerts come from `make alerts-backfill`, which pairs the stored
+    assessments in order (messages run concurrently)."""
     _record_regime(
         datetime.fromisoformat(known_at), datetime.fromisoformat(system_time), "backfill"
     )
@@ -274,10 +277,11 @@ def start_regime_evaluation(*, manual: bool) -> None:
 
 
 def start_regime_backfill() -> int:
-    """One message per month end since 2016, all with one system time (now)."""
+    """One message per session close and month end since 2016 (ADR-036 D5; month ends only
+    under 0.1.0), all with one system time (now)."""
     with sessions()() as session:
         now = _now(session)
-    points = month_ends(REGIME_BACKFILL_SINCE, now)
+        points = factors.session_points(session, REGIME_CALENDAR, REGIME_BACKFILL_SINCE, now)
     for point in points:
         backfill_regime.send(point.isoformat(), now.isoformat())
     return len(points)
@@ -365,7 +369,7 @@ def start_portfolio_snapshot(*, manual: bool) -> None:
 # ---------- S3 ETF rotation (M2.4) ----------
 
 ROTATION_BACKFILL_SINCE = date(2017, 1, 1)  # ADR-032: 12-1 momentum needs a year of closes
-ROTATION_TIME_LIMIT_MS = 30 * 60 * 1000  # every month end since 2017, in order
+ROTATION_TIME_LIMIT_MS = 60 * 60 * 1000  # every session since 2017, in order
 
 
 @dramatiq.actor(queue_name=EVALUATION_QUEUE, max_retries=1, broker=broker)
@@ -378,30 +382,28 @@ def evaluate_rotation(trigger: str) -> None:
             logger.warning("Rotation rules not loaded (make migrate): nothing assessed")
             return
         row = rotation.record_rotation(session, rules, now, now, trigger)
+        # read before the commit expires the row: a DetachedInstanceError here used to make
+        # dramatiq retry, storing a second assessment at a later T (KI-24)
+        stored = f"{row.reason}, target {row.target}" if row is not None else "already stored"
         session.commit()
-    logger.info(
-        "Rotation at %s (%s): %s",
-        now,
-        trigger,
-        f"{row.reason}, target {row.target}" if row is not None else "already stored",
-    )
+    logger.info("Rotation at %s (%s): %s", now, trigger, stored)
 
 
 @dramatiq.actor(
     queue_name=EVALUATION_QUEUE, max_retries=1, time_limit=ROTATION_TIME_LIMIT_MS, broker=broker
 )
 def backfill_rotation(system_time: str) -> None:
-    """The rotation at every month end since 2017, in order, as the database held it at
-    `system_time` (each compares with the previous month end of the run)."""
+    """The rotation at every session close and month end since 2017, in order, as the database
+    held it at `system_time` (each compares with the previous point of the run)."""
     held = datetime.fromisoformat(system_time)
     with sessions()() as session:
         rules = rotation.stored_rotation_rules(session)
         if rules is None:
             logger.warning("Rotation rules not loaded (make migrate): nothing assessed")
             return
-        points = month_ends(ROTATION_BACKFILL_SINCE, held)
+        points = factors.session_points(session, REGIME_CALENDAR, ROTATION_BACKFILL_SINCE, held)
         stored = rotation.record_points(session, rules, points, held, "backfill")
-    logger.info("Rotation backfill: %d month ends, %d stored", len(points), stored)
+    logger.info("Rotation backfill: %d points, %d stored", len(points), stored)
 
 
 def start_rotation_evaluation(*, manual: bool) -> None:
@@ -409,11 +411,65 @@ def start_rotation_evaluation(*, manual: bool) -> None:
 
 
 def start_rotation_backfill() -> int:
-    """One message for every month end since 2017 (in order), with one system time (now)."""
+    """One message for every session close and month end since 2017 (in order; month ends only
+    under rotation rules 0.1.0), with one system time (now)."""
     with sessions()() as session:
         now = _now(session)
+        points = factors.session_points(session, REGIME_CALENDAR, ROTATION_BACKFILL_SINCE, now)
     backfill_rotation.send(now.isoformat())
-    return len(month_ends(ROTATION_BACKFILL_SINCE, now))
+    return len(points)
+
+
+# ---------- S4 momentum (M3.0) ----------
+
+MOMENTUM_BACKFILL_SINCE = date(2017, 1, 1)  # ADR-033: 12-1 momentum needs a year of closes
+MOMENTUM_TIME_LIMIT_MS = 60 * 60 * 1000  # every session since 2017, in order
+
+
+@dramatiq.actor(queue_name=EVALUATION_QUEUE, max_retries=1, broker=broker)
+def evaluate_momentum(trigger: str) -> None:
+    """S4 now (T = S = now) and the signals of a newly set target (ADR-036 D7)."""
+    with sessions()() as session:
+        now = _now(session)
+        rules = backtest.stored_momentum_rules(session)
+        if rules is None:
+            logger.warning("Momentum rules not loaded (make migrate): nothing assessed")
+            return
+        row = momentum.record_momentum(session, rules, now, now, trigger)
+        stored = f"{row.reason}, target {row.target}" if row is not None else "already stored"
+        session.commit()  # after reading the row (KI-24)
+    logger.info("S4 momentum at %s (%s): %s", now, trigger, stored)
+
+
+@dramatiq.actor(
+    queue_name=EVALUATION_QUEUE, max_retries=1, time_limit=MOMENTUM_TIME_LIMIT_MS, broker=broker
+)
+def backfill_momentum(system_time: str) -> None:
+    """S4 at every session close and month end since 2017, in order, as the database held it
+    at `system_time` (each carries the previous point of the run)."""
+    held = datetime.fromisoformat(system_time)
+    with sessions()() as session:
+        rules = backtest.stored_momentum_rules(session)
+        if rules is None:
+            logger.warning("Momentum rules not loaded (make migrate): nothing assessed")
+            return
+        points = factors.session_points(session, REGIME_CALENDAR, MOMENTUM_BACKFILL_SINCE, held)
+        stored = momentum.record_points(session, rules, points, held, "backfill")
+    logger.info("S4 momentum backfill: %d points, %d stored", len(points), stored)
+
+
+def start_momentum_evaluation(*, manual: bool) -> None:
+    evaluate_momentum.send("manual" if manual else "schedule")
+
+
+def start_momentum_backfill() -> int:
+    """One message for every session close and month end since 2017 (in order), with one
+    system time (now)."""
+    with sessions()() as session:
+        now = _now(session)
+        points = factors.session_points(session, REGIME_CALENDAR, MOMENTUM_BACKFILL_SINCE, now)
+    backfill_momentum.send(now.isoformat())
+    return len(points)
 
 
 # ---------- backtests (M2.5) ----------

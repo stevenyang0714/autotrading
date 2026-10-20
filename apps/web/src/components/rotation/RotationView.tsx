@@ -223,7 +223,7 @@ export function RotationView({ data, knownOn }: { data: RotationResponse | null;
       ) : (
         <p className="text-sm text-neutral-400">
           <Metric termId="etf_rotation" icon={false}>
-            No rotation assessment by this date. It is assessed daily at 11:15 SGT and backfilled for month ends since 2017.
+            No rotation assessment by this date. It is assessed daily at 11:15 SGT and backfilled for every session since 2017.
           </Metric>
         </p>
       )}

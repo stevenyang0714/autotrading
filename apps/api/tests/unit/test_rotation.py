@@ -28,7 +28,10 @@ FILE = RotationRulesFile.model_validate(
 )
 RULES = FILE.active()
 # A released version never changes (ADR-032): a new rule_version is the only way to edit one.
-PINNED = {"0.1.0": "88eebb93f5e1e4e3affd567c5e06fa79190669c152dd6d0bdcf8b4a8fef04866"}
+PINNED = {
+    "0.1.0": "88eebb93f5e1e4e3affd567c5e06fa79190669c152dd6d0bdcf8b4a8fef04866",
+    "0.2.0": "784f98c0fbcab210fb30b39ca6db90a47b1402c6f3e5d91dbfeb6f4d97eb655d",
+}
 T = end_of_day(date(2026, 9, 30))  # a month end
 UP = {"momentum_12_1": "10", "close_vs_sma_200": "5", "beta_252d": "0.9"}
 
@@ -82,6 +85,11 @@ def previous(target: dict[str, str], at: datetime, stress: StressState | None) -
 def test_the_active_rule_set_is_pinned() -> None:
     assert {r.rule_version: r.rule_set().content_sha256() for r in FILE.rule_sets} == PINNED
     assert RULES.sleeves.universe() == ["SPY", "QQQ", "IWM", "XLK", "XLE", "TLT", "IEF", "GLD"]
+    # 0.2.0 is 0.1.0 under regime rules 0.2.0 (ADR-036 D6): nothing else differs
+    old = next(r.rule_set() for r in FILE.rule_sets if r.rule_version == "0.1.0")
+    assert (RULES.rule_version, RULES.regime_rule_version) == ("0.2.0", "0.2.0")
+    differ = {k for k, v in RULES.content().items() if old.content().get(k) != v}
+    assert differ == {"rule_version", "released", "note", "regime_rule_version"}
 
 
 def test_normal_holds_every_etf_in_trend_in_equal_weights() -> None:

@@ -157,7 +157,7 @@ export const DASHBOARDS: readonly DashboardDef[] = [
     slug: "strategy-lab",
     label: "Strategy Lab",
     termId: "dashboard_strategy_lab",
-    purpose: "Paper journal, signals, the ETF rotation and walk-forward backtests with costs.",
+    purpose: "Paper journal, signals, the ETF rotation, company momentum and walk-forward backtests with costs.",
     plannedPhase: 1,
     group: "dashboards",
     live: true,

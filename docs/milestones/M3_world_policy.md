@@ -1,6 +1,6 @@
 # Phase 3 — Policy, events and the world: causal evidence without execution
 
-**Status:** Proposed by Claude on 2026-10-18 with the Phase 2 exit report (`docs/reports/phase2_exit.md`). Not approved yet: Steven answers the decisions below and approves this file before anything is built. The entry gate is met: Phase 2 exit (pending Steven's acceptance of the report) and ADR-009 accepted (2026-10-18, ADR-034). Steven chose the order on 2026-10-18 (ADR-034 E4): policy first, then the causal graph, then the physical data.
+**Status:** Approved 2026-10-19 (ADR-035): Steven answered P3-1 to P3-6 with the proposed defaults and decided OD-6 (P3-5). Proposed by Claude on 2026-10-18 with the Phase 2 exit report (`docs/reports/phase2_exit.md`). The entry gate is met: the Phase 2 exit (#31) and ADR-009 accepted (ADR-034). Order: M3.0 carry-overs, then policy, the causal graph and the physical data (ADR-034 E4). Each sub-milestone still starts in plan mode; Claude decides its scope and thresholds (ADR-035).
 
 **Goal:** turn official policy actions and news events into cited, time-stamped evidence about who is exposed, without ever trading on a headline:
 - a Policy Monitor that follows each US policy action through its lifecycle, from official sources only;
@@ -14,7 +14,7 @@
 - 02 §29: "Causal evidence; policy lifecycle; no event-only execution."
 - 01 §29: "causal evidence; policy lifecycle correctness; no direct execution from headline."
 
-**Entry gate:** "Phase 2 exit; ADR-009 accepted" (ROADMAP). ADR-009 was accepted on 2026-10-18; the Phase 2 exit waits for Steven's acceptance of the report.
+**Entry gate:** "Phase 2 exit; ADR-009 accepted" (ROADMAP). Met: ADR-009 accepted on 2026-10-18 (ADR-034), the Phase 2 exit merged on 2026-10-18 (#31).
 
 **Out of scope for Phase 3:**
 - **Phase 4:** X, Congress PTR, Form 4 insiders.
@@ -24,31 +24,44 @@
 - **Cloud and sign-in:** local only (ADR-034).
 - **Language models deciding anything:** they extract, link and summarize; valuation, factors, risk, sizing and eligibility stay deterministic (02 §24).
 
-Work one sub-milestone at a time, in order. Each one ends with the Build Output Contract and a `docs/STATUS.md` update. Every new metric, rule and page ships with its glossary entry and Chinese hint in the same PR.
+Work one sub-milestone at a time, in this order (ADR-035): M3.0, M3.0b, M3.7, M3.1, M3.2, M3.8, M3.3, M3.4, M3.9, M3.5, M3.6. Each one ends with the Build Output Contract and a `docs/STATUS.md` update. Every new metric, rule and page ships with its glossary entry and Chinese hint in the same PR.
 
 ---
 
-## Decisions for Steven (proposed defaults; nothing is built until answered)
+## Decisions (all decided 2026-10-19, ADR-035)
 
 | # | Question | Proposed default |
 |---|---|---|
-| P3-1 | **Policy sources:** which official sources feed the Policy Monitor? Adding a provider needs Steven's approval. | The White House actions feed (already ingested) and the **Federal Register API** (free, official, no key): executive orders, proclamations and the notices of USTR, Commerce (BIS export controls) and Treasury. USTR press releases by RSS. OFAC sanctions lists later. |
-| P3-2 | **Language-model tasks and evaluation** | Two tasks only: (1) extract a policy object from an official document (status, effective date, affected goods, sectors, countries and the universe instruments), each field with the sentence it came from; (2) link a news event to universe companies, with the sentence. A small, cheap model by default (from `LLM_MODEL`), a larger one only when the small one is unsure. A labelled evaluation set of about 50 documents and 50 events, released as a version; a prompt or model change is a new version with its evaluation. Target: at least 90% correct status and effective date, and no uncited field. |
-| P3-3 | **Policy scope** | Tariffs, export controls (semiconductors and other critical technology), sanctions and critical minerals. Mapped to the 10 companies and 8 ETFs through a reviewed table of goods and sectors, for example NVDA with export controls, XOM and XLE with energy sanctions, LOW, AZO and ORLY with tariffs on imported goods. |
-| P3-4 | **Causal graph edges** | Node types: event, policy, good or sector, company, instrument. Edge types: triggers, affects, exposes, confirmed by price. Every edge cites a source sentence or a stored row and has a timestamp. Exposure is a range (low, base, high), never one forecast. Price confirmation reads the stored factor snapshots. Edges proposed by rules or extraction are marked as such. |
-| P3-5 | **OD-6 physical data** | NASA FIRMS active fires (free, a key in `.env`) and NOAA's ENSO index (free), for energy and agriculture exposure. Shipping and port data stay out (paid vendors). The Global Monitor shows `Data unavailable` for any layer not decided. |
-| P3-6 | **Phase 2 carry-overs before the new features** | A short **M3.0**: regime rules 0.2.0 (KI-3, KI-4, KI-5, KI-7: credit fallback, the NFCI threshold, VIX alone, the stagflation band) with a backfill and the alerts raised again, and S4's daily assessment with family 5 signals and Radar candidates (KI-21). Risk rules 0.2.0 (KI-13, KI-20) wait for OD-7. |
+| P3-1 | **Policy sources:** which official sources feed the Policy Monitor? Adding a provider needs Steven's approval. | **Decided 2026-10-19 (ADR-035): as proposed.** The White House actions feed (already ingested) and the **Federal Register API** (free, official, no key): executive orders, proclamations and the notices of USTR, Commerce (BIS export controls) and Treasury. USTR press releases by RSS. OFAC sanctions lists later. |
+| P3-2 | **Language-model tasks and evaluation** | **Decided 2026-10-19 (ADR-035): as proposed.** Two tasks only: (1) extract a policy object from an official document (status, effective date, affected goods, sectors, countries and the universe instruments), each field with the sentence it came from; (2) link a news event to universe companies, with the sentence. A small, cheap model by default (from `LLM_MODEL`), a larger one only when the small one is unsure. A labelled evaluation set of about 50 documents and 50 events, released as a version; a prompt or model change is a new version with its evaluation. Target: at least 90% correct status and effective date, and no uncited field. |
+| P3-3 | **Policy scope** | **Decided 2026-10-19 (ADR-035): as proposed.** Tariffs, export controls (semiconductors and other critical technology), sanctions and critical minerals. Mapped to the 10 companies and 8 ETFs through a reviewed table of goods and sectors, for example NVDA with export controls, XOM and XLE with energy sanctions, LOW, AZO and ORLY with tariffs on imported goods. |
+| P3-4 | **Causal graph edges** | **Decided 2026-10-19 (ADR-035): as proposed.** Node types: event, policy, good or sector, company, instrument. Edge types: triggers, affects, exposes, confirmed by price. Every edge cites a source sentence or a stored row and has a timestamp. Exposure is a range (low, base, high), never one forecast. Price confirmation reads the stored factor snapshots. Edges proposed by rules or extraction are marked as such. |
+| P3-5 | **OD-6 physical data** | **Decided 2026-10-19 (ADR-035): as proposed.** NASA FIRMS active fires (free, a key in `.env`) and NOAA's ENSO index (free), for energy and agriculture exposure. Shipping and port data stay out (paid vendors). The Global Monitor shows `Data unavailable` for any layer not decided. |
+| P3-6 | **Phase 2 carry-overs before the new features** | **Decided 2026-10-19 (ADR-035): as proposed.** A short **M3.0**: regime rules 0.2.0 (KI-3, KI-4, KI-5, KI-7: credit fallback, the NFCI threshold, VIX alone, the stagflation band) with a backfill and the alerts raised again, and S4's daily assessment with family 5 signals and Radar candidates (KI-21). Risk rules 0.2.0 (KI-13, KI-20) wait for OD-7. |
 
 ---
 
-## M3.0 Phase 2 carry-overs (if P3-6 is accepted)
+## M3.0 Phase 2 carry-overs
+**Decided (ADR-036, D1-D8, Claude under ADR-035):** CRISIS on two of three conditions, the NFCI flag above -0.25, VIX above 30 needs a second flag for HIGH, the quadrant reads the inflation direction; daily regime, rotation and S4 history since 2016/2017; rotation 0.2.0, alert rules 0.5.0, backtest rules 0.2.0.
+
 **Build**
 - **Regime rules 0.2.0:** the thresholds Steven reviews against the history since 2016 (KI-3, KI-4, KI-5, KI-7), a backfill under the new version, rotation and alerts recomputed on it.
 - **S4 daily:** the momentum assessment stored daily, family 5 signals for S4, S4 candidates on the Opportunity Radar.
 
 **Acceptance**
-- [ ] Regime rules 0.2.0 recompute identically as known on their dates; 0.1.0 is kept and its rows unchanged.
-- [ ] S4 signals cite their rule version and factor snapshots, as S3's do.
+- [x] Regime rules 0.2.0 recompute identically as known on their dates; 0.1.0 is kept and its rows unchanged.
+- [x] S4 signals cite their rule version and factor snapshots, as S3's do.
+
+## M3.0b Telegram alert delivery (OD-2, ADR-035)
+**Build**
+- **Delivery:** the platform's own alerts (stress changes, L3 and L4, new S3 and S4 targets, the portfolio drawdown) sent through the Telegram Bot API, with each alert's evidence, its rule versions and the label "rule output, unvalidated, not advice".
+- **Settings:** `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` read from `.env` (Steven creates the bot himself); without them nothing is sent, and the Alerts Center says so.
+- **Delivery ledger:** every message stored with its alert, its time and Telegram's answer (append-only), with a rate limit and quiet hours.
+- **Choice of alerts:** a versioned delivery rule set (which kinds and levels are pushed); backfilled alerts are never pushed.
+
+**Acceptance**
+- [ ] A new alert is sent once and recorded; a repeat or a backfilled alert is not sent (tested with a fake Telegram).
+- [ ] No token or chat id appears in logs, the database or the pages.
 
 ## M3.1 Language-model foundation (ADR-009)
 **Build**
@@ -97,6 +110,45 @@ Work one sub-milestone at a time, in order. Each one ends with the Build Output 
 
 **Acceptance**
 - [ ] Every layer cites its source and time; no physical reading reaches a decision without the causal graph.
+
+## M3.7 Taiwan market: prices, valuation and flows (ADR-035)
+**Build**
+- **Multi-market support:** an exchange per instrument (NYSE/Nasdaq or TWSE/TPEx), the Taipei session and holiday calendar, TWD, and "as known at" times from each market's own close.
+- **Sources:** the TWSE and TPEx OpenAPI with provenance like every other source:
+  - daily prices and volume with ex-rights and ex-dividend adjustment;
+  - P/E, P/B and dividend yield;
+  - net buying of the three institutional investor groups and foreign ownership;
+  - margin and short balances.
+- **Universe:** the 10 largest TWSE companies by market cap at build time and 0050 (list recorded in the ADR).
+- **Pages:** Taiwan instrument pages with the same factor table (momentum, averages, volatility, beta against 0050), and the flows.
+
+**Acceptance**
+- [ ] Every Taiwan value cites its source and its time; As known on reproduces the stored rows.
+- [ ] A Taiwan session never borrows a New York close or calendar.
+
+## M3.8 Taiwan fundamentals: monthly revenue and quarterly reports
+**Build**
+- **Monthly revenue** (published by the 10th of the next month): year-on-year and month-on-month change, each at its publication time.
+- **Quarterly reports:** EPS, gross margin and ROE, from an official source whose terms allow it (MOPS checked first).
+- **Pages:** Taiwan companies on the Fundamental Research dashboard with the same point-in-time rules.
+
+**Acceptance**
+- [ ] Monthly revenue is known only from its publication time (tested with a revision).
+
+## M3.9 Taiwan macro and regime
+**Build**
+- **Taiwan series:**
+  - the business indicators light signal (National Development Council);
+  - export orders;
+  - PMI;
+  - the central bank policy rate;
+  - TWD against USD;
+  - the TAIEX.
+  Each series is added only from an official source.
+- **A Taiwan market regime under its own rule version**, reviewed against its history, with US semiconductor stress (SOX) as context.
+
+**Acceptance**
+- [ ] Every series cites its vintage or publication time; the regime recomputes identically.
 
 ## M3.6 Phase 3 exit report
 Write `docs/reports/phase3_exit.md` in the format of `phase2_exit.md`. Then propose `docs/milestones/M4_*.md` for approval.

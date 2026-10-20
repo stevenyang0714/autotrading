@@ -32,7 +32,7 @@ describe("RotationView with recorded API responses", () => {
     expect(qqq?.getAttribute("data-eligible")).toBe("no");
     expect(qqq?.textContent).toContain("12-1 mom. unavailable");
     expect(qqq?.textContent).toContain("trend not up: 12-1 mom.");
-    expect(screen.getByText(/rotation rules 0\.1\.0/)).toBeTruthy();
+    expect(screen.getByText(/rotation rules 0\.2\.0/)).toBeTruthy();
     expect(screen.getByRole("table", { name: "Recent targets" }).querySelectorAll("tbody tr")).toHaveLength(4);
     expect(unexplainedNumbers(container)).toEqual([]);
   });

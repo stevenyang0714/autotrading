@@ -21,7 +21,13 @@ from autotrading.domain.backtest import (
     sessions,
 )
 from autotrading.domain.factors import Dividend
-from autotrading.domain.momentum import MomentumRulesFile, assess
+from autotrading.domain.momentum import (
+    MomentumRulesFile,
+    PreviousMomentum,
+    assess,
+    daily,
+    signals,
+)
 from autotrading.domain.provenance import end_of_day
 from autotrading.domain.risk import Bar
 from autotrading.domain.rotation import MeasureInput, SnapshotInput
@@ -38,7 +44,11 @@ MOMENTUM_FILE = MomentumRulesFile.model_validate(
 )
 MOMENTUM = MOMENTUM_FILE.active()
 # A released version never changes (ADR-033): a new rule_version is the only way to edit one.
-PINNED = {"0.1.0": "fdc474b9574949ab32e94234bd7c8c36f53a2ad9c0d16408be23d78ec5ef16e4"}
+PINNED = {
+    "0.1.0": "fdc474b9574949ab32e94234bd7c8c36f53a2ad9c0d16408be23d78ec5ef16e4",
+    # S3 on rotation 0.2.0 and S4 from its stored daily assessments (ADR-036)
+    "0.2.0": "f7aff03a644230f4f6b64fa805623095bf9dabdb1066a51ebd403a02a31f5af0",
+}
 MOMENTUM_PINNED = {"0.1.0": "26dd4e8db014c82b87537c1f07db596f166620a734af60042dd60dda2fe373d1"}
 LIMITS = Limits(
     rule_version="0.1.0",
@@ -109,6 +119,13 @@ def test_the_rule_sets_are_pinned() -> None:
     assert (RULES.costs.bps("equity", "base"), RULES.costs.bps("etf", "base")) == (7, 3)
     assert (RULES.costs.bps("equity", "double"), RULES.costs.bps("etf", "double")) == (14, 6)
     assert set(RULES.strategies) == {"S1", "S3", "S4"}
+    assert RULES.rule_version == "0.2.0"
+    assert (RULES.strategies["S3"].rule_version, RULES.strategies["S4"].targets_from) == (
+        "0.2.0",
+        "momentum_assessments",
+    )
+    first = next(r.rule_set() for r in FILE.rule_sets if r.rule_version == "0.1.0")
+    assert first.strategies["S4"].targets_from == "factor_snapshots"
 
 
 def test_a_target_fills_at_the_first_close_published_after_t() -> None:
@@ -306,3 +323,61 @@ def test_s4_holds_each_company_above_both_thresholds_in_equal_weights() -> None:
     assert "older than 5 days" in by["JPM"].detail
     assert by["XOM"].detail == "no factor snapshot known at T"
     assert result.cash_pct == 0
+
+
+# ---------- S4 daily (M3.0, ADR-036 D7) ----------
+
+
+def everyone(at: datetime) -> dict[str, SnapshotInput]:
+    return {s: snapshot(s, at) for s in MOMENTUM.universe}
+
+
+def test_s4_daily_sets_a_target_at_the_first_assessment_of_each_month() -> None:
+    first = end_of_day(date(2026, 10, 1))
+    start = daily(MOMENTUM, first, everyone(first), None)
+    assert (start.reason, start.rebalance, start.set_at) == ("month_start", True, first)
+    assert start.target == assess(MOMENTUM, first, everyone(first)).target
+    held = PreviousMomentum("m-1", first, start.target or {}, first)
+    # later in the month the target is carried, whatever the readings say
+    later = end_of_day(date(2026, 10, 15))
+    snaps = everyone(later) | {"AAPL": snapshot("AAPL", later, momentum_12_1="-5")}
+    carried = daily(MOMENTUM, later, snaps, held)
+    assert (carried.reason, carried.rebalance, carried.set_at) == ("carried", False, first)
+    assert carried.target == start.target and carried.previous_id == "m-1"
+    assert carried.detail == "target of 2026-10-01 carried"
+    assert next(r for r in carried.readings if r.symbol == "AAPL").selected is False
+    # the next New York month sets a new one
+    november = end_of_day(date(2026, 11, 2))
+    renewed = daily(MOMENTUM, november, snaps | everyone(november), held)
+    assert (renewed.reason, renewed.set_at) == ("month_start", november)
+
+
+def test_s4_daily_is_unavailable_without_a_fresh_snapshot() -> None:
+    at = end_of_day(date(2026, 10, 15))
+    stale = {s: snapshot(s, at - timedelta(days=9)) for s in MOMENTUM.universe}
+    result = daily(MOMENTUM, at, stale, None)
+    assert (result.reason, result.target, result.cash_pct, result.rebalance) == (
+        "unavailable",
+        None,
+        None,
+        False,
+    )
+    assert signals(result, "m-2", at) == []
+
+
+def test_s4_signals_cite_the_assessment_and_the_snapshot_once_per_company_held() -> None:
+    at = end_of_day(date(2026, 10, 1))
+    snaps = everyone(at) | {"XOM": snapshot("XOM", at, momentum_12_1="-1")}
+    result = daily(MOMENTUM, at, snaps, None)
+    found = signals(result, "m-3", at + timedelta(days=1))
+    assert [s for s, _ in found] == [s for s in MOMENTUM.universe if s != "XOM"]
+    _, first = found[0]
+    assert (first.family_id, first.strategy_id, first.rule_version) == (5, "S4", "0.1.0")
+    assert first.observation_ids == [
+        {"table": "momentum_assessments", "id": "m-3"},
+        {"table": "factor_snapshots", "id": "snap-AAPL"},
+    ]
+    assert (first.score, first.evidence_independence) == (Decimal("10"), 2)
+    assert first.execution_eligibility == "paper_only" and first.backfilled
+    carried = daily(MOMENTUM, at + timedelta(days=3), snaps, PreviousMomentum("m-3", at, {}, at))
+    assert signals(carried, "m-4", at) == []

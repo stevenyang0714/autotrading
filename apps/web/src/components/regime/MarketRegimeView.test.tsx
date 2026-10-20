@@ -13,7 +13,7 @@ describe("MarketRegimeView with recorded API responses", () => {
     expect(banner?.getAttribute("data-stress")).toBe("normal");
     expect(banner?.textContent).toContain("NORMAL");
     expect(banner?.textContent).toContain("0 of 9 available flags on");
-    expect(banner?.textContent).toContain("Growth x inflation: Stagflation");
+    expect(banner?.textContent).toContain("Growth x inflation: Disinflationary slowdown");
     const flags = screen.getByRole("list", { name: "Stress flags" }).querySelectorAll("[data-flag]");
     expect(flags).toHaveLength(9);
     expect([...flags].every((f) => f.getAttribute("data-status") === "off")).toBe(true);

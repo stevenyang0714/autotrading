@@ -995,19 +995,108 @@ M2.6, with the Phase 2 exit report (`docs/reports/phase2_exit.md`).
 
 ---
 
+## ADR-035 Phase 3 approved, and Claude's autonomy — Accepted (2026-10-19, Steven)
+Steven approved `docs/milestones/M3_world_policy.md` after M2.6 (#31) merged, answering P3-1 to P3-6 with the proposed defaults:
+- P3-1 policy sources: the White House actions feed (already ingested) and the Federal Register API (free, official, no key); USTR press releases by RSS; OFAC sanctions lists later. The Federal Register adapter is the one new provider this approves (M3.2).
+- P3-2 language-model tasks: two only, policy extraction and event-to-company links, each field with the sentence it came from; a small model by default and a larger one only when the small one is unsure; a labelled evaluation set of about 50 documents and 50 events, at least 90% correct status and effective date and no uncited field.
+- P3-3 policy scope: tariffs, export controls, sanctions and critical minerals, mapped to the universe through a reviewed table of goods and sectors.
+- P3-4 graph edges: rules and extraction may both propose an edge, marked by who proposed it; every edge cites its evidence and time; exposure is a range; no per-edge approval by Steven.
+- P3-5 OD-6 decided: NASA FIRMS active fires and NOAA's ENSO index (both free). FIRMS needs a free key that Steven registers himself and puts in `.env` before M3.5; shipping and port data stay out (paid).
+- P3-6: a short M3.0 first (regime rules 0.2.0 and S4's daily assessment, ADR-036).
+
+**Autonomy (Steven, 2026-10-19).** Asked whether Claude can choose the best options itself, Steven chose the widest scope offered: from now on Claude decides scope, order and every reversible choice (rule thresholds, technical design, which sub-milestone next) without asking him option by option.
+- Each milestone still starts in plan mode; the plan approval is Steven's review point. Each plan and ADR lists the decisions Claude made, with their evidence, so Steven can overrule any of them; an overrule is a new rule version, since released versions and stored rows never change.
+- Claude still stops and asks before: spending money; a new external provider, account or API key (Steven registers keys himself); deleting data; broker or order code; and the rest of the CLAUDE.md stop-and-ask list (canonical decisions, IDs, schema contracts, score directions). Steven still publishes branches and merges, after Claude reports "可以 merge" on a green CI.
+- Risks Steven accepted: Claude's thresholds shape what the platform concludes; rows written under a version are permanent; fewer questions mean fewer assumptions he has looked at. Mitigation: the "decisions Claude made" list in every plan, ADR and report.
+
+**Two providers approved later the same day (Steven, 2026-10-19, during M3.0).** Both are new external providers, so Steven approved them himself:
+- **OD-2 decided: Telegram alert delivery** through the Telegram Bot API (free).
+  - It pushes the platform's own alerts with their evidence: stress changes, L3 and L4, new S3 and S4 targets, the portfolio drawdown. Each is labelled as a rule output, unvalidated and not advice to buy or sell.
+  - Every message sent is recorded, and sending is rate-limited.
+  - Steven creates the bot with @BotFather and puts its token in `.env`; Claude never handles the token.
+  - It runs on the Mac (outbound only): no cloud deployment and no inbound access, so OD-8 is unchanged. Message text passes through Telegram's servers.
+  - Built in M3.0b, right after M3.0.
+- **Taiwan market approved: TWSE and TPEx OpenAPI** (official, free, no key; open government data licence, attribution required, re-verified before building).
+  - The universe is the 10 largest TWSE companies by market cap at build time, plus 0050. Claude chooses them and records the list.
+  - The Market Observation Post System (MOPS) is used only after its terms are checked; no scraping without permission.
+  - The work is milestones M3.7 to M3.9 of the Phase 3 file. They need multi-market support (Taipei sessions and calendar, TWD), so they come after the shared foundations.
+- **Order decided by Claude (ADR-035):** M3.0, M3.0b (Telegram), M3.7 (Taiwan prices, valuation and flows), M3.1 (language-model foundation), M3.2 (Policy Monitor), M3.8 (Taiwan monthly revenue and reports), M3.3, M3.4, M3.9 (Taiwan macro and regime), M3.5, then M3.6 (exit report).
+
+---
+
+## ADR-036 M3.0: regime rules 0.2.0 and S4's daily assessment — Accepted (2026-10-19, Claude's decisions under ADR-035, plan approved by Steven)
+Phase 2's carry-overs (P3-6). Claude reviewed regime rules 0.1.0 against the 129 stored month-end assessments since 2016 and decided each change from that history (ADR-035); Steven approved the plan.
+- **D1 KI-3, crisis:** CRISIS on two of the three conditions (distressed credit, VIX above 40, SPY more than 20% below its 52-week high) instead of all three (`crisis_conditions: 2`).
+  - Recomputed: only the end of March 2020 becomes CRISIS (VIX 53.5, drawdown 23.9%, credit calm).
+  - The end of September 2022 (drawdown 25.2%, VIX 31.6) stays HIGH.
+  - The NFCI credit thresholds are unchanged.
+- **D2 KI-4, NFCI flag:** above -0.25 instead of 0 (no month end since 2016 reached 0).
+  - It fires at the ends of March and April 2020; May, June, July, September, October and December 2022; and March 2023 (the bank failures).
+  - On 2026-10-19 the NFCI is -0.50.
+- **D3 KI-5, VIX alone:** VIX above 30 makes HIGH only with at least two flags on; with fewer it makes ELEVATED (`high_vix_min_flags: 2`).
+  - The ends of June 2020 and January 2021 (only the volatility flag on) move from HIGH to ELEVATED.
+  - The ends of October 2020 and February 2022 stay HIGH.
+- **D4 KI-7, quadrant:** inflation counts as high when it is hot, or above target and not falling (`quadrant_uses_direction: true`); the inflation state itself is unchanged.
+  - 13 of the 28 stagflation month ends since November 2023 become disinflationary slowdowns.
+  - Two reflation month ends become goldilocks.
+  - 2022 (hot) is unchanged.
+  - Today reads disinflationary slowdown: core PCE 3.01% a year, 2.05% annualized over 3 months.
+- **Combined effect on the month ends since 2016:**
+  - Stress states: 0.1.0 had 105 normal, 15 elevated, 9 high and 0 crisis; 0.2.0 has 104, 16, 8 and 1.
+  - Quadrants: 0.1.0 had 46 goldilocks, 31 reflation, 34 stagflation and 18 disinflationary slowdown; 0.2.0 has 48, 29, 21 and 31.
+- **The new fields' defaults reproduce 0.1.0.** 0.1.0's content and sha256 are therefore unchanged, and its stored rows still recompute identically.
+  - The fields are `crisis_conditions` 3, `high_vix_min_flags` 0 and `quadrant_uses_direction` false.
+  - Under 0.1.0, the crisis detail keeps its old wording.
+- **D5 KI-6, KI-17, daily history:**
+  - The 0.2.0 backfill assesses every session SPY closed since 2016, plus every month end (`factors.session_points`, the factor backfill's points).
+  - Rotation 0.2.0 does the same since 2017, in order, so defensive switches inside a month enter the history and S3's backtest.
+  - Backfilled assessments raise no alert themselves, because their messages run concurrently. `make alerts-backfill` then pairs them in order of T, and those alerts are hidden by default as backfilled.
+  - `regime-verify` and `rotation-verify` check the latest rows of every version, so 0.1.0's rows keep being verified.
+- **D6 versions that follow:**
+  - Rotation rules 0.2.0: 0.1.0 under regime rules 0.2.0, nothing else changed.
+  - Alert rules 0.5.0: 0.4.0 under regime and rotation rules 0.2.0.
+  - Backtest rules 0.2.0: S3 on rotation 0.2.0; S4 from its stored assessments.
+  - Every earlier version is retired with its rows unchanged.
+  - Without the switch, rotation 0.1.0 would turn unavailable 3 days after daily regime 0.1.0 assessments stopped.
+- **D7 KI-21, S4 daily:** momentum rules stay 0.1.0 (unchanged content).
+  - A daily assessment at 11:17 SGT is stored in `momentum_assessments` (migration 0028). The target is set at the first assessment of each New York month and carried otherwise, as S3 and the backtests do.
+  - Family 5 paper signals are made only when a target is set: one per company held, citing the assessment and its factor snapshot.
+  - S4 candidates appear on the Opportunity Radar, and Strategy Lab gets `#momentum`.
+  - The backfill covers every session since 2017.
+- **D8 the regime history on the page:** with daily assessments, `GET /regime` returns one history point per New York month: its highest stress (the latest of those on a tie). A month's spike shows in its cell (KI-6), and the response stays at about 130 points instead of 2,750. The latest assessment is `current`.
+- **Live check 2026-10-19:**
+  - **Before going live:** `make db-backup`, 113 min under memory pressure (KI-23).
+  - **Regime 0.2.0:** 2,751 assessments at every session close and month end since 2016.
+    - Days: 2,221 normal, 339 elevated, 173 high and 19 crisis (2020-03-13 to 2020-04-08).
+    - Today: NORMAL, disinflationary slowdown, 1 flag (dollar surge).
+  - **Rotation 0.2.0:** 2,495 points since 2017.
+    - 118 month starts and 32 defensive switches (for example 2025-04-03: GLD and IEF); 89 rotation alerts, all backfilled.
+    - October 2026 target: SPY, QQQ, IWM, XLK and XLE at 20%.
+  - **S4:** 2,495 points; 118 month starts and 696 family 5 signals. October 2026: AAPL, GOOGL, NVDA and XOM at 25%.
+  - **Alerts:** `alerts-backfill` stored 730 convergence assessments under alert rules 0.5.0 and raised 193 stress-change alerts in order.
+  - **Backtest rules 0.2.0:**
+    - S1 is unchanged: 69 rebalances, 351 trades, about 20.5 bps a year.
+    - S3: 150 rebalances and 642 trades; costs about 24.7 bps a year (16.9 under 0.1.0, because the switches add trades).
+    - S4: 118 rebalances and 776 trades; about 31.5 bps a year (34.4).
+  - **Verify, run twice, all identical:** regime 40 (20 per version), factors 315 and 316, risk 119 and 118, buyback 20, rotation 323 (every 0.1.0 row and the latest 200 of 0.2.0), momentum 200, backtests 6.
+  - **Latency, 20 calls each (p50 / p95):** `/momentum` 0.015 / 0.021 s, `/candidates` 0.010 / 0.014 s, `/signals` 0.008 / 0.010 s, `/rotation` 0.021 / 0.034 s, `/backtests` 0.028 / 0.041 s.
+  - **Operations:** the scheduler was paused during the backfills, so no incomplete 0.2.0 backtest was stored. The day's assessments were run by hand.
+
+---
+
 ## Open decisions (owner: Steven)
 
 | ID | Decision | Needed by | Default until decided |
 |---|---|---|---|
-| OD-2 | Alert delivery channel outside the app (email / Telegram / Slack / push) | Later (Phase 1 runs in-app only, ADR-020) | In-app Alerts Center only |
 | OD-3 | Point-in-time consensus estimates provider | Before consensus-based earnings and S2 (Phase 1 runs without, ADR-020) | Consensus shown as `Data unavailable` |
 | OD-4 | Options data provider and budget. Candidate (checked 2026-10-05; re-verify before paying): Unusual Whales API. Basic USD 150/month gives REST access to real-time flow; Advanced USD 375/month adds WebSocket streaming; a 15-minute-delayed tier is cheaper. Personal use only, no redistribution (fits ADR-001). Its free website flow is delayed, and scraping it is not allowed. | Phase 5, or earlier if Steven pulls options flow forward | No options data |
 | OD-5 | Short interest / borrow data provider | Before SHORT eligibility | SHORT ideas alert-only |
-| OD-6 | Physical data sources (candidates to evaluate: NASA FIRMS fire data, NOAA climate data, port/shipping data vendors) | Phase 3 | Not ingested |
 | OD-7 | Survivorship-free historical dataset including delisted names. Steven compared commercial datasets (`docs/reports/od7_datasets.md`) and decided on 2026-10-13 not to buy for now (ADR-029, KNOWN_ISSUES KI-1); first candidate if revisited: Sharadar Prices (USD 299 a year, checked 2026-10-12; re-verify before paying) | Before any backtest reports performance (M2.5 shipped with it withheld, ADR-033) | Backtests withhold performance |
 | OD-9 | Verify account eligibility from Singapore for Interactive Brokers (data + paper). The Alpaca part was verified on 2026-10-06 (paper account; market data reachable from Singapore). | Phase 5 | No broker |
 
 ## Decided
+- OD-2 (2026-10-19): Telegram alert delivery from M3.0b, with the Taiwan market (TWSE and TPEx OpenAPI) approved the same day. See ADR-035.
+- Phase 3 approved (2026-10-19): Steven answered P3-1 to P3-6 with the proposed defaults; OD-6 decided (NASA FIRMS and NOAA ENSO, FIRMS key registered by Steven before M3.5); Claude decides scope and reversible choices from now on. See ADR-035.
 - OD-1 (2026-10-06): Steven confirmed ADR-001: a personal tool, with no redistribution of data. ADR-001 is Accepted.
 - Phase 1 scope (2026-10-06): Steven accepted the Phase 0 exit report and decided OD-2 and OD-3 for Phase 1 (in-app alerts only; no consensus provider yet). Both stay open for later phases. See ADR-020.
 - Phase 2 entry (2026-10-12): Steven accepted the Phase 1 exit report; P2-1 decided (Massive not activated); OD-7 narrowed to a commercial dataset comparison. See ADR-029.

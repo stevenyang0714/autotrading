@@ -5,10 +5,11 @@ stored rows; nothing is evaluated or stored on request.
   Execution Ready, for strategy S1, with every level check and the items behind it.
 - The ETFs of the S3 rotation target in force at T, with their trend readings and the stress
   state that allowed them.
+- The companies of the S4 momentum target in force at T (M3.0, ADR-036 D7), with their readings.
 - The market's stress state and quadrant at T, as context.
 
 Long only (no short data, OD-5). No score and no ranking across instruments (P2-3, KI-1, errata
-E3): companies are listed by level, then ticker; ETFs in the rotation's universe order.
+E3): companies are listed by level, then ticker; ETFs and S4 companies in universe order.
 """
 
 from datetime import datetime
@@ -23,13 +24,17 @@ from sqlalchemy.dialects.postgresql import distinct_on
 from autotrading.api.alerts import CompanyLevel, company_level
 from autotrading.api.data_health import SessionDep
 from autotrading.api.instruments import universe_equities
+from autotrading.api.momentum import latest_momentum
 from autotrading.api.research import KnownAt
 from autotrading.api.rotation import latest_rotation
 from autotrading.api.valuation import known_at_or_now
 from autotrading.db.models import ConvergenceAssessment, RegimeAssessment
+from autotrading.domain.momentum import STRATEGY as MOMENTUM_STRATEGY
+from autotrading.domain.momentum import CompanyReading, MomentumAssessment
 from autotrading.domain.registries import STRATEGIES
 from autotrading.domain.rotation import EtfReading, Rotation
 from autotrading.domain.signals import BUYBACK_STRATEGY
+from autotrading.repositories.backtest import active_momentum_version, stored_momentum_rules
 from autotrading.repositories.convergence import active_alert_version, stored_alert_rules
 from autotrading.repositories.regime import active_regime_version
 from autotrading.repositories.rotation import active_rotation_version, stored_rotation_rules
@@ -40,8 +45,8 @@ STRATEGY_NAMES = {s.id: s.name for s in STRATEGIES}
 CANDIDATE_LEVELS = (3, 4)  # L3 Trade Candidate, L4 Execution Ready
 LONG_ONLY = (
     "Long only (no short data, OD-5). What the rules flag as known at the date, not a buy list "
-    "and not ranked: companies at L3 or L4 (S1) and the ETFs of the S3 rotation target. "
-    "Thresholds are defaults, unvalidated (OD-7)."
+    "and not ranked: companies at L3 or L4 (S1), the ETFs of the S3 rotation target and the "
+    "companies of the S4 momentum target. Thresholds are defaults, unvalidated (OD-7)."
 )
 
 
@@ -77,11 +82,25 @@ class EtfCandidate(BaseModel):
     reading: EtfReading  # as read at T
 
 
+class MomentumCandidate(BaseModel):
+    ticker: str
+    strategy_id: str
+    strategy: str
+    weight_pct: Decimal
+    momentum_id: UUID
+    momentum_rule_version: str
+    factor_definition_version: str
+    set_at: datetime  # when the target in force was set
+    reason: str  # of the assessment in force at T: month_start or carried
+    reading: CompanyReading  # as read at T
+
+
 class OpportunityCandidatesOut(BaseModel):
     known_at: datetime
     context: MarketContext | None
     companies: list[CompanyCandidate]
     etfs: list[EtfCandidate]
+    momentum: list[MomentumCandidate]
     detail: str = LONG_ONLY
 
 
@@ -166,6 +185,33 @@ def _etfs(session: SessionDep, at: datetime) -> list[EtfCandidate]:
     ]
 
 
+def _momentum(session: SessionDep, at: datetime) -> list[MomentumCandidate]:
+    rules = stored_momentum_rules(session, active_momentum_version())
+    row = latest_momentum(session, at)
+    if rules is None or row is None:
+        return []
+    found = MomentumAssessment.model_validate(row.assessment)
+    if not found.target or found.set_at is None:
+        return []
+    readings = {r.symbol: r for r in found.readings}
+    return [
+        MomentumCandidate(
+            ticker=symbol,
+            strategy_id=MOMENTUM_STRATEGY,
+            strategy=STRATEGY_NAMES[MOMENTUM_STRATEGY],
+            weight_pct=weight,
+            momentum_id=row.id,
+            momentum_rule_version=rules.rule_version,
+            factor_definition_version=rules.factor_definition_version,
+            set_at=found.set_at,
+            reason=found.reason,
+            reading=readings[symbol],
+        )
+        for symbol, weight in found.target.items()
+        if symbol in readings
+    ]
+
+
 @router.get("/candidates")
 def candidates(session: SessionDep, known_at: KnownAt = None) -> OpportunityCandidatesOut:
     at = known_at_or_now(session, known_at)
@@ -174,4 +220,5 @@ def candidates(session: SessionDep, known_at: KnownAt = None) -> OpportunityCand
         context=_context(session, at),
         companies=_companies(session, at),
         etfs=_etfs(session, at),
+        momentum=_momentum(session, at),
     )

@@ -1,10 +1,12 @@
 """Signals (M1.6, ADR-027 J1): stored with each qualifying buyback state assignment (S1) and,
-since M2.4 (ADR-032), with each new S3 ETF rotation target; listed per point in time. A signal
-is paper_only: nothing here or anywhere places an order (ADR-008).
+since M2.4 (ADR-032), with each new S3 ETF rotation target and, since M3.0 (ADR-036 D7), each
+new S4 momentum target; listed per point in time. A signal is paper_only: nothing here or
+anywhere places an order (ADR-008).
 
-`GET /signals` lists the current signals (each company's latest qualifying assignment, and the
-ETFs of the rotation target in force) and, for one ticker, its history. Writing is in
-repositories/signals.py, called by `record_assignment` and `record_rotation`.
+`GET /signals` lists the current signals (each company's latest qualifying assignment, the ETFs
+of the rotation target in force and the companies of the S4 target in force) and, for one
+ticker, its history. Writing is in repositories/signals.py, called by `record_assignment`,
+`record_rotation` and `record_momentum`.
 """
 
 from datetime import datetime
@@ -22,10 +24,17 @@ from autotrading.api.buyback_states import active_rule_version
 from autotrading.api.data_health import SessionDep
 from autotrading.api.research import KnownAt
 from autotrading.api.valuation import known_at_or_now
-from autotrading.db.models import BuybackStateAssignment, RotationAssessment, SignalRecord
+from autotrading.db.models import (
+    BuybackStateAssignment,
+    MomentumAssessment,
+    RotationAssessment,
+    SignalRecord,
+)
+from autotrading.domain.momentum import STRATEGY as MOMENTUM_STRATEGY
 from autotrading.domain.registries import SIGNAL_FAMILIES, STRATEGIES
 from autotrading.domain.rotation import STRATEGY as ROTATION_STRATEGY
 from autotrading.domain.signals import BUYBACK_STRATEGY
+from autotrading.repositories.backtest import active_momentum_version
 from autotrading.repositories.rotation import active_rotation_version
 
 router = APIRouter(tags=["signals"])
@@ -42,8 +51,9 @@ class SignalOut(BaseModel):
     strategy_id: str | None
     strategy: str | None
     rule_version: str
-    state: str  # S1: the buyback state of its assignment; S3: `rotation_target`
-    weight_pct: Decimal | None = None  # S3: the ETF's weight in the target
+    # S1: the buyback state of its assignment; S3 `rotation_target`; S4 `momentum_target`
+    state: str
+    weight_pct: Decimal | None = None  # S3, S4: the instrument's weight in the target
     stress: str | None = None  # S3: the stress state the target was set under
     score: Decimal | None
     direction: str
@@ -61,12 +71,13 @@ class SignalsOut(BaseModel):
     known_at: datetime
     rule_version: str  # the active buyback rule version (S1)
     rule_versions: dict[str, str]  # strategy -> its active rule version
-    current: list[SignalOut]  # S1: each company's latest qualifying assignment; S3: the target
+    current: list[SignalOut]  # S1: each company's latest qualifying assignment; S3, S4: targets
     history: list[SignalOut]  # one ticker's signals, newest first (with ?ticker=)
 
 
-Strategy = Literal["S1", "S3"]
+Strategy = Literal["S1", "S3", "S4"]
 ROTATION_TARGET = "rotation_target"
+MOMENTUM_TARGET = "momentum_target"
 
 
 def signal_out(
@@ -157,6 +168,48 @@ def current_rotation(session: Session, at: datetime, rule_version: str) -> list[
     return [_rotation_out(row, assessment) for row, assessment in rows]
 
 
+def _with_momentum() -> Any:
+    """S4 signals with the momentum assessment that set their target."""
+    return (
+        select(SignalRecord, MomentumAssessment)
+        .join(
+            MomentumAssessment,
+            and_(
+                MomentumAssessment.known_at == SignalRecord.generated_at,
+                MomentumAssessment.rule_version == SignalRecord.rule_version,
+            ),
+        )
+        .where(SignalRecord.strategy_id == MOMENTUM_STRATEGY)
+    )
+
+
+def _momentum_out(row: SignalRecord, assessment: MomentumAssessment) -> SignalOut:
+    weight = (assessment.target or {}).get(row.ticker)
+    return signal_out(row, MOMENTUM_TARGET, Decimal(weight) if weight else None)
+
+
+def current_momentum(session: Session, at: datetime, rule_version: str) -> list[SignalOut]:
+    """The signals of the S4 target in force at T: those of the latest target set at or before
+    it (the first assessment of its month), by ticker."""
+    latest = (
+        select(MomentumAssessment.known_at)
+        .where(
+            MomentumAssessment.rule_version == rule_version,
+            MomentumAssessment.known_at <= at,
+            MomentumAssessment.rebalance,
+        )
+        .order_by(MomentumAssessment.known_at.desc())
+        .limit(1)
+        .scalar_subquery()
+    )
+    rows = session.execute(
+        _with_momentum()
+        .where(SignalRecord.rule_version == rule_version, SignalRecord.generated_at == latest)
+        .order_by(SignalRecord.ticker)
+    ).all()
+    return [_momentum_out(row, assessment) for row, assessment in rows]
+
+
 def current_signals(session: Session, at: datetime, rule_version: str) -> list[SignalOut]:
     """Each company's signal from its latest assignment at or before T, if that one qualifies."""
     latest = (
@@ -196,6 +249,14 @@ def signal_history(
             .limit(limit)
         ).all()
         out += [_rotation_out(row, assessment) for row, assessment in found]
+    if MOMENTUM_STRATEGY in strategies:
+        held = session.execute(
+            _with_momentum()
+            .where(SignalRecord.ticker == ticker.upper(), SignalRecord.generated_at <= at)
+            .order_by(SignalRecord.generated_at.desc())
+            .limit(limit)
+        ).all()
+        out += [_momentum_out(row, assessment) for row, assessment in held]
     out.sort(key=lambda s: s.generated_at, reverse=True)
     return out[:limit]
 
@@ -211,16 +272,25 @@ def signals(
     at = known_at_or_now(session, known_at)
     rule_version = active_rule_version()
     rotation_version = active_rotation_version()
-    chosen: set[str] = set(strategy) if strategy else {BUYBACK_STRATEGY, ROTATION_STRATEGY}
+    momentum_version = active_momentum_version()
+    chosen: set[str] = (
+        set(strategy) if strategy else {BUYBACK_STRATEGY, ROTATION_STRATEGY, MOMENTUM_STRATEGY}
+    )
     current: list[SignalOut] = []
     if BUYBACK_STRATEGY in chosen:
         current += current_signals(session, at, rule_version)
     if ROTATION_STRATEGY in chosen:
         current += current_rotation(session, at, rotation_version)
+    if MOMENTUM_STRATEGY in chosen:
+        current += current_momentum(session, at, momentum_version)
     return SignalsOut(
         known_at=at,
         rule_version=rule_version,
-        rule_versions={BUYBACK_STRATEGY: rule_version, ROTATION_STRATEGY: rotation_version},
+        rule_versions={
+            BUYBACK_STRATEGY: rule_version,
+            ROTATION_STRATEGY: rotation_version,
+            MOMENTUM_STRATEGY: momentum_version,
+        },
         current=current,
         history=signal_history(session, ticker, at, limit, chosen) if ticker else [],
     )

@@ -64,6 +64,9 @@ class InflationRule(_Rule):
     near_band: Decimal
     hot: Decimal
     direction_band: Decimal
+    # 0.2.0 (KI-7): above target but falling is not high inflation in the quadrant. The default
+    # reproduces 0.1.0, so its content (exclude_defaults) and sha256 are unchanged.
+    quadrant_uses_direction: bool = False
 
 
 class PolicyRule(_Rule):
@@ -104,6 +107,11 @@ class StressRule(_Rule):
     high_vix: Decimal
     crisis_vix: Decimal
     crisis_drawdown: Decimal
+    # 0.2.0 (KI-3, KI-5); the defaults reproduce 0.1.0 (content and sha256 unchanged):
+    # how many of the three crisis conditions (distressed credit, VIX, drawdown) make CRISIS,
+    crisis_conditions: Annotated[int, Field(ge=1, le=3)] = 3
+    # and how many flags must be on for VIX above high_vix to make HIGH (otherwise ELEVATED).
+    high_vix_min_flags: Annotated[int, Field(ge=0)] = 0
 
 
 class RegimeRuleSet(_Rule):
@@ -551,10 +559,17 @@ def volatility(rules: VolatilityRule, s: Mapping[str, Sequence[Obs]]) -> Dimensi
     return Dimension(dimension=VOLATILITY, state=state, detail=f"VIX {level}", readings=readings)
 
 
-def quadrant(growth_state: str, inflation_state: str) -> str | None:
+def quadrant(
+    growth_state: str,
+    inflation_state: str,
+    trend: str | None = None,
+    uses_direction: bool = False,
+) -> str | None:
     if "unavailable" in (growth_state, inflation_state):
         return None
-    high = inflation_state in ("above_target", "hot")
+    high = inflation_state == "hot" or (
+        inflation_state == "above_target" and not (uses_direction and trend == "falling")
+    )
     if growth_state == "expanding":
         return "reflation" if high else "goldilocks"
     return "stagflation" if high else "disinflationary_slowdown"
@@ -740,18 +755,31 @@ def stress_state(
     dd = next((f.value for f in found if f.flag_id == "equity_drawdown"), None)
     distressed = dims[CREDIT].state == "distressed"
     basis = f"{on} of {available} available flags on"
-    if (
-        distressed
-        and vix is not None
-        and vix > rules.crisis_vix
-        and dd is not None
-        and dd > rules.crisis_drawdown
-    ):
-        return "crisis", f"{basis}; credit distressed, VIX and drawdown at crisis levels"
-    if on >= rules.high_flags or distressed or (vix is not None and vix > rules.high_vix):
+    conditions = [
+        ("credit distressed", distressed),
+        (f"VIX above {rules.crisis_vix}", vix is not None and vix > rules.crisis_vix),
+        (
+            f"SPY more than {rules.crisis_drawdown}% below its high",
+            dd is not None and dd > rules.crisis_drawdown,
+        ),
+    ]
+    met = [label for label, ok in conditions if ok]
+    if len(met) >= rules.crisis_conditions:
+        if rules.crisis_conditions == len(conditions):  # 0.1.0's wording, kept for its rows
+            return "crisis", f"{basis}; credit distressed, VIX and drawdown at crisis levels"
+        return "crisis", f"{basis}; {len(met)} of {len(conditions)} crisis conditions: " + (
+            ", ".join(met)
+        )
+    vix_high = vix is not None and vix > rules.high_vix
+    if on >= rules.high_flags or distressed or (vix_high and on >= rules.high_vix_min_flags):
         return "high", basis
     if on >= rules.elevated_flags:
         return "elevated", basis
+    if vix_high:  # only when high_vix_min_flags is above the flags on (0.2.0)
+        return "elevated", (
+            f"{basis}; VIX above {rules.high_vix} with fewer than "
+            f"{rules.high_vix_min_flags} flags on"
+        )
     return "normal", basis
 
 
@@ -779,7 +807,7 @@ def assess(
         rule_version=rules.rule_version,
         known_at=at,
         dimensions=list(dims.values()),
-        quadrant=quadrant(g.state, i.state),
+        quadrant=quadrant(g.state, i.state, i.trend, rules.inflation.quadrant_uses_direction),
         flags=found,
         flags_on=sum(f.status == "on" for f in found),
         flags_available=sum(f.status != "unavailable" for f in found),

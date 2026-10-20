@@ -1,0 +1,197 @@
+{
+  "recorded_at": "2026-10-18T16:54:37.375716+00:00",
+  "recorded_from": "recorded FRED vintages and Alpaca closes replayed into the integration test database (tests/integration/test_backtests.py)",
+  "endpoint": "/momentum",
+  "params": {
+    "known_at": "2026-10-06T12:00:00Z"
+  },
+  "response": {
+    "known_at": "2026-10-06T12:00:00Z",
+    "rule_version": "0.1.0",
+    "current": {
+      "id": "c5772024-1f77-437f-9f36-5b409d2f3a43",
+      "known_at": "2026-10-06T12:00:00Z",
+      "system_time": "2026-10-18T16:54:36.039654Z",
+      "backfilled": true,
+      "momentum": {
+        "rule_version": "0.1.0",
+        "known_at": "2026-10-06T12:00:00Z",
+        "readings": [
+          {
+            "symbol": "AAPL",
+            "snapshot_id": "25d79703-36de-4511-a39a-b138484c71d1",
+            "snapshot_known_at": "2026-10-06T12:00:00Z",
+            "conditions": [
+              {
+                "measure": "momentum_12_1",
+                "value": null,
+                "threshold": "0",
+                "status": "unavailable",
+                "detail": "251 closes known; 253 needed"
+              },
+              {
+                "measure": "relative_momentum_12_1",
+                "value": null,
+                "threshold": "0",
+                "status": "unavailable",
+                "detail": "251 closes known; 253 needed"
+              }
+            ],
+            "selected": false,
+            "detail": "not selected: momentum_12_1, relative_momentum_12_1"
+          },
+          {
+            "symbol": "MSFT",
+            "snapshot_id": "7593fe8d-36a2-40bf-b01b-25032d7bcdba",
+            "snapshot_known_at": "2026-10-06T12:00:00Z",
+            "conditions": [
+              {
+                "measure": "momentum_12_1",
+                "value": null,
+                "threshold": "0",
+                "status": "unavailable",
+                "detail": "251 closes known; 253 needed"
+              },
+              {
+                "measure": "relative_momentum_12_1",
+                "value": null,
+                "threshold": "0",
+                "status": "unavailable",
+                "detail": "251 closes known; 253 needed"
+              }
+            ],
+            "selected": false,
+            "detail": "not selected: momentum_12_1, relative_momentum_12_1"
+          },
+          {
+            "symbol": "GOOGL",
+            "snapshot_id": null,
+            "snapshot_known_at": null,
+            "conditions": [],
+            "selected": false,
+            "detail": "no factor snapshot known at T"
+          },
+          {
+            "symbol": "META",
+            "snapshot_id": null,
+            "snapshot_known_at": null,
+            "conditions": [],
+            "selected": false,
+            "detail": "no factor snapshot known at T"
+          },
+          {
+            "symbol": "NVDA",
+            "snapshot_id": "a7becbb0-55c2-417b-b5a6-9d9c2fd8d1a4",
+            "snapshot_known_at": "2026-10-06T12:00:00Z",
+            "conditions": [
+              {
+                "measure": "momentum_12_1",
+                "value": "21.09",
+                "threshold": "0",
+                "status": "pass",
+                "detail": "21.09 > 0"
+              },
+              {
+                "measure": "relative_momentum_12_1",
+                "value": "4.60",
+                "threshold": "0",
+                "status": "pass",
+                "detail": "4.60 > 0"
+              }
+            ],
+            "selected": true,
+            "detail": "selected"
+          },
+          {
+            "symbol": "JPM",
+            "snapshot_id": null,
+            "snapshot_known_at": null,
+            "conditions": [],
+            "selected": false,
+            "detail": "no factor snapshot known at T"
+          },
+          {
+            "symbol": "XOM",
+            "snapshot_id": null,
+            "snapshot_known_at": null,
+            "conditions": [],
+            "selected": false,
+            "detail": "no factor snapshot known at T"
+          },
+          {
+            "symbol": "AZO",
+            "snapshot_id": null,
+            "snapshot_known_at": null,
+            "conditions": [],
+            "selected": false,
+            "detail": "no factor snapshot known at T"
+          },
+          {
+            "symbol": "ORLY",
+            "snapshot_id": null,
+            "snapshot_known_at": null,
+            "conditions": [],
+            "selected": false,
+            "detail": "no factor snapshot known at T"
+          },
+          {
+            "symbol": "LOW",
+            "snapshot_id": null,
+            "snapshot_known_at": null,
+            "conditions": [],
+            "selected": false,
+            "detail": "no factor snapshot known at T"
+          }
+        ],
+        "rebalance": true,
+        "reason": "month_start",
+        "detail": "first assessment of the month: NVDA",
+        "previous_id": "e0c3d380-7a42-4905-a5d7-bdf63431d732",
+        "set_at": "2026-10-06T12:00:00Z",
+        "target": {
+          "NVDA": "100.00"
+        },
+        "cash_pct": "0.00"
+      }
+    },
+    "history": [
+      {
+        "id": "30aac9af-e862-4c43-9291-169c8e3625bf",
+        "known_at": "2026-08-01T03:59:59.999999Z",
+        "reason": "month_start",
+        "target": {},
+        "cash_pct": "100",
+        "backfilled": true
+      },
+      {
+        "id": "33f85a5c-1d92-410c-9aa6-74715bd8936b",
+        "known_at": "2026-09-01T03:59:59.999999Z",
+        "reason": "month_start",
+        "target": {},
+        "cash_pct": "100",
+        "backfilled": true
+      },
+      {
+        "id": "e0c3d380-7a42-4905-a5d7-bdf63431d732",
+        "known_at": "2026-10-01T03:59:59.999999Z",
+        "reason": "month_start",
+        "target": {
+          "NVDA": "100.00"
+        },
+        "cash_pct": "0.00",
+        "backfilled": true
+      },
+      {
+        "id": "c5772024-1f77-437f-9f36-5b409d2f3a43",
+        "known_at": "2026-10-06T12:00:00Z",
+        "reason": "month_start",
+        "target": {
+          "NVDA": "100.00"
+        },
+        "cash_pct": "0.00",
+        "backfilled": true
+      }
+    ],
+    "detail": "Research only (paper): each company's 12-1 momentum, alone and against SPY, against its own history; no ranking across companies. No order. Thresholds are defaults, unvalidated (OD-7)."
+  }
+}

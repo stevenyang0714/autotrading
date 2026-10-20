@@ -2097,6 +2097,62 @@
         "title": "CompanyLevel",
         "type": "object"
       },
+      "CompanyReading": {
+        "properties": {
+          "conditions": {
+            "items": {
+              "$ref": "#/components/schemas/TrendReading"
+            },
+            "title": "Conditions",
+            "type": "array"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "selected": {
+            "title": "Selected",
+            "type": "boolean"
+          },
+          "snapshot_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snapshot Id"
+          },
+          "snapshot_known_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snapshot Known At"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol",
+          "snapshot_id",
+          "snapshot_known_at",
+          "conditions",
+          "selected",
+          "detail"
+        ],
+        "title": "CompanyReading",
+        "type": "object"
+      },
       "CompanyStates": {
         "properties": {
           "announcements": {
@@ -6622,6 +6678,257 @@
         "title": "MilestoneOut",
         "type": "object"
       },
+      "MomentumAssessment": {
+        "description": "Everything a stored S4 assessment holds: recomputing it gives the same document.",
+        "properties": {
+          "cash_pct": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cash Pct"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "previous_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Id"
+          },
+          "readings": {
+            "items": {
+              "$ref": "#/components/schemas/CompanyReading"
+            },
+            "title": "Readings",
+            "type": "array"
+          },
+          "reason": {
+            "enum": [
+              "month_start",
+              "carried",
+              "unavailable"
+            ],
+            "title": "Reason",
+            "type": "string"
+          },
+          "rebalance": {
+            "title": "Rebalance",
+            "type": "boolean"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          },
+          "set_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Set At"
+          },
+          "target": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target"
+          }
+        },
+        "required": [
+          "rule_version",
+          "known_at",
+          "readings",
+          "rebalance",
+          "reason",
+          "detail",
+          "previous_id",
+          "set_at",
+          "target",
+          "cash_pct"
+        ],
+        "title": "MomentumAssessment",
+        "type": "object"
+      },
+      "MomentumCandidate": {
+        "properties": {
+          "factor_definition_version": {
+            "title": "Factor Definition Version",
+            "type": "string"
+          },
+          "momentum_id": {
+            "format": "uuid",
+            "title": "Momentum Id",
+            "type": "string"
+          },
+          "momentum_rule_version": {
+            "title": "Momentum Rule Version",
+            "type": "string"
+          },
+          "reading": {
+            "$ref": "#/components/schemas/CompanyReading"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "set_at": {
+            "format": "date-time",
+            "title": "Set At",
+            "type": "string"
+          },
+          "strategy": {
+            "title": "Strategy",
+            "type": "string"
+          },
+          "strategy_id": {
+            "title": "Strategy Id",
+            "type": "string"
+          },
+          "ticker": {
+            "title": "Ticker",
+            "type": "string"
+          },
+          "weight_pct": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Weight Pct",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticker",
+          "strategy_id",
+          "strategy",
+          "weight_pct",
+          "momentum_id",
+          "momentum_rule_version",
+          "factor_definition_version",
+          "set_at",
+          "reason",
+          "reading"
+        ],
+        "title": "MomentumCandidate",
+        "type": "object"
+      },
+      "MomentumOut": {
+        "properties": {
+          "current": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StoredMomentum"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "detail": {
+            "default": "Research only (paper): each company's 12-1 momentum, alone and against SPY, against its own history; no ranking across companies. No order. Thresholds are defaults, unvalidated (OD-7).",
+            "title": "Detail",
+            "type": "string"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/MomentumPoint"
+            },
+            "title": "History",
+            "type": "array"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "known_at",
+          "rule_version",
+          "current",
+          "history"
+        ],
+        "title": "MomentumOut",
+        "type": "object"
+      },
+      "MomentumPoint": {
+        "description": "A target as it was set, at the first assessment of a month.",
+        "properties": {
+          "backfilled": {
+            "title": "Backfilled",
+            "type": "boolean"
+          },
+          "cash_pct": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Cash Pct",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "target": {
+            "additionalProperties": {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            "title": "Target",
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "known_at",
+          "reason",
+          "target",
+          "cash_pct",
+          "backfilled"
+        ],
+        "title": "MomentumPoint",
+        "type": "object"
+      },
       "NewAssumptions": {
         "additionalProperties": false,
         "properties": {
@@ -7255,7 +7562,7 @@
             ]
           },
           "detail": {
-            "default": "Long only (no short data, OD-5). What the rules flag as known at the date, not a buy list and not ranked: companies at L3 or L4 (S1) and the ETFs of the S3 rotation target. Thresholds are defaults, unvalidated (OD-7).",
+            "default": "Long only (no short data, OD-5). What the rules flag as known at the date, not a buy list and not ranked: companies at L3 or L4 (S1), the ETFs of the S3 rotation target and the companies of the S4 momentum target. Thresholds are defaults, unvalidated (OD-7).",
             "title": "Detail",
             "type": "string"
           },
@@ -7270,13 +7577,21 @@
             "format": "date-time",
             "title": "Known At",
             "type": "string"
+          },
+          "momentum": {
+            "items": {
+              "$ref": "#/components/schemas/MomentumCandidate"
+            },
+            "title": "Momentum",
+            "type": "array"
           }
         },
         "required": [
           "known_at",
           "context",
           "companies",
-          "etfs"
+          "etfs",
+          "momentum"
         ],
         "title": "OpportunityCandidatesOut",
         "type": "object"
@@ -11768,6 +12083,41 @@
         "title": "StateRules",
         "type": "object"
       },
+      "StoredMomentum": {
+        "properties": {
+          "backfilled": {
+            "title": "Backfilled",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "momentum": {
+            "$ref": "#/components/schemas/MomentumAssessment"
+          },
+          "system_time": {
+            "format": "date-time",
+            "title": "System Time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "known_at",
+          "system_time",
+          "backfilled",
+          "momentum"
+        ],
+        "title": "StoredMomentum",
+        "type": "object"
+      },
       "StoredRegime": {
         "properties": {
           "backfilled": {
@@ -14691,6 +15041,58 @@
         ]
       }
     },
+    "/momentum": {
+      "get": {
+        "operationId": "momentum_momentum_get",
+        "parameters": [
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MomentumOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Momentum",
+        "tags": [
+          "momentum"
+        ]
+      }
+    },
     "/momentum/rules": {
       "get": {
         "operationId": "momentum_rules_momentum_rules_get",
@@ -15614,7 +16016,8 @@
                   "items": {
                     "enum": [
                       "S1",
-                      "S3"
+                      "S3",
+                      "S4"
                     ],
                     "type": "string"
                   },

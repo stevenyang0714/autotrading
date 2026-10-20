@@ -1,0 +1,101 @@
+{
+  "recorded_at": "2026-10-18T16:54:37.406134+00:00",
+  "recorded_from": "recorded FRED vintages and Alpaca closes replayed into the integration test database (tests/integration/test_backtests.py)",
+  "endpoint": "/candidates",
+  "params": {
+    "known_at": "2026-10-06T12:00:00Z"
+  },
+  "response": {
+    "known_at": "2026-10-06T12:00:00Z",
+    "context": {
+      "regime_id": "e9e2008a-6298-4c46-97d5-f10cf0495a54",
+      "known_at": "2026-10-06T12:00:00Z",
+      "rule_version": "0.2.0",
+      "stress": "normal",
+      "quadrant": "disinflationary_slowdown"
+    },
+    "companies": [],
+    "etfs": [
+      {
+        "ticker": "SPY",
+        "strategy_id": "S3",
+        "strategy": "Macro Regime / ETF Rotation",
+        "weight_pct": "100.00",
+        "rotation_id": "bba7dd9a-29ab-4b06-a909-e1c57b8b6277",
+        "rotation_rule_version": "0.2.0",
+        "regime_rule_version": "0.2.0",
+        "factor_definition_version": "0.1.0",
+        "set_at": "2026-10-06T12:00:00Z",
+        "reason": "month_start",
+        "stress": "normal",
+        "reading": {
+          "symbol": "SPY",
+          "sleeve": "risk",
+          "snapshot_id": "9558f275-71e4-43d7-a714-30667a542787",
+          "snapshot_known_at": "2026-10-06T12:00:00Z",
+          "last_close": "2026-10-05",
+          "feed_status": "end_of_day",
+          "trend": [
+            {
+              "measure": "momentum_12_1",
+              "value": "16.49",
+              "threshold": "0",
+              "status": "pass",
+              "detail": "16.49 > 0"
+            },
+            {
+              "measure": "close_vs_sma_200",
+              "value": "7.47",
+              "threshold": "0",
+              "status": "pass",
+              "detail": "7.47 > 0"
+            }
+          ],
+          "trend_up": true,
+          "beta": "1.0",
+          "high_beta": false,
+          "allowed": true,
+          "eligible": true,
+          "detail": "trend up and allowed"
+        }
+      }
+    ],
+    "momentum": [
+      {
+        "ticker": "NVDA",
+        "strategy_id": "S4",
+        "strategy": "Medium-term Momentum",
+        "weight_pct": "100.00",
+        "momentum_id": "c5772024-1f77-437f-9f36-5b409d2f3a43",
+        "momentum_rule_version": "0.1.0",
+        "factor_definition_version": "0.1.0",
+        "set_at": "2026-10-06T12:00:00Z",
+        "reason": "month_start",
+        "reading": {
+          "symbol": "NVDA",
+          "snapshot_id": "a7becbb0-55c2-417b-b5a6-9d9c2fd8d1a4",
+          "snapshot_known_at": "2026-10-06T12:00:00Z",
+          "conditions": [
+            {
+              "measure": "momentum_12_1",
+              "value": "21.09",
+              "threshold": "0",
+              "status": "pass",
+              "detail": "21.09 > 0"
+            },
+            {
+              "measure": "relative_momentum_12_1",
+              "value": "4.60",
+              "threshold": "0",
+              "status": "pass",
+              "detail": "4.60 > 0"
+            }
+          ],
+          "selected": true,
+          "detail": "selected"
+        }
+      }
+    ],
+    "detail": "Long only (no short data, OD-5). What the rules flag as known at the date, not a buy list and not ranked: companies at L3 or L4 (S1), the ETFs of the S3 rotation target and the companies of the S4 momentum target. Thresholds are defaults, unvalidated (OD-7)."
+  }
+}

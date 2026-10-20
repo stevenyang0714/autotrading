@@ -26,7 +26,7 @@ describe("AlertsCenterView with recorded API responses", () => {
     const list = screen.getByRole("list", { name: "Alerts" });
     const level = list.querySelector('[data-kind="level_change"]');
     expect(level?.textContent).toContain("AAPL reached L1 Watch");
-    expect(level?.textContent).toContain("alert rules 0.4.0");
+    expect(level?.textContent).toContain("alert rules 0.5.0");
     expect(level?.textContent).toContain("backfilled");
     const link = level?.querySelector('a[href="/instruments/AAPL#buybacks"]');
     expect(link?.textContent).toBe("Buyback state ACTIVE");

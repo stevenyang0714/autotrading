@@ -16,7 +16,7 @@ describe("CandidatesView with recorded API responses", () => {
     const spy = etfs.querySelector('li[data-candidate="SPY"][data-strategy="S3"]');
     expect(spy?.textContent).toContain("100.00%");
     expect(spy?.textContent).toContain("S3 Macro Regime / ETF Rotation");
-    expect(spy?.textContent).toContain("rotation rules 0.1.0");
+    expect(spy?.textContent).toContain("rotation rules 0.2.0 · regime rules 0.2.0");
     expect(spy?.querySelector("a")?.getAttribute("href")).toBe("/instruments/SPY#factors");
     expect(container.querySelector('[data-candidates="S1"]')?.textContent).toContain("No company is at L3 or L4");
     expect(unexplainedNumbers(container)).toEqual([]);

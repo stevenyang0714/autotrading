@@ -17,6 +17,7 @@ from sqlalchemy import Engine, create_engine, func, select, text
 from sqlalchemy.engine import URL
 from sqlalchemy.orm import Session, sessionmaker
 
+from autotrading.api.regime import regime as regime_endpoint
 from autotrading.config_sync import (
     RegimeRulesVersionError,
     load_macro_series,
@@ -37,8 +38,10 @@ from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.main import create_app
 from autotrading.repositories.convergence import load_alert_rules
+from autotrading.repositories.factors import session_points
 from autotrading.repositories.regime import (
     load_regime_rules,
+    raise_alerts,
     record_regime,
     regime_at,
     stored_regime_rules,
@@ -137,7 +140,7 @@ def test_every_dimension_and_flag_reads_inputs_known_then(
     with sessions() as session:
         row = assessment(session, VALUED_AT)
     regime = row.assessment
-    assert (row.rule_version, row.backfilled) == ("0.1.0", True)  # evaluated after its T
+    assert (row.rule_version, row.backfilled) == ("0.2.0", True)  # evaluated after its T
     states = {d["dimension"]: d["state"] for d in regime["dimensions"]}
     assert set(states) == {"growth", "inflation", "policy", "credit", "volatility"}
     assert "unavailable" not in states.values()
@@ -194,7 +197,7 @@ def test_a_stored_regime_recomputes_identically_after_a_later_revision(
 
 def test_the_regime_as_known_on_a_date(client: TestClient) -> None:
     body = client.get("/regime", params={"known_at": iso(VALUED_AT)}).json()
-    assert body["rule_version"] == "0.1.0"
+    assert body["rule_version"] == "0.2.0"
     assert body["current"]["known_at"] == iso(VALUED_AT)
     assert [p["known_at"] for p in body["history"]] == [iso(MONTH_END), iso(VALUED_AT)]
     september = client.get("/regime", params={"known_at": "2026-09-15T00:00:00Z"}).json()
@@ -203,7 +206,33 @@ def test_the_regime_as_known_on_a_date(client: TestClient) -> None:
         client.get("/regime", params={"known_at": "2026-01-01T00:00:00Z"}).json()["current"] is None
     )
     rules = client.get("/regime/rules").json()
-    assert [(r["rule_version"], r["status"]) for r in rules] == [("0.1.0", "active")]
+    assert sorted((r["rule_version"], r["status"]) for r in rules) == [
+        ("0.1.0", "retired"),
+        ("0.2.0", "active"),
+    ]
+
+
+def test_the_history_keeps_each_months_highest_stress(
+    sessions: sessionmaker[Session], stored: datetime
+) -> None:
+    # ADR-036 D5: daily assessments, one history point per New York month at its worst
+    with sessions() as session:
+        session.execute(
+            text(
+                "INSERT INTO regime_assessments (known_at, system_time, rule_version, stress, "
+                "quadrant, flags_on, flags_available, assessment, backfilled, trigger) SELECT "
+                "known_at - interval '2 days', system_time, rule_version, 'crisis', quadrant, "
+                "flags_on, flags_available, assessment, backfilled, trigger FROM "
+                "regime_assessments WHERE known_at = :at"
+            ),
+            {"at": VALUED_AT},
+        )
+        out = regime_endpoint(session, VALUED_AT)
+        session.rollback()
+    october = [p for p in out.history if p.known_at.month == 10]
+    assert [(p.known_at, p.stress) for p in october] == [(VALUED_AT - timedelta(days=2), "crisis")]
+    assert out.current is not None and out.current.known_at == VALUED_AT
+    assert [p.known_at for p in out.history] == sorted(p.known_at for p in out.history)
 
 
 def test_a_change_of_stress_raises_a_market_alert(
@@ -231,7 +260,7 @@ def test_a_change_of_stress_raises_a_market_alert(
         stored_id = record_regime(session, rules, later, now, "manual")
         session.commit()
         alert = session.scalars(select(Alert).where(Alert.kind == "regime")).one()
-    assert (alert.ticker, alert.instrument_id, alert.rule_version) == (None, None, "0.4.0")
+    assert (alert.ticker, alert.instrument_id, alert.rule_version) == (None, None, "0.5.0")
     assert alert.source_key == f"regime:{stored_id}"
     assert (alert.level, alert.previous_level) == (STRESS_ORDER[coming], STRESS_ORDER[other])
     assert alert.title.endswith(f"to {coming.upper()} (was {other.upper()})")
@@ -243,15 +272,64 @@ def test_a_change_of_stress_raises_a_market_alert(
     assert (market["ticker"], market["level_name"]) == (None, coming.upper())
 
 
+def test_a_backfill_raises_its_alerts_afterwards_in_order(sessions: sessionmaker[Session]) -> None:
+    # ADR-036 D5: backfill messages run concurrently, so a backfilled assessment raises no
+    # alert itself; raise_alerts pairs the stored assessments in order of T afterwards.
+    later = VALUED_AT + timedelta(hours=12)
+    with sessions() as session:
+        rules = stored_regime_rules(session)
+        assert rules is not None
+        now = session.execute(select(func.now())).scalar_one()
+        coming = regime_at(session, rules, later, now).stress
+        assert coming is not None
+        other = next(s for s in STRESS_ORDER if s != coming)
+        session.execute(
+            text(
+                "INSERT INTO regime_assessments (known_at, system_time, rule_version, stress, "
+                "quadrant, flags_on, flags_available, assessment, backfilled, trigger) SELECT "
+                "known_at + interval '11 hours', system_time, rule_version, :other, quadrant, "
+                "flags_on, flags_available, assessment, backfilled, trigger FROM "
+                "regime_assessments WHERE known_at = :at"
+            ),
+            {"other": other, "at": VALUED_AT},
+        )
+        stored_id = record_regime(session, rules, later, now, "backfill")
+        assert stored_id is not None
+        source = f"regime:{stored_id}"
+        assert session.scalars(select(Alert).where(Alert.source_key == source)).first() is None
+        assert raise_alerts(session, rules, now) >= 1
+        alert = session.scalars(select(Alert).where(Alert.source_key == source)).one()
+        assert (alert.previous_level, alert.level) == (STRESS_ORDER[other], STRESS_ORDER[coming])
+        assert alert.backfilled
+        session.rollback()
+
+
+def test_the_backfill_points_are_session_closes_and_month_ends(
+    sessions: sessionmaker[Session], stored: datetime
+) -> None:
+    # ADR-036 D5: every session SPY closed, plus month ends (the factor backfill's points)
+    with sessions() as session:
+        points = session_points(session, "SPY", datetime(2026, 9, 1).date(), stored)
+        closes = session.execute(
+            text(
+                "SELECT DISTINCT bar_date FROM price_bars WHERE symbol = 'SPY' "
+                "AND adjustment = 'raw' AND bar_date >= '2026-09-01'"
+            )
+        ).scalars()
+        expected = {end_of_day(d) for d in closes} | {end_of_day(datetime(2026, 9, 30).date())}
+    assert points == sorted(expected)
+    assert all(p <= stored for p in points)
+
+
 def test_rule_sets_are_registered_once_and_never_change(engine: Engine) -> None:
     rules = load_regime_rules()
     with Session(engine) as session:
-        assert sync_regime_rules(session, rules).unchanged == ["0.1.0"]
+        assert sync_regime_rules(session, rules).unchanged == ["0.2.0", "0.1.0"]
         entry = rules.rule_sets[0]
         edited = entry.model_copy(
             update={"stress": entry.stress.model_copy(update={"elevated_flags": 3})}
         )
-        with pytest.raises(RegimeRulesVersionError, match=r"0\.1\.0 changed"):
+        with pytest.raises(RegimeRulesVersionError, match=r"0\.2\.0 changed"):
             sync_regime_rules(session, rules.model_copy(update={"rule_sets": [edited]}))
         session.rollback()
 

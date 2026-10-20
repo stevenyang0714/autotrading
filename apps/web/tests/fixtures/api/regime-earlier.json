@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-12T16:06:29.995259+00:00",
+  "recorded_at": "2026-10-18T16:52:34.638846+00:00",
   "recorded_from": "recorded FRED vintages and Alpaca closes replayed into the integration test database (tests/integration/test_regime.py)",
   "endpoint": "/regime",
   "params": {
@@ -7,14 +7,14 @@
   },
   "response": {
     "known_at": "2026-09-15T00:00:00Z",
-    "rule_version": "0.1.0",
+    "rule_version": "0.2.0",
     "current": {
-      "id": "85133c05-2a12-4763-80a9-57be82e666e4",
+      "id": "42e9f810-a591-4901-9579-663aeade7d7b",
       "known_at": "2026-09-01T03:59:59.999999Z",
-      "system_time": "2026-10-12T16:06:29.244996Z",
+      "system_time": "2026-10-18T16:52:33.909814Z",
       "backfilled": true,
       "regime": {
-        "rule_version": "0.1.0",
+        "rule_version": "0.2.0",
         "known_at": "2026-09-01T03:59:59.999999Z",
         "dimensions": [
           {
@@ -277,7 +277,7 @@
             ]
           }
         ],
-        "quadrant": "stagflation",
+        "quadrant": "disinflationary_slowdown",
         "flags": [
           {
             "flag_id": "credit_stress",
@@ -328,7 +328,7 @@
             "label": "Financial conditions tighter than average",
             "status": "off",
             "value": "-0.56600",
-            "threshold": "NFCI above 0.0",
+            "threshold": "NFCI above -0.25",
             "detail": "Chicago Fed NFCI",
             "inputs": [
               {
@@ -464,7 +464,7 @@
       {
         "known_at": "2026-09-01T03:59:59.999999Z",
         "stress": "normal",
-        "quadrant": "stagflation",
+        "quadrant": "disinflationary_slowdown",
         "states": {
           "growth": "slowing",
           "inflation": "above_target",

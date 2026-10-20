@@ -355,6 +355,29 @@ def backfill_points(
     return [(p, "all" if p in months else "price") for p in points]
 
 
+def session_points(
+    session: Session, symbol: str, since: date, system_time: datetime
+) -> list[datetime]:
+    """The end of every New York session `symbol` has a close for since `since`, and every month
+    end, up to `system_time`: the points the factor backfill stores (ADR-030 F2), so the regime,
+    rotation and momentum backfills find a snapshot at each one (ADR-036 D5)."""
+    found = targets(session, [symbol])
+    if not found:
+        return []
+    bars = daily_bars(
+        session,
+        found[0].instrument.id,
+        "raw",
+        since=datetime.combine(since, datetime.min.time(), UTC) - timedelta(days=1),
+        until=system_time,
+        known_at=system_time,
+        system_time=system_time,
+    )
+    sessions = {end_of_day(b.bar_date) for b in bars if b.bar_date >= since}
+    months = set(month_ends(since, system_time))
+    return sorted(p for p in sessions | months if p <= system_time)
+
+
 def recompute(session: Session, row: FactorSnapshot) -> Snapshot | None:
     """A stored snapshot recomputed with its own T, S, scope and definition version."""
     definitions = stored_definitions(session, row.definition_version)

@@ -10,6 +10,7 @@ import yaml
 from autotrading.domain.regime import (
     Bar,
     Obs,
+    RegimeRuleSet,
     RegimeRulesFile,
     assess,
     correlation,
@@ -23,11 +24,17 @@ from autotrading.domain.regime import (
 )
 from autotrading.settings import get_settings
 
-RULES = RegimeRulesFile.model_validate(
+FILE = RegimeRulesFile.model_validate(
     yaml.safe_load(Path(get_settings().resolved_config_dir() / "regime_rules.yaml").read_text())
-).active()
+)
+# The behaviour tests below describe 0.1.0; 0.2.0's changes have their own tests (ADR-036).
+RULES = next(r.rule_set() for r in FILE.rule_sets if r.rule_version == "0.1.0")
+ACTIVE = FILE.active()
 # A released version never changes (ADR-029): a new rule_version is the only way to edit one.
-PINNED = {"0.1.0": "f92d578c2b5a1a15e66ab4bdbdceaa13b5d376d11ba5f509bf88d9e9fe5ad38d"}
+PINNED = {
+    "0.1.0": "f92d578c2b5a1a15e66ab4bdbdceaa13b5d376d11ba5f509bf88d9e9fe5ad38d",
+    "0.2.0": "9db30867d3faaada2a794a3c11be61c4b5cf7c07d913f8ff70b2b3410b36dca1",
+}
 T = datetime(2026, 10, 6, 12, tzinfo=UTC)
 VINTAGE = date(2026, 10, 2)
 
@@ -57,9 +64,10 @@ def bars(values: list[float], last: date = date(2026, 10, 5)) -> list[Bar]:
     ]
 
 
-def test_the_active_rule_set_is_pinned() -> None:
-    assert RULES.rule_version == "0.1.0"
-    assert RULES.content_sha256() == PINNED["0.1.0"]
+def test_every_released_rule_set_is_pinned() -> None:
+    # 0.2.0 added defaulted fields (ADR-036) that keep 0.1.0's content and hash.
+    assert {r.rule_version: r.rule_set().content_sha256() for r in FILE.rule_sets} == PINNED
+    assert ACTIVE.rule_version == "0.2.0"
 
 
 def test_growth_states() -> None:
@@ -207,6 +215,72 @@ def test_stress_states() -> None:
     crash = bars([100.0] * 250 + [70.0])
     result = assess(RULES, T, crisis, crash, [])
     assert (result.stress, result.dimensions[3].state) == ("crisis", "distressed")
+
+
+# ---------- 0.2.0 (ADR-036, M3.0) ----------
+
+
+def test_0_2_0_changes_only_the_reviewed_thresholds() -> None:
+    old, new = RULES.content(), ACTIVE.content()
+    assert {k for k in new if new[k] != old.get(k)} == {
+        "rule_version",
+        "released",
+        "note",
+        "inflation",
+        "stress",
+    }
+    assert ACTIVE.inflation.quadrant_uses_direction and not RULES.inflation.quadrant_uses_direction
+    assert (ACTIVE.stress.nfci_flag, RULES.stress.nfci_flag) == (Decimal("-0.25"), Decimal("0.0"))
+    assert (ACTIVE.stress.crisis_conditions, RULES.stress.crisis_conditions) == (2, 3)
+    assert (ACTIVE.stress.high_vix_min_flags, RULES.stress.high_vix_min_flags) == (2, 0)
+
+
+def test_0_2_0_crisis_on_two_of_the_three_conditions() -> None:
+    # KI-3: VIX 45 and SPY 30% below its high, with calm credit (the end of March 2020)
+    panic = calm_series() | {"VIXCLS": daily([45]), "VXVCLS": daily([35])}
+    crash = bars([100.0] * 250 + [70.0])
+    assert assess(RULES, T, panic, crash, []).stress == "high"
+    result = assess(ACTIVE, T, panic, crash, [])
+    assert result.stress == "crisis"
+    assert result.stress_detail.endswith(
+        "2 of 3 crisis conditions: VIX above 40, SPY more than 20% below its high"
+    )
+    # one condition is not enough
+    assert assess(ACTIVE, T, panic, bars([100.0] * 260), []).stress != "crisis"
+
+
+def test_0_2_0_nfci_flag_fires_above_minus_0_25() -> None:
+    # KI-4: -0.2 is tighter than 0.2.0's threshold, looser than 0.1.0's
+    tight = calm_series() | {"NFCI": daily([-0.2])}
+    spy = bars([100.0 + i * 0.1 for i in range(300)])
+
+    def nfci(rules: RegimeRuleSet) -> str:
+        found = assess(rules, T, tight, spy, []).flags
+        return next(f for f in found if f.flag_id == "nfci_tight").status
+
+    assert (nfci(RULES), nfci(ACTIVE)) == ("off", "on")
+
+
+def test_0_2_0_vix_above_30_needs_a_second_flag_for_high() -> None:
+    # KI-5: VIX 33 with only the volatility flag on (the end of January 2021)
+    jumpy = calm_series() | {"VIXCLS": daily([33]), "VXVCLS": daily([36])}
+    spy = bars([100.0 + i * 0.1 for i in range(300)])
+    assert assess(RULES, T, jumpy, spy, []).stress == "high"
+    alone = assess(ACTIVE, T, jumpy, spy, [])
+    assert (alone.stress, alone.flags_on) == ("elevated", 1)
+    assert alone.stress_detail.endswith("VIX above 30 with fewer than 2 flags on")
+    seconded = jumpy | {"STLFSI4": daily([1.5])}
+    assert assess(ACTIVE, T, seconded, spy, []).stress == "high"
+
+
+def test_0_2_0_quadrant_reads_the_inflation_direction() -> None:
+    # KI-7: above target but falling is not high inflation; hot always is
+    assert quadrant("slowing", "above_target", "falling") == "stagflation"  # 0.1.0
+    assert quadrant("slowing", "above_target", "falling", True) == "disinflationary_slowdown"
+    assert quadrant("expanding", "above_target", "falling", True) == "goldilocks"
+    assert quadrant("slowing", "above_target", "steady", True) == "stagflation"
+    assert quadrant("slowing", "above_target", None, True) == "stagflation"
+    assert quadrant("slowing", "hot", "falling", True) == "stagflation"
 
 
 def test_nothing_known_is_unavailable_not_normal() -> None:

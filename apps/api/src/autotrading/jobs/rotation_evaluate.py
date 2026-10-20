@@ -3,8 +3,9 @@
 
     python -m autotrading.jobs.rotation_evaluate [--backfill | --verify N]
 
---verify N recomputes the latest N stored assessments with their own known_at, system_time,
-rule version and previous target, here, and reports any that differ (ADR-032).
+--verify N recomputes the latest N stored assessments of every rule version with their own
+known_at, system_time, rule version and previous target, here, and reports any that differ
+(ADR-032; ADR-036: a retired version's rows stay identical).
 """
 
 import argparse
@@ -20,9 +21,17 @@ from autotrading.repositories.rotation import recompute, same
 
 def verify(count: int) -> int:
     with actors.sessions()() as session:
-        rows = session.scalars(
-            select(RotationAssessment).order_by(RotationAssessment.recorded_at.desc()).limit(count)
-        ).all()
+        versions = session.scalars(select(RotationAssessment.rule_version).distinct()).all()
+        rows = [
+            row
+            for version in sorted(versions)
+            for row in session.scalars(
+                select(RotationAssessment)
+                .where(RotationAssessment.rule_version == version)
+                .order_by(RotationAssessment.recorded_at.desc())
+                .limit(count)
+            )
+        ]
         differ = []
         for row in rows:
             again = recompute(session, row)
@@ -43,8 +52,8 @@ def main() -> int:
     if args.verify:
         return verify(args.verify)
     if args.backfill:
-        months = actors.start_rotation_backfill()
-        print(f"Queued the rotation at {months} month ends since 2017, in order.")
+        points = actors.start_rotation_backfill()
+        print(f"Queued the rotation at {points} session closes and month ends since 2017.")
         return 0
     actors.start_rotation_evaluation(manual=True)
     print("Queued a rotation assessment now.")

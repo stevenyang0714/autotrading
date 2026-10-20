@@ -271,7 +271,7 @@ def test_target_changes_raise_alerts_once(
         rules = stored_rotation_rules(session)
         assert rules is not None
         alerts = session.scalars(select(Alert).where(Alert.kind == "rotation")).all()
-        assert all(a.rule_version == "0.4.0" and a.ticker is None for a in alerts)
+        assert all(a.rule_version == "0.5.0" and a.ticker is None for a in alerts)
         assert all(a.evidence[0]["table"] == "rotation_assessments" for a in alerts)
         changed = [
             r
@@ -287,7 +287,7 @@ def test_target_changes_raise_alerts_once(
 
 def test_the_rotation_api(client: TestClient, stored: tuple[datetime, datetime]) -> None:
     body = client.get("/rotation", params={"known_at": iso(VALUED_AT)}).json()
-    assert body["rule_version"] == "0.1.0"
+    assert body["rule_version"] == "0.2.0"
     assert body["detail"].startswith("Research only (paper)")
     assert body["current"]["known_at"] == iso(VALUED_AT)
     assert [p["reason"] for p in body["history"]] == ["month_start"] * 4
@@ -296,7 +296,10 @@ def test_the_rotation_api(client: TestClient, stored: tuple[datetime, datetime])
     assert earlier["current"]["known_at"] == iso(MID_SEPTEMBER)
     assert len(earlier["history"]) == 3
     rules = client.get("/rotation/rules").json()
-    assert [(r["rule_version"], r["status"]) for r in rules] == [("0.1.0", "active")]
+    assert sorted((r["rule_version"], r["status"]) for r in rules) == [
+        ("0.1.0", "retired"),
+        ("0.2.0", "active"),
+    ]
 
 
 def test_a_changed_released_rule_set_is_refused(engine: Engine) -> None:
@@ -316,7 +319,7 @@ def test_signals_list_the_target_in_force(
         october = rows(session)[-1]
     target = october.target or {}
     body = client.get("/signals", params={"known_at": iso(VALUED_AT), "strategy": "S3"}).json()
-    assert body["rule_versions"] == {"S1": "0.3.0", "S3": "0.1.0"}
+    assert body["rule_versions"] == {"S1": "0.3.0", "S3": "0.2.0", "S4": "0.1.0"}
     current = body["current"]
     assert len(current) == 2 * len(target)
     for signal in current:
@@ -344,8 +347,8 @@ def test_candidates_list_the_rotation_target_with_its_context(
     assert body["companies"] == []  # no convergence assessment in this module
     assert [e["ticker"] for e in body["etfs"]] == list(october.target or {})
     for etf in body["etfs"]:
-        assert (etf["strategy_id"], etf["rotation_rule_version"]) == ("S3", "0.1.0")
-        assert (etf["regime_rule_version"], etf["factor_definition_version"]) == ("0.1.0", "0.1.0")
+        assert (etf["strategy_id"], etf["rotation_rule_version"]) == ("S3", "0.2.0")
+        assert (etf["regime_rule_version"], etf["factor_definition_version"]) == ("0.2.0", "0.1.0")
         assert etf["reading"]["symbol"] == etf["ticker"] and etf["reading"]["eligible"]
     assert body["context"]["stress"] == october.stress
     before = client.get("/candidates", params={"known_at": "2026-07-01T00:00:00Z"}).json()

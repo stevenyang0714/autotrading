@@ -12,6 +12,7 @@ const STATE_TEXT: Record<string, string> = {
   trade_ready: "TRADE-READY",
 };
 const ROTATION = "S3";
+const MOMENTUM = "S4";
 
 /** S3 rotation signals (M2.4, ADR-032): one card per ETF of the target in force, with its
  * family 5 (trend) and family 1 (gate) signals. ETFs cannot enter the journal yet. */
@@ -79,15 +80,73 @@ function RotationSignals({ signals, knownOn }: { signals: Signal[]; knownOn?: st
   );
 }
 
+/** S4 momentum signals (M3.0, ADR-036 D7): one card per company of the target in force, with
+ * its family 5 signal (12-1 momentum). A company can enter the journal; no signal is an order. */
+function MomentumSignals({ signals, knownOn }: { signals: Signal[]; knownOn?: string }) {
+  return (
+    <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4" aria-label="S4 momentum signals">
+      {signals.map((signal) => (
+        <li
+          key={signal.id}
+          data-signal={signal.ticker}
+          data-strategy={MOMENTUM}
+          className="space-y-1 rounded border border-neutral-800 px-3 py-2 text-sm"
+        >
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <Link
+              href={`/instruments/${signal.ticker}${knownOn ? `?known_on=${knownOn}` : ""}#factors`}
+              data-identifier=""
+              className="font-medium underline-offset-2 hover:underline"
+            >
+              {signal.ticker}
+            </Link>
+            <Metric termId="momentum_target" icon={false} className="text-xs">
+              {signal.weight_pct ? weight(signal.weight_pct) : "held"} · {signal.direction}
+            </Metric>
+          </div>
+          <p className="text-xs text-neutral-400">
+            <Metric termId="signal" icon={false}>
+              {signal.strategy_id} {signal.strategy} · rules {signal.rule_version}
+              {signal.backfilled ? " · backfilled" : ""}
+            </Metric>
+          </p>
+          <p className="text-xs text-neutral-400">
+            <Metric termId="momentum_12_1" icon={false}>
+              family {signal.family_id}: 12-1 mom. {signal.score ? signedPct(signal.score) : "n/a"} ·{" "}
+              {signal.evidence_independence} conditions passed
+            </Metric>
+          </p>
+          <p className="text-xs text-neutral-500">
+            <Metric termId="execution_eligibility" icon={false}>
+              paper only
+            </Metric>{" "}
+            ·{" "}
+            <Metric termId="point_in_time" icon={false}>
+              set {formatSgtEt(signal.generated_at)}
+            </Metric>
+          </p>
+          <Link
+            href={`/journal/new?ticker=${signal.ticker}`}
+            className="inline-block text-xs underline-offset-2 hover:underline"
+          >
+            Write a Thesis Card
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 /**
  * Current signals (M1.6, ADR-027 J1): each company whose latest buyback state assignment is
  * ACTIVE, HIGH-CONVICTION or TRADE-READY (S1), with the rule version, score and a link to write
- * a Thesis Card; and since M2.4 the ETFs of the S3 rotation target in force. Every signal is
- * paper only.
+ * a Thesis Card; since M2.4 the ETFs of the S3 rotation target in force, and since M3.0 the
+ * companies of the S4 momentum target. Every signal is paper only.
  */
 export function SignalList({ signals, knownOn }: { signals: Signal[]; knownOn?: string }) {
-  const companies = signals.filter((s) => s.strategy_id !== ROTATION);
+  const companies = signals.filter((s) => s.strategy_id !== ROTATION && s.strategy_id !== MOMENTUM);
   const etfs = signals.filter((s) => s.strategy_id === ROTATION);
+  const momentum = signals.filter((s) => s.strategy_id === MOMENTUM);
   return (
     <div className="space-y-3">
       <CompanySignals signals={companies} knownOn={knownOn} />
@@ -97,6 +156,14 @@ export function SignalList({ signals, knownOn }: { signals: Signal[]; knownOn?: 
             <Metric termId="etf_rotation">ETF rotation target (S3)</Metric>
           </h3>
           <RotationSignals signals={etfs} knownOn={knownOn} />
+        </>
+      ) : null}
+      {momentum.length > 0 ? (
+        <>
+          <h3 className="text-sm font-medium text-neutral-300">
+            <Metric termId="medium_term_momentum">Momentum target (S4)</Metric>
+          </h3>
+          <MomentumSignals signals={momentum} knownOn={knownOn} />
         </>
       ) : null}
     </div>

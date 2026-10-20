@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { Metric } from "@/components/Metric";
 import { StrategyLabView } from "@/components/journal/StrategyLabView";
-import { loadBacktests, loadJournal, loadRotation, loadSignals } from "@/lib/api";
+import { loadBacktests, loadJournal, loadMomentum, loadRotation, loadSignals } from "@/lib/api";
 import { endOfDaySgt } from "@/lib/time";
 
 // Point-in-time data: always read live, never serve a cached page.
@@ -14,10 +14,11 @@ export default async function StrategyLabPage({ searchParams }: PageProps<"/dash
   const query = await searchParams;
   const knownOn = typeof query.known_on === "string" && query.known_on ? query.known_on : undefined;
   const knownAt = knownOn ? endOfDaySgt(knownOn) : null;
-  const [journal, signals, rotation, backtests] = await Promise.all([
+  const [journal, signals, rotation, momentum, backtests] = await Promise.all([
     loadJournal(knownAt ?? undefined),
     loadSignals(knownAt ?? undefined),
     loadRotation(knownAt ?? undefined),
+    loadMomentum(knownAt ?? undefined),
     loadBacktests(knownAt ?? undefined),
   ]);
   if (journal === null) {
@@ -38,6 +39,7 @@ export default async function StrategyLabPage({ searchParams }: PageProps<"/dash
       journal={journal}
       signals={signals}
       rotation={rotation}
+      momentum={momentum}
       backtests={backtests}
       knownOn={knownAt ? knownOn : undefined}
       invalidKnownOn={Boolean(knownOn) && knownAt === null}

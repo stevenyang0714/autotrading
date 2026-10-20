@@ -18,8 +18,42 @@
 # commission, a fixed half-spread plus slippage. Unvalidated defaults: a change is a new version.
 version: 0.1.0
 rule_sets:
-  - rule_version: 0.1.0
+  - rule_version: 0.2.0
     status: active  # active: used for new runs; retired: kept for the stored ones
+    released: "2026-10-19"
+    note: >-
+      0.1.0 with S3 on rotation rules 0.2.0 (regime rules 0.2.0, assessed at every session since
+      2017) and S4 from its stored daily assessments (ADR-036 D6, D7). Costs, fills, folds and
+      the withheld performance are unchanged.
+    capital: 100000
+    benchmark: SPY
+    costs:
+      commission_bps: 0
+      equity: {half_spread_bps: 2, slippage_bps: 5}
+      etf: {half_spread_bps: 1, slippage_bps: 2}
+      scenarios: {base: 1, double: 2}
+    strategies:
+      S1:
+        rules: buyback
+        rule_version: 0.3.0
+        released: "2026-10-15"
+        holds: [active, high_conviction, trade_ready]
+        since: "2021-01-01"
+        state_stale_after_days: 35
+      S3:
+        rules: rotation
+        rule_version: 0.2.0
+        released: "2026-10-19"
+        since: "2017-01-01"
+      S4:
+        rules: momentum
+        rule_version: 0.1.0
+        released: "2026-10-17"
+        since: "2017-01-01"
+        targets_from: momentum_assessments
+    risk_rule_version: 0.1.0
+  - rule_version: 0.1.0
+    status: retired
     released: "2026-10-17"
     note: >-
       Steven's decisions B1-B7 (ADR-033): performance withheld, fixed half-spread plus slippage

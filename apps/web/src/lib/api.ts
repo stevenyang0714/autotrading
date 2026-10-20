@@ -1022,6 +1022,30 @@ export async function loadCandidates(knownAt?: string): Promise<OpportunityCandi
   }
 }
 
+// ---------- S4 momentum (M3.0, ADR-036 D7) ----------
+
+export type MomentumResponse = components["schemas"]["MomentumOut"];
+export type StoredMomentum = components["schemas"]["StoredMomentum"];
+export type MomentumAssessment = components["schemas"]["MomentumAssessment"];
+export type CompanyReading = components["schemas"]["CompanyReading"];
+export type MomentumPoint = components["schemas"]["MomentumPoint"];
+export type MomentumCandidate = components["schemas"]["MomentumCandidate"];
+
+/** The stored S4 assessment as known at `knownAt` and every target set since, or null when the
+ * API is down. */
+export async function loadMomentum(knownAt?: string): Promise<MomentumResponse | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/momentum", {
+      params: { query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
 // ---------- backtests (M2.5, ADR-033) ----------
 
 export type BacktestsResponse = components["schemas"]["BacktestsOut"];

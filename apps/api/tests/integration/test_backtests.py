@@ -18,6 +18,8 @@ from sqlalchemy.engine import URL
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
+from autotrading.adapters.alpaca.refresh import universe
+from autotrading.adapters.sec.tickers import SecTickersJob
 from autotrading.config_sync import (
     BacktestRulesVersionError,
     load_backtest_rules,
@@ -34,7 +36,7 @@ from autotrading.config_sync import (
     sync_rotation_rules,
     sync_sources,
 )
-from autotrading.db.models import BacktestRun, PriceBar, Source
+from autotrading.db.models import BacktestRun, MomentumAssessment, PriceBar, SignalRecord, Source
 from autotrading.domain.provenance import Provenance, end_of_day
 from autotrading.infra.object_store import make_s3_client
 from autotrading.infra.redis_client import make_redis
@@ -43,12 +45,14 @@ from autotrading.ingestion.rate_limit import TokenBucketLimiter
 from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.main import create_app
+from autotrading.repositories import momentum
 from autotrading.repositories.backtest import (
     ran_this_month,
     recompute,
     record_all,
     same,
     stored_backtest_rules,
+    stored_momentum_rules,
 )
 from autotrading.repositories.convergence import load_alert_rules
 from autotrading.repositories.factors import (
@@ -74,6 +78,7 @@ pytestmark = pytest.mark.integration
 WINDOW = Window(start=datetime(2026, 10, 1, tzinfo=UTC), end=datetime(2026, 10, 2, tzinfo=UTC))
 VALUED_AT = datetime(2026, 10, 6, 12, tzinfo=UTC)  # the recorded data ends on 2026-10-05
 POINTS = [end_of_day(date(2026, m, d)) for m, d in ((7, 31), (8, 31), (9, 30))] + [VALUED_AT]
+CARRIED_AT = VALUED_AT + timedelta(days=1)  # S4 only: inside October, its snapshot one day old
 CONFIG = get_settings().resolved_config_dir()
 SYMBOLS = ["SPY", "QQQ", "IWM", "XLK", "XLE", "TLT", "IEF", "GLD", "AAPL", "MSFT", "NVDA"]
 
@@ -116,8 +121,8 @@ def sessions(engine: Engine) -> sessionmaker[Session]:
 @pytest.fixture(scope="module")
 def stored(sessions: sessionmaker[Session]) -> Iterator[datetime]:
     """Replay the recorded FRED series and Alpaca closes; store the regime, the full factor
-    snapshots and the rotation at POINTS; then every strategy's backtest at VALUED_AT. Returns
-    the backtests' system time."""
+    snapshots, the rotation and S4 (also at CARRIED_AT) at POINTS; then every strategy's
+    backtest at VALUED_AT. Returns the backtests' system time."""
     settings = get_settings()
     s3 = make_s3_client(settings)
     bucket = f"raw-payloads-test-{uuid4().hex[:10]}"
@@ -129,6 +134,15 @@ def stored(sessions: sessionmaker[Session]) -> Iterator[datetime]:
         alpaca_replay.register_recorded(
             fred_replay.register_recorded(recorded_registry()), fixture=False
         ),
+    )
+    # Every universe equity's instrument, so the companies' closes and snapshots exist (S4).
+    symbols, etfs = universe(CONFIG)
+    runner.execute(
+        runner.create_run(
+            SecTickersJob.name,
+            {"tickers": [s for s in symbols if s not in etfs], "predecessors": {}},
+            WINDOW,
+        )
     )
     fred_replay.replay(runner, WINDOW)
     alpaca_replay.replay(runner, WINDOW)
@@ -148,6 +162,9 @@ def stored(sessions: sessionmaker[Session]) -> Iterator[datetime]:
         rotation = stored_rotation_rules(session)
         assert rotation is not None
         record_points(session, rotation, POINTS, held, "manual")
+        momentum_rules = stored_momentum_rules(session)
+        assert momentum_rules is not None
+        momentum.record_points(session, momentum_rules, [*POINTS, CARRIED_AT], held, "manual")
     with sessions() as session:
         ran = session.execute(select(func.now())).scalar_one()
         rules = stored_backtest_rules(session)
@@ -299,7 +316,7 @@ def test_the_schedule_runs_once_a_month(sessions: sessionmaker[Session], stored:
 
 def test_the_backtests_api(client: TestClient, stored: datetime) -> None:
     body = client.get("/backtests", params={"known_at": iso(VALUED_AT)}).json()
-    assert body["rule_version"] == "0.1.0"
+    assert body["rule_version"] == "0.2.0"
     assert body["detail"].startswith("Backtests on stored point-in-time data")
     assert "Performance is withheld (OD-7)" in body["detail"]
     assert [r["run"]["strategy_id"] for r in body["runs"]] == ["S1", "S3", "S4"]
@@ -317,9 +334,110 @@ def test_the_backtests_api(client: TestClient, stored: datetime) -> None:
         client.get("/backtests", params={"known_at": "2026-09-01T00:00:00Z"}).json()["runs"] == []
     )
     rules = client.get("/backtests/rules").json()
-    assert [(r["rule_version"], r["status"]) for r in rules] == [("0.1.0", "active")]
+    assert sorted((r["rule_version"], r["status"]) for r in rules) == [
+        ("0.1.0", "retired"),
+        ("0.2.0", "active"),
+    ]
     momentum = client.get("/momentum/rules").json()
     assert momentum[0]["content"]["universe"][0] == "AAPL"
+
+
+# ---------- S4 daily (M3.0, ADR-036 D7) ----------
+
+
+def momentum_rows(session: Session) -> list[MomentumAssessment]:
+    return list(
+        session.scalars(select(MomentumAssessment).order_by(MomentumAssessment.known_at)).all()
+    )
+
+
+def test_s4_sets_a_target_at_each_month_start_and_carries_it(
+    sessions: sessionmaker[Session], stored: datetime
+) -> None:
+    with sessions() as session:
+        found = momentum_rows(session)
+        assert [r.known_at for r in found] == [*POINTS, CARRIED_AT]
+        assert [r.reason for r in found] == ["month_start"] * 4 + ["carried"]
+        assert [r.rebalance for r in found] == [True] * 4 + [False]
+        october, carried = found[-2:]
+        assert (carried.previous_id, carried.target) == (october.id, october.target)
+        assert carried.assessment["set_at"] == october.assessment["set_at"]
+        assert all(r.backfilled and r.trigger == "manual" for r in found)
+        readings = {r["symbol"]: r for r in october.assessment["readings"]}
+        assert list(readings)[:3] == ["AAPL", "MSFT", "GOOGL"]  # the universe, in order
+        assert readings["GOOGL"]["detail"] == "no factor snapshot known at T"  # none stored
+        # NVDA has closes from 2023 (12-1 momentum); AAPL and MSFT one year only
+        assert readings["AAPL"]["conditions"][0]["status"] == "unavailable"
+        assert readings["NVDA"]["conditions"][0]["status"] in ("pass", "fail")
+        for row in found:
+            again = momentum.recompute(session, row)
+            assert again is not None and momentum.same(row, again), row.known_at
+        signals = session.scalars(select(SignalRecord).where(SignalRecord.strategy_id == "S4"))
+        made = list(signals)
+        assert len(made) == sum(len(r.target or {}) for r in found if r.rebalance)
+        for signal in made:
+            assert (signal.family_id, signal.execution_eligibility) == (5, "paper_only")
+            assert signal.observation_ids[0]["table"] == "momentum_assessments"
+
+
+def test_s4_is_unavailable_without_snapshots_and_stores_no_target(
+    sessions: sessionmaker[Session], stored: datetime
+) -> None:
+    early = end_of_day(date(2026, 6, 30))  # before any stored snapshot
+    with sessions() as session:
+        rules = stored_momentum_rules(session)
+        assert rules is not None
+        row = momentum.record_momentum(session, rules, early, stored, "manual")
+        assert row is not None
+        assert (row.reason, row.target, row.rebalance) == ("unavailable", None, False)
+        session.rollback()
+
+
+def test_the_s4_backtest_reads_the_stored_assessments(
+    sessions: sessionmaker[Session], stored: datetime
+) -> None:
+    with sessions() as session:
+        s4 = next(r for r in runs(session) if r.strategy_id == "S4")
+        targets = [r for r in momentum_rows(session) if r.rebalance and r.known_at <= VALUED_AT]
+    assert s4.rule_version == "0.2.0"
+    rebalances = s4.document["rebalances"]
+    assert [r["source"] for r in rebalances] == [
+        {"table": "momentum_assessments", "id": str(r.id)} for r in targets
+    ]
+    assert "stored daily S4 assessments" in " ".join(s4.document["notes"])
+
+
+def test_the_momentum_api_signals_and_candidates(
+    client: TestClient, sessions: sessionmaker[Session], stored: datetime
+) -> None:
+    with sessions() as session:
+        october = momentum_rows(session)[-2]
+    body = client.get("/momentum", params={"known_at": iso(VALUED_AT)}).json()
+    assert body["rule_version"] == "0.1.0"
+    assert body["detail"].startswith("Research only (paper)")
+    assert body["current"]["known_at"] == iso(VALUED_AT)
+    assert [p["reason"] for p in body["history"]] == ["month_start"] * 4
+    later = client.get("/momentum", params={"known_at": iso(CARRIED_AT)}).json()
+    assert later["current"]["momentum"]["reason"] == "carried"
+    assert len(later["history"]) == 4
+    assert (
+        client.get("/momentum", params={"known_at": "2026-07-01T00:00:00Z"}).json()["current"]
+        is None
+    )
+    target = october.target or {}
+    signals = client.get("/signals", params={"known_at": iso(VALUED_AT), "strategy": "S4"}).json()
+    assert signals["rule_versions"]["S4"] == "0.1.0"
+    assert sorted(s["ticker"] for s in signals["current"]) == sorted(target)
+    assert all(s["state"] == "momentum_target" for s in signals["current"])
+    candidates = client.get("/candidates", params={"known_at": iso(VALUED_AT)}).json()
+    assert [c["ticker"] for c in candidates["momentum"]] == list(momentum_target_order(target))
+    assert all(c["strategy_id"] == "S4" for c in candidates["momentum"])
+    assert "S4 momentum target" in candidates["detail"]
+
+
+def momentum_target_order(target: dict[str, str]) -> list[str]:
+    universe = ["AAPL", "MSFT", "GOOGL", "META", "NVDA", "JPM", "XOM", "AZO", "ORLY", "LOW"]
+    return [s for s in universe if s in target]
 
 
 def test_a_changed_released_rule_set_is_refused(engine: Engine) -> None:
@@ -340,14 +458,24 @@ def test_a_changed_released_rule_set_is_refused(engine: Engine) -> None:
 )
 def test_record_web_fixtures(client: TestClient) -> None:
     target = Path(__file__).resolve().parents[3] / "web" / "tests" / "fixtures" / "api"
-    response = client.get("/backtests", params={"known_at": iso(VALUED_AT)})
-    assert response.status_code == 200
-    record = {
-        "recorded_at": datetime.now(UTC).isoformat(),
-        "recorded_from": "recorded FRED vintages and Alpaca closes replayed into the "
-        "integration test database (tests/integration/test_backtests.py)",
-        "endpoint": "/backtests",
-        "params": {"known_at": iso(VALUED_AT)},
-        "response": response.json(),
-    }
-    (target / "backtests.json").write_text(json.dumps(record, indent=2) + "\n")
+    at = iso(VALUED_AT)
+    recorded: tuple[tuple[str, str, dict[str, str]], ...] = (
+        ("backtests", "/backtests", {"known_at": at}),
+        # S4 (M3.0): the daily assessment, its signals and the Radar with S3 and S4 candidates
+        ("momentum", "/momentum", {"known_at": at}),
+        ("momentum-carried", "/momentum", {"known_at": iso(CARRIED_AT)}),
+        ("signals-momentum", "/signals", {"known_at": at, "strategy": "S4"}),
+        ("candidates-momentum", "/candidates", {"known_at": at}),
+    )
+    for name, path, params in recorded:
+        response = client.get(path, params=params)
+        assert response.status_code == 200
+        record = {
+            "recorded_at": datetime.now(UTC).isoformat(),
+            "recorded_from": "recorded FRED vintages and Alpaca closes replayed into the "
+            "integration test database (tests/integration/test_backtests.py)",
+            "endpoint": path,
+            "params": params,
+            "response": response.json(),
+        }
+        (target / f"{name}.json").write_text(json.dumps(record, indent=2) + "\n")

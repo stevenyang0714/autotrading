@@ -12,10 +12,10 @@ describe("BacktestsView with recorded API responses", () => {
     const cards = screen.getByRole("list", { name: "Backtest runs" }).querySelectorAll("li[data-backtest]");
     expect([...cards].map((c) => c.getAttribute("data-backtest"))).toEqual(["S1", "S3", "S4"]);
     const s3 = container.querySelector('[data-backtest="S3"]');
-    expect(s3?.textContent).toContain("rotation rules 0.1.0 · backtest rules 0.1.0");
+    expect(s3?.textContent).toContain("rotation rules 0.2.0 · backtest rules 0.2.0");
     expect(s3?.textContent).toContain("filled at the next session close");
     expect(s3?.textContent).toContain("equities 7 bps, ETFs 3 bps");
-    expect(s3?.querySelector("[data-samples]")?.textContent).toContain("out-of-sample after 2026-10-16: no session yet");
+    expect(s3?.querySelector("[data-samples]")?.textContent).toContain("out-of-sample after 2026-10-19: no session yet");
     expect(s3?.querySelector("[data-withheld]")?.textContent).toContain("CAGR");
     expect(s3?.querySelector("[data-withheld]")?.textContent).toContain("Data unavailable");
     expect(s3?.querySelector('tr[data-fold="2026"]')?.getAttribute("data-sample")).toBe("in_sample");
@@ -23,7 +23,7 @@ describe("BacktestsView with recorded API responses", () => {
     expect(s3?.querySelector("[data-latest-target]")?.textContent).toContain("SPY 100.00%");
     expect(s3?.querySelector('tr[data-trade="SPY"]')?.textContent).toContain("3 bps");
     expect(container.textContent).not.toMatch(/Sharpe [0-9]|CAGR [0-9]/);
-    expect(container.querySelector("[data-overlap]")?.textContent).toContain("never held companies at the same time");
+    expect(container.querySelector("[data-overlap]")?.textContent).toContain("S4 held 0.00% of its companies in common with S1");
     expect(unexplainedNumbers(container)).toEqual([]);
   });
 

@@ -19,6 +19,7 @@ from autotrading.ingestion.schedule import (
     FACTORS,
     FRED,
     GDELT,
+    MOMENTUM,
     NEWS_FEEDS,
     PORTFOLIO,
     REFRESH_TIMEZONE,
@@ -124,6 +125,15 @@ def main() -> None:
         lambda: actors.start_rotation_evaluation(manual=False),
         CronTrigger(hour=ROTATION.hour, minute=ROTATION.minute, timezone=REFRESH_TIMEZONE),
         id="rotation",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=12 * 3600,
+    )
+    # S4 momentum (M3.0, ADR-036 D7): daily at 11:17 SGT, after the factor snapshots.
+    scheduler.add_job(
+        lambda: actors.start_momentum_evaluation(manual=False),
+        CronTrigger(hour=MOMENTUM.hour, minute=MOMENTUM.minute, timezone=REFRESH_TIMEZONE),
+        id="momentum",
         max_instances=1,
         coalesce=True,
         misfire_grace_time=12 * 3600,

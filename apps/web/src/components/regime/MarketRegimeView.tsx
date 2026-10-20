@@ -166,8 +166,8 @@ function History({ history }: { history: RegimePoint[] }) {
       </div>
       <p className="text-xs text-neutral-500">
         <Metric termId="regime" icon={false}>
-          One cell per month, {years[0]} to {years[years.length - 1]}; hover a cell for its date and state. Green is
-          calm or easy, amber to red more stress or tighter conditions.
+          One cell per month at its highest stress, {years[0]} to {years[years.length - 1]}; hover a cell for its date
+          and state. Green is calm or easy, amber to red more stress or tighter conditions.
         </Metric>
       </p>
     </div>

@@ -3,8 +3,9 @@ the api container). Queues the same work as the daily schedule; the worker execu
 
     python -m autotrading.jobs.regime_evaluate [--backfill | --verify N]
 
---verify N recomputes the latest N stored assessments with their own known_at, system_time and
-rule version, here, and reports any that differ (Phase 2 exit: regime reproducible).
+--verify N recomputes the latest N stored assessments of every rule version with their own
+known_at, system_time and rule version, here, and reports any that differ (Phase 2 exit: regime
+reproducible; ADR-036: a retired version's rows stay identical).
 """
 
 import argparse
@@ -20,9 +21,17 @@ from autotrading.repositories.regime import regime_at, stored_regime_rules
 
 def verify(count: int) -> int:
     with actors.sessions()() as session:
-        rows = session.scalars(
-            select(RegimeAssessment).order_by(RegimeAssessment.recorded_at.desc()).limit(count)
-        ).all()
+        versions = session.scalars(select(RegimeAssessment.rule_version).distinct()).all()
+        rows = [
+            row
+            for version in sorted(versions)
+            for row in session.scalars(
+                select(RegimeAssessment)
+                .where(RegimeAssessment.rule_version == version)
+                .order_by(RegimeAssessment.recorded_at.desc())
+                .limit(count)
+            )
+        ]
         differ = []
         for row in rows:
             rules = stored_regime_rules(session, row.rule_version)
@@ -45,8 +54,8 @@ def main() -> int:
     if args.verify:
         return verify(args.verify)
     if args.backfill:
-        months = actors.start_regime_backfill()
-        print(f"Queued regime assessments for {months} month ends since 2016.")
+        points = actors.start_regime_backfill()
+        print(f"Queued regime assessments at {points} session closes and month ends since 2016.")
         return 0
     actors.start_regime_evaluation(manual=True)
     print("Queued a regime assessment now.")

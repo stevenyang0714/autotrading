@@ -182,6 +182,7 @@ export type CompleteTermId =
   | "momentum_12_1"
   | "momentum_6_1"
   | "momentum_rule_set"
+  | "momentum_target"
   | "multiple_percentile"
   | "net_debt"
   | "net_debt_change_yoy"
@@ -2045,7 +2046,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "Opportunity Radar",
     "category": "navigation",
     "short_definition": "The rules' candidates, and every universe instrument's trend, risk and factor values against its own history.",
-    "full_definition": "Since M2.4 (ADR-032): the candidates as known on the chosen date, companies at L3 or L4 (S1) and the ETFs of the S3 rotation target, each with its evidence, rule versions and the market's stress state. Since M2.2 (ADR-030): one row per universe equity and ETF with its momentum, averages, volatility, beta and momentum against SPY, and for equities the percentile of each value and quality measure in its own history.",
+    "full_definition": "Since M2.4 (ADR-032): the candidates as known on the chosen date, companies at L3 or L4 (S1), the ETFs of the S3 rotation target and, since M3.0 (ADR-036), the companies of the S4 momentum target, each with its evidence, rule versions and the market's stress state. Since M2.2 (ADR-030): one row per universe equity and ETF with its momentum, averages, volatility, beta and momentum against SPY, and for equities the percentile of each value and quality measure in its own history.",
     "formula": "not a calculation; reads GET /candidates and GET /factors",
     "unit": "page",
     "example": "As known on 2026-10-06 (recorded data): NVDA 12-1 momentum +21.09%, 4.60 points ahead of SPY.",
@@ -2054,8 +2055,8 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "why_it_matters": "Where a decision is needed, next to the inputs behind it.",
     "source": "Build spec 02 §13 and §21; ADR-030; ADR-032",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/factor_definitions.yaml",
-    "as_of": "2026-10-16",
-    "update_cadence": "daily (11:00, 11:05 and 11:15 SGT)",
+    "as_of": "2026-10-19",
+    "update_cadence": "daily (11:00, 11:05, 11:15 and 11:17 SGT)",
     "caveats": "Long only (OD-5). Time-series only: no delisted companies, so no cross-sectional ranks (P2-3, KI-1). Thresholds unvalidated (OD-7).",
     "related_terms": [
       "opportunity_candidate",
@@ -2063,9 +2064,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "momentum_12_1",
       "factor_percentile"
     ],
-    "methodology_version": "0.3.0",
+    "methodology_version": "0.4.0",
     "name_zh": "機會雷達",
-    "hint_zh": "規則標出的候選（L3/L4 公司與 S3 持有的 ETF），以及 18 檔標的的動能、均線、波動與各自歷史百分位；不是買進清單。"
+    "hint_zh": "規則標出的候選（L3/L4 公司、S3 持有的 ETF、S4 持有的公司），以及 18 檔標的的動能、均線、波動與各自歷史百分位；不是買進清單。"
   },
   "dashboard_options_vol": {
     "term_id": "dashboard_options_vol",
@@ -2143,8 +2144,8 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "term_id": "dashboard_strategy_lab",
     "display_name": "Strategy Lab",
     "category": "navigation",
-    "short_definition": "Paper journal, signals, the ETF rotation and walk-forward backtests with costs.",
-    "full_definition": "Live from M1.6 as the paper journal: every Thesis Card with its decision and paper return against SPY, the current signals, and a link to write a new card. Since M2.4 the S3 ETF rotation, and since M2.5 (ADR-033) the backtests of S1, S3 and S4: method, in-sample and out-of-sample periods, yearly folds, costs, trades and factor overlap, with performance withheld (OD-7).",
+    "short_definition": "Paper journal, signals, the ETF rotation, S4 momentum and walk-forward backtests with costs.",
+    "full_definition": "Live from M1.6 as the paper journal: every Thesis Card with its decision and paper return against SPY, the current signals, and a link to write a new card. Since M2.4 the S3 ETF rotation, since M3.0 (ADR-036) the daily S4 momentum assessment, and since M2.5 (ADR-033) the backtests of S1, S3 and S4: method, in-sample and out-of-sample periods, yearly folds, costs, trades and factor overlap, with performance withheld (OD-7).",
     "formula": "not a calculation; dashboard defined in build spec 02 §21",
     "unit": "page",
     "example": "An AAPL NO TRADE next to an AAPL paper TRADE; the S3 rotation holding SPY, QQQ, XLE and XLK.",
@@ -2153,7 +2154,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "why_it_matters": "No strategy can be unlocked without out-of-sample evidence; the journal records judgement until then.",
     "source": "Build spec 02 §21; research report 01 §21; ROADMAP dashboard map; ADR-027",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/spec/02_master_build_prompt_v2.md",
-    "as_of": "2026-10-17",
+    "as_of": "2026-10-19",
     "update_cadence": "per release",
     "caveats": "Paper only. Backtest performance is withheld (OD-7); ETFs cannot enter the journal yet (ADR-032 Q4, ADR-033 B6).",
     "related_terms": [
@@ -2162,9 +2163,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "etf_rotation",
       "backtest"
     ],
-    "methodology_version": "0.4.0",
+    "methodology_version": "0.5.0",
     "name_zh": "策略實驗室",
-    "hint_zh": "模擬交易日誌、訊號、S3 ETF 輪動，以及 S1、S3、S4 的 walk-forward 回測（含成本，不顯示績效）。"
+    "hint_zh": "模擬交易日誌、訊號、S3 ETF 輪動、S4 動能，以及 S1、S3、S4 的 walk-forward 回測（含成本，不顯示績效）。"
   },
   "dashboard_x_expert_watch": {
     "term_id": "dashboard_x_expert_watch",
@@ -2347,24 +2348,24 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "Defensive Switch",
     "category": "signal",
     "short_definition": "A mid-month change of the rotation target when stress rises into HIGH or CRISIS.",
-    "full_definition": "The target is set again at once from the defensive sleeve. When stress eases within the month, the defensive target stays until the next month starts. Month-end history before daily assessments (2026-10) cannot show one.",
+    "full_definition": "The target is set again at once from the defensive sleeve. When stress eases within the month, the defensive target stays until the next month starts. Under rotation rules 0.2.0 the history is assessed at every session since 2017, so switches inside a month are in it (0.1.0's month-end history could not show one, KI-17).",
     "formula": "stress rises into (HIGH, CRISIS) -> new target now",
     "unit": "event",
     "example": "Stress rises from ELEVATED to HIGH on the 15th: TLT, IEF and GLD (those in trend) from that day.",
     "direction": "N/A",
     "interpretation": "The rotation reacted to stress without waiting for the month end.",
     "why_it_matters": "Limits the time spent in risk assets when stress jumps.",
-    "source": "Rotation rules 0.1.0 (config/rotation_rules.yaml); domain/rotation.py; ADR-032",
+    "source": "Rotation rules 0.2.0 (config/rotation_rules.yaml); domain/rotation.py; ADR-032, ADR-036",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/rotation_rules.yaml",
-    "as_of": "2026-10-16",
+    "as_of": "2026-10-19",
     "update_cadence": "daily (11:15 SGT); targets change at month starts and defensive switches",
-    "caveats": "VIX above 30 alone gives HIGH (KI-5), so switches can come in pairs with the next month start. Thresholds are Steven's defaults (Q1, Q2), unvalidated (OD-7); a change is a new rule version.",
+    "caveats": "Under regime rules 0.2.0, VIX above 30 makes HIGH only with a second flag (KI-5). Thresholds are Steven's defaults (Q1, Q2), unvalidated (OD-7); a change is a new rule version.",
     "related_terms": [
       "rotation_rebalance",
       "defensive_sleeve",
       "stress_state"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "轉防守",
     "hint_zh": "月中壓力升到 HIGH 或 CRISIS 時立刻改成防守型；壓力下降要等下個月才換回。"
   },
@@ -4685,7 +4686,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "Medium-term Momentum (S4)",
     "category": "signal",
     "short_definition": "Strategy S4: hold each company whose 12-1 momentum and 12-1 momentum against SPY are both above zero.",
-    "full_definition": "Each of the 10 companies is judged on its own history and SPY only (no ranking, P2-3). The selected ones are held in equal weights, set monthly; no stress gate. Backtested from 2017; no live signal yet (ADR-033 B3).",
+    "full_definition": "Each of the 10 companies is judged on its own history and SPY only (no ranking, P2-3). The selected ones are held in equal weights; no stress gate. Since M3.0 (ADR-036 D7) S4 is assessed daily: the target is set at the first assessment of each New York month and carried otherwise, with a paper signal (family 5) for each company of a new target. Backtested and backfilled from 2017.",
     "formula": "momentum_12_1 > 0 and relative_momentum_12_1 > 0 -> equal weight",
     "unit": "target",
     "example": "Five of ten selected: 20% each.",
@@ -4694,17 +4695,17 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "why_it_matters": "Medium-term momentum is a documented effect; here it is a paper research rule.",
     "source": "Momentum rules 0.1.0 (config/momentum_rules.yaml); domain/momentum.py; ADR-033",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/momentum_rules.yaml",
-    "as_of": "2026-10-17",
-    "update_cadence": "once a month, after the month's first rotation assessment (11:20 SGT)",
+    "as_of": "2026-10-19",
+    "update_cadence": "daily (11:17 SGT); targets change at month starts",
     "caveats": "Current universe only (KI-1); 12-1 momentum starts in 2017. Steven's defaults (B1-B7), unvalidated (OD-7); a change is a new rule version.",
     "related_terms": [
       "momentum_12_1",
       "relative_momentum_12_1",
       "factor_overlap"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "中期動能（S4）",
-    "hint_zh": "10 家公司各看自己：12-1 動能與相對 SPY 的 12-1 動能都大於 0 就等權持有。"
+    "hint_zh": "10 家公司各看自己：12-1 動能與相對 SPY 的 12-1 動能都大於 0 就等權持有；每天評估，每月第一次評估時換目標。"
   },
   "mega_cap": {
     "term_id": "mega_cap",
@@ -4859,6 +4860,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "動能規則版本",
     "hint_zh": "S4 回測所用的規則版本；已發布的不會改。"
+  },
+  "momentum_target": {
+    "term_id": "momentum_target",
+    "display_name": "S4 Target",
+    "category": "signal",
+    "short_definition": "The companies the S4 momentum strategy holds and their weights, with the rest in cash.",
+    "full_definition": "Set at the first assessment of each New York month from the companies whose 12-1 momentum and 12-1 momentum against SPY are both above zero, in equal weights rounded down to 0.01%; the remainder is cash. Carried unchanged within the month (reason carried). None when no company has a factor snapshot fresh at the date (reason unavailable).",
+    "formula": "100% / number selected, rounded down; cash = 100% - sum",
+    "unit": "percent",
+    "example": "4 companies selected: 25% each.",
+    "direction": "N/A",
+    "interpretation": "The research portfolio S4 holds at the date; the readings show today's conditions, which may differ from those at the month start.",
+    "why_it_matters": "What a paper position following S4 would hold.",
+    "source": "Momentum rules 0.1.0 (config/momentum_rules.yaml); domain/momentum.py; ADR-036 D7",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/momentum_rules.yaml",
+    "as_of": "2026-10-19",
+    "update_cadence": "daily (11:17 SGT); targets change at month starts",
+    "caveats": "Equal weights only; current universe only (KI-1). Defaults, unvalidated (OD-7); a change is a new rule version.",
+    "related_terms": [
+      "medium_term_momentum",
+      "momentum_12_1",
+      "relative_momentum_12_1"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "S4 目標持有",
+    "hint_zh": "S4 目前持有的公司與權重（等權、無條件捨去到 0.01%），其餘是現金；月中沿用月初的目標。"
   },
   "multiple_percentile": {
     "term_id": "multiple_percentile",
@@ -5397,9 +5424,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "term_id": "opportunity_candidate",
     "display_name": "Opportunity Candidate",
     "category": "signal",
-    "short_definition": "What the rules flag as known at the date: a company at L3 or L4 (S1), or an ETF of the S3 rotation target.",
-    "full_definition": "Read from stored rows, never scored or ranked across instruments: companies by level then ticker, ETFs in the rotation's order, each with its evidence, rule versions and the market's stress state and quadrant at the date. Long only (no short data, OD-5).",
-    "formula": "convergence level >= L3, or in the rotation target",
+    "short_definition": "What the rules flag as known at the date: a company at L3 or L4 (S1), an ETF of the S3 rotation target, or a company of the S4 momentum target.",
+    "full_definition": "Read from stored rows, never scored or ranked across instruments: companies by level then ticker, ETFs and S4 companies in universe order (S4 since M3.0), each with its evidence, rule versions and the market's stress state and quadrant at the date. Long only (no short data, OD-5).",
+    "formula": "convergence level >= L3, or in the S3 or S4 target",
     "unit": "candidate",
     "example": "As known on 2026-10-16: AZO at L4 (S1); SPY, QQQ, XLE and XLK (S3).",
     "direction": "N/A",
@@ -5407,17 +5434,17 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "why_it_matters": "Where a decision is needed, with the reasons in one place.",
     "source": "Convergence (ADR-028, ADR-031) and rotation (ADR-032); api/candidates.py",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/apps/api/src/autotrading/api/candidates.py",
-    "as_of": "2026-10-16",
-    "update_cadence": "daily (11:00 and 11:15 SGT)",
+    "as_of": "2026-10-19",
+    "update_cadence": "daily (11:00, 11:15 and 11:17 SGT)",
     "caveats": "Thresholds are defaults, unvalidated (OD-7); no delisted companies (KI-1).",
     "related_terms": [
       "convergence_l3",
       "convergence_l4",
       "etf_rotation"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "候選",
-    "hint_zh": "規則在當時標出的標的：L3/L4 的公司（S1）或 S3 目標持有的 ETF；不打分、不排名、只做多。"
+    "hint_zh": "規則在當時標出的標的：L3/L4 的公司（S1）、S3 目標持有的 ETF 或 S4 目標持有的公司；不打分、不排名、只做多。"
   },
   "out_of_sample": {
     "term_id": "out_of_sample",
@@ -6371,18 +6398,18 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "direction": "N/A",
     "interpretation": "How much risk the stress state allows (02 §15).",
     "why_it_matters": "Keeps the rotation out of high-beta assets when stress rises.",
-    "source": "Rotation rules 0.1.0 (config/rotation_rules.yaml); domain/rotation.py; ADR-032",
+    "source": "Rotation rules 0.2.0 (config/rotation_rules.yaml); domain/rotation.py; ADR-032, ADR-036",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/rotation_rules.yaml",
-    "as_of": "2026-10-16",
+    "as_of": "2026-10-19",
     "update_cadence": "daily (11:15 SGT); targets change at month starts and defensive switches",
-    "caveats": "Stress thresholds are regime rules 0.1.0 defaults (KI-3 to KI-7): VIX above 30 alone gives HIGH (KI-5). Thresholds are Steven's defaults (Q1, Q2), unvalidated (OD-7); a change is a new rule version.",
+    "caveats": "Rotation rules 0.2.0 read regime rules 0.2.0 (ADR-036), reviewed against 2016-2026 only: VIX above 30 makes HIGH only with a second flag. Thresholds are Steven's defaults (Q1, Q2), unvalidated (OD-7); a change is a new rule version.",
     "related_terms": [
       "stress_state",
       "high_beta",
       "defensive_sleeve",
       "risk_sleeve"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "壓力限制",
     "hint_zh": "NORMAL 全部可持有；ELEVATED 排除高 beta；HIGH 與 CRISIS 只能持有防守型。"
   },
@@ -6469,10 +6496,10 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "Growth x Inflation",
     "category": "regime",
     "short_definition": "Goldilocks, reflation, stagflation or disinflationary slowdown, from the growth and inflation states.",
-    "full_definition": "Expanding growth with inflation near or below target is goldilocks; expanding with above-target or hot inflation is reflation; slowing or contracting with above-target inflation is stagflation; slowing or contracting with inflation near or below target is a disinflationary slowdown.",
-    "formula": "growth state x inflation state",
+    "full_definition": "Expanding growth with low inflation is goldilocks; expanding with high inflation is reflation; slowing or contracting with high inflation is stagflation; slowing or contracting with low inflation is a disinflationary slowdown. Inflation counts as high when it is hot, or above target and not falling (regime rules 0.2.0; under 0.1.0 above target counted as high even while falling).",
+    "formula": "growth state x (inflation hot, or above target and not falling)",
     "unit": "label",
-    "example": "As known on 2026-10-06: stagflation (growth slowing, inflation above target).",
+    "example": "As known on 2026-10-19: disinflationary slowdown (growth slowing; core PCE 3.01% but falling, 2.05% annualized over 3 months).",
     "direction": "N/A",
     "interpretation": "A shorthand for the macro mix, not a forecast.",
     "why_it_matters": "Asset classes behave differently in each mix.",
@@ -6480,14 +6507,14 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
     "as_of": "2026-10-13",
     "update_cadence": "with growth and inflation",
-    "caveats": "A label from two states; slowing growth with 3% inflation already reads stagflation.",
+    "caveats": "A label from two states. Under 0.1.0, slowing growth with falling 2.6% inflation read stagflation in most months since December 2023 (KI-7); 0.2.0 reads the direction.",
     "related_terms": [
       "regime_growth",
       "regime_inflation"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "成長×通膨象限",
-    "hint_zh": "金髮女孩／再通膨／停滯性通膨／通縮放緩；是標籤，不是預測。"
+    "hint_zh": "金髮女孩／再通膨／停滯性通膨／通縮放緩；0.2.0 起通膨高於目標但在下降不算高通膨。是標籤，不是預測。"
   },
   "regime_rule_set": {
     "term_id": "regime_rule_set",
@@ -7280,23 +7307,23 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "Rotation Rebalance",
     "category": "signal",
     "short_definition": "When the rotation sets a new target: the first assessment of each New York month.",
-    "full_definition": "Every other assessment carries the target set before it (reason carried), so the rotation trades at most monthly, except for a defensive switch. Backfilled month ends are each the first of their month.",
+    "full_definition": "Every other assessment carries the target set before it (reason carried), so the rotation trades at most monthly, except for a defensive switch. Rotation rules 0.2.0 are backfilled at every session since 2017, so each month's first session sets its target (0.1.0's backfilled month ends were each the first of their month).",
     "formula": "new New York month -> new target; else carried",
     "unit": "event",
     "example": "The first assessment of October 2026 replaces September's target.",
     "direction": "N/A",
     "interpretation": "Why a target changed or stayed.",
     "why_it_matters": "Monthly targets keep turnover low (01 §30: turnover controls).",
-    "source": "Rotation rules 0.1.0 (config/rotation_rules.yaml); domain/rotation.py; ADR-032",
+    "source": "Rotation rules 0.2.0 (config/rotation_rules.yaml); domain/rotation.py; ADR-032, ADR-036",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/rotation_rules.yaml",
-    "as_of": "2026-10-16",
+    "as_of": "2026-10-19",
     "update_cadence": "daily (11:15 SGT); targets change at month starts and defensive switches",
     "caveats": "Thresholds are Steven's defaults (Q1, Q2), unvalidated (OD-7); a change is a new rule version.",
     "related_terms": [
       "rotation_target",
       "defensive_switch"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "輪動調整",
     "hint_zh": "每個紐約月份第一次評估時換目標；其他時候沿用上一次的。"
   },
@@ -7905,26 +7932,26 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "term_id": "stress_flag_nfci",
     "display_name": "Financial Conditions Flag",
     "category": "regime",
-    "short_definition": "On when the Chicago Fed NFCI is above 0 (tighter than average).",
-    "full_definition": "On when the Chicago Fed NFCI is above 0 (tighter than average). Without its inputs at the date the flag is unavailable and not counted.",
-    "formula": "NFCI > 0",
+    "short_definition": "On when the Chicago Fed NFCI is above -0.25 (tightening toward average).",
+    "full_definition": "On when the Chicago Fed NFCI is above -0.25 under regime rules 0.2.0 (0 under 0.1.0, which no month end since 2016 reached: KI-4). Zero is average conditions; the index is negative in loose markets. Without its inputs at the date the flag is unavailable and not counted.",
+    "formula": "NFCI > -0.25 (0.1.0: > 0)",
     "unit": "on / off / unavailable",
-    "example": "As known on 2026-10-06: off.",
+    "example": "On at the ends of March 2020, mid-2022 and March 2023; off on 2026-10-19 (-0.50).",
     "direction": "On = stress",
     "interpretation": "One of nine stress signals (02 §15).",
     "why_it_matters": "Several flags together are what matters, not any single one.",
-    "source": "Regime rules 0.1.0 (config/regime_rules.yaml); FRED vintages and Alpaca closes",
+    "source": "Regime rules 0.2.0 (config/regime_rules.yaml); FRED vintages",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
-    "as_of": "2026-10-13",
+    "as_of": "2026-10-19",
     "update_cadence": "daily or weekly",
     "caveats": "Thresholds are defaults, unvalidated (OD-7); a description of conditions, not a forecast.",
     "related_terms": [
       "macro_nfci",
       "stress_state"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "金融情勢旗標",
-    "hint_zh": "NFCI 高於 0（比平均更緊）。"
+    "hint_zh": "NFCI 高於 −0.25（0.2.0；0.1.0 為 0）：金融情勢正在收緊。"
   },
   "stress_flag_oil": {
     "term_id": "stress_flag_oil",
@@ -8104,18 +8131,18 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "Stress State",
     "category": "regime",
     "short_definition": "Normal, elevated, high or crisis: how many stress flags are on together (02 §15).",
-    "full_definition": "Normal with 0-1 flags; elevated with 2-3; high with 4 or more, credit distressed or VIX above 30; crisis when credit is distressed, VIX is above 40 and SPY is more than 20% below its 52-week high. Flags without inputs are not counted, and the detail says how many were judged. A change raises a market-wide alert.",
+    "full_definition": "Normal with 0-1 flags; elevated with 2-3; high with 4 or more, or credit distressed, or VIX above 30 with at least two flags on (VIX above 30 with fewer is elevated); crisis when two of three hold: credit distressed, VIX above 40, SPY more than 20% below its 52-week high. That is regime rules 0.2.0 (ADR-036); under 0.1.0 VIX above 30 alone was high and crisis needed all three. Flags without inputs are not counted, and the detail says how many were judged. A change raises a market-wide alert.",
     "formula": "count of the nine flags, with high and crisis overrides",
     "unit": "state",
-    "example": "As known on 2026-10-06: normal (0 of 9 flags).",
+    "example": "Under 0.2.0 the end of March 2020 is crisis (VIX 53.5, SPY 23.9% below its high); 2026-10-19 is normal.",
     "direction": "Higher = more stress",
     "interpretation": "Higher states call for less new risk and more hedging (02 §15).",
     "why_it_matters": "Detects fragility; it does not predict black swans.",
-    "source": "Regime rules 0.1.0 (config/regime_rules.yaml); FRED vintages and Alpaca closes",
+    "source": "Regime rules 0.2.0 (config/regime_rules.yaml); FRED vintages and Alpaca closes",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/regime_rules.yaml",
-    "as_of": "2026-10-13",
+    "as_of": "2026-10-19",
     "update_cadence": "daily",
-    "caveats": "Thresholds are defaults, unvalidated (OD-7); a description of conditions, not a forecast.",
+    "caveats": "Thresholds are defaults reviewed against 2016-2026 only, unvalidated (OD-7); a description of conditions, not a forecast. Signals arrive with the stress, not before it.",
     "related_terms": [
       "stress_normal",
       "stress_elevated",
@@ -8123,9 +8150,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "stress_crisis",
       "regime"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "壓力狀態",
-    "hint_zh": "正常／升高／高／危機：同時亮起幾個壓力旗標。"
+    "hint_zh": "正常／升高／高／危機：同時亮起幾個壓力旗標；0.2.0 起危機只需三個條件中的兩個。偵測脆弱，不預測黑天鵝。"
   },
   "survivorship_bias": {
     "term_id": "survivorship_bias",

@@ -15,7 +15,7 @@ export NEXT_TELEMETRY_DISABLED := 1
 export COREPACK_ENABLE_DOWNLOAD_PROMPT := 0
 
 .DEFAULT_GOAL := help
-.PHONY: help setup up down ps logs migrate sec-refresh fred-refresh prices-refresh prices-backfill news-refresh news-backfill buyback-evaluate buyback-backfill buyback-verify signals-backfill alerts-backfill regime-evaluate regime-backfill regime-verify factors-evaluate factors-backfill factors-verify portfolio-snapshot risk-verify rotation-evaluate rotation-backfill rotation-verify backtest-run backtest-verify db-backup db-restore-check replay-fixtures gen test test-unit test-integration e2e lint lint-api lint-web fmt dev-web
+.PHONY: help setup up down ps logs migrate sec-refresh fred-refresh prices-refresh prices-backfill news-refresh news-backfill buyback-evaluate buyback-backfill buyback-verify signals-backfill alerts-backfill regime-evaluate regime-backfill regime-verify factors-evaluate factors-backfill factors-verify portfolio-snapshot risk-verify rotation-evaluate rotation-backfill rotation-verify momentum-evaluate momentum-backfill momentum-verify backtest-run backtest-verify db-backup db-restore-check replay-fixtures gen test test-unit test-integration e2e lint lint-api lint-web fmt dev-web
 
 help: ## Show available targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  %-18s %s\n", $$1, $$2}'
@@ -76,10 +76,10 @@ alerts-backfill: ## Store convergence levels and alerts for buyback assignments 
 regime-evaluate: ## Queue a macro regime assessment now (M2.1)
 	$(COMPOSE) exec -T api python -m autotrading.jobs.regime_evaluate
 
-regime-backfill: ## Queue regime assessments at every month end since 2016, marked backfilled (run once)
+regime-backfill: ## Queue regime assessments at every session close and month end since 2016, marked backfilled (once per rule version)
 	$(COMPOSE) exec -T api python -m autotrading.jobs.regime_evaluate --backfill
 
-regime-verify: ## Recompute the latest 20 stored regime assessments and report any that differ
+regime-verify: ## Recompute the latest 20 stored regime assessments of each rule version and report any that differ
 	$(COMPOSE) exec -T api python -m autotrading.jobs.regime_evaluate --verify 20
 
 factors-evaluate: ## Queue factor snapshots of every universe instrument now (M2.2)
@@ -100,11 +100,20 @@ risk-verify: ## Recompute the latest 20 and 100 random stored risk checks and re
 rotation-evaluate: ## Queue an S3 ETF rotation assessment now (M2.4)
 	$(COMPOSE) exec -T api python -m autotrading.jobs.rotation_evaluate
 
-rotation-backfill: ## Queue the S3 rotation at every month end since 2017, in order, marked backfilled (run once)
+rotation-backfill: ## Queue the S3 rotation at every session close and month end since 2017, in order, marked backfilled (once per rule version)
 	$(COMPOSE) exec -T api python -m autotrading.jobs.rotation_evaluate --backfill
 
-rotation-verify: ## Recompute the latest 200 stored rotation assessments and report any that differ
+rotation-verify: ## Recompute the latest 200 stored rotation assessments of each rule version and report any that differ
 	$(COMPOSE) exec -T api python -m autotrading.jobs.rotation_evaluate --verify 200
+
+momentum-evaluate: ## Queue an S4 momentum assessment now (M3.0)
+	$(COMPOSE) exec -T api python -m autotrading.jobs.momentum_evaluate
+
+momentum-backfill: ## Queue S4 at every session close and month end since 2017, in order, marked backfilled (once per rule version)
+	$(COMPOSE) exec -T api python -m autotrading.jobs.momentum_evaluate --backfill
+
+momentum-verify: ## Recompute the latest 200 stored S4 assessments of each rule version and report any that differ
+	$(COMPOSE) exec -T api python -m autotrading.jobs.momentum_evaluate --verify 200
 
 backtest-run: ## Queue the backtests of S1, S3 and S4 now (M2.5; performance withheld, OD-7)
 	$(COMPOSE) exec -T api python -m autotrading.jobs.backtest_evaluate

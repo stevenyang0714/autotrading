@@ -95,6 +95,9 @@ class StrategySpec(_Rule):
     since: date
     holds: list[str] = []  # buyback states that hold (S1)
     state_stale_after_days: int | None = None  # S1: an assignment older than this is ignored
+    # S4: targets assessed from the factor snapshots at month ends (0.1.0), or the stored daily
+    # momentum assessments that set a target (0.2.0, ADR-036 D7). The default keeps 0.1.0's hash.
+    targets_from: Literal["factor_snapshots", "momentum_assessments"] = "factor_snapshots"
 
 
 class BacktestRuleSet(_Rule):

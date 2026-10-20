@@ -81,6 +81,7 @@ APP_TABLES = {
     "momentum_rule_sets",
     "backtest_rule_sets",
     "backtest_runs",
+    "momentum_assessments",
 }
 FEB = datetime(2025, 2, 1, 21, 5, tzinfo=UTC)
 AUG = datetime(2025, 8, 1, 20, 30, tzinfo=UTC)
@@ -251,6 +252,8 @@ def test_guardrails_exist(engine: Engine) -> None:
         "rotation_rule_sets_audit",
         "rotation_assessments_append_only",
         "rotation_assessments_no_truncate",
+        "momentum_assessments_append_only",
+        "momentum_assessments_no_truncate",
         "momentum_rule_sets_append_only",
         "momentum_rule_sets_audit",
         "backtest_rule_sets_append_only",
