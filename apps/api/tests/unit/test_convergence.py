@@ -32,6 +32,7 @@ PINNED = {
     "0.3.0": "92de2ab0ed6817b00ada52bc72df34553ce770a699ad9e88c8b1d4fbe5b3aedf",
     "0.4.0": "4827bbf6740b495aacc4bc0794ba1ac9ba6c6e3d07463971f1b48abd3e404052",
     "0.5.0": "e41557c3a2ec69ef98fcd21f1c258bdf8e1f32a911b36ddf470d433eb5906063",
+    "0.6.0": "aabf53844c16b4eefd103e94a4e3184056e81ebe4620e937efd02dc7c7015fd1",
 }
 PHASE1 = next(r.rule_set() for r in RULES.rule_sets if r.rule_version == "0.2.0")
 
@@ -67,11 +68,12 @@ def event(kind: str, days_ago: float, source: str, row: str = "r") -> Event:
 def test_every_released_rule_set_is_pinned() -> None:
     # 0.2.0 added market events, 0.3.0 L4 and portfolio events, 0.4.0 rotation events, with
     # defaults that keep the earlier contents and hashes (ADR-029, ADR-031, ADR-032); 0.5.0 reads
-    # regime and rotation rules 0.2.0 (ADR-036).
+    # regime and rotation rules 0.2.0 (ADR-036); 0.6.0 adds S4 target changes (ADR-037).
     assert {r.rule_version: r.rule_set().content_sha256() for r in RULES.rule_sets} == PINNED
     assert (ACTIVE.rotation_events, ACTIVE.rotation_rule_version) == (["target_change"], "0.2.0")
+    assert (ACTIVE.momentum_events, ACTIVE.momentum_rule_version) == (["target_change"], "0.1.0")
     assert (ACTIVE.rule_version, ACTIVE.market_events, ACTIVE.regime_rule_version) == (
-        "0.5.0",
+        "0.6.0",
         ["stress_change"],
         "0.2.0",
     )

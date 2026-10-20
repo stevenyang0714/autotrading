@@ -34,6 +34,9 @@ from autotrading.db.models import (
     BacktestRuleSet as BacktestRuleSetRow,
 )
 from autotrading.db.models import (
+    DeliveryRuleSet as DeliveryRuleSetRow,
+)
+from autotrading.db.models import (
     MomentumRuleSet as MomentumRuleSetRow,
 )
 from autotrading.db.models import (
@@ -45,6 +48,7 @@ from autotrading.db.models import (
 from autotrading.domain.backtest import BacktestRulesFile
 from autotrading.domain.buyback_states import RulesFile
 from autotrading.domain.convergence import AlertRulesFile
+from autotrading.domain.delivery import DeliveryRulesFile
 from autotrading.domain.factors import FactorDefinitionsFile
 from autotrading.domain.glossary import GlossaryFile
 from autotrading.domain.momentum import MomentumRulesFile
@@ -512,6 +516,48 @@ def sync_momentum_rules(session: Session, rules: MomentumRulesFile) -> GlossaryS
     return result
 
 
+class DeliveryRulesVersionError(ValueError):
+    """A released delivery rule set's content changed without a new rule_version."""
+
+
+def load_delivery_rules(path: Path) -> DeliveryRulesFile:
+    return DeliveryRulesFile.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
+
+
+def sync_delivery_rules(session: Session, rules: DeliveryRulesFile) -> GlossarySyncResult:
+    """Register each delivery rule_version once; the same version with other content is refused
+    (ADR-037, as the alert rules)."""
+    set_actor(session, "config:delivery_rules.yaml")
+    result = GlossarySyncResult()
+    for entry in rules.rule_sets:
+        rule_set = entry.rule_set()
+        sha = rule_set.content_sha256()
+        existing = session.scalars(
+            select(DeliveryRuleSetRow).where(
+                DeliveryRuleSetRow.rule_version == rule_set.rule_version
+            )
+        ).first()
+        if existing is not None:
+            if existing.content_sha256 != sha:
+                raise DeliveryRulesVersionError(
+                    f"delivery rule set {rule_set.rule_version} changed but its rule_version "
+                    "was not bumped"
+                )
+            result.unchanged.append(rule_set.rule_version)
+            continue
+        session.add(
+            DeliveryRuleSetRow(
+                rule_version=rule_set.rule_version,
+                content=rule_set.content(),
+                content_sha256=sha,
+                released=rule_set.released,
+            )
+        )
+        result.created.append(rule_set.rule_version)
+    session.flush()
+    return result
+
+
 def sync_backtest_rules(session: Session, rules: BacktestRulesFile) -> GlossarySyncResult:
     """Register each backtest rule_version once; the same version with other content is refused
     (ADR-033)."""
@@ -585,6 +631,10 @@ def main() -> None:
                 session,
                 load_backtest_rules(settings.resolved_config_dir() / "backtest_rules.yaml"),
             )
+            delivery = sync_delivery_rules(
+                session,
+                load_delivery_rules(settings.resolved_config_dir() / "delivery_rules.yaml"),
+            )
             session.commit()
     finally:
         engine.dispose()
@@ -608,6 +658,7 @@ def main() -> None:
     print(f"rotation_rules.yaml synced: new rule versions={rotation.created}")
     print(f"momentum_rules.yaml synced: new rule versions={momentum.created}")
     print(f"backtest_rules.yaml synced: new rule versions={backtests.created}")
+    print(f"delivery_rules.yaml synced: new rule versions={delivery.created}")
 
 
 if __name__ == "__main__":

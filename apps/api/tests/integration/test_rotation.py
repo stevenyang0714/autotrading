@@ -271,7 +271,7 @@ def test_target_changes_raise_alerts_once(
         rules = stored_rotation_rules(session)
         assert rules is not None
         alerts = session.scalars(select(Alert).where(Alert.kind == "rotation")).all()
-        assert all(a.rule_version == "0.5.0" and a.ticker is None for a in alerts)
+        assert all(a.rule_version == "0.6.0" and a.ticker is None for a in alerts)
         assert all(a.evidence[0]["table"] == "rotation_assessments" for a in alerts)
         changed = [
             r

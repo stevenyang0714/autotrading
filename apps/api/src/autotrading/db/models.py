@@ -1268,7 +1268,7 @@ class TradeDecision(Base):
 
 # ---------- alerts (M1.7) ----------
 
-ALERT_KINDS = ("event", "level_change", "regime", "portfolio", "rotation")
+ALERT_KINDS = ("event", "level_change", "regime", "portfolio", "rotation", "momentum")
 ALERT_DIRECTIONS = ("up", "down")
 ASSESSMENT_TRIGGERS = ("schedule", "manual", "backfill", "replay")
 
@@ -1343,10 +1343,11 @@ class ConvergenceAssessment(Base):
 class Alert(Base):
     """An in-app alert (ADR-028; P1-1): a Phase 1 event (L0), a change of a company's
     convergence level, or (since M2.1, ADR-029) a change of the market's stress state, which
-    has no company; since M2.3 the paper portfolio's drawdown and since M2.4 a new S3 rotation
-    target (ADR-032), neither with a company. Each carries its rule version and the evidence
-    behind it; one row per rule version and source. Append-only and audited; acknowledging is
-    a separate row."""
+    has no company; since M2.3 the paper portfolio's drawdown, since M2.4 a new S3 rotation
+    target (ADR-032) and since M3.0b a new S4 momentum target (ADR-037), none with a company.
+    Each carries its rule version and the evidence behind it; one row per rule version and
+    source. Append-only and audited; acknowledging is a separate row, and so is each delivery
+    outside the app (alert_deliveries)."""
 
     __tablename__ = "alerts"
     __table_args__ = (
@@ -1362,7 +1363,7 @@ class Alert(Base):
             "(kind = 'level_change' AND direction IS NOT NULL AND assessment_id IS NOT NULL"
             " AND instrument_id IS NOT NULL)"
             " OR (kind = 'event' AND direction IS NULL AND level = 0 AND instrument_id IS NOT NULL)"
-            " OR (kind IN ('regime', 'portfolio', 'rotation') AND direction IS NOT NULL"
+            " OR (kind IN ('regime', 'portfolio', 'rotation', 'momentum') AND direction IS NOT NULL"
             " AND assessment_id IS NULL AND instrument_id IS NULL AND ticker IS NULL)",
             name="kind_fields",
         ),
@@ -1393,6 +1394,69 @@ class Alert(Base):
     evidence: Mapped[list[dict[str, str]]] = mapped_column(JSONB)
     backfilled: Mapped[bool] = mapped_column(Boolean)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+DELIVERY_CHANNELS = ("telegram",)
+DELIVERY_STATUSES = ("sent", "failed")
+
+
+class DeliveryRuleSet(Base):
+    """One released rule_version of config/delivery_rules.yaml (M3.0b, ADR-037), loaded by `make
+    migrate` with the sha256 of its content. Append-only and audited, like the alert rules."""
+
+    __tablename__ = "delivery_rule_sets"
+    __table_args__ = (
+        CheckConstraint(r"rule_version ~ '^\d+\.\d+\.\d+$'", name="rule_version_format"),
+        CheckConstraint("content_sha256 ~ '^[0-9a-f]{64}$'", name="content_sha256_format"),
+        UniqueConstraint("rule_version", name="uq_delivery_rule_sets_rule_version"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    rule_version: Mapped[str] = mapped_column(Text)
+    content: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    content_sha256: Mapped[str] = mapped_column(Text)
+    released: Mapped[date] = mapped_column(Date)
+    loaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class AlertDelivery(Base):
+    """One attempt to push an alert outside the app (M3.0b, ADR-037): sent with the channel's
+    message id, or failed with a cleaned reason. At most one `sent` per alert and channel.
+    Never the chat id, the token or the channel's raw reply. Append-only and audited."""
+
+    __tablename__ = "alert_deliveries"
+    __table_args__ = (
+        CheckConstraint(sql_in("channel", DELIVERY_CHANNELS), name="channel"),
+        CheckConstraint(sql_in("status", DELIVERY_STATUSES), name="status"),
+        CheckConstraint("(status = 'sent') = (message_id IS NOT NULL)", name="message_when_sent"),
+        CheckConstraint("error IS NULL OR length(error) <= 300", name="error_length"),
+        Index(
+            "uq_alert_deliveries_sent",
+            "alert_id",
+            "channel",
+            unique=True,
+            postgresql_where=text("status = 'sent'"),
+        ),
+        Index("ix_alert_deliveries_alert_id", "alert_id"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    alert_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("alerts.id"))
+    channel: Mapped[str] = mapped_column(Text)
+    rule_version: Mapped[str] = mapped_column(Text, ForeignKey("delivery_rule_sets.rule_version"))
+    status: Mapped[str] = mapped_column(Text)
+    message_id: Mapped[int | None] = mapped_column(BigInteger)
+    error_code: Mapped[int | None] = mapped_column(Integer)
+    error: Mapped[str | None] = mapped_column(Text)
+    attempted_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
 
 
 class AlertAcknowledgement(Base):
