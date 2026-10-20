@@ -1082,6 +1082,8 @@ export interface components {
             assessment_id: string | null;
             /** Backfilled */
             backfilled: boolean;
+            /** Delivered At */
+            delivered_at?: string | null;
             /** Direction */
             direction: ("up" | "down") | null;
             /** Evidence */
@@ -1095,7 +1097,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "event" | "level_change" | "regime" | "portfolio" | "rotation";
+            kind: "event" | "level_change" | "regime" | "portfolio" | "rotation" | "momentum";
             /**
              * Known At
              * Format: date-time
@@ -1137,6 +1139,8 @@ export interface components {
             assessment_id: string | null;
             /** Backfilled */
             backfilled: boolean;
+            /** Delivered At */
+            delivered_at?: string | null;
             /** Direction */
             direction: ("up" | "down") | null;
             /** Evidence */
@@ -1150,7 +1154,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "event" | "level_change" | "regime" | "portfolio" | "rotation";
+            kind: "event" | "level_change" | "regime" | "portfolio" | "rotation" | "momentum";
             /**
              * Known At
              * Format: date-time
@@ -1197,9 +1201,10 @@ export interface components {
         };
         /** AlertsOut */
         AlertsOut: {
+            delivery: components["schemas"]["DeliveryOut"];
             /**
              * Detail
-             * @default In-app alerts only (P1-1). Levels are deterministic rules; none places an order. L4 needs the company's standard paper position to pass the risk check (paper only).
+             * @default Alerts live in the app; since M3.0b the delivery rules push some of them to Telegram once it is set up (ADR-037). Levels are deterministic rules; none places an order. L4 needs the company's standard paper position to pass the risk check (paper only).
              */
             detail: string;
             /** Entries */
@@ -1857,7 +1862,7 @@ export interface components {
             companies: components["schemas"]["CompanyLevel"][];
             /**
              * Detail
-             * @default In-app alerts only (P1-1). Levels are deterministic rules; none places an order. L4 needs the company's standard paper position to pass the risk check (paper only).
+             * @default Alerts live in the app; since M3.0b the delivery rules push some of them to Telegram once it is set up (ADR-037). Levels are deterministic rules; none places an order. L4 needs the company's standard paper position to pass the risk check (paper only).
              */
             detail: string;
             /**
@@ -1949,6 +1954,24 @@ export interface components {
             id: string;
             /** Needed By */
             needed_by: string;
+        };
+        /**
+         * DeliveryOut
+         * @description Whether alerts are pushed outside the app, and under which rules (ADR-037). Never the
+         *     chat id or the token.
+         */
+        DeliveryOut: {
+            /**
+             * Channel
+             * @constant
+             */
+            channel: "telegram";
+            /** Configured */
+            configured: boolean;
+            /** Detail */
+            detail: string;
+            /** Rule Version */
+            rule_version: string | null;
         };
         /**
          * DerivedCell

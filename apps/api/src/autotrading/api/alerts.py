@@ -19,6 +19,7 @@ from sqlalchemy.dialects.postgresql import distinct_on
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from autotrading.adapters.telegram import client as telegram
 from autotrading.api.data_health import SessionDep
 from autotrading.api.fair_value import ACTOR
 from autotrading.api.instruments import universe_equities
@@ -37,6 +38,7 @@ from autotrading.db.models import (
 )
 from autotrading.domain.convergence import Item, LevelCheck, level_name
 from autotrading.domain.regime import STRESS_ORDER
+from autotrading.repositories import delivery
 from autotrading.repositories.audit import set_actor
 from autotrading.repositories.convergence import active_alert_version, load_alert_rules
 
@@ -44,9 +46,20 @@ router = APIRouter(tags=["alerts"])
 STRESS_NAMES = {order: name.upper() for name, order in STRESS_ORDER.items()}  # regime alerts
 
 IN_APP_ONLY = (
-    "In-app alerts only (P1-1). Levels are deterministic rules; none places an order. L4 needs "
+    "Alerts live in the app; since M3.0b the delivery rules push some of them to Telegram once "
+    "it is set up (ADR-037). Levels are deterministic rules; none places an order. L4 needs "
     "the company's standard paper position to pass the risk check (paper only)."
 )
+TELEGRAM_ON = (
+    "Telegram on: stress changes, L3/L4 changes, new S3 and S4 targets and the drawdown alert "
+    "are pushed within about 5 minutes (not backfilled ones; quiet 23:00-07:00 SGT). A rule "
+    "output, unvalidated, not advice."
+)
+TELEGRAM_OFF = (
+    "Telegram not set up: alerts stay in the app. Add TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID "
+    "to .env (make telegram-check) to have them pushed."
+)
+COMPANY_KINDS = ("event", "level_change")  # the kinds whose level is a convergence level
 URLS: dict[str, Any] = {"filings": Filing, "filing_buyback_statements": FilingBuybackStatement}
 
 
@@ -78,14 +91,26 @@ class AlertOut(BaseModel):
     evidence: list[AlertEvidenceOut]
     assessment_id: UUID | None
     acknowledgement: AcknowledgementOut | None
+    delivered_at: datetime | None = None  # when it was pushed to Telegram (M3.0b)
+
+
+class DeliveryOut(BaseModel):
+    """Whether alerts are pushed outside the app, and under which rules (ADR-037). Never the
+    chat id or the token."""
+
+    channel: Literal["telegram"]
+    configured: bool
+    rule_version: str | None
+    detail: str
 
 
 class AlertsOut(BaseModel):
     known_at: datetime
     rule_version: str
     status: Literal["open", "acknowledged", "all"]
-    open_by_level: dict[str, int]  # open alerts at T (live only), by level
+    open_by_level: dict[str, int]  # open company alerts at T (live only), by level
     entries: list[AlertOut]
+    delivery: DeliveryOut
     detail: str = IN_APP_ONLY
 
 
@@ -162,7 +187,10 @@ def kind_level_name(kind: str, level: int) -> str:
 
 
 def alert_out(
-    row: Alert, links: dict[tuple[str, str], str], ack: AlertAcknowledgement | None
+    row: Alert,
+    links: dict[tuple[str, str], str],
+    ack: AlertAcknowledgement | None,
+    delivered_at: datetime | None = None,
 ) -> AlertOut:
     return AlertOut(
         id=row.id,
@@ -190,6 +218,18 @@ def alert_out(
         acknowledgement=AcknowledgementOut(acknowledged_at=ack.acknowledged_at, note=ack.note)
         if ack
         else None,
+        delivered_at=delivered_at,
+    )
+
+
+def delivery_out(session: Session) -> DeliveryOut:
+    configured = telegram.configured()
+    rules = delivery.stored_delivery_rules(session)
+    return DeliveryOut(
+        channel="telegram",
+        configured=configured,
+        rule_version=rules.rule_version if rules else None,
+        detail=TELEGRAM_ON if configured and rules else TELEGRAM_OFF,
     )
 
 
@@ -229,7 +269,7 @@ def alerts(
     session: SessionDep,
     known_at: KnownAt = None,
     status: Literal["open", "acknowledged", "all"] = "open",
-    level_min: int = Query(default=0, ge=0, le=3),
+    level_min: int = Query(default=0, ge=0, le=4),
     ticker: str | None = None,
     include_backfilled: bool = False,
     limit: int = Query(default=100, ge=1, le=500),
@@ -250,12 +290,15 @@ def alerts(
     rows = list(session.scalars(query.order_by(Alert.known_at.desc(), Alert.title).limit(limit)))
     links = _evidence(session, rows)
     acks = _acknowledgements(session, [r.id for r in rows], at)
+    sent = delivery.delivered(session, [r.id for r in rows])
+    # company alerts only: a market alert's level is its own state (a CRISIS is 3, not L3)
     open_by_level = {
         level_name(level): count
         for level, count in session.execute(
             select(Alert.level, func.count())
             .where(
                 Alert.rule_version == version,
+                Alert.kind.in_(COMPANY_KINDS),
                 Alert.known_at <= at,
                 Alert.backfilled.is_(False),
                 Alert.id.not_in(acked),
@@ -269,13 +312,16 @@ def alerts(
         rule_version=version,
         status=status,
         open_by_level=open_by_level,
-        entries=[alert_out(r, links, acks.get(r.id)) for r in rows],
+        entries=[alert_out(r, links, acks.get(r.id), sent.get(r.id)) for r in rows],
+        delivery=delivery_out(session),
     )
 
 
 def _alert_detail(session: Session, row: Alert) -> AlertDetail:
     ack = _acknowledgements(session, [row.id], None).get(row.id)
-    out = alert_out(row, _evidence(session, [row]), ack)
+    out = alert_out(
+        row, _evidence(session, [row]), ack, delivery.delivered(session, [row.id]).get(row.id)
+    )
     assessment = (
         session.get(ConvergenceAssessment, row.assessment_id) if row.assessment_id else None
     )

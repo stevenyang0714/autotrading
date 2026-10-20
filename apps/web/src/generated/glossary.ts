@@ -9,6 +9,7 @@ export type CompleteTermId =
   | "accession_number"
   | "alert"
   | "alert_acknowledgement"
+  | "alert_delivery"
   | "alert_rule_set"
   | "as_of"
   | "ask"
@@ -84,6 +85,7 @@ export type CompleteTermId =
   | "debt_funded_buyback"
   | "defensive_sleeve"
   | "defensive_switch"
+  | "delivery_rule_set"
   | "depreciation_amortization"
   | "dev_log"
   | "diluted_shares"
@@ -181,6 +183,7 @@ export type CompleteTermId =
   | "model_output"
   | "momentum_12_1"
   | "momentum_6_1"
+  | "momentum_alert"
   | "momentum_rule_set"
   | "momentum_target"
   | "multiple_percentile"
@@ -412,28 +415,30 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "term_id": "alert",
     "display_name": "Alert",
     "category": "alerts",
-    "short_definition": "An in-app notice: a company event (L0), a change of a company's convergence level, or a market-wide change (stress state, portfolio drawdown, S3 rotation target).",
-    "full_definition": "Each alert stores its rule version and the evidence behind it (links to the filings, the buyback assignment, or the regime, portfolio or rotation assessment). Level changes raise one when either side is L1 or above; each new event since the previous assessment raises an L0 alert. Market-wide alerts have no company: the stress state (alert rules 0.2.0), the paper portfolio's drawdown (0.3.0) and a new S3 rotation target (0.4.0). Alerts never change; acknowledging is a separate record. In-app only (P1-1).",
+    "short_definition": "A notice in the app: a company event (L0), a change of a company's convergence level, or a market-wide change (stress state, portfolio drawdown, S3 or S4 target).",
+    "full_definition": "Each alert stores its rule version and the evidence behind it (links to the filings, the buyback assignment, or the regime, portfolio or rotation assessment). Level changes raise one when either side is L1 or above; each new event since the previous assessment raises an L0 alert. Market-wide alerts have no company: the stress state (alert rules 0.2.0), the paper portfolio's drawdown (0.3.0) a new S3 rotation target (0.4.0) and a new S4 momentum target (0.6.0). Alerts never change; acknowledging is a separate record. Since M3.0b the delivery rules push some of them to Telegram once it is set up (ADR-037).",
     "formula": "event or level change under one rule version",
     "unit": "alert",
     "example": "AAPL reached L1 Watch (alert rules 0.1.0).",
     "direction": "N/A",
     "interpretation": "Something needs a look.",
     "why_it_matters": "A short queue instead of every page.",
-    "source": "Alert rules 0.4.0; api/alerts.py",
+    "source": "Alert rules 0.6.0; api/alerts.py",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/alert_rules.yaml",
-    "as_of": "2026-10-16",
+    "as_of": "2026-10-20",
     "update_cadence": "daily, with the buyback states",
     "caveats": "Backfilled alerts (computed after their date) are hidden by default.",
     "related_terms": [
       "convergence_level",
       "alert_acknowledgement",
       "alert_rule_set",
-      "rotation_alert"
+      "rotation_alert",
+      "momentum_alert",
+      "alert_delivery"
     ],
-    "methodology_version": "0.3.0",
+    "methodology_version": "0.4.0",
     "name_zh": "警示",
-    "hint_zh": "App 內通知：公司事件（L0）、收斂等級變化，或市場層級的變化（壓力、組合回撤、S3 輪動目標），附規則版本與依據。"
+    "hint_zh": "App 內通知：公司事件（L0）、收斂等級變化，或市場層級的變化（壓力、組合回撤、S3 或 S4 目標），附規則版本與依據。"
   },
   "alert_acknowledgement": {
     "term_id": "alert_acknowledgement",
@@ -458,6 +463,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "確認",
     "hint_zh": "標記已看過，每則一次、可附備註；寫入稽核紀錄。"
+  },
+  "alert_delivery": {
+    "term_id": "alert_delivery",
+    "display_name": "Telegram Delivery",
+    "category": "alerts",
+    "short_definition": "Pushing chosen alerts to Steven's Telegram chat, each once, with the time it was sent.",
+    "full_definition": "Every 5 minutes the delivery rules pick the alerts to push: stress changes, companies entering or leaving L3/L4, new S3 and S4 targets and the drawdown alert, under the pinned alert rule version. Never backfilled alerts or ones older than 48 hours; quiet from 23:00 to 07:00 Singapore time. Each attempt is recorded (sent once, or failed and tried again up to 3 times); the chat id and the bot token are never stored or shown.",
+    "formula": "rule match -> plain-text message -> one sent record",
+    "unit": "delivery",
+    "example": "Market stress rose to HIGH (was ELEVATED), sent 11:01 SGT.",
+    "direction": "N/A",
+    "interpretation": "The alert reached the phone; the Alerts Center still holds the evidence.",
+    "why_it_matters": "No need to open the Mac to know something changed.",
+    "source": "Delivery rules 0.1.0 (config/delivery_rules.yaml); repositories/delivery.py; ADR-037",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/delivery_rules.yaml",
+    "as_of": "2026-10-20",
+    "update_cadence": "every 5 minutes",
+    "caveats": "Only while the Mac runs; messages pass through Telegram's servers. A rule output, unvalidated, not advice (OD-7).",
+    "related_terms": [
+      "alert",
+      "delivery_rule_set"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "Telegram 推播",
+    "hint_zh": "依推播規則把選定的警示送到你的 Telegram，每則只送一次並記錄；回填的與超過 48 小時的不送，23:00–07:00 暫停。"
   },
   "alert_rule_set": {
     "term_id": "alert_rule_set",
@@ -1818,26 +1848,26 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "Alerts Center",
     "category": "navigation",
     "short_definition": "Signal convergence alerts, rules and acknowledgement.",
-    "full_definition": "In-app alerts from L0 information to L4 execution-ready, with the rule that fired and acknowledgement (02 §16). External delivery waits for OD-2.",
+    "full_definition": "In-app alerts from L0 information to L4 execution-ready, with the rule that fired and acknowledgement (02 §16). Since M3.0b (ADR-037) the page says whether Telegram delivery is on and when each alert was pushed.",
     "formula": "not a calculation; dashboard defined in build spec 02 §21",
     "unit": "page",
     "example": "A thesis that reaches L3 raises an alert for review.",
     "direction": "N/A",
-    "interpretation": "Live from M1.7: each company's convergence level and the open alerts (company and market-wide: stress since M2.1, portfolio drawdown since M2.3, S3 rotation targets since M2.4), with their rule version and evidence; acknowledge to clear.",
+    "interpretation": "Live from M1.7: each company's convergence level and the open alerts (company and market-wide: stress since M2.1, portfolio drawdown since M2.3, S3 rotation targets since M2.4, S4 targets since M3.0b), with their rule version and evidence; acknowledge to clear.",
     "why_it_matters": "Turns many signals into a short list that needs a decision.",
     "source": "Build spec 02 §21; research report 01 §21; ROADMAP dashboard map; ADR-028",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/spec/02_master_build_prompt_v2.md",
-    "as_of": "2026-10-16",
+    "as_of": "2026-10-20",
     "update_cadence": "per release",
-    "caveats": "In-app only (OD-2). L4 needs the standard paper position's risk check (M2.3); stress, portfolio and rotation alerts have no company.",
+    "caveats": "Telegram delivery only once Steven sets it up (OD-2, ADR-037); never backfilled alerts. L4 needs the standard paper position's risk check (M2.3); stress, portfolio and rotation alerts have no company.",
     "related_terms": [
       "planned_phase",
       "convergence_level",
       "alert"
     ],
-    "methodology_version": "0.5.0",
+    "methodology_version": "0.6.0",
     "name_zh": "警示中心",
-    "hint_zh": "公司收斂等級與警示，加上市場層級警示（壓力、組合回撤、S3 輪動目標）；只在 App 內。"
+    "hint_zh": "公司收斂等級與警示，加上市場層級警示（壓力、組合回撤、S3 與 S4 目標）；設定 Telegram 後部分警示會推播到手機。"
   },
   "dashboard_congress_trades": {
     "term_id": "dashboard_congress_trades",
@@ -2368,6 +2398,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.2.0",
     "name_zh": "轉防守",
     "hint_zh": "月中壓力升到 HIGH 或 CRISIS 時立刻改成防守型；壓力下降要等下個月才換回。"
+  },
+  "delivery_rule_set": {
+    "term_id": "delivery_rule_set",
+    "display_name": "Delivery Rule Version",
+    "category": "alerts",
+    "short_definition": "The released version of the rules that choose which alerts are pushed to Telegram.",
+    "full_definition": "config/delivery_rules.yaml, loaded by make migrate with the sha256 of its content; a changed released version is refused. Every delivery record cites it.",
+    "formula": "rule_version + sha256 of the content",
+    "unit": "version",
+    "example": "Delivery rules 0.1.0 push alerts of alert rules 0.6.0.",
+    "direction": "N/A",
+    "interpretation": "Which rules sent a message.",
+    "why_it_matters": "A change of what is pushed is a new, visible version.",
+    "source": "Delivery rules 0.1.0; ADR-037",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/delivery_rules.yaml",
+    "as_of": "2026-10-20",
+    "update_cadence": "per release",
+    "caveats": "Claude's defaults under ADR-035; a change is a new rule version.",
+    "related_terms": [
+      "alert_delivery",
+      "alert_rule_set"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "推播規則版本",
+    "hint_zh": "決定哪些警示推播到 Telegram 的規則版本；已發布的不會改。"
   },
   "depreciation_amortization": {
     "term_id": "depreciation_amortization",
@@ -4836,6 +4891,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "6-1 個月動能",
     "hint_zh": "從 6 個月前到 1 個月前的總報酬（含股利），跳過最近一個月。"
   },
+  "momentum_alert": {
+    "term_id": "momentum_alert",
+    "display_name": "S4 Target Alert",
+    "category": "alerts",
+    "short_definition": "A market-wide alert when S4 momentum sets a target that differs from the previous one.",
+    "full_definition": "Raised under alert rules 0.6.0 (M3.0b, ADR-037) with the S4 assessment as evidence, at the first assessment of a month whose target changed; up when the invested share rose, down otherwise. No company.",
+    "formula": "new S4 target != previous S4 target",
+    "unit": "alert",
+    "example": "S4 momentum (monthly target): now AAPL, GOOGL, NVDA, XOM (was NVDA).",
+    "direction": "N/A",
+    "interpretation": "The S4 research portfolio changed.",
+    "why_it_matters": "A paper decision may follow, or an explicit NO TRADE.",
+    "source": "Alert rules 0.6.0 (config/alert_rules.yaml); domain/momentum.py; ADR-037",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/alert_rules.yaml",
+    "as_of": "2026-10-20",
+    "update_cadence": "daily (11:17 SGT); targets change at month starts",
+    "caveats": "Defaults, unvalidated (OD-7); current universe only (KI-1).",
+    "related_terms": [
+      "alert",
+      "momentum_target",
+      "medium_term_momentum"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "S4 目標警示",
+    "hint_zh": "S4 設定的新目標和上一次不同時發出的市場層級警示。"
+  },
   "momentum_rule_set": {
     "term_id": "momentum_rule_set",
     "display_name": "Momentum Rule Version",
@@ -7282,7 +7363,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "Rotation Alert",
     "category": "alerts",
     "short_definition": "A market-wide alert when the S3 rotation sets a target that differs from the previous one.",
-    "full_definition": "Raised under alert rules 0.4.0 with the rotation assessment as evidence; up when the risk sleeve's weight rose or held, down when it fell. No company.",
+    "full_definition": "Raised under alert rules 0.4.0 and later with the rotation assessment as evidence; up when the risk sleeve's weight rose or held, down when it fell. No company.",
     "formula": "new target != previous target",
     "unit": "alert",
     "example": "S3 rotation (monthly target): now SPY, QQQ, XLE, XLK (was SPY, QQQ, IWM, XLK, XLE).",
@@ -7291,14 +7372,14 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "why_it_matters": "A paper decision may follow, or an explicit NO TRADE.",
     "source": "Alert rules 0.4.0 (config/alert_rules.yaml); ADR-032",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/alert_rules.yaml",
-    "as_of": "2026-10-16",
+    "as_of": "2026-10-20",
     "update_cadence": "daily (11:15 SGT); targets change at month starts and defensive switches",
-    "caveats": "In-app only (OD-2). Thresholds are Steven's defaults (Q1, Q2), unvalidated (OD-7); a change is a new rule version.",
+    "caveats": "Pushed to Telegram when delivery is on (ADR-037). Thresholds are Steven's defaults (Q1, Q2), unvalidated (OD-7); a change is a new rule version.",
     "related_terms": [
       "alert",
       "rotation_target"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "輪動警示",
     "hint_zh": "S3 設定的新目標和上一次不同時發出的市場層級警示。"
   },

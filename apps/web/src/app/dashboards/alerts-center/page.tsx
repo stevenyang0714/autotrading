@@ -25,7 +25,7 @@ export default async function AlertsCenterPage({ searchParams }: PageProps<"/das
   const level = Number(text(query.level) ?? "0");
   const filters: AlertFilters = {
     status: status === "acknowledged" || status === "all" ? status : "open",
-    levelMin: Number.isInteger(level) && level >= 0 && level <= 3 ? level : 0,
+    levelMin: Number.isInteger(level) && level >= 0 && level <= 4 ? level : 0,
     ticker: text(query.ticker)?.toUpperCase(),
     includeBackfilled: text(query.backfilled) === "1",
   };

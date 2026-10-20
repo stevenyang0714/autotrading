@@ -594,7 +594,9 @@ test("Alerts Center shows each company's level and alerts with their rules and e
   page,
 }) => {
   await page.goto("/dashboards/alerts-center?status=all&backfilled=1");
-  await expect(page.locator("[data-in-app]")).toContainText("IN-APP ONLY");
+  // IN-APP ONLY until Telegram is set up in .env (M3.0b), TELEGRAM ON after
+  await expect(page.locator("[data-in-app]")).toContainText(/IN-APP ONLY|TELEGRAM ON/);
+  await expect(page.locator("[data-delivery]")).toContainText(/Telegram (on|not set up)/);
   const levels = page.getByRole("list", { name: "Convergence by company" });
   await expect(levels.locator("[data-company]").first()).toBeVisible();
   // Alert rules 0.3.0 (M2.3): L4 reads the company's standard paper position risk check.

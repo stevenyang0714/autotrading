@@ -2,11 +2,16 @@
 which alerts are pushed, each sent once and recorded, failures tried again up to the limit,
 quiet hours, the audit trail, and no chat id or token anywhere in the ledger."""
 
+import json
+import os
 from collections.abc import Callable, Iterator
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
+from typing import Any
 
 import pytest
 from alembic import command
+from fastapi.testclient import TestClient
 from sqlalchemy import Engine, create_engine, select, text
 from sqlalchemy.engine import URL
 from sqlalchemy.orm import Session, sessionmaker
@@ -19,6 +24,7 @@ from autotrading.config_sync import (
 )
 from autotrading.db.models import Alert, AlertDelivery
 from autotrading.domain.convergence import AlertIn
+from autotrading.main import create_app
 from autotrading.repositories.convergence import insert_alert, load_alert_rules, stored_alert_rules
 from autotrading.repositories.delivery import deliver, delivered, pending, stored_delivery_rules
 from autotrading.settings import get_settings
@@ -158,3 +164,62 @@ def test_quiet_hours_wait_and_the_database_allows_one_sent_row(
             ),
             {"id": waiting_id},
         )
+
+
+class OkChecker:
+    def core(self) -> dict[str, Any]:
+        return {}
+
+    def background(self) -> dict[str, Any]:
+        return {}
+
+
+@pytest.mark.parametrize("configured", [False, True])
+def test_the_alerts_api_says_whether_telegram_is_on_and_what_was_sent(
+    sessions: sessionmaker[Session], monkeypatch: pytest.MonkeyPatch, configured: bool
+) -> None:
+    monkeypatch.setattr("autotrading.api.alerts.telegram.configured", lambda: configured)
+    with sessions() as session:
+        sent = {r.alert_id for r in ledger(session) if r.status == "sent"}
+    with TestClient(create_app(health_checker=OkChecker(), sessions=sessions)) as client:
+        body = client.get(
+            "/alerts", params={"status": "all", "known_at": "2026-10-21T00:00:00Z"}
+        ).json()
+    delivery = body["delivery"]
+    assert (delivery["channel"], delivery["configured"], delivery["rule_version"]) == (
+        "telegram",
+        configured,
+        "0.1.0",
+    )
+    assert delivery["detail"].startswith("Telegram on" if configured else "Telegram not set up")
+    assert CHAT not in str(body)
+    pushed = {e["id"] for e in body["entries"] if e["delivered_at"]}
+    assert pushed == {str(i) for i in sent} and pushed
+    assert body["open_by_level"] == {}  # market alerts are not convergence levels
+
+
+# ---------- web fixtures (opt-in recorder) ----------
+
+
+@pytest.mark.skipif(
+    not os.environ.get("RECORD_WEB_FIXTURES"),
+    reason="recorder: set RECORD_WEB_FIXTURES=1 to refresh apps/web/tests/fixtures/api",
+)
+def test_record_web_fixtures(
+    sessions: sessionmaker[Session], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr("autotrading.api.alerts.telegram.configured", lambda: True)
+    target = Path(__file__).resolve().parents[3] / "web" / "tests" / "fixtures" / "api"
+    params = {"status": "all", "known_at": "2026-10-21T00:00:00Z"}
+    with TestClient(create_app(health_checker=OkChecker(), sessions=sessions)) as client:
+        response = client.get("/alerts", params=params)
+    assert response.status_code == 200
+    record = {
+        "recorded_at": datetime.now(UTC).isoformat(),
+        "recorded_from": "test market alerts pushed through a fake Telegram sender in the "
+        "integration test database (tests/integration/test_delivery.py)",
+        "endpoint": "/alerts",
+        "params": params,
+        "response": response.json(),
+    }
+    (target / "alerts-delivered.json").write_text(json.dumps(record, indent=2) + "\n")

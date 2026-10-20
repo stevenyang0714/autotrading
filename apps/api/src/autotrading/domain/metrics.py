@@ -76,6 +76,9 @@ METHODOLOGY = {
     "regime_gate": "0.2.0",
     "defensive_switch": "0.2.0",
     "medium_term_momentum": "0.2.0",
+    # M3.0b (ADR-037): alerts may be pushed to Telegram; S4 targets raise alerts.
+    "alert": "0.4.0",
+    "rotation_alert": "0.2.0",
 }
 
 # FRED series shown on the Macro page (M0.6): reported values with vintages, one term per
@@ -379,6 +382,8 @@ METRICS: tuple[MetricDefinition, ...] = (
             },
             "medium_term_momentum": "momentum.assess",
             "momentum_target": "momentum.daily",  # M3.0 (ADR-036 D7)
+            "momentum_alert": "momentum.momentum_alert",  # M3.0b (ADR-037)
+            "alert_delivery": "delivery.message",
         }.items()
     ),
     MetricDefinition(
