@@ -66,7 +66,7 @@ class AlertOut(BaseModel):
     id: UUID
     rule_version: str
     ticker: str | None  # None: a market-wide alert (kinds regime, portfolio and rotation)
-    kind: Literal["event", "level_change", "regime", "portfolio", "rotation"]
+    kind: Literal["event", "level_change", "regime", "portfolio", "rotation", "momentum"]
     level: int
     level_name: str
     previous_level: int | None
@@ -149,13 +149,15 @@ def _acknowledgements(
 
 def kind_level_name(kind: str, level: int) -> str:
     """A company alert's convergence level; a market-wide alert's own state (ADR-029, ADR-031,
-    ADR-032)."""
+    ADR-032, ADR-037)."""
     if kind == "regime":
         return STRESS_NAMES[level]
     if kind == "portfolio":
         return "DRAWDOWN" if level else "WITHIN LIMIT"
     if kind == "rotation":
         return "S3 TARGET"
+    if kind == "momentum":
+        return "S4 TARGET"
     return level_name(level)
 
 

@@ -21,6 +21,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from autotrading.domain.convergence import AlertIn
 from autotrading.domain.rotation import SnapshotInput, TrendCondition, TrendReading
 from autotrading.domain.signals import SOURCE_QUALITY, SignalIn
 from autotrading.domain.splits import NEW_YORK
@@ -284,3 +285,37 @@ def signals(
             )
         )
     return out
+
+
+def _held(weights: Mapping[str, Decimal]) -> str:
+    return ", ".join(weights) or "cash only"
+
+
+def momentum_alert(
+    momentum: MomentumAssessment, previous: Mapping[str, Decimal] | None, assessment_id: str
+) -> AlertIn | None:
+    """An alert when a newly set S4 target differs from the previous one (M3.0b, ADR-037): `up`
+    when the invested share rose, `down` otherwise. Companies in universe order."""
+    if not momentum.rebalance or momentum.target is None or previous is None:
+        return None
+    if dict(momentum.target) == dict(previous):
+        return None
+    order = [r.symbol for r in momentum.readings]
+    was = {
+        s: previous[s]
+        for s in sorted(
+            previous, key=lambda s: (s not in order, order.index(s) if s in order else 0, s)
+        )
+    }
+    invested = sum(momentum.target.values(), Decimal(0))
+    before = sum(was.values(), Decimal(0))
+    return AlertIn(
+        kind="momentum",
+        level=0,
+        previous_level=0,
+        direction="up" if invested > before else "down",
+        title=f"S4 momentum (monthly target): now {_held(momentum.target)} (was {_held(was)})",
+        source_key=f"momentum:{assessment_id}",
+        known_at=momentum.known_at,
+        evidence=[{"table": "momentum_assessments", "id": assessment_id, "label": momentum.detail}],
+    )
