@@ -27,12 +27,10 @@ function trackConsoleErrors(page: Page): string[] {
   return errors;
 }
 
-test("every page loads without console errors", async ({ page }) => {
-  // About thirty pages in one test, several computing every company on load: allow for a
-  // busy stack while the other workers run.
-  test.setTimeout(60_000);
-  const errors = trackConsoleErrors(page);
-  const pages = [
+// One test per page, each with its own time budget: as a single test, the ~30 pages (several
+// computing every company on load) ran out of time on a busy stack during full runs.
+test.describe("every page loads without console errors", () => {
+  for (const path of [
     "/",
     "/system/data-health",
     "/instruments",
@@ -51,13 +49,18 @@ test("every page loads without console errors", async ({ page }) => {
     "/system/progress",
     "/journal/new?ticker=AAPL",
     ...DASHBOARD_SLUGS.map((s) => `/dashboards/${s}`),
-  ];
-  for (const path of pages) {
-    const response = await page.goto(path);
-    expect(response?.status(), path).toBe(200);
-    await expect(page.locator("h1")).toBeVisible();
+  ]) {
+    test(path, async ({ page }) => {
+      const errors = trackConsoleErrors(page);
+      const response = await page.goto(path);
+      expect(response?.status()).toBe(200);
+      await expect(page.locator("h1")).toBeVisible();
+      // Let the page hydrate and finish its requests, so an error logged after the first
+      // paint still counts.
+      await page.waitForLoadState("networkidle");
+      expect(errors).toEqual([]);
+    });
   }
-  expect(errors).toEqual([]);
 });
 
 test("unknown dashboard returns 404", async ({ page }) => {
@@ -781,8 +784,10 @@ test("PAYEMS: As known on before the revision shows the first release", async ({
   await expect(august()).toContainText("159,075");
   await expect(august()).not.toContainText("Revised");
 
+  // "Today" is a client-side link: the URL changes only once the server has rendered the
+  // page, which can take more than the default 5 s on a busy stack.
   await page.getByRole("link", { name: "Today" }).click();
-  await expect(page).not.toHaveURL(/known_on/);
+  await expect(page).not.toHaveURL(/known_on/, { timeout: 15_000 });
   await expect(august()).toContainText("Revised");
   await expect(august()).toContainText("159,075 on 2026-09-04");
 });
