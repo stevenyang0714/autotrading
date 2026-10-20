@@ -53,6 +53,8 @@ Work one sub-milestone at a time, in this order (ADR-035): M3.0, M3.0b, M3.7, M3
 - [x] S4 signals cite their rule version and factor snapshots, as S3's do.
 
 ## M3.0b Telegram alert delivery (OD-2, ADR-035)
+**Decided (ADR-037, T1-T10, Claude under ADR-035):** delivery rules 0.1.0 (stress, L3/L4, S3 and S4 targets, drawdown; never backfilled or older than 48 hours; quiet 23:00-07:00 SGT), alert rules 0.6.0 for S4 alerts, a ledger with one sent row per alert, `make telegram-check` run by Steven.
+
 **Build**
 - **Delivery:** the platform's own alerts (stress changes, L3 and L4, new S3 and S4 targets, the portfolio drawdown) sent through the Telegram Bot API, with each alert's evidence, its rule versions and the label "rule output, unvalidated, not advice".
 - **Settings:** `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` read from `.env` (Steven creates the bot himself); without them nothing is sent, and the Alerts Center says so.
@@ -60,8 +62,8 @@ Work one sub-milestone at a time, in this order (ADR-035): M3.0, M3.0b, M3.7, M3
 - **Choice of alerts:** a versioned delivery rule set (which kinds and levels are pushed); backfilled alerts are never pushed.
 
 **Acceptance**
-- [ ] A new alert is sent once and recorded; a repeat or a backfilled alert is not sent (tested with a fake Telegram).
-- [ ] No token or chat id appears in logs, the database or the pages.
+- [x] A new alert is sent once and recorded; a repeat or a backfilled alert is not sent (tested with a fake Telegram).
+- [x] No token or chat id appears in logs, the database or the pages.
 
 ## M3.1 Language-model foundation (ADR-009)
 **Build**

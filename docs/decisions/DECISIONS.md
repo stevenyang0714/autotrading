@@ -1084,6 +1084,65 @@ Phase 2's carry-overs (P3-6). Claude reviewed regime rules 0.1.0 against the 129
 
 ---
 
+## ADR-037 M3.0b: Telegram alert delivery — Accepted (2026-10-20, Claude's decisions under ADR-035, plan approved by Steven)
+OD-2 was decided on 2026-10-19 (ADR-035): Telegram, built right after M3.0. Claude decided the details.
+
+**T1 What is pushed.** `config/delivery_rules.yaml` 0.1.0 is versioned with a sha guard and pinned like the other rule files. It pushes these alerts of the pinned alert rules 0.6.0:
+- every market stress change;
+- every company alert into or out of L3 or L4;
+- new S3 and S4 targets;
+- the paper portfolio's drawdown.
+
+Event alerts (L0) stay in the app. Backfilled alerts are never pushed, and neither is any alert older than 48 hours, so switching delivery on does not replay the past.
+
+**T2 S4 alerts.** Alert rules 0.6.0 add `momentum_events: [target_change]` under momentum rules 0.1.0.
+- Migration 0029 adds the alert kind `momentum`, shown as S4 TARGET.
+- `record_momentum` raises the alert when a newly set target differs from the previous one, as S3 does.
+- `alerts-backfill` raises them in order.
+- The defaults keep every earlier alert rule hash.
+
+**T3 to T5 Delivery and ledger.**
+- **Schedule:** `deliver_alerts` runs every 5 minutes on the system queue (:01, :06, and so on, UTC). It sends at most 10 messages a run, rate-limited by a Redis token bucket (1 a second, burst 3).
+- **Quiet hours:** 23:00 to 07:00 Singapore time; delivery waits, nothing is dropped.
+- **Ledger:** `alert_deliveries` is append-only and audited (actor `delivery:telegram`). Each attempt is stored as sent, with Telegram's message id, or failed, with Telegram's error code and a cleaned reason.
+- **Once only:** a partial unique index allows one sent row per alert and channel, and each run commits after every message.
+- **Retries:** a failed alert is tried again on later runs, up to 3 attempts. Dramatiq does not retry.
+
+**T6 Message.** Plain text, with no parse mode and no link preview:
+- the title;
+- the kind, time and alert rule version;
+- up to three evidence labels;
+- "Details in the Alerts Center on the Mac";
+- the fixed footer "Rule output, unvalidated, not advice. Paper only."
+
+There is no localhost link, because a phone cannot open it.
+
+**T7 Secrets.** `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` are `SecretStr`, read from `.env` and passed by docker compose.
+- The token is part of every request path. The client therefore:
+  - allows only api.telegram.org and three methods;
+  - silences httpx's request log;
+  - raises its errors `from None`;
+  - replaces the token in any text it reports.
+- The chat id is sent in the JSON body only. It never reaches the ledger, the API or the pages.
+- Unit tests check the logs with caplog.
+
+**T8 Setup.** Steven runs `make telegram-check` himself, on the Mac, after creating his bot with @BotFather.
+- It lists the chats that wrote to the bot, so he can copy his chat id into `.env`.
+- With both values set, it sends one test message.
+- After editing `.env`, `make up` gives the containers the new variables.
+- Claude never runs it or reads its output.
+
+**T9 and T10 Pages.**
+- **Alerts Center header:** says IN-APP ONLY or TELEGRAM ON, with the delivery rule version.
+- **Pushed alerts:** show "sent to Telegram" with the time.
+- **Related fixes:** `open_by_level` now counts company alerts only (a CRISIS stress alert has level 3, which is not L3), and the level filter reaches L4.
+
+**Out of scope.** Two-way Telegram (acknowledging from the phone) would need an inbound endpoint; OD-8 keeps the platform local and closed. Other channels are also out of scope.
+
+**Live check:** see the M3.0b row of `docs/STATUS.md`.
+
+---
+
 ## Open decisions (owner: Steven)
 
 | ID | Decision | Needed by | Default until decided |
