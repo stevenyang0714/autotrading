@@ -16,6 +16,7 @@ from autotrading.ingestion.schedule import (
     BACKTESTS,
     BUYBACK_STATES,
     DAILY_BARS,
+    DELIVERY,
     FACTORS,
     FRED,
     GDELT,
@@ -189,6 +190,15 @@ def main() -> None:
         max_instances=1,
         coalesce=True,
         misfire_grace_time=900,
+    )
+    # Alert delivery (M3.0b, ADR-037): every 5 minutes; does nothing until Telegram is set up.
+    scheduler.add_job(
+        lambda: actors.start_alert_delivery(manual=False),
+        CronTrigger(minute=f"{DELIVERY.offset}-59/{DELIVERY.minutes}", timezone=UTC),
+        id="alert_delivery",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=240,
     )
     signal.signal(signal.SIGTERM, lambda *_: scheduler.shutdown(wait=False))
     logger.info("Scheduler started")

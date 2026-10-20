@@ -20,6 +20,7 @@ from autotrading.adapters.alpaca import refresh as alpaca_refresh
 from autotrading.adapters.fred import refresh as fred_refresh
 from autotrading.adapters.news import refresh as news_refresh
 from autotrading.adapters.sec import refresh as sec_refresh
+from autotrading.adapters.telegram import client as telegram
 from autotrading.api import buyback_states
 from autotrading.domain.fair_value import month_ends
 from autotrading.infra.db import make_engine
@@ -32,7 +33,15 @@ from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.ingestion.schedule import market_calendar
 from autotrading.jobs.broker import WorkerHeartbeat, configure_broker
-from autotrading.repositories import backtest, factors, momentum, regime, risk, rotation
+from autotrading.repositories import (
+    backtest,
+    delivery,
+    factors,
+    momentum,
+    regime,
+    risk,
+    rotation,
+)
 from autotrading.settings import get_settings
 
 logger = logging.getLogger(__name__)
@@ -470,6 +479,45 @@ def start_momentum_backfill() -> int:
         points = factors.session_points(session, REGIME_CALENDAR, MOMENTUM_BACKFILL_SINCE, now)
     backfill_momentum.send(now.isoformat())
     return len(points)
+
+
+# ---------- alert delivery (M3.0b) ----------
+
+DELIVERY_RATE = 1.0  # messages a second to one chat (Telegram allows about one)
+DELIVERY_BURST = 3
+
+
+@dramatiq.actor(queue_name="system", max_retries=0, time_limit=120_000, broker=broker)
+def deliver_alerts(trigger: str) -> None:
+    """Push the alerts the active delivery rules choose to Steven's Telegram chat (ADR-037).
+    Without TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID nothing is sent. A failure is recorded
+    and tried again on the next run (no Dramatiq retry)."""
+    if not telegram.configured(_settings):
+        return
+    limiter = TokenBucketLimiter(_redis)
+    with sessions()() as session:
+        now = _now(session)
+        rules = delivery.stored_delivery_rules(session)
+        if rules is None:
+            logger.warning("Delivery rules not loaded (make migrate): nothing sent")
+            return
+        chat = telegram.chat_id(_settings)
+        with telegram.TelegramClient.from_settings(_settings) as client:
+            sent, failed = delivery.deliver(
+                session,
+                rules,
+                lambda text: client.send(chat, text),
+                now,
+                lambda: limiter.acquire(
+                    "telegram", rate=DELIVERY_RATE, burst=DELIVERY_BURST, timeout=60
+                ),
+            )
+    if sent or failed:
+        logger.info("Telegram delivery (%s): %d sent, %d failed", trigger, sent, failed)
+
+
+def start_alert_delivery(*, manual: bool) -> None:
+    deliver_alerts.send("manual" if manual else "schedule")
 
 
 # ---------- backtests (M2.5) ----------
