@@ -1,0 +1,33 @@
+# Display names for the universe (M3.0c, ADR-038): what each ticker is, in English and Chinese,
+# for pushed messages and the pages. Reviewed by hand; for display only: no rule, score or
+# calculation reads these names. Sectors are the risk rules' GICS keys (config/risk_rules.yaml),
+# shown with the Chinese labels below. A unit test keeps every universe symbol listed.
+version: 0.1.0
+sectors:
+  information_technology: 資訊科技
+  communication_services: 通訊服務
+  financials: 金融
+  energy: 能源
+  consumer_discretionary: 非必需消費
+  broad_market: 大盤
+  fixed_income: 美國公債
+  commodity: 商品
+instruments:
+  AAPL: {name: Apple, zh: 蘋果, about_zh: iPhone、Mac 與服務}
+  MSFT: {name: Microsoft, zh: 微軟, about_zh: Windows、Office 與 Azure 雲端}
+  GOOGL: {name: Alphabet (Google), zh: Alphabet（谷歌）, about_zh: Google 搜尋廣告、YouTube 與雲端}
+  META: {name: Meta Platforms, zh: Meta, about_zh: Facebook、Instagram 與 WhatsApp}
+  NVDA: {name: NVIDIA, zh: 輝達, about_zh: 繪圖晶片與 AI 運算晶片}
+  JPM: {name: JPMorgan Chase, zh: 摩根大通, about_zh: 美國最大的銀行}
+  XOM: {name: Exxon Mobil, zh: 埃克森美孚, about_zh: 石油與天然氣}
+  AZO: {name: AutoZone, zh: AutoZone, about_zh: 汽車零件零售}
+  ORLY: {name: O'Reilly Automotive, zh: O'Reilly 汽車零件, about_zh: 汽車零件零售}
+  LOW: {name: Lowe's, zh: 勞氏, about_zh: 居家修繕零售}
+  SPY: {name: SPDR S&P 500 ETF, zh: 標普 500 ETF, about_zh: 美國大型股 500 家}
+  QQQ: {name: Invesco QQQ, zh: 那斯達克 100 ETF, about_zh: 那斯達克前 100 大非金融股}
+  IWM: {name: iShares Russell 2000 ETF, zh: 羅素 2000 ETF, about_zh: 美國小型股}
+  TLT: {name: iShares 20+ Year Treasury Bond ETF, zh: 20 年以上美國公債 ETF, about_zh: 長天期美國公債}
+  IEF: {name: iShares 7-10 Year Treasury Bond ETF, zh: 7–10 年美國公債 ETF, about_zh: 中天期美國公債}
+  GLD: {name: SPDR Gold Shares, zh: 黃金 ETF, about_zh: 實體黃金}
+  XLE: {name: Energy Select Sector SPDR, zh: 能源類股 ETF, about_zh: 標普 500 能源類股}
+  XLK: {name: Technology Select Sector SPDR, zh: 科技類股 ETF, about_zh: 標普 500 資訊科技類股}

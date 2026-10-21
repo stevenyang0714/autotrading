@@ -48,6 +48,13 @@ class QuietHours(_Rule):
         return local >= self.start or local < self.end
 
 
+class DigestRule(_Rule):
+    """The weekly digest (M3.0c, ADR-038): every rule candidate at once, on one weekday."""
+
+    weekday: Annotated[int, Field(ge=0, le=6)]  # 0 = Monday
+    at: time  # local, in the quiet hours' timezone
+
+
 class DeliveryRuleSet(_Rule):
     """One released rule version: immutable, like the alert rule sets (ADR-028)."""
 
@@ -63,6 +70,11 @@ class DeliveryRuleSet(_Rule):
     max_per_run: Annotated[int, Field(gt=0)]
     max_attempts: Annotated[int, Field(gt=0)]
     footer: Annotated[str, Field(min_length=1)]
+    # 0.2.0 (M3.0c, ADR-038): Chinese messages with every holding's name, sector and reasons,
+    # and a weekly digest. The defaults keep 0.1.0's content and hash.
+    language: Literal["en", "zh"] = "en"
+    details: bool = False
+    digest: DigestRule | None = None
 
     def content(self) -> dict[str, object]:
         return self.model_dump(mode="json", exclude={"status"}, exclude_defaults=True)

@@ -19,7 +19,12 @@ FILE = DeliveryRulesFile.model_validate(
 )
 RULES = FILE.active()
 # A released version never changes (ADR-037): a new rule_version is the only way to edit one.
-PINNED = {"0.1.0": "7b6a95934e7c41dad84ef2bd9988eff7bbf90b9cd3e8af3d15d9d0b17738149a"}
+PINNED = {
+    "0.1.0": "7b6a95934e7c41dad84ef2bd9988eff7bbf90b9cd3e8af3d15d9d0b17738149a",
+    # Chinese messages with reasons and a weekly digest (ADR-038)
+    "0.2.0": "9d534f27fd81bfaa5b35b7616fd068f3ceb30aeee295ba14c12b3a545229bd9f",
+}
+FIRST = next(r.rule_set() for r in FILE.rule_sets if r.rule_version == "0.1.0")
 NOW = datetime(2026, 10, 20, 3, 20, tzinfo=UTC)  # 11:20 Singapore time
 
 
@@ -76,15 +81,16 @@ def test_quiet_hours_span_midnight_singapore_time(hour: int, minute: int, quiet:
 
 
 def test_the_message_is_plain_text_with_the_disclaimer_and_no_link() -> None:
+    # 0.1.0's English message; 0.2.0's Chinese one has its own tests
     evidence = [{"table": "t", "id": str(i), "label": f"flag {i}"} for i in range(5)]
-    text = message(RULES, alert(evidence=evidence))
+    text = message(FIRST, alert(evidence=evidence))
     lines = text.split("\n")
     assert lines[0] == "[autotrading] Market stress rose to HIGH (was ELEVATED)"
     assert lines[1] == "Market stress · known 2026-10-20 11:15 +08 · alert rules 0.6.0"
     assert lines[2] == "Evidence: flag 0; flag 1; flag 2 (+2 more)"
     assert lines[-1] == "Rule output, unvalidated, not advice. Paper only."
     assert "http" not in text and "<" not in text
-    long = message(RULES, alert(title="x" * 5000))
+    long = message(FIRST, alert(title="x" * 5000))
     assert len(long) <= 4000 and long.endswith("Paper only.")
 
 

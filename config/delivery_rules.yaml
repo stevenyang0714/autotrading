@@ -9,11 +9,32 @@
 # drawdown, under the pinned alert rule version. Event alerts (L0) stay in the app. Backfilled
 # alerts and alerts older than max_age_hours are never pushed; during quiet hours delivery
 # waits until they end. Without TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in .env nothing is
-# sent. Every message is plain text and ends with the footer: a rule output, not advice.
+# sent. Every message is plain text and ends with the footer: a rule output, not advice. Since
+# 0.2.0 (M3.0c, ADR-038) messages are in Chinese with names and reasons, plus a weekly digest.
 version: 0.1.0
 rule_sets:
-  - rule_version: 0.1.0
+  - rule_version: 0.2.0
     status: active  # active: used for new deliveries; retired: kept for the stored ones
+    released: "2026-10-21"
+    note: >-
+      0.1.0 in Chinese with the reasons (ADR-038, after Steven's first use): each company or ETF
+      a target adds or drops with its name, sector, momentum, P/E and FCF yield against its own
+      history, DCF margin and buyback state; the rule's review rhythm and median holding period;
+      and a weekly digest of every rule candidate on Monday at 08:00 Singapore time.
+    channel: telegram
+    alert_rule_version: 0.6.0
+    kinds: [regime, level_change, rotation, momentum, portfolio]
+    min_company_level: 3
+    max_age_hours: 48
+    quiet_hours: {start: "23:00", end: "07:00", timezone: Asia/Singapore}
+    max_per_run: 10
+    max_attempts: 3
+    footer: "規則輸出、未經驗證、不是投資建議；僅供模擬（Paper only）。"
+    language: zh
+    details: true
+    digest: {weekday: 0, at: "08:00"}
+  - rule_version: 0.1.0
+    status: retired
     released: "2026-10-20"
     note: >-
       Claude's defaults (ADR-037, under ADR-035): stress changes, L3/L4 changes, S3 and S4

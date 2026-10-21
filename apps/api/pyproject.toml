@@ -45,6 +45,15 @@ select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
 [tool.ruff.lint.isort]
 known-first-party = ["autotrading"]
 
+# Chinese message text (M3.0c, ADR-038) uses full-width punctuation on purpose.
+[tool.ruff.lint.per-file-ignores]
+"src/autotrading/domain/delivery.py" = ["RUF001", "RUF002", "RUF003"]
+"src/autotrading/repositories/labels.py" = ["RUF001", "RUF002", "RUF003"]
+"src/autotrading/repositories/alert_context.py" = ["RUF001", "RUF002", "RUF003"]
+"tests/unit/test_delivery.py" = ["RUF001", "RUF002", "RUF003"]
+"tests/unit/test_labels.py" = ["RUF001", "RUF002", "RUF003"]
+"tests/integration/test_delivery.py" = ["RUF001", "RUF002", "RUF003"]
+
 [tool.mypy]
 python_version = "3.12"
 files = ["src", "tests", "migrations"]

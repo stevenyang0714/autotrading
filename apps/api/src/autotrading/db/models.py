@@ -1459,6 +1459,45 @@ class AlertDelivery(Base):
     )
 
 
+class DigestDelivery(Base):
+    """One attempt to push the week's digest of rule candidates outside the app (M3.0c,
+    ADR-038): sent (messages and the first message id) or failed (a cleaned reason). At most
+    one `sent` per channel and week. Never the chat id or the token. Append-only and audited."""
+
+    __tablename__ = "digest_deliveries"
+    __table_args__ = (
+        CheckConstraint(sql_in("channel", DELIVERY_CHANNELS), name="channel"),
+        CheckConstraint(sql_in("status", DELIVERY_STATUSES), name="status"),
+        CheckConstraint("(status = 'sent') = (message_id IS NOT NULL)", name="message_when_sent"),
+        CheckConstraint("messages >= 0", name="messages_count"),
+        CheckConstraint("extract(isodow FROM week) = 1", name="week_is_monday"),
+        CheckConstraint("error IS NULL OR length(error) <= 300", name="error_length"),
+        Index(
+            "uq_digest_deliveries_sent",
+            "channel",
+            "week",
+            unique=True,
+            postgresql_where=text("status = 'sent'"),
+        ),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    week: Mapped[date] = mapped_column(Date)
+    channel: Mapped[str] = mapped_column(Text)
+    rule_version: Mapped[str] = mapped_column(Text, ForeignKey("delivery_rule_sets.rule_version"))
+    status: Mapped[str] = mapped_column(Text)
+    messages: Mapped[int] = mapped_column(Integer)
+    message_id: Mapped[int | None] = mapped_column(BigInteger)
+    error_code: Mapped[int | None] = mapped_column(Integer)
+    error: Mapped[str | None] = mapped_column(Text)
+    attempted_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
 class AlertAcknowledgement(Base):
     """Acknowledging an alert (ADR-028 A4): once per alert, with an optional note. Append-only
     and audited (actor `web`)."""
