@@ -1,9 +1,11 @@
 """Engine settings (no database needed: creating an engine does not connect)."""
 
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any
 
 import pytest
+import yaml
 from sqlalchemy import Engine, NullPool, QueuePool, event
 
 from autotrading.infra.db import (
@@ -21,11 +23,17 @@ from autotrading.settings import Settings
 
 # The instrument page's Promise.all (apps/web/src/app/instruments/[ticker]/page.tsx).
 INSTRUMENT_PAGE_API_CALLS = 13
-# Before the pool was sized for page loads the API could hold 15 connections; the local
-# Postgres allows 25 in total (infra/db.py), so the ceiling must not grow.
+# Before the pool was sized for page loads the API could hold 15 connections; the
+# connection budget (infra/db.py) counts on that ceiling.
 API_CONNECTION_CEILING = 15
 # APScheduler's default thread pool: a catch-up burst runs at most this many jobs at once.
 SCHEDULER_THREADS = 10
+# Connections outside the stack's pools in the budget (infra/db.py): the health probe's,
+# an integration test run's, and migrations' or backups'.
+PROBE_CONNECTIONS = 1
+TEST_RUN_CONNECTIONS = 6
+ADMIN_CONNECTIONS = 3
+COMPOSE_FILE = Path(__file__).resolve().parents[4] / "infra" / "docker-compose.yml"
 
 
 class Captured(Exception):
@@ -90,3 +98,18 @@ def test_the_worker_and_scheduler_share_one_pool_across_their_jobs() -> None:
     assert actors.ingestion_runner().sessions is actors.sessions()
     engine = actors.sessions().kw["bind"]
     assert engine.pool.size() == BACKGROUND_POOL_SIZE
+
+
+def database_max_connections() -> int:
+    """The max_connections flag on the db service (infra/docker-compose.yml)."""
+    command = yaml.safe_load(COMPOSE_FILE.read_text())["services"]["db"]["command"]
+    (setting,) = [arg for arg in command if arg.startswith("max_connections=")]
+    return int(setting.removeprefix("max_connections="))
+
+
+def test_every_pool_at_its_ceiling_fits_the_database_connection_limit() -> None:
+    api = POOL_SIZE + MAX_OVERFLOW + PROBE_CONNECTIONS
+    worker_and_scheduler = 2 * (BACKGROUND_POOL_SIZE + BACKGROUND_MAX_OVERFLOW)
+    others = TEST_RUN_CONNECTIONS + ADMIN_CONNECTIONS
+    # Two APIs: the stack's and a second container to test a branch (as on 2026-10-19).
+    assert 2 * api + worker_and_scheduler + others <= database_max_connections()
