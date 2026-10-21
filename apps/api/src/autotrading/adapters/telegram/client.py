@@ -25,6 +25,16 @@ for noisy in ("httpx2", "httpcore2"):
 HOST = "api.telegram.org"
 BASE_URL = f"https://{HOST}"
 METHODS = frozenset({"getMe", "getUpdates", "sendMessage"})
+# where an update carries its chat (a private message is `message`; `/start` too)
+UPDATE_KINDS = (
+    "message",
+    "edited_message",
+    "channel_post",
+    "edited_channel_post",
+    "my_chat_member",
+    "chat_member",
+    "callback_query",
+)
 RETRY_STATUSES = frozenset({429, 500, 502, 503, 504})
 MAX_ATTEMPTS = 3
 BASE_BACKOFF_SECONDS = 2.0
@@ -147,15 +157,24 @@ class TelegramClient:
         )
         return int(result["message_id"])
 
+    def bot_name(self) -> str:
+        """The bot's own @username (not a secret), so Steven can check the token is his bot."""
+        me = self.call("getMe", {}) or {}
+        return f"@{me.get('username')}" if me.get("username") else str(me.get("first_name", ""))
+
     def recent_chats(self) -> list[tuple[str, str]]:
         """(chat id, title or name) of the chats that wrote to the bot recently, for
         `make telegram-check` only."""
         found: dict[str, str] = {}
         for update in self.call("getUpdates", {"timeout": 0}) or []:
-            chat = (update.get("message") or update.get("my_chat_member") or {}).get("chat") or {}
-            if "id" in chat:
-                name = chat.get("title") or chat.get("username") or chat.get("first_name") or ""
-                found[str(chat["id"])] = str(name)
+            for kind in UPDATE_KINDS:
+                carrier = update.get(kind) or {}
+                if kind == "callback_query":
+                    carrier = carrier.get("message") or {}
+                chat = carrier.get("chat") or {}
+                if "id" in chat:
+                    name = chat.get("title") or chat.get("username") or chat.get("first_name")
+                    found[str(chat["id"])] = str(name or "")
         return list(found.items())
 
     @staticmethod

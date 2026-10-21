@@ -101,11 +101,19 @@ def test_only_three_methods_are_allowed() -> None:
 def test_recent_chats_lists_who_wrote_to_the_bot() -> None:
     updates = [
         {"update_id": 1, "message": {"chat": {"id": 11, "username": "steven"}}},
-        {"update_id": 2, "message": {"chat": {"id": 11, "username": "steven"}}},
+        {"update_id": 2, "edited_message": {"chat": {"id": 11, "username": "steven"}}},
         {"update_id": 3, "my_chat_member": {"chat": {"id": -22, "title": "group"}}},
+        {"update_id": 4, "callback_query": {"message": {"chat": {"id": 33, "first_name": "S"}}}},
+        {"update_id": 5, "poll": {"id": "p"}},
     ]
     found = client(lambda _: httpx.Response(200, json={"ok": True, "result": updates}))
-    assert found.recent_chats() == [("11", "steven"), ("-22", "group")]
+    assert found.recent_chats() == [("11", "steven"), ("-22", "group"), ("33", "S")]
+
+
+def test_the_bot_name_says_which_bot_the_token_belongs_to() -> None:
+    me = {"id": 1, "is_bot": True, "first_name": "Alerts", "username": "steven_alerts_bot"}
+    found = client(lambda _: httpx.Response(200, json={"ok": True, "result": me}))
+    assert found.bot_name() == "@steven_alerts_bot"
 
 
 def test_settings_decide_whether_delivery_is_configured() -> None:
