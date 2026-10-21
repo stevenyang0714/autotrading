@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from redis import Redis
 from sqlalchemy import Engine
 
-from autotrading.infra.db import make_engine, probe_database
+from autotrading.infra.db import make_engine, make_probe_engine, probe_database
 from autotrading.infra.heartbeat import probe_heartbeat
 from autotrading.infra.object_store import make_s3_client, probe_object_store
 from autotrading.infra.probes import ProbeResult
@@ -23,6 +23,7 @@ if TYPE_CHECKING:
 @dataclass
 class Dependencies:
     engine: Engine
+    probe_engine: Engine
     redis: Redis
     s3: S3Client
     bucket: str
@@ -31,6 +32,7 @@ class Dependencies:
     def from_settings(cls, settings: Settings) -> Dependencies:
         return cls(
             engine=make_engine(settings),
+            probe_engine=make_probe_engine(settings),
             redis=make_redis(settings),
             s3=make_s3_client(settings),
             bucket=settings.s3_bucket,
@@ -38,7 +40,7 @@ class Dependencies:
 
     def core(self) -> dict[str, ProbeResult]:
         return {
-            "database": probe_database(self.engine),
+            "database": probe_database(self.probe_engine),
             "redis": probe_redis(self.redis),
             "object_store": probe_object_store(self.s3, self.bucket),
         }
@@ -52,4 +54,5 @@ class Dependencies:
 
     def close(self) -> None:
         self.engine.dispose()
+        self.probe_engine.dispose()
         self.redis.close()
