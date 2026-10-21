@@ -39,12 +39,19 @@ def main() -> int:
             chat = chat_id(settings)
         except TelegramConfigError:
             try:
+                bot = client.bot_name()
                 chats = client.recent_chats()
             except TelegramError as exc:
                 print(f"Telegram refused the request: {exc}")
                 return 1
+            print(f"The token in .env belongs to the bot {bot}.")
             if not chats:
-                print("No chat has written to the bot yet: send it any message, then run again.")
+                print(
+                    f"No chat has written to {bot} yet. In Telegram, search for {bot} (not "
+                    "@BotFather), press Start and send it any message, then run this again. If "
+                    "you messaged a bot with another name, the token in .env is that other "
+                    "bot's: copy the right one from @BotFather (/mybots, API Token)."
+                )
                 return 1
             print("Chats that wrote to the bot (put yours in .env, then run `make up`):")
             for found, name in chats:

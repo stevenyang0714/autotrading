@@ -396,6 +396,11 @@ def test_s4_alerts_a_changed_target_only() -> None:
     assert found.title.startswith("S4 momentum (monthly target): now AAPL, MSFT")
     assert found.title.endswith("(was AAPL, XOM)")  # universe order
     assert found.evidence[0]["table"] == "momentum_assessments"
+    # a target read back from JSONB (keys in JSONB order) still reads in universe order
+    target = list((result.target or {}).items())
+    jumbled = result.model_copy(update={"target": dict(reversed(target))})
+    again = momentum_alert(jumbled, previous, "m-9")
+    assert again is not None and again.title == found.title
     # the same target, a carried one or no previous target: no alert
     assert momentum_alert(result, dict(result.target or {}), "m-6") is None
     assert momentum_alert(result, None, "m-7") is None
