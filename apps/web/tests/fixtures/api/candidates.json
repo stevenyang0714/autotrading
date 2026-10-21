@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-18T16:53:26.095156+00:00",
+  "recorded_at": "2026-10-21T12:20:47.064615+00:00",
   "recorded_from": "recorded FRED vintages and Alpaca closes replayed into the integration test database (tests/integration/test_rotation.py)",
   "endpoint": "/candidates",
   "params": {
@@ -8,7 +8,7 @@
   "response": {
     "known_at": "2026-10-06T12:00:00Z",
     "context": {
-      "regime_id": "748c5ef4-05a8-4125-a87b-f0e83fb0c8e7",
+      "regime_id": "1c1b625a-4397-4b73-9f00-f35419d8b8fe",
       "known_at": "2026-10-06T12:00:00Z",
       "rule_version": "0.2.0",
       "stress": "normal",
@@ -18,10 +18,12 @@
     "etfs": [
       {
         "ticker": "SPY",
+        "name": "SPDR S&P 500 ETF",
+        "name_zh": "\u6a19\u666e 500 ETF",
         "strategy_id": "S3",
         "strategy": "Macro Regime / ETF Rotation",
         "weight_pct": "100.00",
-        "rotation_id": "0183c448-9215-48d6-ba81-25b8afe96058",
+        "rotation_id": "e63b7762-3355-49ab-9d1a-e49b97dc0cbb",
         "rotation_rule_version": "0.2.0",
         "regime_rule_version": "0.2.0",
         "factor_definition_version": "0.1.0",
@@ -31,7 +33,7 @@
         "reading": {
           "symbol": "SPY",
           "sleeve": "risk",
-          "snapshot_id": "dc1564c9-1976-4351-913f-b8e59533bd9d",
+          "snapshot_id": "aade441e-2552-4e6c-90ac-93d0ba8f1703",
           "snapshot_known_at": "2026-10-06T12:00:00Z",
           "last_close": "2026-10-05",
           "feed_status": "end_of_day",

@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-18T16:54:37.375716+00:00",
+  "recorded_at": "2026-10-21T12:21:47.249387+00:00",
   "recorded_from": "recorded FRED vintages and Alpaca closes replayed into the integration test database (tests/integration/test_backtests.py)",
   "endpoint": "/momentum",
   "params": {
@@ -9,9 +9,9 @@
     "known_at": "2026-10-06T12:00:00Z",
     "rule_version": "0.1.0",
     "current": {
-      "id": "c5772024-1f77-437f-9f36-5b409d2f3a43",
+      "id": "f0ab0472-36f2-47b1-8509-cd1cb87483b2",
       "known_at": "2026-10-06T12:00:00Z",
-      "system_time": "2026-10-18T16:54:36.039654Z",
+      "system_time": "2026-10-21T12:21:46.026437Z",
       "backfilled": true,
       "momentum": {
         "rule_version": "0.1.0",
@@ -19,7 +19,7 @@
         "readings": [
           {
             "symbol": "AAPL",
-            "snapshot_id": "25d79703-36de-4511-a39a-b138484c71d1",
+            "snapshot_id": "da16fcf5-d3be-4942-8f2c-b12eae9cbe77",
             "snapshot_known_at": "2026-10-06T12:00:00Z",
             "conditions": [
               {
@@ -42,7 +42,7 @@
           },
           {
             "symbol": "MSFT",
-            "snapshot_id": "7593fe8d-36a2-40bf-b01b-25032d7bcdba",
+            "snapshot_id": "0ba13af3-dc9a-420c-bb32-37af9e60d050",
             "snapshot_known_at": "2026-10-06T12:00:00Z",
             "conditions": [
               {
@@ -81,7 +81,7 @@
           },
           {
             "symbol": "NVDA",
-            "snapshot_id": "a7becbb0-55c2-417b-b5a6-9d9c2fd8d1a4",
+            "snapshot_id": "d99ac2e9-4cee-481d-9907-3f219f12dc6f",
             "snapshot_known_at": "2026-10-06T12:00:00Z",
             "conditions": [
               {
@@ -146,7 +146,7 @@
         "rebalance": true,
         "reason": "month_start",
         "detail": "first assessment of the month: NVDA",
-        "previous_id": "e0c3d380-7a42-4905-a5d7-bdf63431d732",
+        "previous_id": "5386da9c-1da2-4aab-9491-c75cfb6d90f7",
         "set_at": "2026-10-06T12:00:00Z",
         "target": {
           "NVDA": "100.00"
@@ -156,7 +156,7 @@
     },
     "history": [
       {
-        "id": "30aac9af-e862-4c43-9291-169c8e3625bf",
+        "id": "02ec7a84-3ca6-460f-acfc-6d9ceaa12b44",
         "known_at": "2026-08-01T03:59:59.999999Z",
         "reason": "month_start",
         "target": {},
@@ -164,7 +164,7 @@
         "backfilled": true
       },
       {
-        "id": "33f85a5c-1d92-410c-9aa6-74715bd8936b",
+        "id": "d1d63329-2ced-45da-a8ab-5d5f0ee8d86c",
         "known_at": "2026-09-01T03:59:59.999999Z",
         "reason": "month_start",
         "target": {},
@@ -172,7 +172,7 @@
         "backfilled": true
       },
       {
-        "id": "e0c3d380-7a42-4905-a5d7-bdf63431d732",
+        "id": "5386da9c-1da2-4aab-9491-c75cfb6d90f7",
         "known_at": "2026-10-01T03:59:59.999999Z",
         "reason": "month_start",
         "target": {
@@ -182,7 +182,7 @@
         "backfilled": true
       },
       {
-        "id": "c5772024-1f77-437f-9f36-5b409d2f3a43",
+        "id": "f0ab0472-36f2-47b1-8509-cd1cb87483b2",
         "known_at": "2026-10-06T12:00:00Z",
         "reason": "month_start",
         "target": {

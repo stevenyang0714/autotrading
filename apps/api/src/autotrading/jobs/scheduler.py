@@ -200,6 +200,16 @@ def main() -> None:
         coalesce=True,
         misfire_grace_time=240,
     )
+    # The weekly digest (M3.0c, ADR-038): checked at the top of every hour (Singapore time);
+    # the delivery rules decide the weekday and hour (Monday 08:00), sent once a week.
+    scheduler.add_job(
+        lambda: actors.start_digest(manual=False),
+        CronTrigger(minute=0, timezone=REFRESH_TIMEZONE),
+        id="weekly_digest",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=1800,
+    )
     signal.signal(signal.SIGTERM, lambda *_: scheduler.shutdown(wait=False))
     logger.info("Scheduler started")
     scheduler.start()

@@ -27,6 +27,8 @@ describe("CandidatesView with recorded API responses", () => {
     // would wrap it, shows the layout.
     const company: CompanyCandidate = {
       ticker: recordedConvergence.companies[0].ticker,
+      name: "Apple",
+      name_zh: "蘋果",
       strategy_id: "S1",
       strategy: "Buyback + Value + Quality",
       alert_rule_version: recordedConvergence.rule_version,

@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-18T16:54:37.406134+00:00",
+  "recorded_at": "2026-10-21T12:21:47.271171+00:00",
   "recorded_from": "recorded FRED vintages and Alpaca closes replayed into the integration test database (tests/integration/test_backtests.py)",
   "endpoint": "/candidates",
   "params": {
@@ -8,7 +8,7 @@
   "response": {
     "known_at": "2026-10-06T12:00:00Z",
     "context": {
-      "regime_id": "e9e2008a-6298-4c46-97d5-f10cf0495a54",
+      "regime_id": "cf56581d-4480-4581-a379-9cc2aa62daf3",
       "known_at": "2026-10-06T12:00:00Z",
       "rule_version": "0.2.0",
       "stress": "normal",
@@ -18,10 +18,12 @@
     "etfs": [
       {
         "ticker": "SPY",
+        "name": "SPDR S&P 500 ETF",
+        "name_zh": "\u6a19\u666e 500 ETF",
         "strategy_id": "S3",
         "strategy": "Macro Regime / ETF Rotation",
         "weight_pct": "100.00",
-        "rotation_id": "bba7dd9a-29ab-4b06-a909-e1c57b8b6277",
+        "rotation_id": "1298f9db-34fa-4952-99e3-6d67ab76da93",
         "rotation_rule_version": "0.2.0",
         "regime_rule_version": "0.2.0",
         "factor_definition_version": "0.1.0",
@@ -31,7 +33,7 @@
         "reading": {
           "symbol": "SPY",
           "sleeve": "risk",
-          "snapshot_id": "9558f275-71e4-43d7-a714-30667a542787",
+          "snapshot_id": "5c0e7fa2-d067-484a-85d1-7b802c37dd2c",
           "snapshot_known_at": "2026-10-06T12:00:00Z",
           "last_close": "2026-10-05",
           "feed_status": "end_of_day",
@@ -63,17 +65,19 @@
     "momentum": [
       {
         "ticker": "NVDA",
+        "name": "NVIDIA",
+        "name_zh": "\u8f1d\u9054",
         "strategy_id": "S4",
         "strategy": "Medium-term Momentum",
         "weight_pct": "100.00",
-        "momentum_id": "c5772024-1f77-437f-9f36-5b409d2f3a43",
+        "momentum_id": "f0ab0472-36f2-47b1-8509-cd1cb87483b2",
         "momentum_rule_version": "0.1.0",
         "factor_definition_version": "0.1.0",
         "set_at": "2026-10-06T12:00:00Z",
         "reason": "month_start",
         "reading": {
           "symbol": "NVDA",
-          "snapshot_id": "a7becbb0-55c2-417b-b5a6-9d9c2fd8d1a4",
+          "snapshot_id": "d99ac2e9-4cee-481d-9907-3f219f12dc6f",
           "snapshot_known_at": "2026-10-06T12:00:00Z",
           "conditions": [
             {

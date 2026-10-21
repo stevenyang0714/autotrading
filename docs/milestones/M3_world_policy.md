@@ -24,7 +24,7 @@
 - **Cloud and sign-in:** local only (ADR-034).
 - **Language models deciding anything:** they extract, link and summarize; valuation, factors, risk, sizing and eligibility stay deterministic (02 §24).
 
-Work one sub-milestone at a time, in this order (ADR-035): M3.0, M3.0b, M3.7, M3.1, M3.2, M3.8, M3.3, M3.4, M3.9, M3.5, M3.6. Each one ends with the Build Output Contract and a `docs/STATUS.md` update. Every new metric, rule and page ships with its glossary entry and Chinese hint in the same PR.
+Work one sub-milestone at a time, in this order (ADR-035): M3.0, M3.0b, M3.0c (added 2026-10-21, ADR-038), M3.7, M3.1, M3.2, M3.8, M3.3, M3.4, M3.9, M3.5, M3.6. Each one ends with the Build Output Contract and a `docs/STATUS.md` update. Every new metric, rule and page ships with its glossary entry and Chinese hint in the same PR.
 
 ---
 
@@ -64,6 +64,22 @@ Work one sub-milestone at a time, in this order (ADR-035): M3.0, M3.0b, M3.7, M3
 **Acceptance**
 - [x] A new alert is sent once and recorded; a repeat or a backfilled alert is not sent (tested with a fake Telegram).
 - [x] No token or chat id appears in logs, the database or the pages.
+
+## M3.0c Chinese pushes with names and reasons, and a weekly digest (ADR-038)
+**Why:** Steven tried the M3.0b pushes on 2026-10-21. They did not say which company a ticker is or why a rule moved, and he wants to read them for medium-term holding (3-6 months or more).
+**Decided (ADR-038, C1-C6, Claude under ADR-035):** reviewed display names for the 18 instruments; delivery rules 0.2.0 in Chinese with each holding's reasons read at the alert's T and S; "規則訊號（模擬，非建議）" wording; a weekly digest on Monday at 08:00 SGT; names on the pages.
+
+**Build**
+- **Names:** `config/instrument_labels.yaml`, English and Chinese, with sectors in Chinese; display only.
+- **Messages:** S3 and S4 entries, exits and holdings with their momentum conditions; L3/L4 checks; P/E and FCF yield against the company's own history, DCF margin and buyback state; the rule's review rhythm, the backtest's median holding period, stress and quadrant.
+- **Weekly digest:** every Opportunity Radar candidate with one line of reasons, recorded in `digest_deliveries` once a week; `make alerts-digest`.
+- **Pages:** `name` and `name_zh` in the API; the Radar, signal cards and the Alerts Center show the names.
+
+**Acceptance**
+- [x] An S4 target change names each company, its sector and the reasons it entered or left (tested with a fake Telegram).
+- [x] Every number in a message is read from rows known at the alert's T and held at its S (percentiles from the stored month-end snapshots).
+- [x] The digest is sent once a week and recorded; a second run in the same week sends nothing.
+- [x] No message calls a rule output a buy or sell recommendation (買入建議, 賣出建議), and every message ends with the fixed footer.
 
 ## M3.1 Language-model foundation (ADR-009)
 **Build**

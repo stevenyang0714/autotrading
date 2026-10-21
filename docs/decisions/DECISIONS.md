@@ -1143,6 +1143,48 @@ There is no localhost link, because a phone cannot open it.
 
 ---
 
+## ADR-038 M3.0c: Chinese pushes with names and reasons, and a weekly digest — Accepted (2026-10-21, Claude's decisions under ADR-035, plan approved by Steven)
+Steven tried the M3.0b pushes on 2026-10-21 and found them too thin. He did not know which company XOM is, saw no reasons (valuation, P/E, what was detected), and wants to use the signals for medium-term swing holding (3-6 months or more).
+
+Claude cannot give personalized buy or sell advice, and the rules have no validated returns (OD-7). The pushes therefore stay rule outputs, with their reasons and numbers, and the decision stays with Steven.
+
+**C1 Names.** A reviewed `config/instrument_labels.yaml` gives the 18 instruments an English name, a Chinese name and a one-line description. Sectors come from the risk rules' GICS table, with their Chinese names. A unit test checks every universe symbol has a label. Labels are for display only: no calculation reads them, and they are not point in time.
+
+**C2 Message content (delivery rules 0.2.0, Chinese).** `repositories/alert_context.py` reads plain values from the rows an alert came from, as known at its T (`known_at`) and held at its S (`system_time`). `domain/delivery.chinese()` is a pure function of the rules, the alert and that context. By kind:
+- **S4 and S3 target changes:** "＋進入", "－離開" and "繼續持有". Each company or ETF has its name and sector and the conditions as read: 12-1 momentum and its gap to SPY's, and the 200-day average for ETFs.
+- **A company's L3/L4 change:** the convergence checks (valuation support, market confirmation, risk checks) and the buyback state.
+- **Every company named:**
+  - P/E and FCF yield with their percentile in the company's own monthly history (the factor page's read);
+  - the DCF margin of its latest buyback assignment, shown as "DCF 合理價（目前假設）比股價低／高 x%";
+  - the buyback state.
+- **A market stress change:** the flags that were on.
+- **The tail:**
+  - how often the rule reviews (S4 at the first assessment of each New York month);
+  - the median holding period of its latest backtest's closed positions known at T, in months of 21 sessions (a holding time, not a return);
+  - the market's stress state and quadrant.
+
+When an id does not resolve, the message falls back to the evidence labels. A message over 4000 characters keeps only its header, title and footer.
+
+**C3 Wording.** "規則訊號（模擬，非建議）：＋進入／－離開／繼續持有". 建議 appears only as "not advice" (非建議, 不是投資建議); no message says 買入建議 or 賣出建議 (unit-tested). Every message ends with "規則輸出、未經驗證、不是投資建議；僅供模擬（Paper only）。".
+
+**C4 Weekly digest.**
+- **Content:** every Opportunity Radar candidate at the time: the S4 target, S1 companies at L3/L4 and the S3 target. One line each: name, weight, momentum, P/E percentile, DCF and buyback state. Plus the market state.
+- **Splitting:** a digest over 4000 characters is split into numbered parts.
+- **Schedule:** the `deliver_digest` actor is checked hourly at :00 and sends on the delivery rules' weekday and hour (Monday 08:00 Singapore time). The week is the local Monday.
+- **Ledger:** migration 0030 adds `digest_deliveries` (append-only, audited), with a partial unique index for one sent row per week and channel. `make alerts-digest` sends this week's digest now, if not sent yet.
+
+**C5 Versions.** Delivery rules 0.2.0 are active and add `language: zh`, `details: true` and `digest`. 0.1.0 is retired; the new fields default to its behaviour, so its hash is unchanged. Both hashes are pinned.
+
+**C6 Names on the pages.** Candidates, signals and alerts carry `name` and `name_zh` in the API. The Opportunity Radar cards, signal cards and Alerts Center company alerts show "中文名（English name）" beside the ticker (`InstrumentName`, marked `data-identifier`).
+
+**Percentiles.** The P/E and FCF percentiles are computed when the message is built, from the stored month-end snapshots, without a `recorded_at` filter, as the factor page does. They are reproducible from stored rows, but they are not filtered by system time like the rest of the context.
+
+**Out of scope.** Position size, stop-loss prices, timing, forecasts and target prices. Taiwan is M3.7.
+
+**Live check:** see the M3.0c row of `docs/STATUS.md`.
+
+---
+
 ## Open decisions (owner: Steven)
 
 | ID | Decision | Needed by | Default until decided |

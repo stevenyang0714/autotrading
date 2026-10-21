@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-18T16:50:16.271339+00:00",
+  "recorded_at": "2026-10-21T12:24:09.826598+00:00",
   "recorded_from": "recorded SEC filings, Alpaca closes, FRED yields and news replayed into the integration test database (tests/integration/test_journal.py)",
   "endpoint": "/signals",
   "params": {
@@ -16,8 +16,10 @@
     },
     "current": [
       {
-        "id": "64d88ed1-4979-49ae-9782-cc98dfb139e5",
+        "id": "16d6308e-9ffa-45da-b2f2-cff586173be6",
         "ticker": "AAPL",
+        "name": "Apple",
+        "name_zh": "\u860b\u679c",
         "family_id": 2,
         "family": "Corporate Actions & Capital Structure",
         "strategy_id": "S1",
@@ -30,10 +32,10 @@
         "direction": "long",
         "generated_at": "2026-10-06T12:00:00Z",
         "valid_from": "2026-10-06T12:00:00Z",
-        "system_time": "2026-10-18T16:50:15.679033Z",
+        "system_time": "2026-10-21T12:24:09.240336Z",
         "observation_ids": [
           {
-            "id": "d1038fdd-d16e-4aad-a886-949523f7978f",
+            "id": "47278639-ab6a-4c71-a7a0-365cca9ae404",
             "table": "buyback_state_assignments"
           }
         ],
@@ -45,8 +47,10 @@
     ],
     "history": [
       {
-        "id": "64d88ed1-4979-49ae-9782-cc98dfb139e5",
+        "id": "16d6308e-9ffa-45da-b2f2-cff586173be6",
         "ticker": "AAPL",
+        "name": "Apple",
+        "name_zh": "\u860b\u679c",
         "family_id": 2,
         "family": "Corporate Actions & Capital Structure",
         "strategy_id": "S1",
@@ -59,10 +63,10 @@
         "direction": "long",
         "generated_at": "2026-10-06T12:00:00Z",
         "valid_from": "2026-10-06T12:00:00Z",
-        "system_time": "2026-10-18T16:50:15.679033Z",
+        "system_time": "2026-10-21T12:24:09.240336Z",
         "observation_ids": [
           {
-            "id": "d1038fdd-d16e-4aad-a886-949523f7978f",
+            "id": "47278639-ab6a-4c71-a7a0-365cca9ae404",
             "table": "buyback_state_assignments"
           }
         ],
@@ -72,8 +76,10 @@
         "backfilled": true
       },
       {
-        "id": "15e099c9-3abd-44c5-840f-fe6bd1f14c86",
+        "id": "5958dd08-1f20-4752-87a9-2a443185e88a",
         "ticker": "AAPL",
+        "name": "Apple",
+        "name_zh": "\u860b\u679c",
         "family_id": 2,
         "family": "Corporate Actions & Capital Structure",
         "strategy_id": "S1",
@@ -86,10 +92,10 @@
         "direction": "long",
         "generated_at": "2026-09-15T12:00:00Z",
         "valid_from": "2026-09-15T12:00:00Z",
-        "system_time": "2026-10-18T16:50:13.424072Z",
+        "system_time": "2026-10-21T12:24:06.899656Z",
         "observation_ids": [
           {
-            "id": "245c80d6-afa9-42a7-a9c6-ccd5c01ffb68",
+            "id": "09ec1ca5-35d1-4a67-9890-16c4e82ab963",
             "table": "buyback_state_assignments"
           }
         ],

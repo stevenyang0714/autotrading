@@ -8,10 +8,13 @@ channel; a failed alert is tried again on the next run, up to the rules' `max_at
 """
 
 from collections.abc import Callable, Iterable
-from datetime import datetime, timedelta
+from dataclasses import replace
+from datetime import date, datetime, timedelta
+from decimal import Decimal
 from functools import lru_cache
 from pathlib import Path
 from uuid import UUID
+from zoneinfo import ZoneInfo
 
 import yaml
 from sqlalchemy import func, select
@@ -19,12 +22,16 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from autotrading.adapters.telegram.client import TelegramError
-from autotrading.db.models import Alert, AlertDelivery
+from autotrading.db.models import Alert, AlertDelivery, DigestDelivery
 from autotrading.db.models import DeliveryRuleSet as DeliveryRuleSetRow
 from autotrading.domain.delivery import (
+    DIGEST_TITLES,
+    LEVEL_ZH,
     DeliveryRuleSet,
     DeliveryRulesFile,
+    Facts,
     StoredAlert,
+    digest,
     message,
     not_pushed,
 )
@@ -178,3 +185,129 @@ def delivered(
         )
     ).all()
     return {alert_id: at for alert_id, at in rows}
+
+
+# ---------- the weekly digest (M3.0c, ADR-038) ----------
+
+
+def digest_week(rules: DeliveryRuleSet, now: datetime) -> date:
+    """The Monday of the local week `now` falls in."""
+    local = now.astimezone(ZoneInfo(rules.quiet_hours.timezone)).date()
+    return local - timedelta(days=local.weekday())
+
+
+def digest_due(rules: DeliveryRuleSet, now: datetime) -> bool:
+    """Whether the scheduled digest is due at `now`: its weekday and hour, local time."""
+    if rules.digest is None:
+        return False
+    local = now.astimezone(ZoneInfo(rules.quiet_hours.timezone))
+    return local.weekday() == rules.digest.weekday and local.hour == rules.digest.at.hour
+
+
+def digest_sent(session: Session, rules: DeliveryRuleSet, week: date) -> bool:
+    return (
+        session.scalars(
+            select(DigestDelivery.id).where(
+                DigestDelivery.channel == rules.channel,
+                DigestDelivery.week == week,
+                DigestDelivery.status == "sent",
+            )
+        ).first()
+        is not None
+    )
+
+
+def digest_sections(
+    session: Session, now: datetime
+) -> tuple[str | None, str | None, list[tuple[str, list[Facts]]]]:
+    """(stress, quadrant, sections) of the digest: the Opportunity Radar's candidates at `now`
+    (S4 target, S1 companies at L3/L4, S3 target), each with its facts."""
+    # imported here: api.alerts imports this module, and api.candidates imports api.alerts
+    from autotrading.api.candidates import _companies, _context, _etfs, _momentum
+    from autotrading.repositories.alert_context import _conditions, _sectors, company_facts
+    from autotrading.repositories.convergence import stored_alert_rules
+
+    alert_rules = stored_alert_rules(session)
+    buyback = alert_rules.buyback_rule_version if alert_rules else None
+    sectors = _sectors(session, (alert_rules.risk_rule_version if alert_rules else None) or "0.1.0")
+    context = _context(session, now)
+
+    def facts(symbol: str, weight: object, conditions: list[object], note: str | None) -> Facts:
+        found = company_facts(
+            session,
+            symbol,
+            now,
+            now,
+            sectors,
+            weight=None if weight is None else Decimal(str(weight)),
+            conditions=_conditions({"items": conditions}, "items"),
+            buyback_rule_version=buyback,
+        )
+        return replace(found, note=note)
+
+    s4 = [
+        facts(
+            c.ticker, c.weight_pct, [r.model_dump(mode="json") for r in c.reading.conditions], None
+        )
+        for c in _momentum(session, now)
+    ]
+    s1 = [
+        facts(c.ticker, None, [], LEVEL_ZH.get(c.convergence.level or 0))
+        for c in _companies(session, now)
+    ]
+    s3 = [
+        facts(c.ticker, c.weight_pct, [r.model_dump(mode="json") for r in c.reading.trend], None)
+        for c in _etfs(session, now)
+    ]
+    sections = [(DIGEST_TITLES["S4"], s4), (DIGEST_TITLES["S1"], s1), (DIGEST_TITLES["S3"], s3)]
+    return (context.stress if context else None, context.quadrant if context else None, sections)
+
+
+def deliver_digest(
+    session: Session,
+    rules: DeliveryRuleSet,
+    send: Callable[[str], int],
+    now: datetime,
+    *,
+    force: bool = False,
+) -> int:
+    """Send the week's digest once (when due, or `force`); returns the messages sent."""
+    if rules.digest is None or (not force and not digest_due(rules, now)):
+        return 0
+    week = digest_week(rules, now)
+    if digest_sent(session, rules, week):
+        return 0
+    stress, quadrant, sections = digest_sections(session, now)
+    texts = digest(rules, week, stress, quadrant, sections)
+    set_actor(session, ACTOR)
+    first: int | None = None
+    try:
+        for text in texts:
+            message_id = send(text)
+            first = message_id if first is None else first
+    except TelegramError as exc:
+        session.add(
+            DigestDelivery(
+                week=week,
+                channel=rules.channel,
+                rule_version=rules.rule_version,
+                status="failed",
+                messages=0,
+                error_code=exc.code,
+                error=str(exc)[:300],
+            )
+        )
+        session.commit()
+        return 0
+    session.add(
+        DigestDelivery(
+            week=week,
+            channel=rules.channel,
+            rule_version=rules.rule_version,
+            status="sent",
+            messages=len(texts),
+            message_id=first,
+        )
+    )
+    session.commit()
+    return len(texts)

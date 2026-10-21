@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-18T16:53:26.087177+00:00",
+  "recorded_at": "2026-10-21T12:20:47.054360+00:00",
   "recorded_from": "recorded FRED vintages and Alpaca closes replayed into the integration test database (tests/integration/test_rotation.py)",
   "endpoint": "/rotation",
   "params": {

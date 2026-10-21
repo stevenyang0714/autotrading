@@ -187,7 +187,7 @@ terms:
   regime_policy: {name: 政策與流動性, hint: 寬鬆／中性／緊縮：實質聯邦基金利率、NFCI、殖利率曲線。}
   regime_credit: {name: 信用, hint: 平靜／正常／緊張／困境：高收益債利差（之前用 NFCI 信用子指數）。}
   regime_volatility: {name: 波動, hint: 平靜／正常／升高／緊張：VIX 與期限結構。}
-  regime_quadrant: {name: 成長×通膨象限, hint: 金髮女孩／再通膨／停滯性通膨／通縮放緩；0.2.0 起通膨高於目標但在下降不算高通膨。是標籤，不是預測。}
+  regime_quadrant: {name: 成長×通膨象限, hint: 金髮女孩／再通膨／停滯性通膨／通膨降溫的放緩；0.2.0 起通膨高於目標但在下降不算高通膨。是標籤，不是預測。}
   stress_state: {name: 壓力狀態, hint: 正常／升高／高／危機：同時亮起幾個壓力旗標；0.2.0 起危機只需三個條件中的兩個。偵測脆弱，不預測黑天鵝。}
   stress_normal: {name: 正常, hint: 0–1 個旗標；一般策略資格。}
   stress_elevated: {name: 升高, hint: 2–3 個旗標；減少新的高 beta 部位。}
@@ -347,8 +347,10 @@ terms:
   backtest: {name: 回測, hint: "用當時已知的資料重播策略：在下一個收盤成交並扣成本；只顯示交易、成本與曝險，不顯示報酬。"}
   rotation_alert: {name: 輪動警示, hint: "S3 設定的新目標和上一次不同時發出的市場層級警示。"}
   momentum_alert: {name: S4 目標警示, hint: "S4 設定的新目標和上一次不同時發出的市場層級警示。"}
-  alert_delivery: {name: Telegram 推播, hint: "依推播規則把選定的警示送到你的 Telegram，每則只送一次並記錄；回填的與超過 48 小時的不送，23:00–07:00 暫停。"}
+  alert_delivery: {name: Telegram 推播, hint: "依推播規則把選定的警示用中文送到你的 Telegram：名稱、產業、動能與估值等理由；每則只送一次並記錄，23:00–07:00 暫停。"}
   delivery_rule_set: {name: 推播規則版本, hint: "決定哪些警示推播到 Telegram 的規則版本；已發布的不會改。"}
+  weekly_digest: {name: 每週摘要, hint: "每週一早上 8 點把目前所有規則候選（S4、L3/L4、S3）連同理由送到 Telegram；不是買賣建議。"}
+  instrument_label: {name: 標的名稱, hint: "代號旁的中英文名稱、業務與產業；只用來顯示，不影響任何計算。"}
   opportunity_candidate: {name: 候選, hint: "規則在當時標出的標的：L3/L4 的公司（S1）、S3 目標持有的 ETF 或 S4 目標持有的公司；不打分、不排名、只做多。"}
   defensive_switch: {name: 轉防守, hint: "月中壓力升到 HIGH 或 CRISIS 時立刻改成防守型；壓力下降要等下個月才換回。"}
   rotation_rebalance: {name: 輪動調整, hint: "每個紐約月份第一次評估時換目標；其他時候沿用上一次的。"}

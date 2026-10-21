@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-18T16:50:16.284641+00:00",
+  "recorded_at": "2026-10-21T12:24:09.840024+00:00",
   "recorded_from": "recorded SEC filings, Alpaca closes, FRED yields and news replayed into the integration test database (tests/integration/test_journal.py)",
   "endpoint": "/portfolio",
   "params": {
@@ -56,7 +56,7 @@
       "capital": "100000",
       "positions": [
         {
-          "decision_id": "9d762abd-269d-4fb4-8218-518cdba75b67",
+          "decision_id": "2c78a418-b5b5-4192-a415-d8cb3fce6a07",
           "ticker": "AAPL",
           "side": "buy",
           "shares": "10.0000",

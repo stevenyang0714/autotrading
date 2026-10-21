@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-18T16:53:26.098919+00:00",
+  "recorded_at": "2026-10-21T12:20:47.069044+00:00",
   "recorded_from": "recorded FRED vintages and Alpaca closes replayed into the integration test database (tests/integration/test_rotation.py)",
   "endpoint": "/signals",
   "params": {
@@ -16,8 +16,10 @@
     },
     "current": [
       {
-        "id": "6d48097f-ac73-46c9-946f-153efa2401a5",
+        "id": "29eb633b-d4b0-4edd-a29d-ebfe7180de35",
         "ticker": "SPY",
+        "name": "SPDR S&P 500 ETF",
+        "name_zh": "\u6a19\u666e 500 ETF",
         "family_id": 5,
         "family": "Price / Trend / Factor",
         "strategy_id": "S3",
@@ -30,14 +32,14 @@
         "direction": "long",
         "generated_at": "2026-10-06T12:00:00Z",
         "valid_from": "2026-10-06T12:00:00Z",
-        "system_time": "2026-10-18T16:53:25.635348Z",
+        "system_time": "2026-10-21T12:20:46.694006Z",
         "observation_ids": [
           {
-            "id": "0183c448-9215-48d6-ba81-25b8afe96058",
+            "id": "e63b7762-3355-49ab-9d1a-e49b97dc0cbb",
             "table": "rotation_assessments"
           },
           {
-            "id": "dc1564c9-1976-4351-913f-b8e59533bd9d",
+            "id": "aade441e-2552-4e6c-90ac-93d0ba8f1703",
             "table": "factor_snapshots"
           }
         ],
@@ -47,8 +49,10 @@
         "backfilled": true
       },
       {
-        "id": "bc098cb3-16de-4b11-8029-8838e7731bfa",
+        "id": "5f081ebf-d60e-4a67-a625-003aee002de3",
         "ticker": "SPY",
+        "name": "SPDR S&P 500 ETF",
+        "name_zh": "\u6a19\u666e 500 ETF",
         "family_id": 1,
         "family": "Macro Regime",
         "strategy_id": "S3",
@@ -61,14 +65,14 @@
         "direction": "long",
         "generated_at": "2026-10-06T12:00:00Z",
         "valid_from": "2026-10-06T12:00:00Z",
-        "system_time": "2026-10-18T16:53:25.635348Z",
+        "system_time": "2026-10-21T12:20:46.694006Z",
         "observation_ids": [
           {
-            "id": "0183c448-9215-48d6-ba81-25b8afe96058",
+            "id": "e63b7762-3355-49ab-9d1a-e49b97dc0cbb",
             "table": "rotation_assessments"
           },
           {
-            "id": "748c5ef4-05a8-4125-a87b-f0e83fb0c8e7",
+            "id": "1c1b625a-4397-4b73-9f00-f35419d8b8fe",
             "table": "regime_assessments"
           }
         ],

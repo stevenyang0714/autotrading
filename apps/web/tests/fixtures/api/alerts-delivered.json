@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-20T08:00:18.519020+00:00",
+  "recorded_at": "2026-10-21T12:24:51.693576+00:00",
   "recorded_from": "test market alerts pushed through a fake Telegram sender in the integration test database (tests/integration/test_delivery.py)",
   "endpoint": "/alerts",
   "params": {
@@ -13,7 +13,7 @@
     "open_by_level": {},
     "entries": [
       {
-        "id": "fdac4ca2-a717-4b22-ad30-5674dff3a582",
+        "id": "896de348-a67f-49f5-aa7b-97df36ca40a1",
         "rule_version": "0.6.0",
         "ticker": null,
         "kind": "momentum",
@@ -35,10 +35,12 @@
         ],
         "assessment_id": null,
         "acknowledgement": null,
-        "delivered_at": "2026-10-20T08:00:18.354607Z"
+        "delivered_at": "2026-10-21T12:24:51.483518Z",
+        "name": null,
+        "name_zh": null
       },
       {
-        "id": "7d73ba40-5a44-4285-8735-95058aa79106",
+        "id": "b75dfd17-df6e-4e2c-a314-967bd0869892",
         "rule_version": "0.6.0",
         "ticker": null,
         "kind": "portfolio",
@@ -60,10 +62,12 @@
         ],
         "assessment_id": null,
         "acknowledgement": null,
-        "delivered_at": "2026-10-20T08:00:18.390190Z"
+        "delivered_at": "2026-10-21T12:24:51.537942Z",
+        "name": null,
+        "name_zh": null
       },
       {
-        "id": "98dc5745-9674-4f88-a144-fa6465a0521f",
+        "id": "e3ada364-ed11-4922-bfba-c22ba3c98bd5",
         "rule_version": "0.6.0",
         "ticker": null,
         "kind": "regime",
@@ -85,10 +89,12 @@
         ],
         "assessment_id": null,
         "acknowledgement": null,
-        "delivered_at": "2026-10-20T08:00:18.346292Z"
+        "delivered_at": "2026-10-21T12:24:51.465665Z",
+        "name": null,
+        "name_zh": null
       },
       {
-        "id": "20321762-1660-460c-b8a3-960b732bb3d5",
+        "id": "13bb4b93-52e9-44f6-a410-f3d532e73e35",
         "rule_version": "0.6.0",
         "ticker": null,
         "kind": "rotation",
@@ -110,10 +116,12 @@
         ],
         "assessment_id": null,
         "acknowledgement": null,
-        "delivered_at": null
+        "delivered_at": null,
+        "name": null,
+        "name_zh": null
       },
       {
-        "id": "92564984-13ab-42d8-ab8c-faecde0f3436",
+        "id": "bfe4087f-cc81-4de7-b81d-b52d276a0b98",
         "rule_version": "0.6.0",
         "ticker": null,
         "kind": "regime",
@@ -135,14 +143,16 @@
         ],
         "assessment_id": null,
         "acknowledgement": null,
-        "delivered_at": null
+        "delivered_at": null,
+        "name": null,
+        "name_zh": null
       }
     ],
     "delivery": {
       "channel": "telegram",
       "configured": true,
-      "rule_version": "0.1.0",
-      "detail": "Telegram on: stress changes, L3/L4 changes, new S3 and S4 targets and the drawdown alert are pushed within about 5 minutes (not backfilled ones; quiet 23:00-07:00 SGT). A rule output, unvalidated, not advice."
+      "rule_version": "0.2.0",
+      "detail": "Telegram on: stress changes, L3/L4 changes, new S3 and S4 targets and the drawdown alert are pushed within about 5 minutes, in Chinese with names and reasons, and every candidate on Monday at 08:00 SGT (not backfilled ones; quiet 23:00-07:00 SGT). A rule output, unvalidated, not advice."
     },
     "detail": "Alerts live in the app; since M3.0b the delivery rules push some of them to Telegram once it is set up (ADR-037). Levels are deterministic rules; none places an order. L4 needs the company's standard paper position to pass the risk check (paper only)."
   }

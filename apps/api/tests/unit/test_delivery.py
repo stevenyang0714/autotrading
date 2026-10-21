@@ -1,6 +1,6 @@
 """Alert delivery rules (M3.0b, ADR-037): which alerts are pushed, quiet hours, the message."""
 
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 
@@ -8,15 +8,19 @@ import pytest
 import yaml
 
 from autotrading.domain.delivery import (
+    DIGEST_TITLES,
     Check,
     Condition,
     Context,
     DeliveryRulesFile,
     Facts,
     StoredAlert,
+    dcf_gap,
+    digest,
     message,
     not_pushed,
 )
+from autotrading.repositories.delivery import digest_due, digest_week
 from autotrading.settings import get_settings
 
 FILE = DeliveryRulesFile.model_validate(
@@ -173,14 +177,14 @@ def test_an_s4_target_change_lists_who_enters_leaves_and_why() -> None:
     assert "  動能：12-1 動能 +21.1%；比 SPY 的 12-1 動能 +4.6 個百分點" in lines
     assert (
         "  估值：P/E 31.2，自身歷史第 85 百分位；FCF 殖利率 3.1%，第 40 百分位；"
-        "DCF 安全邊際 -12%（股價高於 DCF 合理價）"
+        "DCF 合理價（目前假設）比股價低 11%"
     ) in lines
     assert "  庫藏股：執行中" in lines
     assert "－離開 JPM 摩根大通（JPMorgan Chase，金融）" in lines
     assert "  原因：比 SPY 的 12-1 動能 -0.6 個百分點（需高於 0）" in lines
     assert "繼續持有（每檔 25.00%）：NVDA 輝達" in lines
     assert any("過去回測持有中位數約 4 個月（只是持有時間，不是報酬）" in line for line in lines)
-    assert "市場：壓力正常；通縮放緩（放緩、通膨溫和）" in lines
+    assert "市場：壓力正常；通膨降溫的放緩（放緩、通膨溫和）" in lines
     assert lines[-1] == "規則輸出、未經驗證、不是投資建議；僅供模擬（Paper only）。"
     assert "買入建議" not in text and "賣出建議" not in text and "http" not in text
 
@@ -223,3 +227,77 @@ def test_a_long_chinese_message_keeps_the_footer() -> None:
     )
     text = message(RULES, alert(kind="momentum"), Context(entered=many))
     assert len(text) <= 4000 and text.endswith("僅供模擬（Paper only）。")
+
+
+def test_the_dcf_margin_reads_as_fair_value_against_price() -> None:
+    assert dcf_gap(Decimal("-1120")) is not None
+    assert round(dcf_gap(Decimal("-1120")) or 0) == -92  # fair value 8% of the price
+    assert round(dcf_gap(Decimal("18")) or 0) == 22
+    assert dcf_gap(Decimal("100")) is None
+
+
+def test_the_weekly_digest_lists_every_candidate_with_its_reasons() -> None:
+    xom = company(
+        "XOM",
+        "埃克森美孚",
+        "Exxon Mobil",
+        "能源",
+        weight=Decimal("25"),
+        conditions=MOMENTUM,
+        pe=Decimal("23.4"),
+        pe_percentile=Decimal("73"),
+        buyback_state="active",
+    )
+    azo = company(
+        "AZO", "AutoZone", "AutoZone", "非必需消費", note="L4 可執行", dcf_margin=Decimal("18")
+    )
+    texts = digest(
+        RULES,
+        date(2026, 10, 19),
+        "normal",
+        "goldilocks",
+        [(DIGEST_TITLES["S4"], [xom]), (DIGEST_TITLES["S1"], [azo]), (DIGEST_TITLES["S3"], [])],
+    )
+    assert len(texts) == 1
+    lines = texts[0].split("\n")
+    assert lines[0] == "[autotrading] 每週規則候選（模擬，非建議）｜2026-10-19 這週"
+    assert lines[1] == "市場：壓力正常；金髮女孩（成長、通膨溫和）"
+    assert (
+        "• XOM 埃克森美孚（Exxon Mobil，能源） 25%：12-1 動能 +21%；比 SPY +5 個百分點；"
+        "P/E 23（第 73 百分位）；庫藏股執行中"
+    ) in lines
+    assert (
+        "• AZO AutoZone（AutoZone，非必需消費）：L4 可執行；DCF 合理價（目前假設）比股價高 22%"
+        in lines
+    )
+    assert lines[lines.index(DIGEST_TITLES["S3"]) + 1] == "（目前沒有）"
+    assert lines[-1] == RULES.footer
+
+
+def test_a_long_digest_is_split_with_the_disclaimer_on_each_message() -> None:
+    many = [
+        company(f"S{i}", "名" * 40, "N" * 40, "業", weight=Decimal("1"), conditions=MOMENTUM)
+        for i in range(40)
+    ]
+    sections = [(DIGEST_TITLES[k], many) for k in ("S4", "S1", "S3")]
+    texts = digest(RULES, date(2026, 10, 19), None, None, sections)
+    assert len(texts) > 1
+    assert all(len(t) <= 4000 and t.endswith(RULES.footer) for t in texts)
+    assert texts[1].startswith(
+        f"[autotrading] 每週規則候選（模擬，非建議）｜2026-10-19 這週（2/{len(texts)}）"
+    )
+
+
+@pytest.mark.parametrize(
+    ("at", "due"),
+    [
+        (datetime(2026, 10, 19, 0, 0, tzinfo=UTC), True),  # Monday 08:00 Singapore time
+        (datetime(2026, 10, 19, 0, 59, tzinfo=UTC), True),
+        (datetime(2026, 10, 19, 1, 0, tzinfo=UTC), False),  # 09:00
+        (datetime(2026, 10, 20, 0, 0, tzinfo=UTC), False),  # Tuesday
+    ],
+)
+def test_the_digest_is_due_on_its_weekday_and_hour(at: datetime, due: bool) -> None:
+    assert digest_due(RULES, at) is due
+    assert digest_week(RULES, at) == date(2026, 10, 19)
+    assert not digest_due(FIRST, at)  # 0.1.0 has no digest

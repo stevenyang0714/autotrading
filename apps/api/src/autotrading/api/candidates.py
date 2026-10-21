@@ -36,6 +36,7 @@ from autotrading.domain.rotation import EtfReading, Rotation
 from autotrading.domain.signals import BUYBACK_STRATEGY
 from autotrading.repositories.backtest import active_momentum_version, stored_momentum_rules
 from autotrading.repositories.convergence import active_alert_version, stored_alert_rules
+from autotrading.repositories.labels import label
 from autotrading.repositories.regime import active_regime_version
 from autotrading.repositories.rotation import active_rotation_version, stored_rotation_rules
 
@@ -60,6 +61,8 @@ class MarketContext(BaseModel):
 
 class CompanyCandidate(BaseModel):
     ticker: str
+    name: str = ""  # display name (M3.0c, config/instrument_labels.yaml)
+    name_zh: str = ""
     strategy_id: str
     strategy: str
     alert_rule_version: str
@@ -69,6 +72,8 @@ class CompanyCandidate(BaseModel):
 
 class EtfCandidate(BaseModel):
     ticker: str
+    name: str = ""  # display name (M3.0c, config/instrument_labels.yaml)
+    name_zh: str = ""
     strategy_id: str
     strategy: str
     weight_pct: Decimal
@@ -84,6 +89,8 @@ class EtfCandidate(BaseModel):
 
 class MomentumCandidate(BaseModel):
     ticker: str
+    name: str = ""  # display name (M3.0c, config/instrument_labels.yaml)
+    name_zh: str = ""
     strategy_id: str
     strategy: str
     weight_pct: Decimal
@@ -143,6 +150,8 @@ def _companies(session: SessionDep, at: datetime) -> list[CompanyCandidate]:
     found = [
         CompanyCandidate(
             ticker=r.ticker,
+            name=label(r.ticker).name,
+            name_zh=label(r.ticker).zh,
             strategy_id=BUYBACK_STRATEGY,
             strategy=STRATEGY_NAMES[BUYBACK_STRATEGY],
             alert_rule_version=version,
@@ -168,6 +177,8 @@ def _etfs(session: SessionDep, at: datetime) -> list[EtfCandidate]:
     return [
         EtfCandidate(
             ticker=h.symbol,
+            name=label(h.symbol).name,
+            name_zh=label(h.symbol).zh,
             strategy_id="S3",
             strategy=STRATEGY_NAMES["S3"],
             weight_pct=h.weight_pct,
@@ -197,6 +208,8 @@ def _momentum(session: SessionDep, at: datetime) -> list[MomentumCandidate]:
     return [
         MomentumCandidate(
             ticker=symbol,
+            name=label(symbol).name,
+            name_zh=label(symbol).zh,
             strategy_id=MOMENTUM_STRATEGY,
             strategy=STRATEGY_NAMES[MOMENTUM_STRATEGY],
             weight_pct=weight,

@@ -522,6 +522,35 @@ def start_alert_delivery(*, manual: bool) -> None:
     deliver_alerts.send("manual" if manual else "schedule")
 
 
+@dramatiq.actor(queue_name="system", max_retries=0, time_limit=300_000, broker=broker)
+def deliver_digest(trigger: str) -> None:
+    """The week's digest of every rule candidate (ADR-038): checked hourly, sent once on the
+    delivery rules' weekday and hour; `manual` sends this week's now if not sent yet."""
+    if not telegram.configured(_settings):
+        return
+    with sessions()() as session:
+        now = _now(session)
+        rules = delivery.stored_delivery_rules(session)
+        if rules is None:
+            logger.warning("Delivery rules not loaded (make migrate): no digest")
+            return
+        chat = telegram.chat_id(_settings)
+        with telegram.TelegramClient.from_settings(_settings) as client:
+            sent = delivery.deliver_digest(
+                session,
+                rules,
+                lambda text: client.send(chat, text),
+                now,
+                force=trigger == "manual",
+            )
+    if sent:
+        logger.info("Telegram digest (%s): %d messages sent", trigger, sent)
+
+
+def start_digest(*, manual: bool) -> None:
+    deliver_digest.send("manual" if manual else "schedule")
+
+
 # ---------- backtests (M2.5) ----------
 
 BACKTEST_TIME_LIMIT_MS = 60 * 60 * 1000  # three strategies since 2016

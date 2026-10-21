@@ -160,6 +160,7 @@ class Facts:
     fcf_percentile: Decimal | None = None
     dcf_margin: Decimal | None = None  # percent: (fair value - price) / fair value
     buyback_state: str | None = None
+    note: str | None = None  # e.g. the company's convergence level in the weekly digest
 
 
 @dataclass(frozen=True)
@@ -241,7 +242,7 @@ QUADRANT_ZH = {
     "goldilocks": "金髮女孩（成長、通膨溫和）",
     "reflation": "再通膨（成長、通膨偏高）",
     "stagflation": "停滯性通膨（放緩、通膨偏高）",
-    "disinflationary_slowdown": "通縮放緩（放緩、通膨溫和）",
+    "disinflationary_slowdown": "通膨降溫的放緩（放緩、通膨溫和）",
 }
 BUYBACK_ZH = {
     "none": "無",
@@ -313,6 +314,22 @@ def _condition(c: Condition) -> str:
     return f"{c.measure} {_sign(c.value)}{need}"
 
 
+def dcf_gap(margin: Decimal) -> Decimal | None:
+    """The DCF fair value against the price, in percent, from the stored margin of safety
+    (fair value - price) / fair value: fair value / price - 1."""
+    if margin >= 100:
+        return None
+    return (Decimal(1) / (1 - margin / 100) - 1) * 100
+
+
+def _dcf(margin: Decimal) -> str | None:
+    gap = dcf_gap(margin)
+    if gap is None:
+        return None
+    side = "高" if gap >= 0 else "低"
+    return f"DCF 合理價（目前假設）比股價{side} {abs(gap):.0f}%"
+
+
 def _valuation(f: Facts) -> str | None:
     parts = []
     if f.pe is not None:
@@ -321,9 +338,8 @@ def _valuation(f: Facts) -> str | None:
     if f.fcf_yield is not None:
         rank = f"，第 {f.fcf_percentile:.0f} 百分位" if f.fcf_percentile is not None else ""
         parts.append(f"FCF 殖利率 {f.fcf_yield:.1f}%{rank}")
-    if f.dcf_margin is not None:
-        side = "股價低於 DCF 合理價" if f.dcf_margin >= 0 else "股價高於 DCF 合理價"
-        parts.append(f"DCF 安全邊際 {_sign(f.dcf_margin, 0)}%（{side}）")
+    if f.dcf_margin is not None and (found := _dcf(f.dcf_margin)):
+        parts.append(found)
     return "  估值：" + "；".join(parts) if parts else None
 
 
@@ -446,3 +462,76 @@ def chinese(rules: DeliveryRuleSet, alert: StoredAlert, context: Context | None)
         return short
     keep = MAX_MESSAGE - len(rules.footer) - 1
     return "\n".join([*head, alert.title])[:keep] + "\n" + rules.footer
+
+
+# ---------- the weekly digest (0.2.0, M3.0c, ADR-038) ----------
+
+DIGEST_TITLES = {
+    "S4": "S4 動能（目前目標；每月第一次評估時調整）：",
+    "S1": "S1 庫藏股＋估值（達到 L3/L4 的公司；每天評估）：",
+    "S3": "S3 ETF 輪動（目前目標；每月調整、壓力高時轉防守）：",
+}
+
+
+def _brief(f: Facts) -> str:
+    """One digest line: who, weight and the main reasons."""
+    parts: list[str] = []
+    if f.note:
+        parts.append(f.note)
+    for c in f.conditions:
+        if c.value is None:
+            continue
+        if c.measure == "momentum_12_1":
+            parts.append(f"12-1 動能 {_sign(c.value, 0)}%")
+        elif c.measure == "relative_momentum_12_1":
+            parts.append(f"比 SPY {_sign(c.value, 0)} 個百分點")
+        elif c.measure == "close_vs_sma_200":
+            parts.append(f"{'高於' if c.value > 0 else '低於'} 200 日均線 {abs(c.value):.0f}%")
+    if f.pe is not None:
+        rank = f"（第 {f.pe_percentile:.0f} 百分位）" if f.pe_percentile is not None else ""
+        parts.append(f"P/E {f.pe:.0f}{rank}")
+    if f.dcf_margin is not None and (found := _dcf(f.dcf_margin)):
+        parts.append(found)
+    if f.buyback_state and f.buyback_state != "none":
+        parts.append(f"庫藏股{BUYBACK_ZH.get(f.buyback_state, f.buyback_state).split('（')[0]}")
+    weight = f" {f.weight:.0f}%" if f.weight is not None else ""
+    return f"• {f.label}{weight}" + (f"：{'；'.join(parts)}" if parts else "")
+
+
+def digest(
+    rules: DeliveryRuleSet,
+    week: date,
+    stress: str | None,
+    quadrant: str | None,
+    sections: list[tuple[str, list[Facts]]],
+) -> list[str]:
+    """The week's digest of every rule candidate, in as many messages as Telegram's length
+    needs, each with the header and the disclaimer."""
+    head = f"[autotrading] 每週規則候選（模擬，非建議）｜{week:%Y-%m-%d} 這週"
+    stress_zh = STRESS_ZH.get(stress or "", "無資料")
+    market = f"市場：壓力{stress_zh}；{QUADRANT_ZH.get(quadrant or '', '無資料')}"
+    end = [
+        "每一行都是規則讀數，不是買賣建議；規則的報酬沒有驗證過（OD-7）。",
+        rules.footer,
+    ]
+    blocks: list[list[str]] = []
+    for title, rows in sections:
+        block = [title, *(_brief(f) for f in rows)] if rows else [title, "（目前沒有）"]
+        blocks.append(block)
+    messages: list[list[str]] = [[market]]
+    for block in blocks:
+        current = messages[-1]
+        size = len("\n".join([head, *current, *block, *end]))
+        if size > MAX_MESSAGE and len(current) > 1:
+            messages.append([])
+        messages[-1].extend(block)
+    total = len(messages)
+    out = []
+    for i, lines in enumerate(messages, start=1):
+        title = head if total == 1 else f"{head}（{i}/{total}）"
+        text = "\n".join([title, *lines, *end])
+        if len(text) > MAX_MESSAGE:
+            keep = MAX_MESSAGE - len(rules.footer) - 1
+            text = "\n".join([title, *lines])[:keep] + "\n" + rules.footer
+        out.append(text)
+    return out

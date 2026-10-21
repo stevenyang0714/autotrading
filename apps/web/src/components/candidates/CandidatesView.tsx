@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { InstrumentName } from "@/components/InstrumentName";
 import { Metric } from "@/components/Metric";
 import { StressContext } from "@/components/rotation/RotationView";
 import type { CompanyCandidate, EtfCandidate, MomentumCandidate, OpportunityCandidates } from "@/lib/api";
@@ -29,6 +30,7 @@ function Company({ candidate, knownOn }: { candidate: CompanyCandidate; knownOn?
         >
           {candidate.ticker}
         </Link>
+        <InstrumentName name={candidate.name} zh={candidate.name_zh} />
         <span className={`inline-block rounded border px-1.5 py-0.5 text-xs ${levelClass(level.level)}`}>
           <Metric termId={levelTerm(level.level)} icon={false}>
             {level.level_name}
@@ -84,6 +86,7 @@ function Etf({ candidate, knownOn }: { candidate: EtfCandidate; knownOn?: string
         >
           {candidate.ticker}
         </Link>
+        <InstrumentName name={candidate.name} zh={candidate.name_zh} />
         <Metric termId="rotation_target" icon={false} className="text-xs">
           {weight(candidate.weight_pct)}
         </Metric>
@@ -140,6 +143,7 @@ function Momentum({ candidate, knownOn }: { candidate: MomentumCandidate; knownO
         >
           {candidate.ticker}
         </Link>
+        <InstrumentName name={candidate.name} zh={candidate.name_zh} />
         <Metric termId="momentum_target" icon={false} className="text-xs">
           {weight(candidate.weight_pct)}
         </Metric>
