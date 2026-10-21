@@ -1,0 +1,149 @@
+{
+  "recorded_at": "2026-10-20T08:00:18.519020+00:00",
+  "recorded_from": "test market alerts pushed through a fake Telegram sender in the integration test database (tests/integration/test_delivery.py)",
+  "endpoint": "/alerts",
+  "params": {
+    "status": "all",
+    "known_at": "2026-10-21T00:00:00Z"
+  },
+  "response": {
+    "known_at": "2026-10-21T00:00:00Z",
+    "rule_version": "0.6.0",
+    "status": "all",
+    "open_by_level": {},
+    "entries": [
+      {
+        "id": "fdac4ca2-a717-4b22-ad30-5674dff3a582",
+        "rule_version": "0.6.0",
+        "ticker": null,
+        "kind": "momentum",
+        "level": 2,
+        "level_name": "S4 TARGET",
+        "previous_level": 1,
+        "direction": "up",
+        "title": "Test momentum m1",
+        "known_at": "2026-10-20T03:16:00Z",
+        "system_time": "2026-10-20T03:16:00Z",
+        "backfilled": false,
+        "evidence": [
+          {
+            "table": "regime_assessments",
+            "id": "m1",
+            "label": "flag m1",
+            "url": null
+          }
+        ],
+        "assessment_id": null,
+        "acknowledgement": null,
+        "delivered_at": "2026-10-20T08:00:18.354607Z"
+      },
+      {
+        "id": "7d73ba40-5a44-4285-8735-95058aa79106",
+        "rule_version": "0.6.0",
+        "ticker": null,
+        "kind": "portfolio",
+        "level": 2,
+        "level_name": "DRAWDOWN",
+        "previous_level": 1,
+        "direction": "up",
+        "title": "Test portfolio q1",
+        "known_at": "2026-10-20T03:15:00Z",
+        "system_time": "2026-10-20T03:15:00Z",
+        "backfilled": false,
+        "evidence": [
+          {
+            "table": "regime_assessments",
+            "id": "q1",
+            "label": "flag q1",
+            "url": null
+          }
+        ],
+        "assessment_id": null,
+        "acknowledgement": null,
+        "delivered_at": "2026-10-20T08:00:18.390190Z"
+      },
+      {
+        "id": "98dc5745-9674-4f88-a144-fa6465a0521f",
+        "rule_version": "0.6.0",
+        "ticker": null,
+        "kind": "regime",
+        "level": 2,
+        "level_name": "HIGH",
+        "previous_level": 1,
+        "direction": "up",
+        "title": "Test regime r1",
+        "known_at": "2026-10-20T03:15:00Z",
+        "system_time": "2026-10-20T03:15:00Z",
+        "backfilled": false,
+        "evidence": [
+          {
+            "table": "regime_assessments",
+            "id": "r1",
+            "label": "flag r1",
+            "url": null
+          }
+        ],
+        "assessment_id": null,
+        "acknowledgement": null,
+        "delivered_at": "2026-10-20T08:00:18.346292Z"
+      },
+      {
+        "id": "20321762-1660-460c-b8a3-960b732bb3d5",
+        "rule_version": "0.6.0",
+        "ticker": null,
+        "kind": "rotation",
+        "level": 2,
+        "level_name": "S3 TARGET",
+        "previous_level": 1,
+        "direction": "up",
+        "title": "Test rotation f1",
+        "known_at": "2026-10-20T03:15:00Z",
+        "system_time": "2026-10-20T03:15:00Z",
+        "backfilled": false,
+        "evidence": [
+          {
+            "table": "regime_assessments",
+            "id": "f1",
+            "label": "flag f1",
+            "url": null
+          }
+        ],
+        "assessment_id": null,
+        "acknowledgement": null,
+        "delivered_at": null
+      },
+      {
+        "id": "92564984-13ab-42d8-ab8c-faecde0f3436",
+        "rule_version": "0.6.0",
+        "ticker": null,
+        "kind": "regime",
+        "level": 2,
+        "level_name": "HIGH",
+        "previous_level": 1,
+        "direction": "up",
+        "title": "Test regime o1",
+        "known_at": "2026-10-17T15:20:00Z",
+        "system_time": "2026-10-17T15:20:00Z",
+        "backfilled": false,
+        "evidence": [
+          {
+            "table": "regime_assessments",
+            "id": "o1",
+            "label": "flag o1",
+            "url": null
+          }
+        ],
+        "assessment_id": null,
+        "acknowledgement": null,
+        "delivered_at": null
+      }
+    ],
+    "delivery": {
+      "channel": "telegram",
+      "configured": true,
+      "rule_version": "0.1.0",
+      "detail": "Telegram on: stress changes, L3/L4 changes, new S3 and S4 targets and the drawdown alert are pushed within about 5 minutes (not backfilled ones; quiet 23:00-07:00 SGT). A rule output, unvalidated, not advice."
+    },
+    "detail": "Alerts live in the app; since M3.0b the delivery rules push some of them to Telegram once it is set up (ADR-037). Levels are deterministic rules; none places an order. L4 needs the company's standard paper position to pass the risk check (paper only)."
+  }
+}

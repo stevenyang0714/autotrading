@@ -15,7 +15,7 @@ export NEXT_TELEMETRY_DISABLED := 1
 export COREPACK_ENABLE_DOWNLOAD_PROMPT := 0
 
 .DEFAULT_GOAL := help
-.PHONY: help setup up down ps logs migrate sec-refresh fred-refresh prices-refresh prices-backfill news-refresh news-backfill buyback-evaluate buyback-backfill buyback-verify signals-backfill alerts-backfill regime-evaluate regime-backfill regime-verify factors-evaluate factors-backfill factors-verify portfolio-snapshot risk-verify rotation-evaluate rotation-backfill rotation-verify momentum-evaluate momentum-backfill momentum-verify backtest-run backtest-verify db-backup db-restore-check replay-fixtures gen test test-unit test-integration e2e lint lint-api lint-web fmt dev-web
+.PHONY: help setup up down ps logs migrate sec-refresh fred-refresh prices-refresh prices-backfill news-refresh news-backfill buyback-evaluate buyback-backfill buyback-verify signals-backfill alerts-backfill regime-evaluate regime-backfill regime-verify factors-evaluate factors-backfill factors-verify portfolio-snapshot risk-verify rotation-evaluate rotation-backfill rotation-verify momentum-evaluate momentum-backfill momentum-verify alerts-deliver telegram-check backtest-run backtest-verify db-backup db-restore-check replay-fixtures gen test test-unit test-integration e2e lint lint-api lint-web fmt dev-web
 
 help: ## Show available targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  %-18s %s\n", $$1, $$2}'
@@ -105,6 +105,12 @@ rotation-backfill: ## Queue the S3 rotation at every session close and month end
 
 rotation-verify: ## Recompute the latest 200 stored rotation assessments of each rule version and report any that differ
 	$(COMPOSE) exec -T api python -m autotrading.jobs.rotation_evaluate --verify 200
+
+alerts-deliver: ## Queue the Telegram delivery of pending alerts now (M3.0b; nothing without Telegram in .env)
+	$(COMPOSE) exec -T api python -c "from autotrading.jobs import actors; actors.start_alert_delivery(manual=True)"
+
+telegram-check: ## Run on the Mac by Steven: list chats that wrote to the bot, or send a test message (M3.0b)
+	cd $(API) && uv run python -m autotrading.jobs.telegram_check
 
 momentum-evaluate: ## Queue an S4 momentum assessment now (M3.0)
 	$(COMPOSE) exec -T api python -m autotrading.jobs.momentum_evaluate

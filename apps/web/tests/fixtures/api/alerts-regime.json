@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-18T16:52:34.645505+00:00",
+  "recorded_at": "2026-10-20T08:01:35.662634+00:00",
   "recorded_from": "recorded FRED vintages and Alpaca closes replayed into the integration test database (tests/integration/test_regime.py)",
   "endpoint": "/alerts",
   "params": {
@@ -9,13 +9,13 @@
   },
   "response": {
     "known_at": "2026-10-06T18:00:00Z",
-    "rule_version": "0.5.0",
+    "rule_version": "0.6.0",
     "status": "all",
     "open_by_level": {},
     "entries": [
       {
-        "id": "bf53ce58-9362-4f99-8f97-01d6a1dfd557",
-        "rule_version": "0.5.0",
+        "id": "80ec960a-f3b3-4451-b860-bc6ed33376b2",
+        "rule_version": "0.6.0",
         "ticker": null,
         "kind": "regime",
         "level": 0,
@@ -24,20 +24,27 @@
         "direction": "down",
         "title": "Market stress eased to NORMAL (was ELEVATED)",
         "known_at": "2026-10-06T18:00:00Z",
-        "system_time": "2026-10-18T16:52:34.263991Z",
+        "system_time": "2026-10-20T08:01:35.363594Z",
         "backfilled": true,
         "evidence": [
           {
             "table": "regime_assessments",
-            "id": "113aef0d-94f6-4a9c-9aa4-513ff88cd4b7",
+            "id": "de02bc23-5473-40e6-b0a8-465b953b0f58",
             "label": "Stress NORMAL: 0 of 9 available flags on",
             "url": null
           }
         ],
         "assessment_id": null,
-        "acknowledgement": null
+        "acknowledgement": null,
+        "delivered_at": null
       }
     ],
-    "detail": "In-app alerts only (P1-1). Levels are deterministic rules; none places an order. L4 needs the company's standard paper position to pass the risk check (paper only)."
+    "delivery": {
+      "channel": "telegram",
+      "configured": false,
+      "rule_version": null,
+      "detail": "Telegram not set up: alerts stay in the app. Add TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID to .env (make telegram-check) to have them pushed."
+    },
+    "detail": "Alerts live in the app; since M3.0b the delivery rules push some of them to Telegram once it is set up (ADR-037). Levels are deterministic rules; none places an order. L4 needs the company's standard paper position to pass the risk check (paper only)."
   }
 }

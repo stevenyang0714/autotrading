@@ -1,7 +1,13 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { recordedAlerts, recordedConvergence, recordedOpenAlerts, recordedRegimeAlerts } from "@/test/fixtures";
+import {
+  recordedAlerts,
+  recordedConvergence,
+  recordedDeliveredAlerts,
+  recordedOpenAlerts,
+  recordedRegimeAlerts,
+} from "@/test/fixtures";
 import { unexplainedNumbers } from "@/test/numbers";
 
 import { type AlertFilters, AlertsCenterView } from "./AlertsCenterView";
@@ -26,13 +32,29 @@ describe("AlertsCenterView with recorded API responses", () => {
     const list = screen.getByRole("list", { name: "Alerts" });
     const level = list.querySelector('[data-kind="level_change"]');
     expect(level?.textContent).toContain("AAPL reached L1 Watch");
-    expect(level?.textContent).toContain("alert rules 0.5.0");
+    expect(level?.textContent).toContain("alert rules 0.6.0");
     expect(level?.textContent).toContain("backfilled");
     const link = level?.querySelector('a[href="/instruments/AAPL#buybacks"]');
     expect(link?.textContent).toBe("Buyback state ACTIVE");
     expect(list.querySelector('[data-kind="event"]')?.textContent).toContain("L0 Information");
     expect(document.querySelector("[data-in-app]")?.textContent).toContain("IN-APP ONLY");
     expect(document.querySelector("[data-in-app]")?.textContent).toContain("standard paper position");
+    expect(document.querySelector("[data-delivery]")?.getAttribute("data-delivery")).toBe("off");
+    expect(document.querySelector("[data-delivery]")?.textContent).toContain("Telegram not set up");
+    expect(list.querySelector("[data-delivered]")).toBeNull();
+  });
+
+  it("says when Telegram is on and when each alert was pushed (M3.0b)", () => {
+    const { container } = render(
+      <AlertsCenterView alerts={recordedDeliveredAlerts} convergence={recordedConvergence} filters={ALL} />,
+    );
+    expect(document.querySelector("[data-in-app]")?.textContent).toContain("TELEGRAM ON");
+    expect(document.querySelector("[data-delivery]")?.textContent).toContain("delivery rules 0.1.0");
+    const pushed = [...container.querySelectorAll("[data-alert]")].filter((a) => a.querySelector("[data-delivered]"));
+    expect(pushed.length).toBe(recordedDeliveredAlerts.entries.filter((e) => e.delivered_at).length);
+    expect(pushed[0]?.textContent).toContain("sent to Telegram");
+    expect(container.textContent).not.toContain("987654321");
+    expect(unexplainedNumbers(container)).toEqual([]);
   });
 
   it("offers acknowledgement on open alerts and shows it once given", () => {

@@ -118,3 +118,12 @@ def entity_id(engine: Engine) -> UUID:
         session.add(entity)
         session.commit()
         return entity.id
+
+
+@pytest.fixture(autouse=True)
+def telegram_off(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Integration tests and recorded fixtures never depend on the host's .env: Telegram
+    delivery counts as not set up unless a test says otherwise (M3.0b)."""
+    monkeypatch.setattr(
+        "autotrading.adapters.telegram.client.configured", lambda settings=None: False
+    )

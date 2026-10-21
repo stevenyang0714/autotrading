@@ -1,0 +1,30 @@
+# Alert delivery rules (M3.0b, ADR-037; OD-2 decided in ADR-035).
+#
+# Deterministic and versioned like config/alert_rules.yaml: a released rule_version is immutable
+# (`make migrate` refuses changed content under an existing version, and a unit test pins each
+# version's sha256). Every delivery stored in alert_deliveries cites the rule_version it used.
+#
+# Which stored alerts are pushed outside the app, to Steven's Telegram chat: market stress
+# changes, companies entering or leaving L3/L4, new S3 and S4 targets and the paper portfolio's
+# drawdown, under the pinned alert rule version. Event alerts (L0) stay in the app. Backfilled
+# alerts and alerts older than max_age_hours are never pushed; during quiet hours delivery
+# waits until they end. Without TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in .env nothing is
+# sent. Every message is plain text and ends with the footer: a rule output, not advice.
+version: 0.1.0
+rule_sets:
+  - rule_version: 0.1.0
+    status: active  # active: used for new deliveries; retired: kept for the stored ones
+    released: "2026-10-20"
+    note: >-
+      Claude's defaults (ADR-037, under ADR-035): stress changes, L3/L4 changes, S3 and S4
+      target changes and the drawdown alert; at most 10 a run, 3 attempts, quiet from 23:00 to
+      07:00 Singapore time, nothing older than 48 hours.
+    channel: telegram
+    alert_rule_version: 0.6.0
+    kinds: [regime, level_change, rotation, momentum, portfolio]
+    min_company_level: 3  # level_change alerts into or out of L3 Trade Candidate or L4
+    max_age_hours: 48
+    quiet_hours: {start: "23:00", end: "07:00", timezone: Asia/Singapore}
+    max_per_run: 10
+    max_attempts: 3
+    footer: "Rule output, unvalidated, not advice. Paper only."

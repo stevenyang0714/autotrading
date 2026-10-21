@@ -26,6 +26,7 @@ from autotrading.domain.momentum import (
     PreviousMomentum,
     assess,
     daily,
+    momentum_alert,
     signals,
 )
 from autotrading.domain.provenance import end_of_day
@@ -381,3 +382,22 @@ def test_s4_signals_cite_the_assessment_and_the_snapshot_once_per_company_held()
     assert first.execution_eligibility == "paper_only" and first.backfilled
     carried = daily(MOMENTUM, at + timedelta(days=3), snaps, PreviousMomentum("m-3", at, {}, at))
     assert signals(carried, "m-4", at) == []
+
+
+def test_s4_alerts_a_changed_target_only() -> None:
+    at = end_of_day(date(2026, 10, 1))
+    snaps = everyone(at) | {"XOM": snapshot("XOM", at, momentum_12_1="-1")}
+    result = daily(MOMENTUM, at, snaps, None)
+    previous = {"XOM": Decimal("50.00"), "AAPL": Decimal("50.00")}
+    found = momentum_alert(result, previous, "m-5")
+    assert found is not None
+    assert (found.kind, found.level, found.source_key) == ("momentum", 0, "momentum:m-5")
+    assert found.direction == "down"  # nine at 11.11% invest 99.99%, against 100% before
+    assert found.title.startswith("S4 momentum (monthly target): now AAPL, MSFT")
+    assert found.title.endswith("(was AAPL, XOM)")  # universe order
+    assert found.evidence[0]["table"] == "momentum_assessments"
+    # the same target, a carried one or no previous target: no alert
+    assert momentum_alert(result, dict(result.target or {}), "m-6") is None
+    assert momentum_alert(result, None, "m-7") is None
+    carried = daily(MOMENTUM, at + timedelta(days=3), snaps, PreviousMomentum("m-5", at, {}, at))
+    assert momentum_alert(carried, previous, "m-8") is None

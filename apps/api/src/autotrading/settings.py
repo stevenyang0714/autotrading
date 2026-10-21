@@ -61,6 +61,10 @@ class Settings(BaseSettings):
     apca_api_key_id: SecretStr | None = None
     apca_api_secret_key: SecretStr | None = None
     alpaca_data_feed: Literal["iex"] = "iex"
+    # Telegram alert delivery (M3.0b, ADR-037; OD-2): Steven's own bot and chat. The token is
+    # part of every request path, so it never reaches a log; the chat id is never stored.
+    telegram_bot_token: SecretStr | None = None
+    telegram_chat_id: SecretStr | None = None
 
     # The scheduler's refresh jobs (SEC, FRED, Alpaca, news). Off in CI, where the stack holds
     # recorded fixtures only and nothing may fetch live data (news needs no credentials).

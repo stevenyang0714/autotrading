@@ -36,7 +36,14 @@ from autotrading.config_sync import (
     sync_rotation_rules,
     sync_sources,
 )
-from autotrading.db.models import BacktestRun, MomentumAssessment, PriceBar, SignalRecord, Source
+from autotrading.db.models import (
+    Alert,
+    BacktestRun,
+    MomentumAssessment,
+    PriceBar,
+    SignalRecord,
+    Source,
+)
 from autotrading.domain.provenance import Provenance, end_of_day
 from autotrading.infra.object_store import make_s3_client
 from autotrading.infra.redis_client import make_redis
@@ -378,6 +385,28 @@ def test_s4_sets_a_target_at_each_month_start_and_carries_it(
         for signal in made:
             assert (signal.family_id, signal.execution_eligibility) == (5, "paper_only")
             assert signal.observation_ids[0]["table"] == "momentum_assessments"
+
+
+def test_a_changed_s4_target_raises_an_alert_once(
+    sessions: sessionmaker[Session], stored: datetime
+) -> None:
+    # M3.0b (ADR-037): alert rules 0.6.0 alert a new S4 target, as they do S3's
+    with sessions() as session:
+        found = momentum_rows(session)
+        by_id = {r.id: r for r in found}
+        changed = [
+            r
+            for r in found
+            if r.rebalance and r.previous_id is not None and r.target != by_id[r.previous_id].target
+        ]
+        alerts = session.scalars(select(Alert).where(Alert.kind == "momentum")).all()
+        assert len(alerts) == len(changed)
+        assert all(a.rule_version == "0.6.0" and a.ticker is None for a in alerts)
+        assert all(a.evidence[0]["table"] == "momentum_assessments" for a in alerts)
+        rules = stored_momentum_rules(session)
+        assert rules is not None
+        assert momentum.raise_alerts(session, rules, stored) == 0  # already raised
+        session.rollback()
 
 
 def test_s4_is_unavailable_without_snapshots_and_stores_no_target(

@@ -2,6 +2,7 @@
 import alertDetail from "../../tests/fixtures/api/alert-detail.json";
 import alertsOpen from "../../tests/fixtures/api/alerts-open.json";
 import alertsRegime from "../../tests/fixtures/api/alerts-regime.json";
+import alertsDelivered from "../../tests/fixtures/api/alerts-delivered.json";
 import alerts from "../../tests/fixtures/api/alerts.json";
 import auditDeletes from "../../tests/fixtures/api/audit-log-deletes.json";
 import convergence from "../../tests/fixtures/api/convergence.json";
@@ -271,6 +272,9 @@ export const recordedAlertDetail = alertDetail.response as unknown as AlertDetai
 /** Alerts as known 2026-10-06 18:00 UTC (M2.1), with the market-wide stress alert the regime
  * integration test raises (tests/integration/test_regime.py). */
 export const recordedRegimeAlerts = alertsRegime.response as unknown as Alerts;
+/** Test market alerts pushed through a fake Telegram sender (M3.0b, tests/integration/test_delivery.py),
+ * with delivery on. */
+export const recordedDeliveredAlerts = alertsDelivered.response as unknown as Alerts;
 
 /** The macro regime (M2.1) as known on 2026-10-06 (stress normal, 0 of 9 flags; growth
  * slowing, inflation above target) and on 2026-09-15 (the August month end). */

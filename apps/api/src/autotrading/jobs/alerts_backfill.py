@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 from autotrading.api.instruments import issuer_chain, universe_equities
 from autotrading.db.models import BuybackStateAssignment, ConvergenceAssessment
 from autotrading.jobs import actors
-from autotrading.repositories import regime, rotation
+from autotrading.repositories import backtest, momentum, regime, rotation
 from autotrading.repositories.convergence import (
     buyback_reading,
     record_convergence,
@@ -64,24 +64,26 @@ def backfill(session: Session) -> tuple[int, int]:
     return assessed, seeded
 
 
-def market_alerts(session: Session) -> tuple[int, int]:
-    """(stress-change alerts, rotation alerts) raised under the active alert rules."""
+def market_alerts(session: Session) -> tuple[int, int, int]:
+    """(stress-change, rotation and S4 alerts) raised under the active alert rules."""
     now = session.execute(select(func.now())).scalar_one()
     regime_rules = regime.stored_regime_rules(session)
     rotation_rules = rotation.stored_rotation_rules(session)
+    momentum_rules = backtest.stored_momentum_rules(session)
     stress = regime.raise_alerts(session, regime_rules, now) if regime_rules else 0
     targets = rotation.raise_alerts(session, rotation_rules, now) if rotation_rules else 0
+    s4 = momentum.raise_alerts(session, momentum_rules, now) if momentum_rules else 0
     session.commit()
-    return stress, targets
+    return stress, targets, s4
 
 
 def main() -> int:
     with actors.sessions()() as session:
         assessed, seeded = backfill(session)
-        stress, targets = market_alerts(session)
+        stress, targets, s4 = market_alerts(session)
     print(
         f"Stored {assessed} convergence assessments; seeded {seeded} event alerts; raised "
-        f"{stress} stress-change and {targets} rotation alerts."
+        f"{stress} stress-change, {targets} rotation and {s4} S4 alerts."
     )
     return 0
 

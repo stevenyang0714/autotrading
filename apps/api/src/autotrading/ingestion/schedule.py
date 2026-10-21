@@ -86,6 +86,8 @@ MOMENTUM = DailySchedule(11, 17)
 BACKTESTS = DailySchedule(11, 20)
 # Official RSS feeds (M0.8): every 30 minutes at :05 and :35, one run per feed.
 NEWS_FEEDS = IntervalSchedule(30, 5)
+# M3.0b: alert delivery to Telegram every 5 minutes, at :01, :06, ... (UTC)
+DELIVERY = IntervalSchedule(5, 1)
 
 # Alpaca (M0.7): daily SIP bars after the US close and the free plan's 15-minute SIP delay;
 # snapshots run every SNAPSHOT_SECONDS during the session (see adapters/alpaca/refresh.py).

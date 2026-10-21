@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-18T16:55:14.442323+00:00",
+  "recorded_at": "2026-10-20T08:00:51.506649+00:00",
   "recorded_from": "recorded SEC filings, Alpaca closes, FRED yields and news replayed into the integration test database (tests/integration/test_alerts.py)",
   "endpoint": "/alerts",
   "params": {
@@ -7,15 +7,15 @@
   },
   "response": {
     "known_at": "2026-10-06T12:00:00Z",
-    "rule_version": "0.5.0",
+    "rule_version": "0.6.0",
     "status": "open",
     "open_by_level": {
       "L0 Information": 2
     },
     "entries": [
       {
-        "id": "e5a7afc5-64ff-4e5f-a0dc-53efe474f4e0",
-        "rule_version": "0.5.0",
+        "id": "4681c9d1-b899-4966-997d-ab26c6653920",
+        "rule_version": "0.6.0",
         "ticker": "AAPL",
         "kind": "event",
         "level": 0,
@@ -24,22 +24,23 @@
         "direction": null,
         "title": "AAPL: Buyback state ACTIVE (was NONE)",
         "known_at": "2026-10-06T12:00:00Z",
-        "system_time": "2026-10-18T16:55:12.857759Z",
+        "system_time": "2026-10-20T08:00:49.868396Z",
         "backfilled": false,
         "evidence": [
           {
             "table": "buyback_state_assignments",
-            "id": "8431911f-fd37-492f-a014-a4a791916187",
+            "id": "223bb943-79b7-4c2b-a544-8c944e8e4f92",
             "label": "Buyback state ACTIVE (was NONE)",
             "url": null
           }
         ],
         "assessment_id": null,
-        "acknowledgement": null
+        "acknowledgement": null,
+        "delivered_at": null
       },
       {
-        "id": "6ba91ed9-1e77-45ea-bfe8-5e4ced492ffd",
-        "rule_version": "0.5.0",
+        "id": "6017ab1e-15ae-413c-881a-bc4c31aa1719",
+        "rule_version": "0.6.0",
         "ticker": "XOM",
         "kind": "event",
         "level": 0,
@@ -48,20 +49,27 @@
         "direction": null,
         "title": "XOM: Buyback state ACTIVE (was WATCH)",
         "known_at": "2026-10-06T12:00:00Z",
-        "system_time": "2026-10-18T16:55:12.857759Z",
+        "system_time": "2026-10-20T08:00:49.868396Z",
         "backfilled": false,
         "evidence": [
           {
             "table": "buyback_state_assignments",
-            "id": "427eb52f-a67f-4d50-aa37-e6e62b2fcc77",
+            "id": "3d228bec-1c3a-45d1-bbff-48b455109c65",
             "label": "Buyback state ACTIVE (was WATCH)",
             "url": null
           }
         ],
         "assessment_id": null,
-        "acknowledgement": null
+        "acknowledgement": null,
+        "delivered_at": null
       }
     ],
-    "detail": "In-app alerts only (P1-1). Levels are deterministic rules; none places an order. L4 needs the company's standard paper position to pass the risk check (paper only)."
+    "delivery": {
+      "channel": "telegram",
+      "configured": false,
+      "rule_version": null,
+      "detail": "Telegram not set up: alerts stay in the app. Add TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID to .env (make telegram-check) to have them pushed."
+    },
+    "detail": "Alerts live in the app; since M3.0b the delivery rules push some of them to Telegram once it is set up (ADR-037). Levels are deterministic rules; none places an order. L4 needs the company's standard paper position to pass the risk check (paper only)."
   }
 }

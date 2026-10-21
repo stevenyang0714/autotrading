@@ -97,6 +97,9 @@ class AlertRuleSet(_Rule):
     # Added in 0.4.0 (M2.4, ADR-032): a new S3 rotation target.
     rotation_events: list[Literal["target_change"]] = []
     rotation_rule_version: str | None = None
+    # Added in 0.6.0 (M3.0b, ADR-037): a new S4 momentum target.
+    momentum_events: list[Literal["target_change"]] = []
+    momentum_rule_version: str | None = None
 
     def content(self) -> dict[str, object]:
         return self.model_dump(mode="json", exclude={"status"}, exclude_defaults=True)
@@ -390,7 +393,7 @@ def assess(
 
 @dataclass(frozen=True)
 class AlertIn:
-    kind: Literal["event", "level_change", "regime", "portfolio", "rotation"]
+    kind: Literal["event", "level_change", "regime", "portfolio", "rotation", "momentum"]
     level: int
     previous_level: int | None
     direction: Literal["up", "down"] | None

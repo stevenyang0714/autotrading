@@ -17,15 +17,17 @@ export interface AlertFilters {
 }
 
 /** A company alert's level, or a market-wide alert's own state: stress (M2.1), portfolio
- * drawdown (M2.3) or a new S3 rotation target (M2.4). */
+ * drawdown (M2.3), a new S3 rotation target (M2.4) or a new S4 target (M3.0b). */
 const MARKET_TERMS = {
   regime: "stress_state",
   portfolio: "portfolio_drawdown",
   rotation: "rotation_alert",
+  momentum: "momentum_alert",
 } as const;
 
 function LevelBadge({ level, name, kind }: { level: number | null; name: string; kind?: AlertEntry["kind"] }) {
-  const market = kind === "regime" || kind === "portfolio" || kind === "rotation" ? MARKET_TERMS[kind] : null;
+  const market =
+    kind === "regime" || kind === "portfolio" || kind === "rotation" || kind === "momentum" ? MARKET_TERMS[kind] : null;
   return (
     <span className={`inline-block rounded border px-1.5 py-0.5 text-xs ${levelClass(level)}`}>
       <Metric termId={market ?? levelTerm(level)} icon={false}>
@@ -101,6 +103,16 @@ function AlertItem({ alert, acknowledge }: { alert: AlertEntry; acknowledge?: Re
         <Metric termId="alert_rule_set" icon={false}>
           alert rules {alert.rule_version}
         </Metric>
+        {alert.delivered_at ? (
+          <>
+            {" · "}
+            <span data-delivered="">
+              <Metric termId="alert_delivery" icon={false}>
+                sent to Telegram {formatSgtEt(alert.delivered_at)}
+              </Metric>
+            </span>
+          </>
+        ) : null}
       </p>
       <ul className="space-y-0.5 text-xs" aria-label="Evidence">
         {alert.evidence.map((evidence) => {
@@ -163,6 +175,7 @@ function Filters({ filters, knownOn }: { filters: AlertFilters; knownOn?: string
           <option value="1">Watch</option>
           <option value="2">Thesis</option>
           <option value="3">Trade Candidate</option>
+          <option value="4">Execution Ready</option>
         </select>
       </label>
       <label className="flex items-center gap-1">
@@ -222,15 +235,27 @@ export function AlertsCenterView({
           Where each company&apos;s signals line up, from information to a trade candidate, and the
           alerts the rules raised. Acknowledge an alert once you have looked at it.
         </p>
-        <p role="note" data-in-app="" className="rounded border border-sky-700/60 bg-sky-950/30 px-3 py-2 text-sm text-sky-100">
-          <Metric termId="alert" icon={false}>
-            IN-APP ONLY
-          </Metric>
-          {" · "}
-          <Metric termId="convergence_l4" icon={false}>
-            {alerts.detail}
-          </Metric>
-        </p>
+        <div role="note" data-in-app="" className="space-y-1 rounded border border-sky-700/60 bg-sky-950/30 px-3 py-2 text-sm text-sky-100">
+          <p>
+            <Metric termId="alert" icon={false}>
+              {alerts.delivery?.configured ? "TELEGRAM ON" : "IN-APP ONLY"}
+            </Metric>
+            {" · "}
+            <Metric termId="convergence_l4" icon={false}>
+              {alerts.detail}
+            </Metric>
+          </p>
+          {alerts.delivery ? (
+            <p data-delivery={alerts.delivery.configured ? "on" : "off"} className="text-xs text-sky-200/80">
+              <Metric termId="alert_delivery" icon={false}>
+                {alerts.delivery.detail}
+              </Metric>{" "}
+              <Metric termId="delivery_rule_set" icon={false}>
+                {alerts.delivery.rule_version ? `delivery rules ${alerts.delivery.rule_version}` : ""}
+              </Metric>
+            </p>
+          ) : null}
+        </div>
         <AsKnownOnForm href={HREF} knownOn={knownOn} invalid={invalidKnownOn} />
         <p className="text-sm text-neutral-400">
           Showing what was known by{" "}

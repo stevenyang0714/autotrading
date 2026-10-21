@@ -82,6 +82,8 @@ APP_TABLES = {
     "backtest_rule_sets",
     "backtest_runs",
     "momentum_assessments",
+    "delivery_rule_sets",
+    "alert_deliveries",
 }
 FEB = datetime(2025, 2, 1, 21, 5, tzinfo=UTC)
 AUG = datetime(2025, 8, 1, 20, 30, tzinfo=UTC)
@@ -254,6 +256,12 @@ def test_guardrails_exist(engine: Engine) -> None:
         "rotation_assessments_no_truncate",
         "momentum_assessments_append_only",
         "momentum_assessments_no_truncate",
+        "delivery_rule_sets_append_only",
+        "delivery_rule_sets_no_truncate",
+        "delivery_rule_sets_audit",
+        "alert_deliveries_append_only",
+        "alert_deliveries_no_truncate",
+        "alert_deliveries_audit",
         "momentum_rule_sets_append_only",
         "momentum_rule_sets_audit",
         "backtest_rule_sets_append_only",

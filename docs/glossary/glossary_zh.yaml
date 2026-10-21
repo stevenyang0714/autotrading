@@ -55,7 +55,7 @@ terms:
   dashboard_congress_trades: {name: 國會交易, hint: 美國議員申報的交易與申報延遲（Phase 4）。}
   dashboard_options_vol: {name: 選擇權與波動率, hint: 選擇權分析與避險（Phase 5）。}
   dashboard_portfolio_risk: {name: 組合風險, hint: 紙上組合的曝險、各上限使用率、回撤與風險檢查紀錄，可試算一筆交易。}
-  dashboard_alerts_center: {name: 警示中心, hint: "公司收斂等級與警示，加上市場層級警示（壓力、組合回撤、S3 輪動目標）；只在 App 內。"}
+  dashboard_alerts_center: {name: 警示中心, hint: "公司收斂等級與警示，加上市場層級警示（壓力、組合回撤、S3 與 S4 目標）；設定 Telegram 後部分警示會推播到手機。"}
   dashboard_strategy_lab: {name: 策略實驗室, hint: "模擬交易日誌、訊號、S3 ETF 輪動、S4 動能，以及 S1、S3、S4 的 walk-forward 回測（含成本，不顯示績效）。"}
   dashboard_execution: {name: 下單執行, hint: 下單預覽與模擬帳戶（Phase 5）。}
 
@@ -178,7 +178,7 @@ terms:
   convergence_l4: {name: L4 可執行, hint: L3 加上標準紙上部位通過風險檢查（警示規則 0.3.0 起）；只限紙上。}
   independent_evidence: {name: 獨立依據, hint: 依來源去重；同一份申報的多列只算一次。}
   valuation_support: {name: 估值支持, hint: base DCF 折價為正或 FCF 殖利率高於自身中位數。}
-  alert: {name: 警示, hint: "App 內通知：公司事件（L0）、收斂等級變化，或市場層級的變化（壓力、組合回撤、S3 輪動目標），附規則版本與依據。"}
+  alert: {name: 警示, hint: "App 內通知：公司事件（L0）、收斂等級變化，或市場層級的變化（壓力、組合回撤、S3 或 S4 目標），附規則版本與依據。"}
   alert_acknowledgement: {name: 確認, hint: 標記已看過，每則一次、可附備註；寫入稽核紀錄。}
   alert_rule_set: {name: 警示規則版本, hint: 每個收斂評定與警示所用的規則版本；已發布的版本不會改。}
   regime: {name: 市場體制, hint: 五個總經面向、成長×通膨象限與壓力狀態，依版本化規則與當時已知的資料。}
@@ -346,6 +346,9 @@ terms:
   walk_forward: {name: 逐段測試, hint: "每個日曆年是一段；規則發布那年在發布日切成樣本內與樣本外。"}
   backtest: {name: 回測, hint: "用當時已知的資料重播策略：在下一個收盤成交並扣成本；只顯示交易、成本與曝險，不顯示報酬。"}
   rotation_alert: {name: 輪動警示, hint: "S3 設定的新目標和上一次不同時發出的市場層級警示。"}
+  momentum_alert: {name: S4 目標警示, hint: "S4 設定的新目標和上一次不同時發出的市場層級警示。"}
+  alert_delivery: {name: Telegram 推播, hint: "依推播規則把選定的警示送到你的 Telegram，每則只送一次並記錄；回填的與超過 48 小時的不送，23:00–07:00 暫停。"}
+  delivery_rule_set: {name: 推播規則版本, hint: "決定哪些警示推播到 Telegram 的規則版本；已發布的不會改。"}
   opportunity_candidate: {name: 候選, hint: "規則在當時標出的標的：L3/L4 的公司（S1）、S3 目標持有的 ETF 或 S4 目標持有的公司；不打分、不排名、只做多。"}
   defensive_switch: {name: 轉防守, hint: "月中壓力升到 HIGH 或 CRISIS 時立刻改成防守型；壓力下降要等下個月才換回。"}
   rotation_rebalance: {name: 輪動調整, hint: "每個紐約月份第一次評估時換目標；其他時候沿用上一次的。"}

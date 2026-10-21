@@ -2,10 +2,11 @@
 the version the momentum rules name, and the rows an assessment produces, in the caller's
 transaction.
 
-`record_momentum` stores one assessment per T and rule version and the S4 signals of a newly set
-target. The previous target is the latest stored assessment before T that had one, as the
-database held it at S; a backfill passes the previous point of its own run instead (its rows
-were recorded after its S, from inputs known at S). Re-running is harmless.
+`record_momentum` stores one assessment per T and rule version, the S4 signals of a newly set
+target and, since M3.0b (ADR-037), an alert when the target changed (under the active alert
+rules, if they ask for it). The previous target is the latest stored assessment before T that
+had one, as the database held it at S; a backfill passes the previous point of its own run
+instead (its rows were recorded after its S, from inputs known at S). Re-running is harmless.
 """
 
 from collections.abc import Sequence
@@ -18,10 +19,17 @@ from sqlalchemy.orm import Session
 
 from autotrading.db.models import FactorSnapshot, MomentumAssessment
 from autotrading.domain.momentum import MomentumAssessment as Assessment
-from autotrading.domain.momentum import MomentumRuleSet, PreviousMomentum, daily, signals
+from autotrading.domain.momentum import (
+    MomentumRuleSet,
+    PreviousMomentum,
+    daily,
+    momentum_alert,
+    signals,
+)
 from autotrading.domain.rotation import SnapshotInput
 from autotrading.repositories.audit import set_actor
 from autotrading.repositories.backtest import stored_momentum_rules
+from autotrading.repositories.convergence import insert_alert, stored_alert_rules
 from autotrading.repositories.prices import instruments_by_symbol
 from autotrading.repositories.rotation import snapshot_input
 from autotrading.repositories.signals import record_signal
@@ -141,6 +149,18 @@ def record_momentum(
     for symbol, signal in signals(found, str(row.id), system_time):
         if symbol in ids:
             record_signal(session, ids[symbol], symbol, signal)
+    alert_rules = stored_alert_rules(session)
+    if (
+        alert_rules is not None
+        and "target_change" in alert_rules.momentum_events
+        and alert_rules.momentum_rule_version == rules.rule_version
+    ):
+        weights = previous_momentum(before).target if before is not None else None
+        alert = momentum_alert(found, weights, str(row.id))
+        if alert is not None:
+            insert_alert(
+                session, alert_rules, None, None, alert, system_time, None, system_time > at
+            )
     return row
 
 
@@ -175,6 +195,38 @@ def record_points(
         if row is not None and row.target is not None:
             previous = row
     return stored
+
+
+def raise_alerts(session: Session, rules: MomentumRuleSet, system_time: datetime) -> int:
+    """The target-change alerts of every stored assessment under the active alert rules, in
+    order of T (for `make alerts-backfill` after a new alert rule version); returns how many
+    were new."""
+    alert_rules = stored_alert_rules(session)
+    if (
+        alert_rules is None
+        or "target_change" not in alert_rules.momentum_events
+        or alert_rules.momentum_rule_version != rules.rule_version
+    ):
+        return 0
+    rows = session.scalars(
+        select(MomentumAssessment)
+        .where(MomentumAssessment.rule_version == rules.rule_version, MomentumAssessment.rebalance)
+        .order_by(MomentumAssessment.known_at)
+    ).all()
+    previous = {
+        r.id: r
+        for r in session.scalars(
+            select(MomentumAssessment).where(MomentumAssessment.target.is_not(None))
+        )
+    }
+    raised = 0
+    for row in rows:
+        before = previous.get(row.previous_id) if row.previous_id else None
+        weights = previous_momentum(before).target if before is not None else None
+        alert = momentum_alert(Assessment.model_validate(row.assessment), weights, str(row.id))
+        if alert is not None:
+            raised += insert_alert(session, alert_rules, None, None, alert, system_time, None, True)
+    return raised
 
 
 def recompute(session: Session, row: MomentumAssessment) -> Assessment | None:

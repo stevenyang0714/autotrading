@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-18T16:55:14.446971+00:00",
+  "recorded_at": "2026-10-20T08:00:51.511481+00:00",
   "recorded_from": "recorded SEC filings, Alpaca closes, FRED yields and news replayed into the integration test database (tests/integration/test_alerts.py)",
   "endpoint": "/convergence",
   "params": {
@@ -7,7 +7,7 @@
   },
   "response": {
     "known_at": "2026-10-06T12:00:00Z",
-    "rule_version": "0.5.0",
+    "rule_version": "0.6.0",
     "companies": [
       {
         "ticker": "AAPL",
@@ -53,8 +53,8 @@
             "family_id": 2,
             "label": "Buyback state ACTIVE",
             "table": "buyback_state_assignments",
-            "row_id": "8431911f-fd37-492f-a014-a4a791916187",
-            "source": "buyback_state_assignments:8431911f-fd37-492f-a014-a4a791916187",
+            "row_id": "223bb943-79b7-4c2b-a544-8c944e8e4f92",
+            "source": "buyback_state_assignments:223bb943-79b7-4c2b-a544-8c944e8e4f92",
             "known_at": "2026-10-06T12:00:00Z",
             "detail": "rules 0.3.0"
           },
@@ -63,8 +63,8 @@
             "family_id": 5,
             "label": "Market confirmation",
             "table": "buyback_state_assignments",
-            "row_id": "8431911f-fd37-492f-a014-a4a791916187",
-            "source": "market:8431911f-fd37-492f-a014-a4a791916187",
+            "row_id": "223bb943-79b7-4c2b-a544-8c944e8e4f92",
+            "source": "market:223bb943-79b7-4c2b-a544-8c944e8e4f92",
             "known_at": "2026-10-06T12:00:00Z",
             "detail": "trade_ready.above_average, trade_ready.relative_return"
           }
@@ -118,8 +118,8 @@
             "family_id": 2,
             "label": "Buyback state ACTIVE",
             "table": "buyback_state_assignments",
-            "row_id": "427eb52f-a67f-4d50-aa37-e6e62b2fcc77",
-            "source": "buyback_state_assignments:427eb52f-a67f-4d50-aa37-e6e62b2fcc77",
+            "row_id": "3d228bec-1c3a-45d1-bbff-48b455109c65",
+            "source": "buyback_state_assignments:3d228bec-1c3a-45d1-bbff-48b455109c65",
             "known_at": "2026-10-06T12:00:00Z",
             "detail": "rules 0.3.0"
           },
@@ -128,8 +128,8 @@
             "family_id": 5,
             "label": "Market confirmation",
             "table": "buyback_state_assignments",
-            "row_id": "427eb52f-a67f-4d50-aa37-e6e62b2fcc77",
-            "source": "market:427eb52f-a67f-4d50-aa37-e6e62b2fcc77",
+            "row_id": "3d228bec-1c3a-45d1-bbff-48b455109c65",
+            "source": "market:3d228bec-1c3a-45d1-bbff-48b455109c65",
             "known_at": "2026-10-06T12:00:00Z",
             "detail": "trade_ready.above_average, trade_ready.relative_return"
           }
@@ -183,8 +183,8 @@
             "family_id": 5,
             "label": "Market confirmation",
             "table": "buyback_state_assignments",
-            "row_id": "160af2cf-3c73-429b-8495-39905cd44418",
-            "source": "market:160af2cf-3c73-429b-8495-39905cd44418",
+            "row_id": "965fcfab-9288-4a66-8356-4bc3213c1a39",
+            "source": "market:965fcfab-9288-4a66-8356-4bc3213c1a39",
             "known_at": "2026-10-06T12:00:00Z",
             "detail": "trade_ready.above_average, trade_ready.relative_return"
           }
@@ -194,6 +194,6 @@
         ]
       }
     ],
-    "detail": "In-app alerts only (P1-1). Levels are deterministic rules; none places an order. L4 needs the company's standard paper position to pass the risk check (paper only)."
+    "detail": "Alerts live in the app; since M3.0b the delivery rules push some of them to Telegram once it is set up (ADR-037). Levels are deterministic rules; none places an order. L4 needs the company's standard paper position to pass the risk check (paper only)."
   }
 }
