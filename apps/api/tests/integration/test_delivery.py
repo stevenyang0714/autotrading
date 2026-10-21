@@ -99,17 +99,20 @@ def test_each_pushed_alert_is_sent_once_and_recorded(sessions: sessionmaker[Sess
             return 100 + len(sent)
 
         assert deliver(session, rules, send, NOW) == (2, 0)
+        # delivery rules 0.2.0: Chinese; these test rows have no assessment behind them, so the
+        # messages fall back to their titles and evidence (ADR-038)
         assert [m.split("\n")[0] for m in sent] == [
-            "[autotrading] Test regime r1",
-            "[autotrading] Test momentum m1",
+            "[autotrading] 市場壓力｜升到高（原升高）",
+            "[autotrading] S4 動能｜每月目標調整",
         ]
-        assert all(m.endswith("Rule output, unvalidated, not advice. Paper only.") for m in sent)
+        assert "Test regime r1" in sent[0] and "依據：flag r1" in sent[0]
+        assert all(m.endswith("不是投資建議；僅供模擬（Paper only）。") for m in sent)
         rows = ledger(session)
         assert [(r.alert_id, r.status, r.message_id) for r in rows] == [
             (regime.id, "sent", 101),
             (s4.id, "sent", 102),
         ]
-        assert all((r.channel, r.rule_version) == ("telegram", "0.1.0") for r in rows)
+        assert all((r.channel, r.rule_version) == ("telegram", "0.2.0") for r in rows)
         # a second run sends nothing more
         assert deliver(session, rules, send, NOW + timedelta(minutes=5)) == (0, 0)
         assert set(delivered(session, [regime.id, s4.id])) == {regime.id, s4.id}
@@ -160,7 +163,7 @@ def test_quiet_hours_wait_and_the_database_allows_one_sent_row(
         conn.execute(
             text(
                 "INSERT INTO alert_deliveries (alert_id, channel, rule_version, status, "
-                "message_id) VALUES (:id, 'telegram', '0.1.0', 'sent', 8)"
+                "message_id) VALUES (:id, 'telegram', '0.2.0', 'sent', 8)"
             ),
             {"id": waiting_id},
         )
@@ -189,7 +192,7 @@ def test_the_alerts_api_says_whether_telegram_is_on_and_what_was_sent(
     assert (delivery["channel"], delivery["configured"], delivery["rule_version"]) == (
         "telegram",
         configured,
-        "0.1.0",
+        "0.2.0",
     )
     assert delivery["detail"].startswith("Telegram on" if configured else "Telegram not set up")
     assert CHAT not in str(body)

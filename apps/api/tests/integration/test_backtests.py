@@ -53,6 +53,7 @@ from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.main import create_app
 from autotrading.repositories import momentum
+from autotrading.repositories.alert_context import alert_context, company_facts
 from autotrading.repositories.backtest import (
     ran_this_month,
     recompute,
@@ -406,6 +407,40 @@ def test_a_changed_s4_target_raises_an_alert_once(
         rules = stored_momentum_rules(session)
         assert rules is not None
         assert momentum.raise_alerts(session, rules, stored) == 0  # already raised
+        session.rollback()
+
+
+def test_an_s4_message_names_each_company_and_its_reasons(
+    sessions: sessionmaker[Session], stored: datetime
+) -> None:
+    # M3.0c (ADR-038): the message context read from the stored S4 rows of October
+    with sessions() as session:
+        october = momentum_rows(session)[-2]
+        before = session.get(MomentumAssessment, october.previous_id)
+        assert before is not None
+        alert = Alert(
+            rule_version="0.6.0",
+            kind="momentum",
+            level=0,
+            previous_level=0,
+            direction="up",
+            title="S4 momentum (monthly target)",
+            source_key="test",
+            known_at=october.known_at,
+            system_time=october.system_time,
+            evidence=[{"table": "momentum_assessments", "id": str(october.id), "label": "x"}],
+            backfilled=True,
+        )
+        context = alert_context(session, alert)
+        assert context is not None
+        symbols = {f.symbol for f in (*context.entered, *context.left, *context.kept)}
+        assert symbols == set(october.target or {}) | set(before.target or {})
+        for facts in (*context.entered, *context.kept):
+            assert facts.label.startswith(f"{facts.symbol} ")
+            assert facts.weight is not None
+        nvda = company_facts(session, "NVDA", VALUED_AT, stored, {"NVDA": "information_technology"})
+        assert nvda.label == "NVDA 輝達（NVIDIA，資訊科技）"
+        assert context.review == "每個紐約月份第一次評估時調整（S4）"
         session.rollback()
 
 

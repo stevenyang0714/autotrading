@@ -15,7 +15,7 @@ sectors:
 instruments:
   AAPL: {name: Apple, zh: 蘋果, about_zh: iPhone、Mac 與服務}
   MSFT: {name: Microsoft, zh: 微軟, about_zh: Windows、Office 與 Azure 雲端}
-  GOOGL: {name: Alphabet (Google), zh: Alphabet（谷歌）, about_zh: Google 搜尋廣告、YouTube 與雲端}
+  GOOGL: {name: Alphabet, zh: 谷歌, about_zh: Google 搜尋廣告、YouTube 與雲端}
   META: {name: Meta Platforms, zh: Meta, about_zh: Facebook、Instagram 與 WhatsApp}
   NVDA: {name: NVIDIA, zh: 輝達, about_zh: 繪圖晶片與 AI 運算晶片}
   JPM: {name: JPMorgan Chase, zh: 摩根大通, about_zh: 美國最大的銀行}

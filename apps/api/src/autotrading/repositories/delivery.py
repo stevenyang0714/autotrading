@@ -28,6 +28,7 @@ from autotrading.domain.delivery import (
     message,
     not_pushed,
 )
+from autotrading.repositories.alert_context import alert_context
 from autotrading.repositories.audit import set_actor
 from autotrading.settings import get_settings
 
@@ -70,6 +71,8 @@ def stored_alert(row: Alert) -> StoredAlert:
         known_at=row.known_at,
         backfilled=row.backfilled,
         evidence=list(row.evidence),
+        direction=row.direction,
+        ticker=row.ticker,
     )
 
 
@@ -145,7 +148,8 @@ def deliver(
         return 0, 0
     sent = failed = 0
     for row in pending(session, rules, now):
-        text = message(rules, stored_alert(row))
+        context = alert_context(session, row) if rules.details else None
+        text = message(rules, stored_alert(row), context)
         acquire()
         try:
             message_id = send(text)
