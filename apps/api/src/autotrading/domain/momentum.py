@@ -301,20 +301,23 @@ def momentum_alert(
     if dict(momentum.target) == dict(previous):
         return None
     order = [r.symbol for r in momentum.readings]
-    was = {
-        s: previous[s]
-        for s in sorted(
-            previous, key=lambda s: (s not in order, order.index(s) if s in order else 0, s)
-        )
-    }
-    invested = sum(momentum.target.values(), Decimal(0))
+
+    def ordered(weights: Mapping[str, Decimal]) -> dict[str, Decimal]:
+        # universe order: a target read back from JSONB comes in JSONB's key order (KI-25)
+        def rank(s: str) -> tuple[bool, int, str]:
+            return (s not in order, order.index(s) if s in order else 0, s)
+
+        return {s: weights[s] for s in sorted(weights, key=rank)}
+
+    now, was = ordered(momentum.target), ordered(previous)
+    invested = sum(now.values(), Decimal(0))
     before = sum(was.values(), Decimal(0))
     return AlertIn(
         kind="momentum",
         level=0,
         previous_level=0,
         direction="up" if invested > before else "down",
-        title=f"S4 momentum (monthly target): now {_held(momentum.target)} (was {_held(was)})",
+        title=f"S4 momentum (monthly target): now {_held(now)} (was {_held(was)})",
         source_key=f"momentum:{assessment_id}",
         known_at=momentum.known_at,
         evidence=[{"table": "momentum_assessments", "id": assessment_id, "label": momentum.detail}],
