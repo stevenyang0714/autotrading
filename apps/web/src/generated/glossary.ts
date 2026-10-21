@@ -6623,7 +6623,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     ],
     "methodology_version": "0.2.0",
     "name_zh": "成長×通膨象限",
-    "hint_zh": "金髮女孩／再通膨／停滯性通膨／通縮放緩；0.2.0 起通膨高於目標但在下降不算高通膨。是標籤，不是預測。"
+    "hint_zh": "金髮女孩／再通膨／停滯性通膨／通膨降溫的放緩；0.2.0 起通膨高於目標但在下降不算高通膨。是標籤，不是預測。"
   },
   "regime_rule_set": {
     "term_id": "regime_rule_set",

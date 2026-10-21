@@ -242,7 +242,7 @@ QUADRANT_ZH = {
     "goldilocks": "金髮女孩（成長、通膨溫和）",
     "reflation": "再通膨（成長、通膨偏高）",
     "stagflation": "停滯性通膨（放緩、通膨偏高）",
-    "disinflationary_slowdown": "通縮放緩（放緩、通膨溫和）",
+    "disinflationary_slowdown": "通膨降溫的放緩（放緩、通膨溫和）",
 }
 BUYBACK_ZH = {
     "none": "無",

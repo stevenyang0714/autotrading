@@ -184,7 +184,7 @@ def test_an_s4_target_change_lists_who_enters_leaves_and_why() -> None:
     assert "  原因：比 SPY 的 12-1 動能 -0.6 個百分點（需高於 0）" in lines
     assert "繼續持有（每檔 25.00%）：NVDA 輝達" in lines
     assert any("過去回測持有中位數約 4 個月（只是持有時間，不是報酬）" in line for line in lines)
-    assert "市場：壓力正常；通縮放緩（放緩、通膨溫和）" in lines
+    assert "市場：壓力正常；通膨降溫的放緩（放緩、通膨溫和）" in lines
     assert lines[-1] == "規則輸出、未經驗證、不是投資建議；僅供模擬（Paper only）。"
     assert "買入建議" not in text and "賣出建議" not in text and "http" not in text
 
