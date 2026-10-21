@@ -49,7 +49,7 @@ describe("AlertsCenterView with recorded API responses", () => {
       <AlertsCenterView alerts={recordedDeliveredAlerts} convergence={recordedConvergence} filters={ALL} />,
     );
     expect(document.querySelector("[data-in-app]")?.textContent).toContain("TELEGRAM ON");
-    expect(document.querySelector("[data-delivery]")?.textContent).toContain("delivery rules 0.1.0");
+    expect(document.querySelector("[data-delivery]")?.textContent).toContain("delivery rules 0.2.0");
     const pushed = [...container.querySelectorAll("[data-alert]")].filter((a) => a.querySelector("[data-delivered]"));
     expect(pushed.length).toBe(recordedDeliveredAlerts.entries.filter((e) => e.delivered_at).length);
     expect(pushed[0]?.textContent).toContain("sent to Telegram");

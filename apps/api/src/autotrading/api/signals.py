@@ -35,6 +35,7 @@ from autotrading.domain.registries import SIGNAL_FAMILIES, STRATEGIES
 from autotrading.domain.rotation import STRATEGY as ROTATION_STRATEGY
 from autotrading.domain.signals import BUYBACK_STRATEGY
 from autotrading.repositories.backtest import active_momentum_version
+from autotrading.repositories.labels import label
 from autotrading.repositories.rotation import active_rotation_version
 
 router = APIRouter(tags=["signals"])
@@ -46,6 +47,8 @@ STRATEGY_NAMES = {s.id: s.name for s in STRATEGIES}
 class SignalOut(BaseModel):
     id: UUID
     ticker: str
+    name: str = ""  # display name (M3.0c, config/instrument_labels.yaml)
+    name_zh: str = ""
     family_id: int
     family: str
     strategy_id: str | None
@@ -89,6 +92,8 @@ def signal_out(
     return SignalOut(
         id=row.id,
         ticker=row.ticker,
+        name=label(row.ticker).name,
+        name_zh=label(row.ticker).zh,
         family_id=row.family_id,
         family=FAMILY_NAMES[row.family_id],
         strategy_id=row.strategy_id,

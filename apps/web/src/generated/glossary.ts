@@ -145,6 +145,7 @@ export type CompleteTermId =
   | "independent_evidence"
   | "ingestion_note"
   | "ingestion_status"
+  | "instrument_label"
   | "interest_expense"
   | "invalidation"
   | "invested_capital"
@@ -334,6 +335,7 @@ export type CompleteTermId =
   | "volatility_60d"
   | "volume"
   | "walk_forward"
+  | "weekly_digest"
   | "yield_curve_inversion";
 
 export interface GlossaryTerm {
@@ -469,25 +471,27 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "Telegram Delivery",
     "category": "alerts",
     "short_definition": "Pushing chosen alerts to Steven's Telegram chat, each once, with the time it was sent.",
-    "full_definition": "Every 5 minutes the delivery rules pick the alerts to push: stress changes, companies entering or leaving L3/L4, new S3 and S4 targets and the drawdown alert, under the pinned alert rule version. Never backfilled alerts or ones older than 48 hours; quiet from 23:00 to 07:00 Singapore time. Each attempt is recorded (sent once, or failed and tried again up to 3 times); the chat id and the bot token are never stored or shown.",
+    "full_definition": "Since delivery rules 0.2.0 (M3.0c, ADR-038) each message is in Chinese and names every company or ETF a target adds or drops, with its sector and reasons (momentum, P/E and FCF yield against its own history, the DCF fair value against the price under the current assumptions, buyback state), the rule's rhythm and median backtest holding period, and the market; a weekly digest lists every candidate on Monday at 08:00. Every 5 minutes the delivery rules pick the alerts to push: stress changes, companies entering or leaving L3/L4, new S3 and S4 targets and the drawdown alert, under the pinned alert rule version. Never backfilled alerts or ones older than 48 hours; quiet from 23:00 to 07:00 Singapore time. Each attempt is recorded (sent once, or failed and tried again up to 3 times); the chat id and the bot token are never stored or shown.",
     "formula": "rule match -> plain-text message -> one sent record",
     "unit": "delivery",
-    "example": "Market stress rose to HIGH (was ELEVATED), sent 11:01 SGT.",
+    "example": "S4 動能｜每月目標調整: －離開 JPM 摩根大通 (比 SPY 的 12-1 動能 -0.6 個百分點), sent 11:22 SGT.",
     "direction": "N/A",
     "interpretation": "The alert reached the phone; the Alerts Center still holds the evidence.",
     "why_it_matters": "No need to open the Mac to know something changed.",
-    "source": "Delivery rules 0.1.0 (config/delivery_rules.yaml); repositories/delivery.py; ADR-037",
+    "source": "Delivery rules 0.2.0 (config/delivery_rules.yaml); repositories/delivery.py, repositories/alert_context.py; ADR-037, ADR-038",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/delivery_rules.yaml",
-    "as_of": "2026-10-20",
+    "as_of": "2026-10-21",
     "update_cadence": "every 5 minutes",
     "caveats": "Only while the Mac runs; messages pass through Telegram's servers. A rule output, unvalidated, not advice (OD-7).",
     "related_terms": [
       "alert",
-      "delivery_rule_set"
+      "delivery_rule_set",
+      "weekly_digest",
+      "instrument_label"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "Telegram 推播",
-    "hint_zh": "依推播規則把選定的警示送到你的 Telegram，每則只送一次並記錄；回填的與超過 48 小時的不送，23:00–07:00 暫停。"
+    "hint_zh": "依推播規則把選定的警示用中文送到你的 Telegram：名稱、產業、動能與估值等理由；每則只送一次並記錄，23:00–07:00 暫停。"
   },
   "alert_rule_set": {
     "term_id": "alert_rule_set",
@@ -3931,6 +3935,30 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "擷取狀態",
     "hint_zh": "某次資料擷取的結果：成功、略過、失敗等。"
+  },
+  "instrument_label": {
+    "term_id": "instrument_label",
+    "display_name": "Display Name",
+    "category": "navigation",
+    "short_definition": "A ticker's English and Chinese name, what it does and its sector, shown next to it.",
+    "full_definition": "From the reviewed config/instrument_labels.yaml, with the GICS sector of the risk rules. For display only: no rule, score or calculation reads names.",
+    "formula": "ticker -> name, Chinese name, sector",
+    "unit": "label",
+    "example": "XOM 埃克森美孚 (Exxon Mobil, 能源): 石油與天然氣.",
+    "direction": "N/A",
+    "interpretation": "Which company or fund a ticker is.",
+    "why_it_matters": "A ticker alone says little.",
+    "source": "config/instrument_labels.yaml; config/risk_rules.yaml; ADR-038",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/instrument_labels.yaml",
+    "as_of": "2026-10-21",
+    "update_cadence": "per release",
+    "caveats": "Names are today's; they are not kept point in time (display only).",
+    "related_terms": [
+      "gics_sector"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "標的名稱",
+    "hint_zh": "代號旁的中英文名稱、業務與產業；只用來顯示，不影響任何計算。"
   },
   "interest_expense": {
     "term_id": "interest_expense",
@@ -8721,6 +8749,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "逐段測試",
     "hint_zh": "每個日曆年是一段；規則發布那年在發布日切成樣本內與樣本外。"
+  },
+  "weekly_digest": {
+    "term_id": "weekly_digest",
+    "display_name": "Weekly Digest",
+    "category": "alerts",
+    "short_definition": "Every Monday at 08:00 Singapore time, one Telegram message with every rule candidate and its reasons.",
+    "full_definition": "The companies of the S4 momentum target, the companies at L3 or L4 (S1) and the ETFs of the S3 rotation target as known at the time, each with its name, weight and main reasons (momentum, P/E against its own history, the DCF fair value against the price, buyback state), and the market's stress state and quadrant. Split into several messages when long; sent once a week and recorded.",
+    "formula": "the Opportunity Radar's candidates at the time",
+    "unit": "message",
+    "example": "XOM 埃克森美孚 (Exxon Mobil, 能源) 25%: 12-1 動能 +52%; 比 SPY +36 個百分點; P/E 23 (第 73 百分位).",
+    "direction": "N/A",
+    "interpretation": "The whole picture once a week, without waiting for a change.",
+    "why_it_matters": "A medium-term view needs the current list, not only what changed.",
+    "source": "Delivery rules 0.2.0 (config/delivery_rules.yaml); repositories/delivery.py; ADR-038",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/config/delivery_rules.yaml",
+    "as_of": "2026-10-21",
+    "update_cadence": "weekly (Monday 08:00 SGT)",
+    "caveats": "Rule readings, not buy or sell advice; the rules' returns are unvalidated (OD-7).",
+    "related_terms": [
+      "alert_delivery",
+      "opportunity_candidate"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "每週摘要",
+    "hint_zh": "每週一早上 8 點把目前所有規則候選（S4、L3/L4、S3）連同理由送到 Telegram；不是買賣建議。"
   },
   "yield_curve_inversion": {
     "term_id": "yield_curve_inversion",

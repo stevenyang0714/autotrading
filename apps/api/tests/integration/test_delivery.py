@@ -22,11 +22,17 @@ from autotrading.config_sync import (
     sync_alert_rules,
     sync_delivery_rules,
 )
-from autotrading.db.models import Alert, AlertDelivery
+from autotrading.db.models import Alert, AlertDelivery, DigestDelivery
 from autotrading.domain.convergence import AlertIn
 from autotrading.main import create_app
 from autotrading.repositories.convergence import insert_alert, load_alert_rules, stored_alert_rules
-from autotrading.repositories.delivery import deliver, delivered, pending, stored_delivery_rules
+from autotrading.repositories.delivery import (
+    deliver,
+    deliver_digest,
+    delivered,
+    pending,
+    stored_delivery_rules,
+)
 from autotrading.settings import get_settings
 from tests.integration.conftest import alembic_config
 
@@ -167,6 +173,36 @@ def test_quiet_hours_wait_and_the_database_allows_one_sent_row(
             ),
             {"id": waiting_id},
         )
+
+
+def test_the_weekly_digest_is_sent_once_a_week_and_recorded(
+    sessions: sessionmaker[Session],
+) -> None:
+    monday = datetime(2026, 10, 19, 0, 10, tzinfo=UTC)  # 08:10 Singapore time
+    with sessions() as session:
+        rules = stored_delivery_rules(session)
+        assert rules is not None and rules.digest is not None
+        sent: list[str] = []
+
+        def send(text: str) -> int:
+            sent.append(text)
+            return 500 + len(sent)
+
+        def refuse(_: str) -> int:
+            raise TelegramError("sendMessage: Too Many Requests", 429)
+
+        assert deliver_digest(session, rules, refuse, monday) == 0  # failed, recorded
+        assert deliver_digest(session, rules, send, monday + timedelta(hours=2)) == 0  # not due
+        assert deliver_digest(session, rules, send, monday) >= 1
+        assert sent[0].startswith("[autotrading] 每週規則候選（模擬，非建議）｜2026-10-19 這週")
+        assert "（目前沒有）" in sent[0]  # no candidate in this database
+        assert deliver_digest(session, rules, send, monday, force=True) == 0  # once a week
+        rows = session.scalars(select(DigestDelivery).order_by(DigestDelivery.attempted_at)).all()
+        assert [(r.status, r.error_code, r.week) for r in rows] == [
+            ("failed", 429, monday.date()),
+            ("sent", None, monday.date()),
+        ]
+        assert rows[1].message_id == 501 and CHAT not in str([r.error for r in rows])
 
 
 class OkChecker:

@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-18T16:53:26.082218+00:00",
+  "recorded_at": "2026-10-21T12:20:47.046528+00:00",
   "recorded_from": "recorded FRED vintages and Alpaca closes replayed into the integration test database (tests/integration/test_rotation.py)",
   "endpoint": "/rotation",
   "params": {
@@ -9,14 +9,14 @@
     "known_at": "2026-10-06T12:00:00Z",
     "rule_version": "0.2.0",
     "current": {
-      "id": "0183c448-9215-48d6-ba81-25b8afe96058",
+      "id": "e63b7762-3355-49ab-9d1a-e49b97dc0cbb",
       "known_at": "2026-10-06T12:00:00Z",
-      "system_time": "2026-10-18T16:53:25.635348Z",
+      "system_time": "2026-10-21T12:20:46.694006Z",
       "backfilled": true,
       "rotation": {
         "rule_version": "0.2.0",
         "known_at": "2026-10-06T12:00:00Z",
-        "regime_id": "748c5ef4-05a8-4125-a87b-f0e83fb0c8e7",
+        "regime_id": "1c1b625a-4397-4b73-9f00-f35419d8b8fe",
         "regime_known_at": "2026-10-06T12:00:00Z",
         "stress": "normal",
         "quadrant": "disinflationary_slowdown",
@@ -32,7 +32,7 @@
           {
             "symbol": "SPY",
             "sleeve": "risk",
-            "snapshot_id": "dc1564c9-1976-4351-913f-b8e59533bd9d",
+            "snapshot_id": "aade441e-2552-4e6c-90ac-93d0ba8f1703",
             "snapshot_known_at": "2026-10-06T12:00:00Z",
             "last_close": "2026-10-05",
             "feed_status": "end_of_day",
@@ -62,7 +62,7 @@
           {
             "symbol": "QQQ",
             "sleeve": "risk",
-            "snapshot_id": "b00887d0-4cf1-4fd6-a698-88de8747be9b",
+            "snapshot_id": "16a60314-b65f-44ff-b617-ec7ba5ef948e",
             "snapshot_known_at": "2026-10-06T12:00:00Z",
             "last_close": "2026-10-05",
             "feed_status": "end_of_day",
@@ -92,7 +92,7 @@
           {
             "symbol": "IWM",
             "sleeve": "risk",
-            "snapshot_id": "100a34ef-3b93-42cd-9694-2c8d3bf34487",
+            "snapshot_id": "b982da00-1e2d-44fe-b572-c7b00db87658",
             "snapshot_known_at": "2026-10-06T12:00:00Z",
             "last_close": "2026-10-05",
             "feed_status": "end_of_day",
@@ -122,7 +122,7 @@
           {
             "symbol": "XLK",
             "sleeve": "risk",
-            "snapshot_id": "353ce381-182a-4b63-bdad-9d4a176dcaf3",
+            "snapshot_id": "e4d61384-e9dd-4515-b491-7426eaf25c47",
             "snapshot_known_at": "2026-10-06T12:00:00Z",
             "last_close": "2026-10-05",
             "feed_status": "end_of_day",
@@ -152,7 +152,7 @@
           {
             "symbol": "XLE",
             "sleeve": "risk",
-            "snapshot_id": "556bcde1-75d1-421a-acd6-eb56185e97f9",
+            "snapshot_id": "d7aaeac5-ce14-482e-b0aa-b7a2a7ba7b2c",
             "snapshot_known_at": "2026-10-06T12:00:00Z",
             "last_close": "2026-10-05",
             "feed_status": "end_of_day",
@@ -182,7 +182,7 @@
           {
             "symbol": "TLT",
             "sleeve": "defensive",
-            "snapshot_id": "d55a4076-65c5-417b-9730-6d86dce8013a",
+            "snapshot_id": "fa181b01-57d7-4088-a737-04fd8dd60f73",
             "snapshot_known_at": "2026-10-06T12:00:00Z",
             "last_close": "2026-10-05",
             "feed_status": "end_of_day",
@@ -212,7 +212,7 @@
           {
             "symbol": "IEF",
             "sleeve": "defensive",
-            "snapshot_id": "56d9a76e-3b86-40fb-878b-d4d4a3174e66",
+            "snapshot_id": "57ef16be-64e5-4c96-81df-0e9208f5cd80",
             "snapshot_known_at": "2026-10-06T12:00:00Z",
             "last_close": "2026-10-05",
             "feed_status": "end_of_day",
@@ -242,7 +242,7 @@
           {
             "symbol": "GLD",
             "sleeve": "defensive",
-            "snapshot_id": "9a00c2a3-cfbd-45f3-b0d3-f257de0707e2",
+            "snapshot_id": "e279532b-ca7a-425a-91d0-e0418b39b60c",
             "snapshot_known_at": "2026-10-06T12:00:00Z",
             "last_close": "2026-10-05",
             "feed_status": "end_of_day",
@@ -273,7 +273,7 @@
         "rebalance": true,
         "reason": "month_start",
         "detail": "first assessment of the month: SPY",
-        "previous_id": "e55d7dfe-7b49-47dc-b69c-7ce6af8d0a08",
+        "previous_id": "d58c019c-9321-4f2f-a51f-6bab47438d10",
         "set_at": "2026-10-06T12:00:00Z",
         "target": [
           {
@@ -287,7 +287,7 @@
     },
     "history": [
       {
-        "id": "39e48168-4966-49b0-81fc-eed8080139d3",
+        "id": "fdae8e6b-3b85-4bc5-b1bd-25592f5863ef",
         "known_at": "2026-08-01T03:59:59.999999Z",
         "reason": "month_start",
         "stress": "normal",
@@ -298,7 +298,7 @@
         "backfilled": true
       },
       {
-        "id": "ba071325-6f9c-425b-bc0c-41e77f2ec96b",
+        "id": "77e3f9ab-1ea2-4d2b-b0b5-35ebbe7a4a1b",
         "known_at": "2026-09-01T03:59:59.999999Z",
         "reason": "month_start",
         "stress": "normal",
@@ -309,7 +309,7 @@
         "backfilled": true
       },
       {
-        "id": "1b6e8fea-397c-44f0-9193-62f56c370bce",
+        "id": "1ba1767d-ddba-4db1-94a1-388f37c596aa",
         "known_at": "2026-09-16T03:59:59.999999Z",
         "reason": "month_start",
         "stress": "normal",
@@ -320,7 +320,7 @@
         "backfilled": true
       },
       {
-        "id": "0183c448-9215-48d6-ba81-25b8afe96058",
+        "id": "e63b7762-3355-49ab-9d1a-e49b97dc0cbb",
         "known_at": "2026-10-06T12:00:00Z",
         "reason": "month_start",
         "stress": "normal",

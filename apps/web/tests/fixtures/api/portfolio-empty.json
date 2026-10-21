@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-18T16:50:16.292113+00:00",
+  "recorded_at": "2026-10-21T12:24:09.847097+00:00",
   "recorded_from": "recorded SEC filings, Alpaca closes, FRED yields and news replayed into the integration test database (tests/integration/test_journal.py)",
   "endpoint": "/portfolio",
   "params": {

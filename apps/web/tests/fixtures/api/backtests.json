@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-18T16:54:37.363709+00:00",
+  "recorded_at": "2026-10-21T12:21:47.239812+00:00",
   "recorded_from": "recorded FRED vintages and Alpaca closes replayed into the integration test database (tests/integration/test_backtests.py)",
   "endpoint": "/backtests",
   "params": {
@@ -10,9 +10,9 @@
     "rule_version": "0.2.0",
     "runs": [
       {
-        "id": "7dc9f2bd-fe72-4498-aa3e-f5d9da3ada58",
+        "id": "cf498f37-2c90-42cf-be4b-b827749cb1bc",
         "known_at": "2026-10-06T12:00:00Z",
-        "system_time": "2026-10-18T16:54:36.171376Z",
+        "system_time": "2026-10-21T12:21:46.183439Z",
         "trigger": "manual",
         "performance_reported": false,
         "run": {
@@ -928,9 +928,9 @@
         }
       },
       {
-        "id": "25e8678b-b675-4faa-9d67-b5392ce00c2e",
+        "id": "7d2b6ccb-881f-4a59-932f-fb197d9b3812",
         "known_at": "2026-10-06T12:00:00Z",
-        "system_time": "2026-10-18T16:54:36.171376Z",
+        "system_time": "2026-10-21T12:21:46.183439Z",
         "trigger": "manual",
         "performance_reported": false,
         "run": {
@@ -952,7 +952,7 @@
               "fill_day": "2026-08-03",
               "reason": "month_start",
               "source": {
-                "id": "4d722a92-6ce3-4334-8146-f76d4b601f44",
+                "id": "1bea02d2-663d-40b2-993e-b3266c894080",
                 "table": "rotation_assessments"
               },
               "target": {
@@ -980,7 +980,7 @@
               "fill_day": "2026-09-01",
               "reason": "month_start",
               "source": {
-                "id": "6069695f-0ddf-4367-aa3e-927e2509894e",
+                "id": "44bce4b5-1d5f-4eea-8d63-8d27c24b0b26",
                 "table": "rotation_assessments"
               },
               "target": {
@@ -1008,7 +1008,7 @@
               "fill_day": "2026-10-01",
               "reason": "month_start",
               "source": {
-                "id": "61d300b6-f8d6-4f6d-ab35-aae94977af94",
+                "id": "0dd10e96-bcad-44b5-9339-1a47d0f74740",
                 "table": "rotation_assessments"
               },
               "target": {
@@ -1036,7 +1036,7 @@
               "fill_day": null,
               "reason": "month_start",
               "source": {
-                "id": "bba7dd9a-29ab-4b06-a909-e1c57b8b6277",
+                "id": "1298f9db-34fa-4952-99e3-6d67ab76da93",
                 "table": "rotation_assessments"
               },
               "target": {
@@ -1176,9 +1176,9 @@
         }
       },
       {
-        "id": "edec4689-0d37-4e88-8ae2-d6e2453cde29",
+        "id": "c62e790a-ae07-4919-9aeb-0559cbd6c2c5",
         "known_at": "2026-10-06T12:00:00Z",
-        "system_time": "2026-10-18T16:54:36.171376Z",
+        "system_time": "2026-10-21T12:21:46.183439Z",
         "trigger": "manual",
         "performance_reported": false,
         "run": {
@@ -1200,7 +1200,7 @@
               "fill_day": "2026-08-03",
               "reason": "month_start",
               "source": {
-                "id": "30aac9af-e862-4c43-9291-169c8e3625bf",
+                "id": "02ec7a84-3ca6-460f-acfc-6d9ceaa12b44",
                 "table": "momentum_assessments"
               },
               "target": {},
@@ -1217,7 +1217,7 @@
               "fill_day": "2026-09-01",
               "reason": "month_start",
               "source": {
-                "id": "33f85a5c-1d92-410c-9aa6-74715bd8936b",
+                "id": "d1d63329-2ced-45da-a8ab-5d5f0ee8d86c",
                 "table": "momentum_assessments"
               },
               "target": {},
@@ -1234,7 +1234,7 @@
               "fill_day": "2026-10-01",
               "reason": "month_start",
               "source": {
-                "id": "e0c3d380-7a42-4905-a5d7-bdf63431d732",
+                "id": "5386da9c-1da2-4aab-9491-c75cfb6d90f7",
                 "table": "momentum_assessments"
               },
               "target": {
@@ -1268,7 +1268,7 @@
               "fill_day": null,
               "reason": "month_start",
               "source": {
-                "id": "c5772024-1f77-437f-9f36-5b409d2f3a43",
+                "id": "f0ab0472-36f2-47b1-8509-cd1cb87483b2",
                 "table": "momentum_assessments"
               },
               "target": {

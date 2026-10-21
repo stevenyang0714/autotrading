@@ -1107,6 +1107,10 @@ export interface components {
             level: number;
             /** Level Name */
             level_name: string;
+            /** Name */
+            name?: string | null;
+            /** Name Zh */
+            name_zh?: string | null;
             /** Previous Level */
             previous_level: number | null;
             /** Rule Version */
@@ -1164,6 +1168,10 @@ export interface components {
             level: number;
             /** Level Name */
             level_name: string;
+            /** Name */
+            name?: string | null;
+            /** Name Zh */
+            name_zh?: string | null;
             /** Previous Level */
             previous_level: number | null;
             /** Rule Version */
@@ -1721,6 +1729,16 @@ export interface components {
             /** Buyback Rule Version */
             buyback_rule_version: string;
             convergence: components["schemas"]["CompanyLevel"];
+            /**
+             * Name
+             * @default
+             */
+            name: string;
+            /**
+             * Name Zh
+             * @default
+             */
+            name_zh: string;
             /** Strategy */
             strategy: string;
             /** Strategy Id */
@@ -2188,6 +2206,16 @@ export interface components {
         EtfCandidate: {
             /** Factor Definition Version */
             factor_definition_version: string;
+            /**
+             * Name
+             * @default
+             */
+            name: string;
+            /**
+             * Name Zh
+             * @default
+             */
+            name_zh: string;
             reading: components["schemas"]["EtfReading"];
             /** Reason */
             reason: string;
@@ -3359,6 +3387,16 @@ export interface components {
             momentum_id: string;
             /** Momentum Rule Version */
             momentum_rule_version: string;
+            /**
+             * Name
+             * @default
+             */
+            name: string;
+            /**
+             * Name Zh
+             * @default
+             */
+            name_zh: string;
             reading: components["schemas"]["CompanyReading"];
             /** Reason */
             reason: string;
@@ -4896,6 +4934,16 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /**
+             * Name
+             * @default
+             */
+            name: string;
+            /**
+             * Name Zh
+             * @default
+             */
+            name_zh: string;
             /** Observation Ids */
             observation_ids: {
                 [key: string]: string;

@@ -260,6 +260,28 @@
             "title": "Level Name",
             "type": "string"
           },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "name_zh": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name Zh"
+          },
           "previous_level": {
             "anyOf": [
               {
@@ -443,6 +465,28 @@
           "level_name": {
             "title": "Level Name",
             "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "name_zh": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name Zh"
           },
           "previous_level": {
             "anyOf": [
@@ -2038,6 +2082,16 @@
           "convergence": {
             "$ref": "#/components/schemas/CompanyLevel"
           },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          },
+          "name_zh": {
+            "default": "",
+            "title": "Name Zh",
+            "type": "string"
+          },
           "strategy": {
             "title": "Strategy",
             "type": "string"
@@ -3418,6 +3472,16 @@
         "properties": {
           "factor_definition_version": {
             "title": "Factor Definition Version",
+            "type": "string"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          },
+          "name_zh": {
+            "default": "",
+            "title": "Name Zh",
             "type": "string"
           },
           "reading": {
@@ -6860,6 +6924,16 @@
           },
           "momentum_rule_version": {
             "title": "Momentum Rule Version",
+            "type": "string"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          },
+          "name_zh": {
+            "default": "",
+            "title": "Name Zh",
             "type": "string"
           },
           "reading": {
@@ -11528,6 +11602,16 @@
           "id": {
             "format": "uuid",
             "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          },
+          "name_zh": {
+            "default": "",
+            "title": "Name Zh",
             "type": "string"
           },
           "observation_ids": {

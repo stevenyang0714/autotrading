@@ -41,6 +41,7 @@ from autotrading.domain.regime import STRESS_ORDER
 from autotrading.repositories import delivery
 from autotrading.repositories.audit import set_actor
 from autotrading.repositories.convergence import active_alert_version, load_alert_rules
+from autotrading.repositories.labels import label
 
 router = APIRouter(tags=["alerts"])
 STRESS_NAMES = {order: name.upper() for name, order in STRESS_ORDER.items()}  # regime alerts
@@ -52,8 +53,9 @@ IN_APP_ONLY = (
 )
 TELEGRAM_ON = (
     "Telegram on: stress changes, L3/L4 changes, new S3 and S4 targets and the drawdown alert "
-    "are pushed within about 5 minutes (not backfilled ones; quiet 23:00-07:00 SGT). A rule "
-    "output, unvalidated, not advice."
+    "are pushed within about 5 minutes, in Chinese with names and reasons, and every candidate "
+    "on Monday at 08:00 SGT (not backfilled ones; quiet 23:00-07:00 SGT). A rule output, "
+    "unvalidated, not advice."
 )
 TELEGRAM_OFF = (
     "Telegram not set up: alerts stay in the app. Add TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID "
@@ -92,6 +94,8 @@ class AlertOut(BaseModel):
     assessment_id: UUID | None
     acknowledgement: AcknowledgementOut | None
     delivered_at: datetime | None = None  # when it was pushed to Telegram (M3.0b)
+    name: str | None = None  # the company's display name (M3.0c); None for market alerts
+    name_zh: str | None = None
 
 
 class DeliveryOut(BaseModel):
@@ -219,6 +223,8 @@ def alert_out(
         if ack
         else None,
         delivered_at=delivered_at,
+        name=label(row.ticker).name if row.ticker else None,
+        name_zh=label(row.ticker).zh if row.ticker else None,
     )
 
 

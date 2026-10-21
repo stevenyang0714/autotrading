@@ -79,6 +79,8 @@ METHODOLOGY = {
     # M3.0b (ADR-037): alerts may be pushed to Telegram; S4 targets raise alerts.
     "alert": "0.4.0",
     "rotation_alert": "0.2.0",
+    # M3.0c (ADR-038): Chinese messages with names and reasons, and the weekly digest.
+    "alert_delivery": "0.2.0",
 }
 
 # FRED series shown on the Macro page (M0.6): reported values with vintages, one term per

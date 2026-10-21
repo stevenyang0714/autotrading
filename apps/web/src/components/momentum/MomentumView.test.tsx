@@ -68,6 +68,11 @@ describe("MomentumView with recorded API responses", () => {
     const nvda = s4?.querySelector('[data-candidate="NVDA"]');
     expect(nvda?.getAttribute("data-strategy")).toBe("S4");
     expect(nvda?.textContent).toContain("momentum rules 0.1.0");
+    expect(nvda?.querySelector("[data-name]")?.textContent).toBe("輝達（NVIDIA）");
+    // a name with digits is an identifier, not an unexplained number
+    expect(container.querySelector('[data-candidate="SPY"] [data-name]')?.textContent).toBe(
+      "標普 500 ETF（SPDR S&P 500 ETF）",
+    );
     expect(container.querySelector('[data-candidates="S3"] [data-candidate="SPY"]')).not.toBeNull();
     expect(unexplainedNumbers(container)).toEqual([]);
   });

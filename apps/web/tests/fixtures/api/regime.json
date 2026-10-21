@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-20T08:01:35.649183+00:00",
+  "recorded_at": "2026-10-21T12:23:27.021522+00:00",
   "recorded_from": "recorded FRED vintages and Alpaca closes replayed into the integration test database (tests/integration/test_regime.py)",
   "endpoint": "/regime",
   "params": {
@@ -9,9 +9,9 @@
     "known_at": "2026-10-06T12:00:00Z",
     "rule_version": "0.2.0",
     "current": {
-      "id": "1d165630-e65c-40e1-a4b7-e13a9c763ea5",
+      "id": "56435a4e-7cae-4bf1-9358-fccc6a30bfd8",
       "known_at": "2026-10-06T12:00:00Z",
-      "system_time": "2026-10-20T08:01:35.015506Z",
+      "system_time": "2026-10-21T12:23:25.706509Z",
       "backfilled": true,
       "regime": {
         "rule_version": "0.2.0",

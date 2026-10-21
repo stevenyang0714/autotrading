@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { AsKnownOnForm } from "@/components/AsKnownOnForm";
+import { InstrumentName } from "@/components/InstrumentName";
 import { Metric } from "@/components/Metric";
 import type { AlertEntry, Alerts, CompanyLevel, Convergence } from "@/lib/api";
 import { FAMILY_NAMES, evidenceHref, levelClass, levelTerm } from "@/lib/alerts";
@@ -93,6 +94,7 @@ function AlertItem({ alert, acknowledge }: { alert: AlertEntry; acknowledge?: Re
         <Metric termId="alert" icon={false}>
           <span className="text-neutral-100">{alert.title}</span>
         </Metric>
+        <InstrumentName name={alert.name} zh={alert.name_zh} />
       </div>
       <p className="text-xs text-neutral-500">
         <Metric termId="point_in_time" icon={false}>

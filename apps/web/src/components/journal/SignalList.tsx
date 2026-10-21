@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { InstrumentName } from "@/components/InstrumentName";
 import { Metric } from "@/components/Metric";
 import type { Signal } from "@/lib/api";
 import { STRESS } from "@/lib/regime";
@@ -41,6 +42,7 @@ function RotationSignals({ signals, knownOn }: { signals: Signal[]; knownOn?: st
               >
                 {ticker}
               </Link>
+              <InstrumentName name={first.name} zh={first.name_zh} />
               <Metric termId="rotation_target" icon={false} className="text-xs">
                 {first.weight_pct ? weight(first.weight_pct) : "held"} · {first.direction}
               </Metric>
@@ -100,6 +102,7 @@ function MomentumSignals({ signals, knownOn }: { signals: Signal[]; knownOn?: st
             >
               {signal.ticker}
             </Link>
+            <InstrumentName name={signal.name} zh={signal.name_zh} />
             <Metric termId="momentum_target" icon={false} className="text-xs">
               {signal.weight_pct ? weight(signal.weight_pct) : "held"} · {signal.direction}
             </Metric>
@@ -196,6 +199,7 @@ function CompanySignals({ signals, knownOn }: { signals: Signal[]; knownOn?: str
             >
               {signal.ticker}
             </Link>
+            <InstrumentName name={signal.name} zh={signal.name_zh} />
             <Metric termId="buyback_state" icon={false} className="text-xs">
               {STATE_TEXT[signal.state] ?? signal.state} · {signal.direction}
             </Metric>

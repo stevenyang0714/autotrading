@@ -347,8 +347,10 @@ terms:
   backtest: {name: 回測, hint: "用當時已知的資料重播策略：在下一個收盤成交並扣成本；只顯示交易、成本與曝險，不顯示報酬。"}
   rotation_alert: {name: 輪動警示, hint: "S3 設定的新目標和上一次不同時發出的市場層級警示。"}
   momentum_alert: {name: S4 目標警示, hint: "S4 設定的新目標和上一次不同時發出的市場層級警示。"}
-  alert_delivery: {name: Telegram 推播, hint: "依推播規則把選定的警示送到你的 Telegram，每則只送一次並記錄；回填的與超過 48 小時的不送，23:00–07:00 暫停。"}
+  alert_delivery: {name: Telegram 推播, hint: "依推播規則把選定的警示用中文送到你的 Telegram：名稱、產業、動能與估值等理由；每則只送一次並記錄，23:00–07:00 暫停。"}
   delivery_rule_set: {name: 推播規則版本, hint: "決定哪些警示推播到 Telegram 的規則版本；已發布的不會改。"}
+  weekly_digest: {name: 每週摘要, hint: "每週一早上 8 點把目前所有規則候選（S4、L3/L4、S3）連同理由送到 Telegram；不是買賣建議。"}
+  instrument_label: {name: 標的名稱, hint: "代號旁的中英文名稱、業務與產業；只用來顯示，不影響任何計算。"}
   opportunity_candidate: {name: 候選, hint: "規則在當時標出的標的：L3/L4 的公司（S1）、S3 目標持有的 ETF 或 S4 目標持有的公司；不打分、不排名、只做多。"}
   defensive_switch: {name: 轉防守, hint: "月中壓力升到 HIGH 或 CRISIS 時立刻改成防守型；壓力下降要等下個月才換回。"}
   rotation_rebalance: {name: 輪動調整, hint: "每個紐約月份第一次評估時換目標；其他時候沿用上一次的。"}

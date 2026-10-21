@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-20T08:00:51.506649+00:00",
+  "recorded_at": "2026-10-21T12:22:35.406515+00:00",
   "recorded_from": "recorded SEC filings, Alpaca closes, FRED yields and news replayed into the integration test database (tests/integration/test_alerts.py)",
   "endpoint": "/alerts",
   "params": {
@@ -14,7 +14,7 @@
     },
     "entries": [
       {
-        "id": "4681c9d1-b899-4966-997d-ab26c6653920",
+        "id": "a142839e-9849-4a57-8e12-fe83a2020a2f",
         "rule_version": "0.6.0",
         "ticker": "AAPL",
         "kind": "event",
@@ -24,22 +24,24 @@
         "direction": null,
         "title": "AAPL: Buyback state ACTIVE (was NONE)",
         "known_at": "2026-10-06T12:00:00Z",
-        "system_time": "2026-10-20T08:00:49.868396Z",
+        "system_time": "2026-10-21T12:22:33.555544Z",
         "backfilled": false,
         "evidence": [
           {
             "table": "buyback_state_assignments",
-            "id": "223bb943-79b7-4c2b-a544-8c944e8e4f92",
+            "id": "830df96b-befc-429f-aa60-2f264361fe73",
             "label": "Buyback state ACTIVE (was NONE)",
             "url": null
           }
         ],
         "assessment_id": null,
         "acknowledgement": null,
-        "delivered_at": null
+        "delivered_at": null,
+        "name": "Apple",
+        "name_zh": "\u860b\u679c"
       },
       {
-        "id": "6017ab1e-15ae-413c-881a-bc4c31aa1719",
+        "id": "6e994994-1c9a-4267-892f-0c66513a9aeb",
         "rule_version": "0.6.0",
         "ticker": "XOM",
         "kind": "event",
@@ -49,19 +51,21 @@
         "direction": null,
         "title": "XOM: Buyback state ACTIVE (was WATCH)",
         "known_at": "2026-10-06T12:00:00Z",
-        "system_time": "2026-10-20T08:00:49.868396Z",
+        "system_time": "2026-10-21T12:22:33.555544Z",
         "backfilled": false,
         "evidence": [
           {
             "table": "buyback_state_assignments",
-            "id": "3d228bec-1c3a-45d1-bbff-48b455109c65",
+            "id": "bcd09a79-56c3-46a7-aee8-6312d9f333bc",
             "label": "Buyback state ACTIVE (was WATCH)",
             "url": null
           }
         ],
         "assessment_id": null,
         "acknowledgement": null,
-        "delivered_at": null
+        "delivered_at": null,
+        "name": "Exxon Mobil",
+        "name_zh": "\u57c3\u514b\u68ee\u7f8e\u5b5a"
       }
     ],
     "delivery": {
