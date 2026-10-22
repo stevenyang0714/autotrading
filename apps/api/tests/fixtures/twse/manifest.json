@@ -1,0 +1,19 @@
+{
+  "note": "Real TWSE OpenAPI responses, unmodified, one set per day the recorder ran (each file holds only the latest session). Day 1 was recorded with curl before the recorder existed; later days with `uv run python -m tests.fixtures.twse.record`. The company file is recorded on the first day only, as the job fetches it only while an instrument is missing.",
+  "attribution": "臺灣證券交易所 2026 上市個股日成交資訊、上市個股日本益比殖利率及股價淨值比、集中市場融資融券餘額、上市股票除權除息預告表、上市公司基本資料、有價證券集中交易市場開（休）市日期；此開放資料依政府資料開放授權條款 (Open Government Data License) 進行公眾釋出，https://data.gov.tw/license",
+  "days": [
+    {
+      "label": "d1",
+      "session": "2026-10-21",
+      "fetched_at": "2026-10-22T03:39:03.000000Z",
+      "files": {
+        "https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL": "d1_STOCK_DAY_ALL.json",
+        "https://openapi.twse.com.tw/v1/exchangeReport/BWIBBU_d": "d1_BWIBBU_d.json",
+        "https://openapi.twse.com.tw/v1/exchangeReport/MI_MARGN": "d1_MI_MARGN.json",
+        "https://openapi.twse.com.tw/v1/exchangeReport/TWT48U_ALL": "d1_TWT48U_ALL.json",
+        "https://openapi.twse.com.tw/v1/opendata/t187ap03_L": "d1_t187ap03_L.json",
+        "https://openapi.twse.com.tw/v1/holidaySchedule/holidaySchedule": "d1_holidaySchedule.json"
+      }
+    }
+  ]
+}

@@ -1,0 +1,268 @@
+"""M3.7 acceptance on recorded real TWSE OpenAPI files (tests/fixtures/twse, ADR-039): the
+Taiwan universe's instruments, bars, exchange measures and run notes, each citing its source
+and time; As known on at the Taipei day boundary; repeats unchanged; Taiwan factor snapshots
+that recompute identically; nothing Taiwan in the US universe. Uses its own migrated database.
+"""
+
+from collections.abc import Callable, Iterator
+from datetime import UTC, date, datetime
+from decimal import Decimal
+from uuid import uuid4
+from zoneinfo import ZoneInfo
+
+import pytest
+from alembic import command
+from sqlalchemy import Engine, create_engine, func, select
+from sqlalchemy.engine import URL
+from sqlalchemy.orm import Session, sessionmaker
+
+from autotrading.config_sync import (
+    load_factor_definitions,
+    load_sources,
+    sync_factor_definitions,
+    sync_sources,
+)
+from autotrading.db.models import (
+    Entity,
+    ExchangeMeasure,
+    FactorSnapshot,
+    Identifier,
+    IngestionRun,
+    Instrument,
+    PriceBar,
+    RawPayload,
+    Source,
+)
+from autotrading.domain.provenance import end_of_day
+from autotrading.infra.object_store import make_s3_client
+from autotrading.infra.redis_client import make_redis
+from autotrading.ingestion.job import JobRegistry, Window
+from autotrading.ingestion.rate_limit import TokenBucketLimiter
+from autotrading.ingestion.raw_store import RawPayloadStore
+from autotrading.ingestion.runner import IngestionRunner
+from autotrading.repositories.exchange_measures import measures
+from autotrading.repositories.factors import (
+    active_factor_version,
+    recompute,
+    record_universe,
+    same,
+    stored_definitions,
+    targets,
+)
+from autotrading.repositories.prices import daily_bars, instruments_by_symbol
+from autotrading.settings import get_settings
+from tests.integration.conftest import alembic_config
+from tests.twse_replay import register_recorded, replay
+
+pytestmark = pytest.mark.integration
+
+TAIPEI = ZoneInfo("Asia/Taipei")
+D1 = date(2026, 10, 21)
+WINDOW = Window(start=datetime(2026, 10, 22, tzinfo=UTC), end=datetime(2026, 10, 23, tzinfo=UTC))
+CODES = ["2330", "2454", "2308", "2317", "3711", "1303", "2881", "3037", "2383", "2882", "0050"]
+
+
+@pytest.fixture(scope="module")
+def engine(database_factory: Callable[[], URL]) -> Iterator[Engine]:
+    url = database_factory()
+    command.upgrade(alembic_config(url), "head")
+    engine = create_engine(url)
+    config = get_settings().resolved_config_dir()
+    with Session(engine) as session:
+        sync_sources(session, load_sources(config / "sources.yaml"))
+        sync_factor_definitions(
+            session, load_factor_definitions(config / "factor_definitions.yaml")
+        )
+        source = session.get_one(Source, "twse_openapi")
+        source.rate_limit_per_second, source.rate_limit_burst = 100, 100  # type: ignore[assignment]
+        session.commit()
+    yield engine
+    engine.dispose()
+
+
+@pytest.fixture(scope="module")
+def runner(engine: Engine) -> Iterator[IngestionRunner]:
+    settings = get_settings()
+    s3 = make_s3_client(settings)
+    bucket = f"raw-payloads-test-{uuid4().hex[:10]}"
+    s3.create_bucket(Bucket=bucket)
+    registry: JobRegistry = {}
+    yield IngestionRunner(
+        sessionmaker(engine),
+        RawPayloadStore(s3, bucket),
+        TokenBucketLimiter(make_redis(settings), prefix=f"test-ratelimit-{uuid4().hex[:8]}"),
+        register_recorded(registry),
+    )
+    for obj in s3.list_objects_v2(Bucket=bucket).get("Contents", []):
+        s3.delete_object(Bucket=bucket, Key=obj["Key"])
+    s3.delete_bucket(Bucket=bucket)
+
+
+@pytest.fixture(scope="module")
+def first(runner: IngestionRunner) -> IngestionRun:
+    (run_id,) = replay(runner, WINDOW, ["d1"])
+    with runner.sessions() as session:
+        return session.get_one(IngestionRun, run_id)
+
+
+def test_the_first_run_creates_the_taiwan_instruments(engine: Engine, first: IngestionRun) -> None:
+    assert first.status == "succeeded", first.error_message
+    with Session(engine) as session:
+        ids = instruments_by_symbol(session, CODES, "twse")
+        assert set(ids) == set(CODES)
+        rows = {
+            i.id: i
+            for i in session.scalars(select(Instrument).where(Instrument.id.in_(ids.values())))
+        }
+        assert {(r.primary_exchange, r.currency) for r in rows.values()} == {("XTAI", "TWD")}
+        assert rows[ids["0050"]].instrument_type == "etf" and rows[ids["0050"]].entity_id is None
+        tsmc = session.get_one(Entity, rows[ids["2330"]].entity_id)
+        assert (tsmc.name, tsmc.country) == ("台灣積體電路製造股份有限公司", "TW")
+        # the US universe is untouched: no twse code is an alpaca symbol or a US target
+        assert instruments_by_symbol(session, CODES) == {}
+        assert not {t.symbol for t in targets(session)} & set(CODES)
+        assert [t.symbol for t in targets(session, market="TW")] == CODES
+
+
+def test_bars_and_measures_cite_their_file_and_the_taipei_day(
+    engine: Engine, first: IngestionRun
+) -> None:
+    with Session(engine) as session:
+        bars = session.scalars(select(PriceBar).where(PriceBar.symbol == "2330")).all()
+        assert len(bars) == 1
+        bar = bars[0]
+        assert (bar.bar_date, bar.close, bar.volume, bar.trade_count) == (
+            D1,
+            Decimal("2420.00"),
+            27095005,
+            101401,
+        )
+        assert (bar.feed, bar.feed_status, bar.adjustment) == ("twse", "end_of_day", "raw")
+        assert bar.bar_time == datetime(2026, 10, 21, 0, 0, tzinfo=TAIPEI)
+        assert bar.published_at == end_of_day(D1, "Asia/Taipei")
+        assert bar.published_at == datetime(2026, 10, 21, 15, 59, 59, 999999, tzinfo=UTC)
+        assert bar.source_url == "https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL"
+        assert (bar.source_id, bar.source_timezone, bar.ingestion_run_id) == (
+            "twse_openapi",
+            "Asia/Taipei",
+            first.id,
+        )
+        assert (
+            session.scalar(
+                select(func.count())
+                .select_from(RawPayload)
+                .where(RawPayload.sha256 == bar.raw_payload_sha256)
+            )
+            == 1
+        )
+
+        found = {
+            m.measure_id: m
+            for m in session.scalars(
+                select(ExchangeMeasure).where(ExchangeMeasure.symbol == "2330")
+            )
+        }
+        assert found["exchange_pe_ratio"].value == Decimal("28.05")
+        assert found["exchange_pe_ratio"].detail == "earnings and book value of 2026Q2"
+        assert found["exchange_pb_ratio"].value == Decimal("9.76")
+        assert found["exchange_dividend_yield"].value == Decimal("0.91")
+        assert found["exchange_dividend_yield"].detail == "dividends of 2025"
+        assert found["price_change"].value == Decimal("15.0000")
+        assert found["margin_balance"].value == Decimal(35330)
+        assert found["margin_balance"].unit == "lots"
+        # the first margin file has no stored session to chain to: accepted, less sure
+        assert found["margin_balance"].confidence == Decimal("0.900")
+        assert found["price_change"].confidence == Decimal("1.000")
+        assert {m.session_date for m in found.values()} == {D1}
+        assert {m.data_mode for m in found.values()} == {"live"}
+        assert "exchange_pe_ratio" in found and len(found) == 2 + 3 + 13
+    assert any("first session stored: 2026-10-21" in n for n in first.notes)
+    assert any("MI_MARGN dated 2026-10-21" in n for n in first.notes)
+
+
+def test_a_taiwan_close_is_known_from_the_end_of_its_taipei_day(
+    engine: Engine, first: IngestionRun
+) -> None:
+    with Session(engine) as session:
+        (instrument_id,) = instruments_by_symbol(session, ["2330"], "twse").values()
+
+        def known(at: datetime) -> list[date]:
+            return [
+                b.bar_date
+                for b in daily_bars(
+                    session,
+                    instrument_id,
+                    "raw",
+                    since=datetime(2026, 10, 1, tzinfo=UTC),
+                    until=datetime(2026, 10, 31, tzinfo=UTC),
+                    known_at=at,
+                )
+            ]
+
+        # As known on 2026-10-21 (23:59:59 in Singapore and Taipei) is still before the end
+        # of the Taipei day: the close is known from As known on 2026-10-22.
+        assert known(datetime(2026, 10, 21, 23, 59, 59, tzinfo=TAIPEI)) == []
+        assert known(datetime(2026, 10, 22, 23, 59, 59, tzinfo=TAIPEI)) == [D1]
+        values = measures(
+            session,
+            instrument_id,
+            ["exchange_pe_ratio"],
+            known_at=datetime(2026, 10, 22, 23, 59, 59, tzinfo=TAIPEI),
+        )
+        assert [m.value for m in values] == [Decimal("28.05")]
+
+
+def test_the_same_files_again_change_nothing(
+    engine: Engine, runner: IngestionRunner, first: IngestionRun
+) -> None:
+    with Session(engine) as session:
+        before = session.scalar(select(func.count()).select_from(ExchangeMeasure))
+    run_id = runner.create_run("twse.daily", {"slot": "again", "fixture_day": "d1"}, WINDOW)
+    runner.execute(run_id)
+    with Session(engine) as session:
+        again = session.get_one(IngestionRun, run_id)
+        assert again.status == "succeeded" and again.rows_inserted == 0
+        assert again.rows_unchanged >= 11 + 11 * 2
+        assert any("no new session: TWSE still serves 2026-10-21" in n for n in again.notes)
+        # every value of the session again (margin included): unchanged, nothing added
+        assert session.scalar(select(func.count()).select_from(ExchangeMeasure)) == before
+        assert session.scalar(
+            select(func.count()).select_from(Identifier).where(Identifier.id_namespace == "twse")
+        ) == len(CODES)
+
+
+def test_taiwan_factor_snapshots_read_taipei_closes_against_0050_and_recompute(
+    engine: Engine, first: IngestionRun
+) -> None:
+    with Session(engine) as session:
+        at = session.execute(select(func.now())).scalar_one()  # T = S = now, as the daily job
+        assert active_factor_version("TW") == "0.2.0"
+        definitions = stored_definitions(session, "0.2.0")
+        assert definitions is not None and definitions.benchmark == "0050"
+        stored = record_universe(session, definitions, [(at, "all")], at, "manual")
+        assert stored == len(CODES)
+        rows = session.scalars(
+            select(FactorSnapshot).where(FactorSnapshot.definition_version == "0.2.0")
+        ).all()
+        by_symbol = {r.symbol: r for r in rows}
+        tsmc = by_symbol["2330"]
+        assert tsmc.last_close == D1 and tsmc.feed_status == "end_of_day"
+        measures_ = {m["measure_id"]: m for m in tsmc.snapshot["measures"]}
+        # one close known: nothing is computed, nothing guessed
+        assert measures_["momentum_12_1"]["value"] is None
+        assert measures_["momentum_12_1"]["reason"] == "unavailable"
+        assert "253" in measures_["momentum_12_1"]["detail"]  # sessions needed; one known
+        assert measures_["beta_252d"]["reason"] == "unavailable"
+        assert {m["measure_id"] for m in tsmc.snapshot["measures"]} == {
+            "momentum_12_1",
+            "momentum_6_1",
+            "reversal_1m",
+            "close_vs_sma_50",
+            "close_vs_sma_200",
+            "volatility_60d",
+            "beta_252d",
+            "relative_momentum_12_1",
+            "relative_momentum_6_1",
+        }
+        assert by_symbol["0050"].snapshot["measures"][-1]["reason"] == "not_meaningful"
+        assert all(same(r, recompute(session, r)) for r in rows)

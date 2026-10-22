@@ -28,6 +28,8 @@ from autotrading.ingestion.schedule import (
     ROTATION,
     SEC_EDGAR,
     SNAPSHOT_SECONDS,
+    TW_FACTORS,
+    TWSE,
 )
 from autotrading.jobs import actors
 from autotrading.settings import get_settings
@@ -126,6 +128,26 @@ def main() -> None:
         lambda: actors.start_rotation_evaluation(manual=False),
         CronTrigger(hour=ROTATION.hour, minute=ROTATION.minute, timezone=REFRESH_TIMEZONE),
         id="rotation",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=12 * 3600,
+    )
+    # TWSE OpenAPI (M3.7, ADR-039 TW5): three slots a day, weekends too; each slot's run once.
+    for hour, minute in TWSE.times:
+        slot = f"{hour:02d}:{minute:02d}"
+        scheduler.add_job(
+            lambda slot=slot: actors.start_twse_refresh(manual=False, slot=slot),
+            CronTrigger(hour=hour, minute=minute, timezone=REFRESH_TIMEZONE),
+            id=f"twse_refresh_{hour:02d}{minute:02d}",
+            max_instances=1,
+            coalesce=True,
+            misfire_grace_time=12 * 3600,
+        )
+    # Taiwan factor snapshots (M3.7, ADR-039 TW10): daily at 09:50 SGT, after the TWSE runs.
+    scheduler.add_job(
+        lambda: actors.start_taiwan_factor_evaluation(manual=False),
+        CronTrigger(hour=TW_FACTORS.hour, minute=TW_FACTORS.minute, timezone=REFRESH_TIMEZONE),
+        id="taiwan_factors",
         max_instances=1,
         coalesce=True,
         misfire_grace_time=12 * 3600,

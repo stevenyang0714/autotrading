@@ -21,6 +21,7 @@ from autotrading.adapters.fred import refresh as fred_refresh
 from autotrading.adapters.news import refresh as news_refresh
 from autotrading.adapters.sec import refresh as sec_refresh
 from autotrading.adapters.telegram import client as telegram
+from autotrading.adapters.twse import refresh as twse_refresh
 from autotrading.api import buyback_states
 from autotrading.domain.fair_value import month_ends
 from autotrading.infra.db import make_background_engine
@@ -132,6 +133,24 @@ def start_fred_refresh(*, manual: bool) -> list[UUID]:
     for run_id in run_ids:
         run_ingestion.send(str(run_id))
     return run_ids
+
+
+# ---------- TWSE OpenAPI (M3.7) ----------
+
+
+def start_twse_refresh(
+    *, manual: bool, slot: str = "manual", companies: bool = False
+) -> UUID | None:
+    """Queue the Taiwan universe's latest session (ADR-039 TW5); None when twse_openapi is not
+    enabled."""
+    run_id = twse_refresh.start_daily(
+        ingestion_runner(), now=datetime.now(UTC), manual=manual, slot=slot, companies=companies
+    )
+    if run_id is None:
+        logger.info("TWSE refresh skipped: twse_openapi is not enabled")
+    else:
+        run_ingestion.send(str(run_id))
+    return run_id
 
 
 # ---------- Alpaca market data (M0.7) ----------
@@ -338,6 +357,26 @@ def backfill_factors(year: int, system_time: str) -> None:
 
 def start_factor_evaluation(*, manual: bool) -> None:
     evaluate_factors.send("manual" if manual else "schedule")
+
+
+@dramatiq.actor(
+    queue_name=EVALUATION_QUEUE, max_retries=1, time_limit=FACTORS_TIME_LIMIT_MS, broker=broker
+)
+def evaluate_taiwan_factors(trigger: str) -> None:
+    """Every Taiwan universe instrument's snapshot now under the active Taiwan definitions
+    (M3.7, ADR-039 TW10): price measures against 0050 on Taipei dates. No backfill."""
+    with sessions()() as session:
+        now = _now(session)
+        definitions = factors.stored_definitions(session, factors.active_factor_version("TW"))
+        if definitions is None:
+            logger.warning("Taiwan factor definitions not loaded (make migrate): nothing computed")
+            return
+        stored = factors.record_universe(session, definitions, [(now, "all")], now, trigger)
+    logger.info("Taiwan factor snapshots at %s (%s): %d stored", now, trigger, stored)
+
+
+def start_taiwan_factor_evaluation(*, manual: bool) -> None:
+    evaluate_taiwan_factors.send("manual" if manual else "schedule")
 
 
 def start_factor_backfill() -> int:

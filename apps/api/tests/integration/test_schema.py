@@ -85,6 +85,7 @@ APP_TABLES = {
     "delivery_rule_sets",
     "alert_deliveries",
     "digest_deliveries",
+    "exchange_measures",
 }
 FEB = datetime(2025, 2, 1, 21, 5, tzinfo=UTC)
 AUG = datetime(2025, 8, 1, 20, 30, tzinfo=UTC)
@@ -266,6 +267,10 @@ def test_guardrails_exist(engine: Engine) -> None:
         "digest_deliveries_append_only",
         "digest_deliveries_no_truncate",
         "digest_deliveries_audit",
+        "exchange_measures_system_time",
+        "exchange_measures_append_only",
+        "exchange_measures_no_truncate",
+        "exchange_measures_audit",
         "momentum_rule_sets_append_only",
         "momentum_rule_sets_audit",
         "backtest_rule_sets_append_only",
