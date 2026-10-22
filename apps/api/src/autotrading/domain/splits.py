@@ -7,8 +7,9 @@ accepted. To compare values across a split, each one is moved to the basis of a 
 every split effective after its filing and up to T. Reported values stay as reported; the
 adjusted value is shown beside them.
 
-A split is effective from the start of its ex-date in New York. Splits not yet effective at T
-never adjust anything, so an As known on view before a split shows no adjustment.
+A split is effective from the start of its ex-date in its market's time zone (New York, or
+Taipei since M3.7). Splits not yet effective at T never adjust anything, so an As known on view
+before a split shows no adjustment.
 """
 
 from collections import defaultdict
@@ -38,9 +39,9 @@ SPLIT_LIKE = tuple(Fraction(k) for k in (Fraction(3, 2), 2, 3, 4, 5, 7, 8, 10, 1
 SPLIT_LIKE_TOLERANCE = Fraction(2, 100)
 
 
-def effective_at(ex_date: date) -> datetime:
-    """Start of the ex-date in New York: the first session on the new basis."""
-    return datetime.combine(ex_date, time(0, 0), tzinfo=NEW_YORK).astimezone(UTC)
+def effective_at(ex_date: date, zone: ZoneInfo = NEW_YORK) -> datetime:
+    """Start of the ex-date in the market's zone: the first session on the new basis."""
+    return datetime.combine(ex_date, time(0, 0), tzinfo=zone).astimezone(UTC)
 
 
 @dataclass(frozen=True)
@@ -48,6 +49,7 @@ class Split:
     ex_date: date
     old_rate: Decimal
     new_rate: Decimal
+    zone: ZoneInfo = NEW_YORK  # the market's zone of the ex-date (Taipei for TWSE)
 
     @property
     def ratio(self) -> Fraction:
@@ -56,7 +58,7 @@ class Split:
 
     @property
     def effective_at(self) -> datetime:
-        return effective_at(self.ex_date)
+        return effective_at(self.ex_date, self.zone)
 
 
 @dataclass(frozen=True)

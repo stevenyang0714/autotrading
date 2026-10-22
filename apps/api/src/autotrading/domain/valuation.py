@@ -50,6 +50,7 @@ class Close:
     close: Decimal
     feed_status: str
     published_at: datetime
+    zone: ZoneInfo = NEW_YORK  # the market's zone of `day` (Taipei for TWSE closes)
 
 
 @dataclass(frozen=True)
@@ -77,7 +78,7 @@ def select_price(closes: Iterable[Close], at: datetime) -> PriceInput:
 
 def close_basis(close: Close) -> datetime:
     """The split basis of a close: every split effective by the end of its day."""
-    return datetime.combine(close.day, time(23, 59, 59), tzinfo=NEW_YORK)
+    return datetime.combine(close.day, time(23, 59, 59), tzinfo=close.zone)
 
 
 @dataclass(frozen=True)

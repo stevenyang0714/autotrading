@@ -299,7 +299,11 @@ def test_factors_table_and_definitions(client: TestClient) -> None:
     assert etf["fundamentals"] is None
     assert {v["group"] for v in etf["values"]} == {"trend", "risk", "relative"}
     definitions = client.get("/factors/definitions").json()
-    assert [(d["definition_version"], d["status"]) for d in definitions] == [("0.1.0", "active")]
+    # one active set per market (M3.7): 0.2.0 for Taiwan, 0.1.0 for the US
+    assert [(d["definition_version"], d["status"]) for d in definitions] == [
+        ("0.2.0", "active"),
+        ("0.1.0", "active"),
+    ]
     assert client.get("/instruments/ZZZZ/factors").status_code == 404
 
 

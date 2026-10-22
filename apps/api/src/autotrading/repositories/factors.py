@@ -15,13 +15,13 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal, cast
 from uuid import UUID
+from zoneinfo import ZoneInfo
 
 import yaml
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
-from autotrading.adapters.alpaca.refresh import universe
 from autotrading.api.instruments import FactView, issuer_chain
 from autotrading.api.valuation import VALUATION_METRICS, market_view, recorded_by
 from autotrading.db.models import DividendEvent, FactorSnapshot, Instrument, SplitEvent
@@ -38,12 +38,14 @@ from autotrading.domain.factors import (
 )
 from autotrading.domain.factors import FactorSnapshot as Snapshot
 from autotrading.domain.fair_value import month_ends
+from autotrading.domain.markets import MARKETS, Market
 from autotrading.domain.provenance import end_of_day
 from autotrading.domain.research import RESEARCH_METRICS, ROWS, research_record
 from autotrading.domain.splits import NEW_YORK, Split
 from autotrading.domain.valuation import METRICS, Close, Valued, valuation
 from autotrading.repositories.audit import set_actor
 from autotrading.repositories.prices import daily_bars, instruments_by_symbol
+from autotrading.repositories.universe import universe_symbols
 from autotrading.settings import get_settings
 
 ACTOR = "rules:factor_definitions"
@@ -66,8 +68,8 @@ def _file() -> FactorDefinitionsFile:
     return load_factor_definitions()
 
 
-def active_factor_version() -> str:
-    return _file().active().definition_version
+def active_factor_version(market: Market = "US") -> str:
+    return _file().active(market).definition_version
 
 
 def stored_definitions(
@@ -93,11 +95,14 @@ class Target:
         return "etf" if self.instrument.instrument_type == "etf" else "equity"
 
 
-def targets(session: Session, symbols: Iterable[str] | None = None) -> list[Target]:
-    """The universe instruments (config/universe.yaml order) that have an instrument row."""
-    everything, _ = universe(get_settings().resolved_config_dir())
+def targets(
+    session: Session, symbols: Iterable[str] | None = None, market: Market = "US"
+) -> list[Target]:
+    """A market's universe instruments (its universe file's order) that have an instrument
+    row."""
+    everything = universe_symbols(market, get_settings().resolved_config_dir())
     wanted = [s for s in everything if symbols is None or s in set(symbols)]
-    ids = instruments_by_symbol(session, wanted)
+    ids = instruments_by_symbol(session, wanted, MARKETS[market].namespace)
     rows = {
         i.id: i for i in session.scalars(select(Instrument).where(Instrument.id.in_(ids.values())))
     }
@@ -105,9 +110,15 @@ def targets(session: Session, symbols: Iterable[str] | None = None) -> list[Targ
 
 
 def series_at(
-    session: Session, symbol: str, instrument_id: UUID, at: datetime, system_time: datetime
+    session: Session,
+    symbol: str,
+    instrument_id: UUID,
+    at: datetime,
+    system_time: datetime,
+    zone: ZoneInfo = NEW_YORK,
 ) -> Series:
-    """One instrument's closes, splits and dividends known at (T, S)."""
+    """One instrument's closes, splits and dividends known at (T, S); `zone` is its market's
+    (the dates of its closes and ex-dates)."""
     bars = daily_bars(
         session,
         instrument_id,
@@ -118,7 +129,7 @@ def series_at(
         system_time=system_time,
     )
     splits = [
-        Split(s.ex_date, s.old_rate, s.new_rate)
+        Split(s.ex_date, s.old_rate, s.new_rate, zone)
         for s in session.scalars(
             select(SplitEvent).where(
                 SplitEvent.instrument_id == instrument_id,
@@ -128,7 +139,7 @@ def series_at(
         )
     ]
     dividends = [
-        Dividend(d.ex_date, d.rate, d.special)
+        Dividend(d.ex_date, d.rate, d.special, zone)
         for d in session.scalars(
             select(DividendEvent).where(
                 DividendEvent.instrument_id == instrument_id,
@@ -139,7 +150,7 @@ def series_at(
     ]
     return Series(
         symbol,
-        [Close(b.bar_date, b.close, b.feed_status, b.published_at) for b in bars],
+        [Close(b.bar_date, b.close, b.feed_status, b.published_at, zone) for b in bars],
         splits,
         dividends,
     )
@@ -243,15 +254,22 @@ def snapshot_at(
 ) -> Snapshot:
     """One instrument's snapshot at (T, S). `benchmark`: the benchmark's evidence at (T, S),
     read here when not given."""
-    series = series_at(session, target.symbol, target.instrument.id, at, system_time)
+    zone = definitions.zone
+    series = series_at(session, target.symbol, target.instrument.id, at, system_time, zone)
     if benchmark is None and target.symbol != definitions.benchmark:
-        found = targets(session, [definitions.benchmark])
+        found = targets(session, [definitions.benchmark], definitions.market)
         if found:
             benchmark = series_at(
-                session, definitions.benchmark, found[0].instrument.id, at, system_time
+                session, definitions.benchmark, found[0].instrument.id, at, system_time, zone
             )
     measures, last = price_measures(definitions, at, series, benchmark)
-    if scope == "all" and target.kind == "equity" and target.instrument.entity_id is not None:
+    fundamentals = definitions.fundamentals.value or definitions.fundamentals.quality
+    if (
+        scope == "all"
+        and fundamentals
+        and target.kind == "equity"
+        and target.instrument.entity_id is not None
+    ):
         measures += fundamental_measures(session, definitions, target.instrument, at, system_time)
     return Snapshot(
         definition_version=definitions.definition_version,
@@ -310,12 +328,19 @@ def record_universe(
 ) -> int:
     """Snapshots of the universe (or `symbols`) at each (T, scope), committing after each T;
     the benchmark's evidence is read once per T. Returns how many were stored."""
-    chosen = targets(session, symbols)
-    bench = targets(session, [definitions.benchmark])
+    chosen = targets(session, symbols, definitions.market)
+    bench = targets(session, [definitions.benchmark], definitions.market)
     stored = 0
     for at, scope in points:
         benchmark = (
-            series_at(session, definitions.benchmark, bench[0].instrument.id, at, system_time)
+            series_at(
+                session,
+                definitions.benchmark,
+                bench[0].instrument.id,
+                at,
+                system_time,
+                definitions.zone,
+            )
             if bench
             else None
         )
@@ -381,8 +406,10 @@ def session_points(
 def recompute(session: Session, row: FactorSnapshot) -> Snapshot | None:
     """A stored snapshot recomputed with its own T, S, scope and definition version."""
     definitions = stored_definitions(session, row.definition_version)
-    found = targets(session, [row.symbol])
-    if definitions is None or not found:
+    if definitions is None:
+        return None
+    found = targets(session, [row.symbol], definitions.market)
+    if not found:
         return None
     scope = cast(Literal["price", "all"], row.scope)
     return snapshot_at(session, definitions, found[0], row.known_at, row.system_time, scope)

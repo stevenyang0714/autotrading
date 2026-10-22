@@ -256,7 +256,10 @@ def factor_definitions(session: SessionDep) -> list[FactorDefinitionSetOut]:
             content_sha256=row.content_sha256,
         )
         for row in session.scalars(
-            select(FactorDefinitionSetRow).order_by(FactorDefinitionSetRow.loaded_at.desc())
+            select(FactorDefinitionSetRow).order_by(
+                FactorDefinitionSetRow.loaded_at.desc(),
+                FactorDefinitionSetRow.definition_version.desc(),
+            )
         )
     ]
 

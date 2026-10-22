@@ -1,11 +1,13 @@
 """Price, trend and factor measures (M2.2, ADR-030; build spec 02 §13). Pure; no I/O.
 
 From the end-of-day closes, splits and cash dividends known at a time T, for one instrument and
-the benchmark (SPY), the measures of a versioned definition set (config/factor_definitions.yaml):
+its market's benchmark (SPY; 0050 for Taiwan since M3.7, ADR-039 TW10), the measures of a
+versioned definition set (config/factor_definitions.yaml), on the market's own dates:
 - trend: 12-1 and 6-1 month momentum, 1-month reversal (total returns), the close against its
   50- and 200-session averages (prices);
-- risk: 60-session volatility of daily total returns, annualized; 252-session beta to SPY;
-- relative: momentum minus SPY's same momentum.
+- risk: 60-session volatility of daily total returns, annualized; 252-session beta to the
+  benchmark;
+- relative: momentum minus the benchmark's same momentum.
 Closes and dividends are moved to T's split basis (domain/splits); a total return reinvests each
 cash dividend at the close of its ex-date. Sessions are the days that have a close. A measure
 without enough closes is `unavailable`, never guessed; one that may miss a dividend says so.
@@ -23,9 +25,11 @@ from datetime import date, datetime, timedelta
 from decimal import ROUND_HALF_UP, Decimal, localcontext
 from itertools import pairwise
 from typing import Annotated, Literal
+from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from autotrading.domain.markets import MARKETS, Market
 from autotrading.domain.splits import NEW_YORK, Split, adjust, effective_at
 from autotrading.domain.valuation import Close, close_basis
 
@@ -111,6 +115,15 @@ class FactorDefinitionSet(_Def):
     price: PriceDefinitions
     fundamentals: FundamentalDefinitions
     percentile_since: date
+    # M3.7 (ADR-039 TW10): the market a set measures, and the fewest month-end snapshots a
+    # percentile needs. Defaults keep 0.1.0's content and hash.
+    market: Market = "US"
+    percentile_min_observations: Annotated[int, Field(gt=0)] | None = None
+
+    @property
+    def zone(self) -> ZoneInfo:
+        """The time zone of the market's dates (its sessions and the stale check)."""
+        return MARKETS[self.market].zone
 
     def content(self) -> dict[str, object]:
         return self.model_dump(mode="json", exclude={"status"}, exclude_defaults=True)
@@ -138,12 +151,22 @@ class FactorDefinitionsFile(BaseModel):
         versions = [d.definition_version for d in self.definition_sets]
         if len(versions) != len(set(versions)):
             raise ValueError("duplicate definition_version")
-        if sum(d.status == "active" for d in self.definition_sets) != 1:
-            raise ValueError("exactly one definition set must be active")
+        markets = {d.market for d in self.definition_sets}
+        for market in markets:
+            active = [d for d in self.definition_sets if d.market == market]
+            if sum(d.status == "active" for d in active) != 1:
+                raise ValueError(f"exactly one {market} definition set must be active")
+        if "US" not in markets:
+            raise ValueError("exactly one US definition set must be active")
         return self
 
-    def active(self) -> FactorDefinitionSet:
-        return next(d.definitions() for d in self.definition_sets if d.status == "active")
+    def active(self, market: Market = "US") -> FactorDefinitionSet:
+        """The active set of a market (one per market since M3.7, ADR-039 TW10)."""
+        return next(
+            d.definitions()
+            for d in self.definition_sets
+            if d.status == "active" and d.market == market
+        )
 
 
 # ---------- inputs ----------
@@ -156,10 +179,11 @@ class Dividend:
     ex_date: date
     rate: Decimal
     special: bool
+    zone: ZoneInfo = NEW_YORK  # the market's zone of the ex-date (Taipei for TWSE)
 
     @property
     def published_at(self) -> datetime:
-        return effective_at(self.ex_date)
+        return effective_at(self.ex_date, self.zone)
 
 
 @dataclass(frozen=True)
@@ -234,6 +258,7 @@ def known_closes(closes: Sequence[Close], at: datetime, splits: Sequence[Split])
             moved.value if moved else close.close,
             close.feed_status,
             close.published_at,
+            close.zone,
         )
     return [by_day[day] for day in sorted(by_day)]
 
@@ -248,7 +273,12 @@ def known_dividends(
             continue
         moved = adjust("close", dividend.rate, dividend.published_at, at, splits)
         out.append(
-            Dividend(dividend.ex_date, moved.value if moved else dividend.rate, dividend.special)
+            Dividend(
+                dividend.ex_date,
+                moved.value if moved else dividend.rate,
+                dividend.special,
+                dividend.zone,
+            )
         )
     return out
 
@@ -650,7 +680,7 @@ def price_measures(
     stale = definitions.stale_after_days
     if last is None:
         return _all_unavailable(definitions, series.symbol, "no close known at this time"), None
-    if at.astimezone(NEW_YORK).date() - last.day > timedelta(days=stale):
+    if at.astimezone(definitions.zone).date() - last.day > timedelta(days=stale):
         detail = f"the last close ({last.day}) is older than {stale} days"
         return _all_unavailable(definitions, series.symbol, detail), last
     dividends = known_dividends(series.dividends, at, series.splits)

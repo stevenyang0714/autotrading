@@ -13,6 +13,7 @@ from zoneinfo import ZoneInfo
 import yaml
 
 from autotrading.domain.market_calendar import MarketCalendar, load_calendar
+from autotrading.domain.markets import BY_EXCHANGE
 from autotrading.ingestion.job import Window
 from autotrading.settings import get_settings
 
@@ -42,6 +43,17 @@ class DailySchedule:
 
 
 @dataclass(frozen=True)
+class MultiDailySchedule:
+    """A refresh several times a day at fixed Singapore times."""
+
+    times: tuple[tuple[int, int], ...]
+
+    def next_after(self, now: datetime) -> datetime:
+        """The next scheduled run strictly after `now`, in UTC."""
+        return min(DailySchedule(h, m).next_after(now) for h, m in self.times)
+
+
+@dataclass(frozen=True)
 class IntervalSchedule:
     """A refresh every `minutes` minutes, at `offset` minutes past each full interval (UTC)."""
 
@@ -66,10 +78,15 @@ class IntervalSchedule:
 SEC_EDGAR = DailySchedule(10, 0)  # M0.5, about 22:00 ET the previous evening
 FRED = DailySchedule(10, 15)  # M0.6, after SEC
 GDELT = IntervalSchedule(60, 20)  # M0.8, hourly at :20
-SCHEDULES: dict[str, DailySchedule | IntervalSchedule] = {
+# M3.7 (ADR-039 TW5): the TWSE OpenAPI files of a session appear about 05:20 Taipei the next
+# morning and stay until the next session's; three slots a day, weekends too (Saturday's
+# catches Friday), each before a file can change again.
+TWSE = MultiDailySchedule(((7, 40), (9, 40), (20, 40)))
+SCHEDULES: dict[str, DailySchedule | IntervalSchedule | MultiDailySchedule] = {
     "sec_edgar": SEC_EDGAR,
     "fred": FRED,
     "gdelt": GDELT,
+    "twse_openapi": TWSE,
 }
 # Buyback states (M1.4b): evaluated after the SEC and FRED refreshes of the day.
 BUYBACK_STATES = DailySchedule(11, 0)
@@ -82,6 +99,8 @@ PORTFOLIO = DailySchedule(11, 10)
 ROTATION = DailySchedule(11, 15)
 # M3.0: S4's daily assessment, after the factor snapshots (11:05) and before the backtests
 MOMENTUM = DailySchedule(11, 17)
+# M3.7: the Taiwan factor snapshots (definitions 0.2.0), after the 07:40 and 09:40 TWSE runs
+TW_FACTORS = DailySchedule(9, 50)
 # M2.5: the backtests, once a month after the month's first rotation assessment
 BACKTESTS = DailySchedule(11, 20)
 # Official RSS feeds (M0.8): every 30 minutes at :05 and :35, one run per feed.
@@ -98,7 +117,8 @@ INTRADAY_SOURCES = frozenset({"alpaca_iex"})
 
 
 @lru_cache
-def market_calendar() -> MarketCalendar:
-    """NYSE sessions from config/market_calendar.yaml (ADR-017), read once per process."""
-    path = get_settings().resolved_config_dir() / "market_calendar.yaml"
+def market_calendar(exchange: str = "XNYS") -> MarketCalendar:
+    """An exchange's sessions from its calendar file, read once per process: NYSE
+    (config/market_calendar.yaml, ADR-017) or TWSE (config/market_calendar_xtai.yaml, ADR-039)."""
+    path = get_settings().resolved_config_dir() / BY_EXCHANGE[exchange].calendar_file
     return load_calendar(yaml.safe_load(path.read_text(encoding="utf-8")))
