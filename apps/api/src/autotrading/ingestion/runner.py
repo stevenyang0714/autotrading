@@ -3,9 +3,12 @@
 Per run: idempotency check -> rate-limited fetch -> raw payloads to the object store ->
 one database transaction that records the payloads, writes facts and marks the run succeeded.
 A failure marks the run failed and re-raises so Dramatiq retries it; after the last retry the
-dead-letter middleware calls record_dead_letter.
+dead-letter middleware calls record_dead_letter. An attempt stopped by Dramatiq's time limit is a
+failure too. A worker process killed mid-run writes nothing: the next worker marks such runs
+failed (error class Interrupted) before it takes its first message (mark_interrupted).
 """
 
+from datetime import timedelta
 from typing import Any
 from uuid import UUID
 
@@ -18,6 +21,7 @@ from autotrading.db.models import DeadLetter, IngestionRun, Source
 from autotrading.ingestion.errors import sanitize_error
 from autotrading.ingestion.job import (
     JOB_REGISTRY,
+    RUN_TIME_LIMIT_SECONDS,
     FetchContext,
     IngestionJob,
     JobRegistry,
@@ -31,6 +35,11 @@ from autotrading.repositories.audit import set_actor
 
 FINISHED_STATUSES = ("succeeded", "skipped", "dead_lettered")
 SUCCEEDED_KEY_INDEX = "uq_ingestion_runs_succeeded_key"
+INTERRUPTED = "Interrupted"
+INTERRUPTED_MESSAGE = (
+    "the worker stopped before this attempt finished; finished_at is the latest it can have ended"
+)
+STOPPED_MESSAGE = "stopped before the attempt finished (time limit or worker shutdown)"
 
 
 class IngestionRunner:
@@ -131,7 +140,9 @@ class IngestionRunner:
                 self._set_status(session, run_id, "skipped")
                 session.commit()
             return "skipped"
-        except Exception as exc:
+        except BaseException as exc:
+            # Dramatiq's TimeLimitExceeded derives from BaseException (dramatiq Interrupt): record
+            # the attempt before the broker retries or dead-letters it.
             self._mark_failed(run_id, exc)
             raise
         return "succeeded"
@@ -160,6 +171,31 @@ class IngestionRunner:
             self._set_status(session, run_id, "dead_lettered")
             session.commit()
 
+    def mark_interrupted(self) -> list[UUID]:
+        """Mark every `running` run failed with error class Interrupted.
+
+        Call only when no attempt can be in progress: at worker start, before the first message
+        (compose runs one worker process). A run still `running` then belonged to a worker
+        process that was killed mid-run. A retry still queued for it runs it again (`failed` is not
+        final). finished_at is the attempt's start plus the time limit, or now if earlier, so an
+        old run does not become a source's latest attempt on Data Health.
+        """
+        limit = timedelta(seconds=RUN_TIME_LIMIT_SECONDS)
+        with self._sessions() as session:
+            marked = session.scalars(
+                update(IngestionRun)
+                .where(IngestionRun.status == "running")
+                .values(
+                    status="failed",
+                    finished_at=func.least(func.now(), IngestionRun.started_at + limit),
+                    error_class=INTERRUPTED,
+                    error_message=INTERRUPTED_MESSAGE,
+                )
+                .returning(IngestionRun.id)
+            ).all()
+            session.commit()
+        return list(marked)
+
     def _job_class(self, job: str) -> type[IngestionJob]:
         try:
             return self._registry[job]
@@ -186,6 +222,8 @@ class IngestionRunner:
 
     def _mark_failed(self, run_id: UUID, exc: BaseException) -> None:
         error_class, error_message = sanitize_error(exc)
+        if not error_message and not isinstance(exc, Exception):
+            error_message = STOPPED_MESSAGE
         with self._sessions() as session:
             session.execute(
                 update(IngestionRun)

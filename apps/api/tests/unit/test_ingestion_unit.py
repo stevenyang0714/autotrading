@@ -1,8 +1,14 @@
+import logging
 from datetime import UTC, datetime
 from typing import ClassVar
+from uuid import UUID, uuid4
 
 import pytest
+from dramatiq.brokers.stub import StubBroker
+from dramatiq.worker import Worker
+from sqlalchemy.exc import OperationalError
 
+from autotrading.ingestion.actors import InterruptedRunRecorder
 from autotrading.ingestion.errors import MAX_MESSAGE_LENGTH, sanitize_error
 from autotrading.ingestion.job import (
     FetchContext,
@@ -86,3 +92,19 @@ def test_job_names_are_unique_in_a_registry() -> None:
 
     with pytest.raises(ValueError, match="already registered"):
         register_job(Other, registry)
+
+
+def test_marking_interrupted_runs_never_stops_the_worker(caplog: pytest.LogCaptureFixture) -> None:
+    def unreachable() -> list[UUID]:
+        raise OperationalError("SELECT 1", {}, Exception("connection refused"))
+
+    broker = StubBroker()
+    worker = Worker(broker)
+    with caplog.at_level(logging.WARNING):
+        InterruptedRunRecorder(unreachable).before_worker_boot(broker, worker)
+    assert "could not mark interrupted ingestion runs: OperationalError" in caplog.text
+
+    marked = [uuid4()]
+    with caplog.at_level(logging.WARNING):
+        InterruptedRunRecorder(lambda: marked).before_worker_boot(broker, worker)
+    assert f"marked 1 interrupted ingestion run(s) failed: {marked[0]}" in caplog.text

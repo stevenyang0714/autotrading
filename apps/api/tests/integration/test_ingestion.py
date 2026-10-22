@@ -6,7 +6,7 @@ import json
 import os
 import time
 from collections.abc import Iterator
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, ClassVar
 from uuid import UUID, uuid4
@@ -15,17 +15,25 @@ import pytest
 from dramatiq import Worker
 from dramatiq.brokers.stub import StubBroker
 from fastapi.testclient import TestClient
-from sqlalchemy import Engine, func, select, text
+from sqlalchemy import Engine, func, select, text, update
 from sqlalchemy.exc import DBAPIError, IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
 from autotrading.config_sync import SYNC_ACTOR, load_sources, sync_sources
-from autotrading.db.models import AuditLog, FinancialFact, IngestionRun, RawPayload, Source
+from autotrading.db.models import (
+    AuditLog,
+    DeadLetter,
+    FinancialFact,
+    IngestionRun,
+    RawPayload,
+    Source,
+)
 from autotrading.infra.object_store import make_s3_client
 from autotrading.infra.probes import ProbeResult
 from autotrading.infra.redis_client import make_redis
 from autotrading.ingestion.actors import declare_ingestion_actor
 from autotrading.ingestion.job import (
+    RUN_TIME_LIMIT_SECONDS,
     FetchContext,
     FetchedPayload,
     IngestionJob,
@@ -36,7 +44,7 @@ from autotrading.ingestion.job import (
 )
 from autotrading.ingestion.rate_limit import TokenBucketLimiter
 from autotrading.ingestion.raw_store import RawPayloadStore
-from autotrading.ingestion.runner import IngestionRunner
+from autotrading.ingestion.runner import INTERRUPTED, STOPPED_MESSAGE, IngestionRunner
 from autotrading.main import create_app
 from autotrading.repositories.facts import FactConflictError, FinancialFactRepository
 from autotrading.settings import Settings, get_settings
@@ -95,6 +103,22 @@ class AlwaysFailingJob(IngestionJob):
         raise AssertionError
 
 
+class SlowJob(IngestionJob):
+    """Keeps running Python code until Dramatiq's time limit stops the attempt."""
+
+    source_id: ClassVar[str] = TEST_SOURCE_ID
+    name: ClassVar[str] = "test.slow"
+
+    def fetch(self, ctx: FetchContext) -> list[FetchedPayload]:
+        deadline = time.monotonic() + 30
+        while time.monotonic() < deadline:
+            time.sleep(0.05)
+        raise AssertionError("the time limit should have stopped this attempt")
+
+    def store(self, ctx: StoreContext) -> StoreResult:  # pragma: no cover - never reached
+        raise AssertionError
+
+
 class OkChecker:
     def core(self) -> dict[str, ProbeResult]:
         return {}
@@ -108,6 +132,7 @@ def registry() -> JobRegistry:
     jobs: JobRegistry = {}
     register_job(FakeFilingJob, jobs)
     register_job(AlwaysFailingJob, jobs)
+    register_job(SlowJob, jobs)
     return jobs
 
 
@@ -226,6 +251,19 @@ def test_store_failure_marks_the_run_failed(
 # ---------- dead letters ----------
 
 
+def wait_for_status(
+    sessions: sessionmaker[Session], run_id: UUID, wanted: str, timeout: float = 20
+) -> str:
+    """Poll the run until it reaches `wanted` or the timeout passes; the last status seen."""
+    deadline = time.monotonic() + timeout
+    while True:
+        with sessions() as session:
+            status = session.get_one(IngestionRun, run_id).status
+        if status == wanted or time.monotonic() > deadline:
+            return status
+        time.sleep(0.1)
+
+
 def test_failing_job_lands_in_dead_letter_and_api(
     runner: IngestionRunner, sessions: sessionmaker[Session]
 ) -> None:
@@ -240,14 +278,7 @@ def test_failing_job_lands_in_dead_letter_and_api(
     worker = Worker(broker, worker_timeout=50)
     worker.start()
     try:
-        deadline = time.monotonic() + 20
-        status = None
-        while time.monotonic() < deadline:
-            with sessions() as session:
-                status = session.get_one(IngestionRun, run_id).status
-            if status == "dead_lettered":
-                break
-            time.sleep(0.1)
+        status = wait_for_status(sessions, run_id, "dead_lettered")
     finally:
         worker.stop()
     assert status == "dead_lettered"
@@ -260,6 +291,124 @@ def test_failing_job_lands_in_dead_letter_and_api(
     assert letter["error_class"] == "RuntimeError"
     assert "SECRET123" not in letter["error_message"]
     assert str(run_id) in {run["id"] for run in runs}
+
+
+# ---------- interrupted attempts ----------
+
+
+def test_an_attempt_stopped_by_the_time_limit_is_recorded(
+    runner: IngestionRunner, sessions: sessionmaker[Session]
+) -> None:
+    """Dramatiq's TimeLimitExceeded is a BaseException: each stopped attempt is recorded, and
+    the dead letter carries its error, not an older one."""
+    broker = StubBroker()
+    broker.emit_after("process_boot")  # starts the TimeLimit middleware's timer thread
+    actor = declare_ingestion_actor(
+        broker,
+        lambda: runner,
+        max_retries=1,
+        min_backoff_ms=1,
+        max_backoff_ms=10,
+        time_limit_ms=300,
+    )
+    run_id = runner.create_run(SlowJob.name, {"attempt": uuid4().hex})
+    actor.send(str(run_id))
+
+    worker = Worker(broker, worker_timeout=50)
+    worker.start()
+    try:
+        status = wait_for_status(sessions, run_id, "dead_lettered", timeout=30)
+    finally:
+        worker.stop()
+    assert status == "dead_lettered"
+    with sessions() as session:
+        run = session.get_one(IngestionRun, run_id)
+        letter = session.scalars(
+            select(DeadLetter).where(DeadLetter.ingestion_run_id == run_id)
+        ).one()
+    assert (run.attempt, run.error_class, run.error_message) == (
+        2,
+        "TimeLimitExceeded",
+        STOPPED_MESSAGE,
+    )
+    assert (letter.attempts, letter.error_class) == (2, "TimeLimitExceeded")
+
+
+def set_running(sessions: sessionmaker[Session], run_id: UUID, started_ago: timedelta) -> None:
+    """Leave the run as a worker process killed mid-attempt does."""
+    with sessions() as session:
+        session.execute(
+            update(IngestionRun)
+            .where(IngestionRun.id == run_id)
+            .values(status="running", started_at=func.now() - started_ago, finished_at=None)
+        )
+        session.commit()
+
+
+def test_mark_interrupted_fails_only_running_runs(
+    runner: IngestionRunner, sessions: sessionmaker[Session]
+) -> None:
+    old, recent, queued, done = (
+        runner.create_run(FakeFilingJob.name, {"interrupted": name})
+        for name in ("old", "recent", "queued", "done")
+    )
+    set_running(sessions, old, timedelta(days=12))
+    set_running(sessions, recent, timedelta(minutes=2))
+    with sessions() as session:
+        session.execute(
+            update(IngestionRun)
+            .where(IngestionRun.id == done)
+            .values(status="succeeded", finished_at=func.now())
+        )
+        session.commit()
+
+    marked = set(runner.mark_interrupted())
+
+    assert {old, recent} <= marked
+    assert not {queued, done} & marked
+    limit = timedelta(seconds=RUN_TIME_LIMIT_SECONDS)
+    with sessions() as session:
+        now = session.execute(select(func.now())).scalar_one()
+        runs = {run_id: session.get_one(IngestionRun, run_id) for run_id in (old, recent)}
+        others = [session.get_one(IngestionRun, run_id).status for run_id in (queued, done)]
+    times = {}
+    for run_id, run in runs.items():
+        assert (run.status, run.error_class) == ("failed", INTERRUPTED)
+        assert run.started_at is not None and run.finished_at is not None
+        times[run_id] = (run.started_at, run.finished_at)
+    # An old run ends at most a time limit after it started, so it is not a source's latest.
+    assert times[old][1] == times[old][0] + limit
+    assert times[recent][1] <= now
+    assert times[recent][1] < times[recent][0] + limit
+    assert others == ["queued", "succeeded"]
+    assert not {old, recent} & set(runner.mark_interrupted())  # marked once, not again
+
+
+def test_a_new_worker_marks_runs_a_killed_worker_left_running(
+    runner: IngestionRunner, sessions: sessionmaker[Session], entity_id: UUID
+) -> None:
+    run_id = runner.create_run(FakeFilingJob.name, {"entity_id": str(entity_id), "value": "3"})
+    set_running(sessions, run_id, timedelta(minutes=1))
+    broker = StubBroker()
+    broker.emit_after("process_boot")
+    actor = declare_ingestion_actor(
+        broker, lambda: runner, max_retries=0, min_backoff_ms=1, max_backoff_ms=10
+    )
+
+    worker = Worker(broker, worker_timeout=50)
+    worker.start()  # marks before its consumers take a message
+    try:
+        with sessions() as session:
+            run = session.get_one(IngestionRun, run_id)
+            assert (run.status, run.error_class) == ("failed", INTERRUPTED)
+        actor.send(str(run_id))  # the killed worker's message, requeued by the broker
+        status = wait_for_status(sessions, run_id, "succeeded")
+    finally:
+        worker.stop()
+    assert status == "succeeded"  # failed is not final: the retry runs it again
+    with sessions() as session:
+        run = session.get_one(IngestionRun, run_id)
+    assert (run.error_class, run.error_message, run.rows_inserted) == (None, None, 1)
 
 
 # ---------- rate limiter ----------
