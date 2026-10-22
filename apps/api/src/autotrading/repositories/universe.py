@@ -7,7 +7,6 @@ from pathlib import Path
 
 import yaml
 
-from autotrading.adapters.alpaca.refresh import universe
 from autotrading.domain.markets import MARKETS, Market
 from autotrading.settings import get_settings
 
@@ -51,5 +50,8 @@ def universe_symbols(market: Market = "US", config_dir: Path | None = None) -> l
     config_dir = config_dir or get_settings().resolved_config_dir()
     if market == "TW":
         return list(taiwan_universe(config_dir).codes)
+    # imported here: the adapters package imports the TWSE job, which imports this module
+    from autotrading.adapters.alpaca.refresh import universe
+
     everything, _ = universe(config_dir)
     return everything
