@@ -818,6 +818,53 @@ export async function loadInstrumentFactors(
   }
 }
 
+// ---------- Taiwan (M3.7, ADR-039) ----------
+
+export type TaiwanList = components["schemas"]["TaiwanListOut"];
+export type TaiwanRow = components["schemas"]["TaiwanRow"];
+export type TaiwanInstrument = components["schemas"]["TaiwanInstrumentOut"];
+export type TaiwanSourceRef = components["schemas"]["SourceRef"];
+export type TaiwanAttribution = components["schemas"]["Attribution"];
+
+export type TaiwanInstrumentResult =
+  | { status: "ok"; data: TaiwanInstrument }
+  | { status: "not_found" }
+  | { status: "unavailable" };
+
+/** A TWSE code (2330, 0050, 00400A): a Taiwan universe instrument, not a US ticker. */
+export function isTaiwanCode(ticker: string): boolean {
+  return /^\d{4}[0-9A-Z]{0,2}$/.test(ticker.toUpperCase());
+}
+
+/** The Taiwan universe's latest sessions as known at `knownAt`; null when the API is down. */
+export async function loadTaiwan(knownAt?: string): Promise<TaiwanList | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/taiwan", {
+      params: { query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** One Taiwan instrument as known at `knownAt`. */
+export async function loadTaiwanInstrument(code: string, knownAt?: string): Promise<TaiwanInstrumentResult> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data, response } = await client.GET("/taiwan/instruments/{code}", {
+      params: { path: { code }, query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    if (data) return { status: "ok", data };
+    return response.status === 404 ? { status: "not_found" } : { status: "unavailable" };
+  } catch {
+    return { status: "unavailable" };
+  }
+}
+
 /** Every universe instrument's latest factor values as known at `knownAt` (Opportunity Radar). */
 export async function loadFactors(knownAt?: string): Promise<FactorsTable | null> {
   const client = createClient<paths>({ baseUrl: apiBaseUrl() });

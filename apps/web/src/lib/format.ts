@@ -59,3 +59,36 @@ export function formatChange(value: string): string {
   if (!Number.isFinite(number)) return value;
   return `${number > 0 ? "+" : ""}${number.toFixed(2)}%`;
 }
+
+/** "NT$2,420.00", "$774.74": a price in its currency, two decimals (M3.7). */
+export function formatMoney(value: string, currency: string): string {
+  if (currency !== "TWD") return formatPrice(value);
+  const number = Number(value);
+  if (!Number.isFinite(number)) return value;
+  const text = Math.abs(number).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return `${number < 0 ? "-" : ""}NT$${text}`;
+}
+
+/** "NT$65.516B": a large amount in its currency. */
+export function formatAmount(value: string, currency: string): string {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return value;
+  const prefix = currency === "TWD" ? "NT$" : "$";
+  const abs = Math.abs(number);
+  const text =
+    abs >= 1e12
+      ? `${(abs / 1e12).toFixed(3)}T`
+      : abs >= 1e9
+        ? `${(abs / 1e9).toFixed(3)}B`
+        : abs >= 1e6
+          ? `${(abs / 1e6).toFixed(3)}M`
+          : abs.toLocaleString("en-US");
+  return `${number < 0 ? "-" : ""}${prefix}${text}`;
+}
+
+/** "+15.00", "-0.40": a change in price units with its sign. */
+export function formatSigned(value: string, digits = 2): string {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return value;
+  return `${number > 0 ? "+" : ""}${number.toFixed(digits)}`;
+}

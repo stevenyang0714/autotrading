@@ -21,6 +21,12 @@ export function formatSgtEt(iso: string): string {
   return `${sg.year}-${sg.month}-${sg.day} ${sg.hour}:${sg.minute} SGT · ${ny.month}-${ny.day} ${ny.hour}:${ny.minute} ET`;
 }
 
+/** "2026-10-21 23:59 Taipei": a Taiwan time (M3.7; Taipei and Singapore share UTC+8). */
+export function formatTaipei(iso: string): string {
+  const tw = parts(new Date(iso), "Asia/Taipei");
+  return `${tw.year}-${tw.month}-${tw.day} ${tw.hour}:${tw.minute} Taipei`;
+}
+
 /** Freshness SLA and similar durations: "2 days", "15 min". */
 export function formatDuration(seconds: number): string {
   const units: [number, string][] = [

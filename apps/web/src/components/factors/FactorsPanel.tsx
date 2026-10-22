@@ -1,6 +1,6 @@
 import { Metric } from "@/components/Metric";
 import type { FactorInput, FactorMeasure, InstrumentFactors, InstrumentFactorsResult } from "@/lib/api";
-import { GROUPS, formatMeasure, meta, ordinal, windowText } from "@/lib/factors";
+import { GROUPS, formatMeasure, groupLabel, meta, ordinal, windowText } from "@/lib/factors";
 import { formatSgtEt } from "@/lib/time";
 
 function trim(value: string): string {
@@ -14,8 +14,8 @@ function inputText(input: FactorInput): string {
   return `${input.name}${day ? ` ${day}` : ""}: ${value}${input.note ? `, ${input.note}` : ""}${sources}`;
 }
 
-function MeasureItem({ measure }: { measure: FactorMeasure }) {
-  const info = meta(measure.measure_id);
+function MeasureItem({ measure, benchmark }: { measure: FactorMeasure; benchmark: string }) {
+  const info = meta(measure.measure_id, benchmark);
   const window = windowText(measure);
   return (
     <li
@@ -105,12 +105,12 @@ function Snapshot({ data }: { data: InstrumentFactors }) {
             <div key={group} data-group={group}>
               <h3 className="text-sm font-medium text-neutral-300">
                 <Metric termId={termId} icon={false}>
-                  {label}
+                  {groupLabel(label, data.benchmark)}
                 </Metric>
               </h3>
-              <ul aria-label={label}>
+              <ul aria-label={groupLabel(label, data.benchmark)}>
                 {measures.map((measure) => (
-                  <MeasureItem key={measure.measure_id} measure={measure} />
+                  <MeasureItem key={measure.measure_id} measure={measure} benchmark={data.benchmark} />
                 ))}
               </ul>
             </div>

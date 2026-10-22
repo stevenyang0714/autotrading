@@ -14,7 +14,9 @@ import { InstrumentNews } from "@/components/news/InstrumentNews";
 import { DemoBanner } from "@/components/prices/DemoBanner";
 import { InstrumentPricePanel } from "@/components/prices/InstrumentPricePanel";
 import { ValuationView } from "@/components/instruments/ValuationView";
+import { TaiwanView } from "@/components/taiwan/TaiwanView";
 import {
+  isTaiwanCode,
   loadAssumptions,
   loadBuybacks,
   loadEarnings,
@@ -26,6 +28,7 @@ import {
   loadNews,
   loadResearch,
   loadSourceHealth,
+  loadTaiwanInstrument,
   loadValuation,
 } from "@/lib/api";
 import { endOfDaySgt } from "@/lib/time";
@@ -53,6 +56,30 @@ export default async function InstrumentPage({
       ? query.assumptions
       : undefined;
 
+  if (isTaiwanCode(ticker)) {
+    // A Taiwan universe code (M3.7, ADR-039): what the TWSE OpenAPI published, no SEC data.
+    const code = ticker.toUpperCase();
+    const [taiwan, factors, sources] = await Promise.all([
+      loadTaiwanInstrument(code, knownAt ?? undefined),
+      loadInstrumentFactors(code, knownAt ?? undefined),
+      loadSourceHealth(),
+    ]);
+    if (taiwan.status === "not_found" && factors.status === "not_found") notFound();
+    const feed = taiwan.status === "ok" ? taiwan.data.price?.feed_status : undefined;
+    return (
+      <div className="space-y-4">
+        <DemoBanner statuses={[feed === "fixture" ? "fixture" : null]} />
+        <TaiwanView
+          code={code}
+          result={taiwan}
+          knownOn={knownAt ? knownOn : undefined}
+          invalidKnownOn={Boolean(knownOn) && knownAt === null}
+          sources={sources}
+          factors={<FactorsPanel result={factors} />}
+        />
+      </div>
+    );
+  }
   const newsQuery = { ticker: ticker.toUpperCase(), knownAt: knownAt ?? undefined, limit: 6 };
   const [
     result,

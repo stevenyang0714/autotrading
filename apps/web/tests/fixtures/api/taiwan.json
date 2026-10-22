@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-22T04:07:40.012096+00:00",
+  "recorded_at": "2026-10-22T04:09:39.903430+00:00",
   "recorded_from": "recorded TWSE OpenAPI files replayed into the integration test database (tests/integration/test_twse.py)",
   "endpoint": "/taiwan",
   "params": {
@@ -26,6 +26,7 @@
         "instrument_type": "equity",
         "session": "2026-10-21",
         "close": "2420.00",
+        "feed_status": "end_of_day",
         "change": "15.0000",
         "history_since": "2026-10-21",
         "sessions": 1
@@ -37,6 +38,7 @@
         "instrument_type": "equity",
         "session": "2026-10-21",
         "close": "4140.00",
+        "feed_status": "end_of_day",
         "change": "-10.0000",
         "history_since": "2026-10-21",
         "sessions": 1
@@ -48,6 +50,7 @@
         "instrument_type": "equity",
         "session": "2026-10-21",
         "close": "1625.00",
+        "feed_status": "end_of_day",
         "change": "20.0000",
         "history_since": "2026-10-21",
         "sessions": 1
@@ -59,6 +62,7 @@
         "instrument_type": "equity",
         "session": "2026-10-21",
         "close": "250.00",
+        "feed_status": "end_of_day",
         "change": "8.5000",
         "history_since": "2026-10-21",
         "sessions": 1
@@ -70,6 +74,7 @@
         "instrument_type": "equity",
         "session": "2026-10-21",
         "close": "684.00",
+        "feed_status": "end_of_day",
         "change": "24.0000",
         "history_since": "2026-10-21",
         "sessions": 1
@@ -81,6 +86,7 @@
         "instrument_type": "equity",
         "session": "2026-10-21",
         "close": "320.50",
+        "feed_status": "end_of_day",
         "change": "24.5000",
         "history_since": "2026-10-21",
         "sessions": 1
@@ -92,6 +98,7 @@
         "instrument_type": "equity",
         "session": "2026-10-21",
         "close": "158.50",
+        "feed_status": "end_of_day",
         "change": "5.0000",
         "history_since": "2026-10-21",
         "sessions": 1
@@ -103,6 +110,7 @@
         "instrument_type": "equity",
         "session": "2026-10-21",
         "close": "1100.00",
+        "feed_status": "end_of_day",
         "change": "45.0000",
         "history_since": "2026-10-21",
         "sessions": 1
@@ -114,6 +122,7 @@
         "instrument_type": "equity",
         "session": "2026-10-21",
         "close": "4990.00",
+        "feed_status": "end_of_day",
         "change": "45.0000",
         "history_since": "2026-10-21",
         "sessions": 1
@@ -125,6 +134,7 @@
         "instrument_type": "equity",
         "session": "2026-10-21",
         "close": "114.00",
+        "feed_status": "end_of_day",
         "change": "4.0000",
         "history_since": "2026-10-21",
         "sessions": 1
@@ -136,6 +146,7 @@
         "instrument_type": "etf",
         "session": "2026-10-21",
         "close": "108.15",
+        "feed_status": "end_of_day",
         "change": "0.9000",
         "history_since": "2026-10-21",
         "sessions": 1

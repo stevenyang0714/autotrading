@@ -8609,6 +8609,10 @@
             "title": "Close",
             "type": "string"
           },
+          "feed_status": {
+            "title": "Feed Status",
+            "type": "string"
+          },
           "high": {
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "High",
@@ -8687,6 +8691,7 @@
           "reference",
           "volume",
           "trade_value",
+          "feed_status",
           "history",
           "history_since",
           "sessions",
@@ -13123,6 +13128,17 @@
             "title": "Code",
             "type": "string"
           },
+          "feed_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feed Status"
+          },
           "history_since": {
             "anyOf": [
               {
@@ -13175,6 +13191,7 @@
           "instrument_type",
           "session",
           "close",
+          "feed_status",
           "change",
           "history_since",
           "sessions"

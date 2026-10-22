@@ -3972,6 +3972,8 @@ export interface components {
             change: string | null;
             /** Close */
             close: string;
+            /** Feed Status */
+            feed_status: string;
             /** High */
             high: string;
             /** History */
@@ -5546,6 +5548,8 @@ export interface components {
             close: string | null;
             /** Code */
             code: string;
+            /** Feed Status */
+            feed_status: string | null;
             /** History Since */
             history_since: string | null;
             /**

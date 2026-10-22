@@ -68,6 +68,10 @@ import riskChecks from "../../tests/fixtures/api/risk-checks.json";
 import factorsAapl from "../../tests/fixtures/api/factors-aapl.json";
 import factorsNvdaEarlier from "../../tests/fixtures/api/factors-nvda-earlier.json";
 import factorsNvda from "../../tests/fixtures/api/factors-nvda.json";
+import factors2330 from "../../tests/fixtures/api/factors-2330.json";
+import taiwan from "../../tests/fixtures/api/taiwan.json";
+import taiwan0050 from "../../tests/fixtures/api/taiwan-0050.json";
+import taiwan2330 from "../../tests/fixtures/api/taiwan-2330.json";
 import factorsTlt from "../../tests/fixtures/api/factors-tlt.json";
 import factors from "../../tests/fixtures/api/factors.json";
 import backtests from "../../tests/fixtures/api/backtests.json";
@@ -91,6 +95,8 @@ import type {
   RiskChecks,
   FactorsTable,
   InstrumentFactors,
+  TaiwanInstrument,
+  TaiwanList,
   Alerts,
   AssumptionList,
   Convergence,
@@ -288,6 +294,13 @@ export const recordedFactorsNvda = factorsNvda.response as unknown as Instrument
 export const recordedFactorsNvdaEarlier = factorsNvdaEarlier.response as unknown as InstrumentFactors;
 export const recordedFactorsAapl = factorsAapl.response as unknown as InstrumentFactors;
 export const recordedFactorsTlt = factorsTlt.response as unknown as InstrumentFactors;
+
+/** The Taiwan universe (M3.7) from tests/integration/test_twse.py: the recorded TWSE OpenAPI
+ * files of the 2026-10-21 session, as known on 2026-10-22. */
+export const recordedTaiwan = taiwan.response as unknown as TaiwanList;
+export const recordedTaiwan2330 = taiwan2330.response as unknown as TaiwanInstrument;
+export const recordedTaiwan0050 = taiwan0050.response as unknown as TaiwanInstrument;
+export const recordedFactors2330 = factors2330.response as unknown as InstrumentFactors;
 
 /** The S3 ETF rotation (M2.4) from tests/integration/test_rotation.py, as known on 2026-10-06
  * (the October month start: SPY only, the other ETFs without a year of recorded closes for 12-1

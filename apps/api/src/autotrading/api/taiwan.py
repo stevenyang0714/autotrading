@@ -115,6 +115,7 @@ class TaiwanRow(BaseModel):
     instrument_type: Literal["equity", "etf"]
     session: date | None  # the latest stored session known at T
     close: Decimal | None
+    feed_status: str | None  # end_of_day, or fixture for recorded test data (DEMO DATA)
     change: Decimal | None
     history_since: date | None
     sessions: int
@@ -148,6 +149,7 @@ class PriceBlock(BaseModel):
     reference: Decimal | None  # close - change: TWSE's reference price of the session
     volume: int  # shares
     trade_value: Decimal | None  # TWD
+    feed_status: str  # end_of_day, or fixture for recorded test data (DEMO DATA)
     history: list[PricePoint]
     history_since: date
     sessions: int
@@ -307,6 +309,7 @@ def taiwan_list(session: SessionDep, known_at: KnownAt = None) -> TaiwanListOut:
                     instrument_type="etf" if code in universe.etfs else "equity",
                     session=None,
                     close=None,
+                    feed_status=None,
                     change=None,
                     history_since=None,
                     sessions=0,
@@ -335,6 +338,7 @@ def taiwan_list(session: SessionDep, known_at: KnownAt = None) -> TaiwanListOut:
                 instrument_type="etf" if code in universe.etfs else "equity",
                 session=last.bar_date if last else None,
                 close=last.close if last else None,
+                feed_status=last.feed_status if last else None,
                 change=change,
                 history_since=bars[0].bar_date if bars else None,
                 sessions=len(bars),
@@ -455,6 +459,7 @@ def _price(
         reference=last.close - change if change is not None else None,
         volume=last.volume,
         trade_value=day["trade_value"].value if "trade_value" in day else None,
+        feed_status=last.feed_status,
         history=[
             PricePoint(session=b.bar_date, close=b.close, adjusted_close=adjusted(b)) for b in bars
         ],

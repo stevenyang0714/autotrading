@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-22T04:07:40.039678+00:00",
+  "recorded_at": "2026-10-22T04:09:39.932900+00:00",
   "recorded_from": "recorded TWSE OpenAPI files replayed into the integration test database (tests/integration/test_twse.py)",
   "endpoint": "/taiwan/instruments/0050",
   "params": {
@@ -31,6 +31,7 @@
       "reference": "107.2500",
       "volume": 83301839,
       "trade_value": "9028161400",
+      "feed_status": "end_of_day",
       "history": [
         {
           "session": "2026-10-21",
@@ -44,8 +45,8 @@
         "dataset": "上市個股日成交資訊",
         "source_url": "https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL",
         "published_at": "2026-10-21T15:59:59.999999Z",
-        "ingested_at": "2026-10-22T04:07:38.814820Z",
-        "ingestion_run_id": "33041b4c-319b-4b03-be49-ce038132776e",
+        "ingested_at": "2026-10-22T04:09:38.715995Z",
+        "ingestion_run_id": "71251594-29d6-4c7e-8ab3-50d25bfc59a3",
         "raw_payload_sha256": "720a2c1bc6b7b8629daa38a4e4a816c01836e9f7ea6e460b55562550d2836ef6",
         "license_status": "public",
         "confidence": "1.000"
@@ -77,8 +78,8 @@
         "dataset": "集中市場融資融券餘額",
         "source_url": "https://openapi.twse.com.tw/v1/exchangeReport/MI_MARGN",
         "published_at": "2026-10-21T15:59:59.999999Z",
-        "ingested_at": "2026-10-22T04:07:38.822855Z",
-        "ingestion_run_id": "33041b4c-319b-4b03-be49-ce038132776e",
+        "ingested_at": "2026-10-22T04:09:38.723439Z",
+        "ingestion_run_id": "71251594-29d6-4c7e-8ab3-50d25bfc59a3",
         "raw_payload_sha256": "a3bf204dcd26615f0ddfe4e2cc0788e4edcd474996efa194039674e485eccdbc",
         "license_status": "public",
         "confidence": "0.900"
