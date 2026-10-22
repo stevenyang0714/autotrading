@@ -4,14 +4,19 @@ and time; As known on at the Taipei day boundary; repeats unchanged; Taiwan fact
 that recompute identically; nothing Taiwan in the US universe. Uses its own migrated database.
 """
 
+import json
+import os
 from collections.abc import Callable, Iterator
 from datetime import UTC, date, datetime
 from decimal import Decimal
+from pathlib import Path
+from typing import Any
 from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 import pytest
 from alembic import command
+from fastapi.testclient import TestClient
 from sqlalchemy import Engine, create_engine, func, select
 from sqlalchemy.engine import URL
 from sqlalchemy.orm import Session, sessionmaker
@@ -40,6 +45,7 @@ from autotrading.ingestion.job import JobRegistry, Window
 from autotrading.ingestion.rate_limit import TokenBucketLimiter
 from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
+from autotrading.main import create_app
 from autotrading.repositories.exchange_measures import measures
 from autotrading.repositories.factors import (
     active_factor_version,
@@ -266,3 +272,115 @@ def test_taiwan_factor_snapshots_read_taipei_closes_against_0050_and_recompute(
         }
         assert by_symbol["0050"].snapshot["measures"][-1]["reason"] == "not_meaningful"
         assert all(same(r, recompute(session, r)) for r in rows)
+
+
+class OkChecker:
+    def core(self) -> dict[str, Any]:
+        return {}
+
+    def background(self) -> dict[str, Any]:
+        return {}
+
+
+@pytest.fixture(scope="module")
+def client(engine: Engine, first: IngestionRun) -> Iterator[TestClient]:
+    with TestClient(
+        create_app(health_checker=OkChecker(), sessions=sessionmaker(engine))
+    ) as client:
+        yield client
+
+
+AFTER_D1 = "2026-10-22T23:59:59+08:00"  # As known on 2026-10-22
+
+
+def test_the_taiwan_list_cites_the_attribution_and_the_session(client: TestClient) -> None:
+    found = client.get("/taiwan", params={"known_at": AFTER_D1}).json()
+    assert [r["code"] for r in found["rows"]] == CODES
+    tsmc = found["rows"][0]
+    assert (tsmc["name_zh"], tsmc["session"], tsmc["close"], tsmc["change"]) == (
+        "台積電",
+        "2026-10-21",
+        "2420.00",
+        "15.0000",
+    )
+    assert found["latest_session"] == "2026-10-21" and found["missing_sessions"] == []
+    assert found["benchmark"] == "0050" and found["ranked_on"] == "2026-10-21"
+    assert found["market_session"]["timezone"] == "Asia/Taipei"
+    text = found["attribution"]["text"]
+    assert text.startswith("臺灣證券交易所 2026 上市個股日成交資訊")
+    assert "政府資料開放授權條款" in text and "https://data.gov.tw/license" in text
+    # As known on 2026-10-21: the session is not public yet
+    earlier = client.get("/taiwan", params={"known_at": "2026-10-21T23:59:59+08:00"}).json()
+    assert earlier["rows"][0]["session"] is None and earlier["latest_session"] is None
+
+
+def test_a_taiwan_instrument_reads_prices_valuation_margin_and_no_flows(
+    client: TestClient,
+) -> None:
+    found = client.get("/taiwan/instruments/2330", params={"known_at": AFTER_D1}).json()
+    assert (found["name"], found["sector_zh"], found["currency"]) == ("TSMC", "半導體業", "TWD")
+    price = found["price"]
+    assert (price["session"], price["close"], price["reference"]) == (
+        "2026-10-21",
+        "2420.00",
+        "2405.0000",
+    )
+    assert price["history_since"] == "2026-10-21" and price["sessions"] == 1
+    assert price["source"]["dataset"] == "上市個股日成交資訊"
+    assert price["source"]["published_at"] == "2026-10-21T15:59:59.999999Z"
+    valuation = {m["measure_id"]: m for m in found["valuation"]["measures"]}
+    assert valuation["exchange_pe_ratio"]["value"] == "28.05"
+    assert valuation["exchange_pe_ratio"]["percentile"] is None  # one month of history
+    assert valuation["exchange_pe_ratio"]["observations"] == 1
+    margin = found["margin"]
+    assert margin["values"]["margin_balance"] == "35330" and margin["unit"] == "lots"
+    assert margin["margin_change"] == "929"  # 35330 - 34401
+    assert margin["source"]["confidence"] == "0.900"
+    assert found["flows"]["status"] == "unavailable" and "T86" in found["flows"]["reason"]
+    assert found["reference_gaps"] == [] and found["missing_sessions"] == []
+    assert client.get("/taiwan/instruments/9999").status_code == 404
+    assert client.get("/taiwan/instruments/AAPL").status_code == 404
+
+
+def test_taiwan_factors_are_read_against_0050(client: TestClient) -> None:
+    found = client.get("/instruments/2330/factors").json()
+    assert (found["market"], found["benchmark"], found["definition_version"]) == (
+        "TW",
+        "0050",
+        "0.2.0",
+    )
+    assert found["percentile_min_observations"] == 12
+    assert found["fundamentals"] is None
+    assert client.get("/instruments/0050/factors").json()["instrument_type"] == "etf"
+    # the Opportunity Radar's table stays the US universe
+    assert all(r["ticker"] not in CODES for r in client.get("/factors").json()["rows"])
+    sets = {d["definition_version"]: d["market"] for d in client.get("/factors/definitions").json()}
+    assert sets == {"0.1.0": "US", "0.2.0": "TW"}
+
+
+@pytest.mark.skipif(
+    not os.environ.get("RECORD_WEB_FIXTURES"),
+    reason="recorder: set RECORD_WEB_FIXTURES=1 to refresh apps/web/tests/fixtures/api",
+)
+def test_record_web_fixtures(client: TestClient) -> None:
+    target = Path(__file__).resolve().parents[3] / "web" / "tests" / "fixtures" / "api"
+    recorded: tuple[tuple[str, str, dict[str, Any]], ...] = (
+        ("taiwan", "/taiwan", {"known_at": AFTER_D1}),
+        ("taiwan-2330", "/taiwan/instruments/2330", {"known_at": AFTER_D1}),
+        ("taiwan-0050", "/taiwan/instruments/0050", {"known_at": AFTER_D1}),
+        ("factors-2330", "/instruments/2330/factors", {"known_at": AFTER_D1}),
+    )
+    for name, path, params in recorded:
+        response = client.get(path, params=params)
+        assert response.status_code == 200
+        record = {
+            "recorded_at": datetime.now(UTC).isoformat(),
+            "recorded_from": "recorded TWSE OpenAPI files replayed into the integration test "
+            "database (tests/integration/test_twse.py)",
+            "endpoint": path,
+            "params": params,
+            "response": response.json(),
+        }
+        (target / f"{name}.json").write_text(
+            json.dumps(record, indent=2, ensure_ascii=False) + "\n"
+        )

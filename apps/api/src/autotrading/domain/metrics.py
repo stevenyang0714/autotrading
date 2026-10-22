@@ -81,6 +81,10 @@ METHODOLOGY = {
     "rotation_alert": "0.2.0",
     # M3.0c (ADR-038): Chinese messages with names and reasons, and the weekly digest.
     "alert_delivery": "0.2.0",
+    # M3.7 (ADR-039 TW10): beta and relative momentum against the market's benchmark.
+    "beta_252d": "0.2.0",
+    "relative_momentum_12_1": "0.2.0",
+    "relative_momentum_6_1": "0.2.0",
 }
 
 # FRED series shown on the Macro page (M0.6): reported values with vintages, one term per
@@ -163,6 +167,19 @@ METRICS: tuple[MetricDefinition, ...] = (
             "quarterly_derived_value": "quarters.quarters",
             "trailing_twelve_months": "quarters.trailing_twelve_months",
             "split_adjusted": "splits.adjust",
+            # M3.7 (ADR-039): what the TWSE OpenAPI publishes, and the checks on it
+            "taiwan_universe": "twse.rank_market_cap",
+            "taiwan_market_session": "market_calendar.MarketCalendar",
+            "twse_close": "twse.day_rows",
+            "twse_price_change": "twse.day_rows",
+            "trade_value": "twse.day_rows",
+            "twse_reference_price": "twse.reference_gap",
+            "reference_price_gap": "twse.reference_gap",
+            "exchange_pe_ratio": "twse.valuation_rows",
+            "exchange_pb_ratio": "twse.valuation_rows",
+            "exchange_dividend_yield": "twse.valuation_rows",
+            "margin_balance": "twse.margin_rows",
+            "short_balance": "twse.margin_rows",
             # M1.2 (ADR-022)
             "valuation_price": "valuation.select_price",
             "market_cap": "valuation.valuation",

@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-13T12:46:07.788608+00:00",
+  "recorded_at": "2026-10-22T04:07:37.323300+00:00",
   "recorded_from": "recorded SEC facts and Alpaca closes, splits and dividends replayed into the integration test database (tests/integration/test_factors.py)",
   "endpoint": "/instruments/AAPL/factors",
   "params": {
@@ -10,9 +10,12 @@
     "instrument_type": "equity",
     "known_at": "2026-10-06T12:00:00Z",
     "definition_version": "0.1.0",
+    "market": "US",
+    "benchmark": "SPY",
+    "percentile_min_observations": null,
     "price": {
       "known_at": "2026-10-06T12:00:00Z",
-      "system_time": "2026-10-13T12:45:47.704259Z",
+      "system_time": "2026-10-22T04:07:16.790782Z",
       "backfilled": true,
       "scope": "all",
       "last_close": "2026-10-05",
@@ -20,7 +23,7 @@
     },
     "fundamentals": {
       "known_at": "2026-10-06T12:00:00Z",
-      "system_time": "2026-10-13T12:45:47.704259Z",
+      "system_time": "2026-10-22T04:07:16.790782Z",
       "backfilled": true,
       "scope": "all",
       "last_close": "2026-10-05",

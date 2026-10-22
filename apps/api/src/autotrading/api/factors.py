@@ -2,11 +2,12 @@
 measure with its inputs and its percentile in the instrument's own history. Nothing is computed
 on request.
 
-- `GET /instruments/{ticker}/factors`: one universe instrument (equity or ETF): the price
-  measures of its latest snapshot at or before T, the value and quality measures of its latest
-  full snapshot, each with its percentile among the last snapshot of every month since 2016,
-  and that monthly history.
-- `GET /factors`: every universe instrument's latest values (the Opportunity Radar table).
+- `GET /instruments/{ticker}/factors`: one universe instrument (equity or ETF) of either
+  market (a Taiwan code since M3.7, ADR-039 TW10, under its market's definition set and
+  benchmark, on its market's months): the price measures of its latest snapshot at or before
+  T, the value and quality measures of its latest full snapshot, each with its percentile among
+  the last snapshot of every month since the set's history start, and that monthly history.
+- `GET /factors`: every US universe instrument's latest values (the Opportunity Radar table).
 - `GET /factors/definitions`: the released definition sets.
 Time-series only (P2-3): a percentile compares an instrument with its own past, never with the
 other instruments (KI-1).
@@ -31,8 +32,8 @@ from autotrading.db.models import FactorSnapshot
 from autotrading.domain.factors import FactorSnapshot as Snapshot
 from autotrading.domain.factors import Measure
 from autotrading.domain.fair_value import relative
+from autotrading.domain.markets import MARKETS, Market, market_of_code
 from autotrading.domain.provenance import end_of_day
-from autotrading.domain.splits import NEW_YORK
 from autotrading.repositories.factors import (
     Target,
     active_factor_version,
@@ -76,6 +77,9 @@ class InstrumentFactorsOut(BaseModel):
     instrument_type: Literal["equity", "etf"]
     known_at: datetime
     definition_version: str
+    market: Market  # US, or TW for a Taiwan code (M3.7)
+    benchmark: str  # SPY, or 0050 for Taiwan
+    percentile_min_observations: int | None  # fewer month ends: no percentile
     price: SnapshotRef | None  # the snapshot of the price measures
     fundamentals: SnapshotRef | None  # the snapshot of the value and quality measures
     measures: list[MeasureOut]
@@ -111,6 +115,7 @@ class FactorsOut(BaseModel):
 
 class FactorDefinitionSetOut(BaseModel):
     definition_version: str
+    market: Market
     status: Literal["active", "retired"]
     released: date
     content: dict[str, Any]
@@ -148,17 +153,20 @@ def _monthly(
     at: datetime,
     since: date,
     full: bool,
+    market: Market = "US",
 ) -> dict[Any, list[tuple[datetime, dict[str, Any]]]]:
-    """Per instrument, its last snapshot of each New York month since `since` known by T, oldest
-    first; with `full`, its last full one (value and quality measures)."""
-    month = func.date_trunc("month", func.timezone("America/New_York", FactorSnapshot.known_at))
+    """Per instrument, its last snapshot of each month of its market's zone (New York, or Taipei)
+    since `since` known by T, oldest first; with `full`, its last full one (value and quality
+    measures)."""
+    zone = MARKETS[market].zone
+    month = func.date_trunc("month", func.timezone(zone.key, FactorSnapshot.known_at))
     query = (
         select(FactorSnapshot.instrument_id, FactorSnapshot.known_at, FactorSnapshot.measure_values)
         .where(
             FactorSnapshot.instrument_id.in_(instrument_ids),
             FactorSnapshot.definition_version == version,
             FactorSnapshot.known_at <= at,
-            FactorSnapshot.known_at >= end_of_day(since) - timedelta(days=1),
+            FactorSnapshot.known_at >= end_of_day(since, zone.key) - timedelta(days=1),
         )
         .ext(distinct_on(FactorSnapshot.instrument_id, month))
         .order_by(FactorSnapshot.instrument_id, month, FactorSnapshot.known_at.desc())
@@ -167,16 +175,17 @@ def _monthly(
         query = query.where(FactorSnapshot.scope == "all")
     out: dict[Any, list[tuple[datetime, dict[str, Any]]]] = defaultdict(list)
     for instrument_id, known_at, values in session.execute(query):
-        if known_at.astimezone(NEW_YORK).date() >= since:
+        if known_at.astimezone(zone).date() >= since:
             out[instrument_id].append((known_at, values))
     return out
 
 
 def _points(
-    history: list[tuple[datetime, dict[str, Any]]], measure_id: str
+    history: list[tuple[datetime, dict[str, Any]]], measure_id: str, market: Market = "US"
 ) -> list[tuple[date, Decimal]]:
+    zone = MARKETS[market].zone
     return [
-        (known_at.astimezone(NEW_YORK).date(), Decimal(str(values[measure_id])))
+        (known_at.astimezone(zone).date(), Decimal(str(values[measure_id])))
         for known_at, values in history
         if values.get(measure_id) is not None
     ]
@@ -203,9 +212,12 @@ def _measures(
     history: list[tuple[datetime, dict[str, Any]]],
     full_history: list[tuple[datetime, dict[str, Any]]],
     benchmark: str = "SPY",
+    market: Market = "US",
+    min_observations: int | None = None,
 ) -> list[MeasureOut]:
     """The price measures of `price` and the value and quality measures of `full`, each with its
-    percentile in the monthly history (the full snapshots' for value and quality)."""
+    percentile in the monthly history (the full snapshots' for value and quality); none below
+    `min_observations` month ends (ADR-039 TW10)."""
     chosen: list[Measure] = []
     if price is not None:
         chosen += [
@@ -222,12 +234,15 @@ def _measures(
     out = []
     for measure in chosen:
         months = full_history if measure.group in ("value", "quality") else history
-        found = relative(measure.measure_id, measure.value, _points(months, measure.measure_id))
+        found = relative(
+            measure.measure_id, measure.value, _points(months, measure.measure_id, market)
+        )
+        enough = min_observations is None or found.observations >= min_observations
         out.append(
             MeasureOut(
                 **measure.model_dump(),
-                percentile=found.percentile,
-                median=found.median,
+                percentile=found.percentile if enough else None,
+                median=found.median if enough else None,
                 observations=found.observations,
                 since=found.since,
             )
@@ -235,12 +250,16 @@ def _measures(
     return out
 
 
-def _settings(session: Session, version: str) -> tuple[date, str]:
-    """The definition set's percentile history start and benchmark."""
+def _settings(session: Session, version: str) -> tuple[date, str, int | None]:
+    """The definition set's percentile history start, benchmark and fewest month ends."""
     definitions = stored_definitions(session, version)
     if definitions is None:
-        return date(2016, 1, 1), "SPY"
-    return definitions.percentile_since, definitions.benchmark
+        return date(2016, 1, 1), "SPY", None
+    return (
+        definitions.percentile_since,
+        definitions.benchmark,
+        definitions.percentile_min_observations,
+    )
 
 
 @router.get("/factors/definitions")
@@ -250,6 +269,7 @@ def factor_definitions(session: SessionDep) -> list[FactorDefinitionSetOut]:
     return [
         FactorDefinitionSetOut(
             definition_version=row.definition_version,
+            market=row.content.get("market", "US"),
             status=status.get(row.definition_version, "retired"),
             released=row.released,
             content=row.content,
@@ -268,31 +288,32 @@ def factor_definitions(session: SessionDep) -> list[FactorDefinitionSetOut]:
 def instrument_factors(
     ticker: str, session: SessionDep, known_at: KnownAt = None
 ) -> InstrumentFactorsOut:
-    found = targets(session, [ticker.upper()])
+    code = ticker.upper()
+    market = market_of_code(code)
+    found = targets(session, [code], market)
     if not found:
-        raise HTTPException(status_code=404, detail=f"{ticker.upper()} is not in the universe")
+        raise HTTPException(status_code=404, detail=f"{code} is not in the universe")
     target = found[0]
     at = known_at_or_now(session, known_at)
-    version = active_factor_version()
+    version = active_factor_version(market)
     price = _latest(session, target, version, at, full=False)
     full = _latest(session, target, version, at, full=True)
-    since, benchmark = _settings(session, version)
-    history = _monthly(session, [target.instrument.id], version, at, since, full=False).get(
-        target.instrument.id, []
-    )
-    full_history = _monthly(session, [target.instrument.id], version, at, since, full=True).get(
-        target.instrument.id, []
-    )
+    since, benchmark, minimum = _settings(session, version)
+    ids = [target.instrument.id]
+    history = _monthly(session, ids, version, at, since, False, market).get(ids[0], [])
+    full_history = _monthly(session, ids, version, at, since, True, market).get(ids[0], [])
+    fundamentals = full if target.kind == "equity" and market == "US" else None
     return InstrumentFactorsOut(
         ticker=target.symbol,
         instrument_type=target.kind,
         known_at=at,
         definition_version=version,
+        market=market,
+        benchmark=benchmark,
+        percentile_min_observations=minimum,
         price=_ref(price) if price else None,
-        fundamentals=_ref(full) if full and target.kind == "equity" else None,
-        measures=_measures(
-            price, full if target.kind == "equity" else None, history, full_history, benchmark
-        ),
+        fundamentals=_ref(fundamentals) if fundamentals else None,
+        measures=_measures(price, fundamentals, history, full_history, benchmark, market, minimum),
         history=[HistoryPoint(known_at=k, values=v) for k, v in history],
     )
 
@@ -303,7 +324,7 @@ def factors_table(session: SessionDep, known_at: KnownAt = None) -> FactorsOut:
     version = active_factor_version()
     everything = targets(session)
     ids = [t.instrument.id for t in everything]
-    since, benchmark = _settings(session, version)
+    since, benchmark, _ = _settings(session, version)
     histories = _monthly(session, ids, version, at, since, full=False)
     full_histories = _monthly(session, ids, version, at, since, full=True)
     rows = []

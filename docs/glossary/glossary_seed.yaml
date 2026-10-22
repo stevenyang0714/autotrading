@@ -4503,11 +4503,11 @@ terms:
     status: complete
 
   - term_id: beta_252d
-    display_name: "Beta to SPY (252 sessions)"
+    display_name: "Beta to the Benchmark (252 sessions)"
     category: factor
-    short_definition: "How much the instrument has moved with SPY over the last 252 sessions."
-    full_definition: "The covariance of the instrument's daily total returns with SPY's over the last 252 sessions (days both have a return), divided by the variance of SPY's. Needs 90% of the sessions paired."
-    formula: "cov(r, r_SPY) / var(r_SPY)"
+    short_definition: "How much the instrument has moved with its market's benchmark (SPY; 0050 for Taiwan) over the last 252 sessions."
+    full_definition: "The covariance of the instrument's daily total returns with its benchmark's over the last 252 sessions (days both have a return), divided by the variance of the benchmark's. Needs 90% of the sessions paired. The benchmark is the definition set's: SPY for the US (0.1.0), 0050 for Taiwan (0.2.0)."
+    formula: "cov(r, r_benchmark) / var(r_benchmark)"
     unit: "ratio"
     example: "NVDA as known on 2026-10-06 (recorded closes and dividends): 1.882."
     direction: "Above 1 = moves more than the market"
@@ -4517,17 +4517,17 @@ terms:
     source_url: https://github.com/stevenyang0714/autotrading/blob/main/config/factor_definitions.yaml
     as_of: "2026-10-13"
     update_cadence: "daily (11:05 SGT) and every session since 2016"
-    caveats: "Not meaningful for SPY itself. Betas change over time; one year of data."
+    caveats: "Not meaningful for the benchmark itself. Betas change over time; one year of data."
     related_terms: [volatility_60d, momentum_12_1]
-    methodology_version: 0.1.0
+    methodology_version: 0.2.0
     status: complete
 
   - term_id: relative_momentum_12_1
-    display_name: "12-1 Momentum vs SPY"
+    display_name: "12-1 Momentum vs the Benchmark"
     category: factor
-    short_definition: "12-1 month momentum minus SPY's over the same closes."
-    full_definition: "The instrument's 12-1 month momentum minus SPY's, in percentage points, both over the same start and end closes; unavailable when the windows differ."
-    formula: "momentum_12_1 - SPY momentum_12_1"
+    short_definition: "12-1 month momentum minus its market's benchmark's (SPY; 0050 for Taiwan) over the same closes."
+    full_definition: "The instrument's 12-1 month momentum minus its benchmark's (SPY for the US, 0050 for Taiwan), in percentage points, both over the same start and end closes; unavailable when the windows differ."
+    formula: "momentum_12_1 - benchmark momentum_12_1"
     unit: "percentage points"
     example: "NVDA as known on 2026-10-06 (recorded closes and dividends): +4.60 points."
     direction: "Above 0 = beat the market"
@@ -4537,17 +4537,17 @@ terms:
     source_url: https://github.com/stevenyang0714/autotrading/blob/main/config/factor_definitions.yaml
     as_of: "2026-10-13"
     update_cadence: "daily (11:05 SGT) and every session since 2016"
-    caveats: "Not meaningful for SPY itself. Describes the past."
+    caveats: "Not meaningful for the benchmark itself. Describes the past."
     related_terms: [momentum_12_1, relative_momentum_6_1]
-    methodology_version: 0.1.0
+    methodology_version: 0.2.0
     status: complete
 
   - term_id: relative_momentum_6_1
-    display_name: "6-1 Momentum vs SPY"
+    display_name: "6-1 Momentum vs the Benchmark"
     category: factor
-    short_definition: "6-1 month momentum minus SPY's over the same closes."
-    full_definition: "The instrument's 6-1 month momentum minus SPY's, in percentage points, both over the same start and end closes; unavailable when the windows differ."
-    formula: "momentum_6_1 - SPY momentum_6_1"
+    short_definition: "6-1 month momentum minus its market's benchmark's (SPY; 0050 for Taiwan) over the same closes."
+    full_definition: "The instrument's 6-1 month momentum minus its benchmark's (SPY for the US, 0050 for Taiwan), in percentage points, both over the same start and end closes; unavailable when the windows differ."
+    formula: "momentum_6_1 - benchmark momentum_6_1"
     unit: "percentage points"
     example: "Apple as known on 2026-10-06 (recorded closes and dividends): +9.38 points."
     direction: "Above 0 = beat the market"
@@ -4557,9 +4557,9 @@ terms:
     source_url: https://github.com/stevenyang0714/autotrading/blob/main/config/factor_definitions.yaml
     as_of: "2026-10-13"
     update_cadence: "daily (11:05 SGT) and every session since 2016"
-    caveats: "Not meaningful for SPY itself. Describes the past."
+    caveats: "Not meaningful for the benchmark itself. Describes the past."
     related_terms: [momentum_6_1, relative_momentum_12_1]
-    methodology_version: 0.1.0
+    methodology_version: 0.2.0
     status: complete
 
   - term_id: total_return
@@ -5379,6 +5379,366 @@ terms:
     update_cadence: "per release"
     caveats: "Names are today's; they are not kept point in time (display only)."
     related_terms: [gics_sector]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: taiwan_universe
+    display_name: "Taiwan Universe"
+    category: navigation
+    short_definition: "The 10 largest TWSE-listed companies by market cap on 2026-10-21, and the 0050 ETF."
+    full_definition: "Ranked once by close times issued common shares from the TWSE OpenAPI files of the 2026-10-21 session, and frozen in config/universe_tw.yaml with the files' sha256. Research only: no strategy, signal, alert or paper portfolio reads it."
+    formula: "top 10 of ClosingPrice x issued common shares, plus 0050"
+    unit: "list"
+    example: "2330 TSMC (NT$62.76 trillion) to 2882 Cathay Financial (NT$1.67 trillion)."
+    direction: "N/A"
+    interpretation: "The Taiwan names followed here and why they were chosen."
+    why_it_matters: "Fixes the list so its history stays comparable."
+    source: "TWSE OpenAPI (Open Government Data License Taiwan 1.0, attribution required); ADR-039"
+    source_url: https://openapi.twse.com.tw/
+    as_of: "2026-10-22"
+    update_cadence: "frozen (re-ranked only by a new decision)"
+    caveats: "No survivorship handling: a company that falls out of the top 10 stays."
+    related_terms: [taiwan_market_session, open_data_attribution]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: taiwan_market_session
+    display_name: "Taiwan Session"
+    category: market_data
+    short_definition: "Whether the Taiwan Stock Exchange is open now, and when it next opens or last closed."
+    full_definition: "TWSE regular hours, 09:00 to 13:30 Taipei time, on weekdays that are not exchange holidays (config/market_calendar_xtai.yaml, from the TWSE holiday schedule). A typhoon closure is known only when no close comes."
+    formula: "weekday, not a holiday, 09:00 <= Taipei time < 13:30"
+    unit: "label"
+    example: "Closed on 2026-10-26 (臺灣光復節, observed) while New York is open."
+    direction: "N/A"
+    interpretation: "Taiwan data changes once a session; nothing is live."
+    why_it_matters: "A Taiwan session never borrows a New York date or calendar."
+    source: "TWSE OpenAPI (Open Government Data License Taiwan 1.0, attribution required); ADR-039"
+    source_url: https://openapi.twse.com.tw/
+    as_of: "2026-10-22"
+    update_cadence: "per session"
+    caveats: "The calendar lists the current year only until TWSE publishes the next."
+    related_terms: [market_session, missed_session]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: twse_close
+    display_name: "Close (TWSE)"
+    category: market_data
+    short_definition: "The session's closing price as the TWSE published it, in New Taiwan dollars."
+    full_definition: "ClosingPrice of the TWSE OpenAPI file STOCK_DAY_ALL for the session. Public from the end of the session's day in Taipei (stored with day precision). The adjusted close moves earlier closes to the basis of the time shown for stock dividends."
+    formula: "ClosingPrice (STOCK_DAY_ALL)"
+    unit: "TWD"
+    example: "2330 on 2026-10-21: NT$2,420."
+    direction: "N/A"
+    interpretation: "The last trade of the session."
+    why_it_matters: "The base of every Taiwan price measure."
+    source: "TWSE OpenAPI (Open Government Data License Taiwan 1.0, attribution required); ADR-039"
+    source_url: https://openapi.twse.com.tw/
+    as_of: "2026-10-22"
+    update_cadence: "daily (07:40, 09:40 and 20:40 SGT), the latest session only"
+    caveats: "A session no run caught is never filled in: the OpenAPI serves only the latest one."
+    related_terms: [twse_reference_price, missed_session]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: twse_price_change
+    display_name: "Change (TWSE)"
+    category: market_data
+    short_definition: "The session's change as TWSE published it: the close against the session's reference price."
+    full_definition: "Change of STOCK_DAY_ALL. On an ex-dividend or ex-rights date the reference price is the previous close less the dividend, so the change is not the close-to-close move."
+    formula: "close - reference price"
+    unit: "TWD"
+    example: "2330 on 2026-10-21: +15."
+    direction: "N/A"
+    interpretation: "The move the exchange reports, adjusted for that day's corporate action."
+    why_it_matters: "Recovers the reference price for the corporate action check."
+    source: "TWSE OpenAPI (Open Government Data License Taiwan 1.0, attribution required); ADR-039"
+    source_url: https://openapi.twse.com.tw/
+    as_of: "2026-10-22"
+    update_cadence: "daily (07:40, 09:40 and 20:40 SGT), the latest session only"
+    caveats: "Not a return: on an ex-date it differs from the close-to-close change."
+    related_terms: [twse_reference_price, reference_price_gap]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: twse_reference_price
+    display_name: "Reference Price (TWSE)"
+    category: market_data
+    short_definition: "The price TWSE measured the session's change from: the previous close, adjusted on an ex-date."
+    full_definition: "Read as close minus TWSE's change. Without a corporate action it equals the previous close; on an ex-dividend date it is the previous close less the cash dividend, divided by one plus the stock dividend."
+    formula: "close - change"
+    unit: "TWD"
+    example: "2330 on 2026-10-21: 2,420 - 15 = 2,405."
+    direction: "N/A"
+    interpretation: "What the exchange treated as the starting price of the session."
+    why_it_matters: "Shows corporate actions the OpenAPI does not list."
+    source: "TWSE OpenAPI (Open Government Data License Taiwan 1.0, attribution required); ADR-039"
+    source_url: https://openapi.twse.com.tw/
+    as_of: "2026-10-22"
+    update_cadence: "daily (07:40, 09:40 and 20:40 SGT), the latest session only"
+    caveats: "TWSE rounds it to the tick, so one tick of difference is ignored."
+    related_terms: [twse_price_change, reference_price_gap]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: trade_value
+    display_name: "Trade Value"
+    category: market_data
+    short_definition: "The value of the shares traded in the session, as TWSE published it."
+    full_definition: "TradeValue of STOCK_DAY_ALL: the sum of price times shares of every regular-session trade."
+    formula: "sum of price x shares"
+    unit: "TWD"
+    example: "2330 on 2026-10-21: NT$65.5 billion."
+    direction: "Higher = more traded"
+    interpretation: "How much money changed hands."
+    why_it_matters: "Shows liquidity in currency, not shares."
+    source: "TWSE OpenAPI (Open Government Data License Taiwan 1.0, attribution required); ADR-039"
+    source_url: https://openapi.twse.com.tw/
+    as_of: "2026-10-22"
+    update_cadence: "daily (07:40, 09:40 and 20:40 SGT), the latest session only"
+    caveats: "Regular session only; odd lots and block trades are reported elsewhere."
+    related_terms: [volume, twse_close]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: exchange_pe_ratio
+    display_name: "P/E (TWSE)"
+    category: valuation
+    short_definition: "The price-to-earnings ratio TWSE publishes for the session, on its stated earnings quarter."
+    full_definition: "PEratio of the OpenAPI file BWIBBU_d: the close over the last four quarters' earnings per share, as TWSE computes it; blank when the company has a loss. Stored only when its close equals the session's close. Not the Research Record's P/E (SEC filings): a different source and method."
+    formula: "close / trailing EPS (TWSE)"
+    unit: "x"
+    example: "2330 on 2026-10-21: 28.05 (earnings of 2026Q2)."
+    direction: "Lower = cheaper on earnings"
+    interpretation: "How many years of current earnings the price pays for."
+    why_it_matters: "Compares a Taiwan company with its own history."
+    source: "TWSE OpenAPI (Open Government Data License Taiwan 1.0, attribution required); ADR-039"
+    source_url: https://openapi.twse.com.tw/
+    as_of: "2026-10-22"
+    update_cadence: "daily (07:40, 09:40 and 20:40 SGT), the latest session only"
+    caveats: "TWSE's own computation; blank (not meaningful) with a loss. Percentiles need 12 month ends of history."
+    related_terms: [exchange_pb_ratio, exchange_dividend_yield, pe_ratio_ttm]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: exchange_pb_ratio
+    display_name: "P/B (TWSE)"
+    category: valuation
+    short_definition: "The price-to-book ratio TWSE publishes for the session."
+    full_definition: "PBratio of BWIBBU_d: the close over book value per share of the stated quarter, as TWSE computes it."
+    formula: "close / book value per share (TWSE)"
+    unit: "x"
+    example: "2330 on 2026-10-21: 9.76."
+    direction: "Lower = cheaper on book value"
+    interpretation: "How much the price pays over the accounting equity."
+    why_it_matters: "Useful for banks and insurers, where earnings swing."
+    source: "TWSE OpenAPI (Open Government Data License Taiwan 1.0, attribution required); ADR-039"
+    source_url: https://openapi.twse.com.tw/
+    as_of: "2026-10-22"
+    update_cadence: "daily (07:40, 09:40 and 20:40 SGT), the latest session only"
+    caveats: "TWSE's own computation on its stated quarter. Percentiles need 12 month ends."
+    related_terms: [exchange_pe_ratio, price_to_book]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: exchange_dividend_yield
+    display_name: "Dividend Yield (TWSE)"
+    category: valuation
+    short_definition: "The dividend yield TWSE publishes for the session, on its stated dividend year."
+    full_definition: "DividendYield of BWIBBU_d: the cash dividends of the stated year over the close, in percent."
+    formula: "dividends of the year / close x 100"
+    unit: "percent"
+    example: "2330 on 2026-10-21: 0.91% (dividends of 2025)."
+    direction: "Higher = more cash paid per price"
+    interpretation: "The cash return of a year's dividends at today's price."
+    why_it_matters: "Separates income stocks from growth stocks."
+    source: "TWSE OpenAPI (Open Government Data License Taiwan 1.0, attribution required); ADR-039"
+    source_url: https://openapi.twse.com.tw/
+    as_of: "2026-10-22"
+    update_cadence: "daily (07:40, 09:40 and 20:40 SGT), the latest session only"
+    caveats: "Past dividends, not a forecast. Percentiles need 12 month ends."
+    related_terms: [exchange_pe_ratio, cash_dividend]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: margin_balance
+    display_name: "Margin Purchase Balance"
+    category: positioning
+    short_definition: "Shares bought on margin and not yet repaid at the end of the session (融資餘額), in lots."
+    full_definition: "融資今日餘額 of the OpenAPI file MI_MARGN, in lots of 1,000 shares. The file has no date: it is dated to the session STOCK_DAY_ALL names in the same run, and checked by the chain of balances (each 前日餘額 equals the stored balance of the session before)."
+    formula: "previous balance + purchases - sales - cash redemptions"
+    unit: "lots"
+    example: "2330 on 2026-10-21: 35,330 lots (up 929)."
+    direction: "Rising = more leveraged buying"
+    interpretation: "How much retail leverage sits in the stock."
+    why_it_matters: "Fast-rising margin often comes with crowded trades."
+    source: "TWSE OpenAPI (Open Government Data License Taiwan 1.0, attribution required); ADR-039"
+    source_url: https://openapi.twse.com.tw/
+    as_of: "2026-10-22"
+    update_cadence: "daily (07:40, 09:40 and 20:40 SGT), the latest session only"
+    caveats: "The first session has nothing to chain to (stored with confidence 0.9)."
+    related_terms: [short_balance, margin_usage, short_to_margin_ratio]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: short_balance
+    display_name: "Short Sale Balance"
+    category: positioning
+    short_definition: "Shares sold short on margin and not yet covered at the end of the session (融券餘額), in lots."
+    full_definition: "融券今日餘額 of MI_MARGN, in lots of 1,000 shares, dated and checked like the margin balance."
+    formula: "previous balance + short sales - covering - stock redemptions"
+    unit: "lots"
+    example: "2330 on 2026-10-21: 6 lots."
+    direction: "Rising = more bets on a fall"
+    interpretation: "How many shares are sold short through margin accounts."
+    why_it_matters: "Short covering can add buying pressure."
+    source: "TWSE OpenAPI (Open Government Data License Taiwan 1.0, attribution required); ADR-039"
+    source_url: https://openapi.twse.com.tw/
+    as_of: "2026-10-22"
+    update_cadence: "daily (07:40, 09:40 and 20:40 SGT), the latest session only"
+    caveats: "Margin-account shorts only; securities lending (借券) is not included."
+    related_terms: [margin_balance, short_to_margin_ratio]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: margin_usage
+    display_name: "Margin Usage"
+    category: positioning
+    short_definition: "The margin purchase balance as a share of its limit (融資使用率)."
+    full_definition: "融資今日餘額 over 融資限額 of MI_MARGN, in percent. The limit is set by the exchange (usually 25% of the shares)."
+    formula: "margin balance / margin limit x 100"
+    unit: "percent"
+    example: "2330 on 2026-10-21: 0.54%."
+    direction: "Higher = more of the allowed leverage used"
+    interpretation: "How close margin buying is to its cap."
+    why_it_matters: "A high usage is a sign of crowded retail leverage."
+    source: "TWSE OpenAPI (Open Government Data License Taiwan 1.0, attribution required); ADR-039"
+    source_url: https://openapi.twse.com.tw/
+    as_of: "2026-10-22"
+    update_cadence: "daily (07:40, 09:40 and 20:40 SGT), the latest session only"
+    caveats: "The limit changes with the share count and the exchange's rules."
+    related_terms: [margin_balance]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: short_to_margin_ratio
+    display_name: "Short-to-Margin Ratio"
+    category: positioning
+    short_definition: "The short sale balance as a share of the margin purchase balance (券資比)."
+    full_definition: "融券今日餘額 over 融資今日餘額 of MI_MARGN, in percent."
+    formula: "short balance / margin balance x 100"
+    unit: "percent"
+    example: "2330 on 2026-10-21: 0.02%."
+    direction: "Higher = more shorts against the longs"
+    interpretation: "Balance of margin shorts against margin longs."
+    why_it_matters: "A high ratio can precede short covering."
+    source: "TWSE OpenAPI (Open Government Data License Taiwan 1.0, attribution required); ADR-039"
+    source_url: https://openapi.twse.com.tw/
+    as_of: "2026-10-22"
+    update_cadence: "daily (07:40, 09:40 and 20:40 SGT), the latest session only"
+    caveats: "Margin accounts only; not the whole short interest."
+    related_terms: [margin_balance, short_balance]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: reference_price_gap
+    display_name: "Reference Price Gap"
+    category: data_quality
+    short_definition: "A session whose TWSE reference price no recorded corporate action explains."
+    full_definition: "The reference price (close minus change) against the previous close less the cash and stock dividends recorded for that ex-date; more than one tick apart is a gap: a capital reduction, a rights offering or a dividend not yet recorded. The OpenAPI does not list capital reductions or ex-rights results, so this check stands in for them."
+    formula: "| reference - (previous close - cash) / (1 + stock ratio) | > one tick"
+    unit: "flag"
+    example: "None in the recorded sessions."
+    direction: "N/A"
+    interpretation: "The price history may need an adjustment this source does not give."
+    why_it_matters: "Keeps an unexplained jump from passing as a return."
+    source: "TWSE OpenAPI (Open Government Data License Taiwan 1.0, attribution required); ADR-039"
+    source_url: https://openapi.twse.com.tw/
+    as_of: "2026-10-22"
+    update_cadence: "daily (07:40, 09:40 and 20:40 SGT), the latest session only"
+    caveats: "Not checked across a missed session."
+    related_terms: [twse_reference_price, missed_session]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: missed_session
+    display_name: "Missed Session"
+    category: data_quality
+    short_definition: "A Taiwan session in the calendar with no stored close: no run caught it."
+    full_definition: "The TWSE OpenAPI serves only the latest session, so a session is lost if no run reads it before the next session's files appear (about 05:20 Taipei the next morning). Counted between the first and the last stored session."
+    formula: "calendar sessions without a stored close"
+    unit: "count"
+    example: "0 in the recorded sessions."
+    direction: "Lower = more complete"
+    interpretation: "Gaps in the Taiwan history."
+    why_it_matters: "Explains a missing day in charts and measures."
+    source: "TWSE OpenAPI (Open Government Data License Taiwan 1.0, attribution required); ADR-039"
+    source_url: https://openapi.twse.com.tw/
+    as_of: "2026-10-22"
+    update_cadence: "daily (07:40, 09:40 and 20:40 SGT), the latest session only"
+    caveats: "Cannot be filled without TWSE's consent to its dated queries (KI-27)."
+    related_terms: [taiwan_market_session, twse_close]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: institutional_flows
+    display_name: "Institutional Flows (unavailable)"
+    category: positioning
+    short_definition: "Net buying of foreign investors, investment trusts and dealers per stock (三大法人買賣超): not in the licensed source."
+    full_definition: "TWSE publishes it per stock in the daily report T86 on its website, not in the OpenAPI. Its dated queries need TWSE's written consent (website terms Art. 6), which Steven requested; until then the pages say Data unavailable."
+    formula: "N/A"
+    unit: "N/A"
+    example: "Data unavailable."
+    direction: "N/A"
+    interpretation: "Not shown: no licensed source yet."
+    why_it_matters: "Says why the flows are missing."
+    source: "TWSE OpenAPI (Open Government Data License Taiwan 1.0, attribution required); ADR-039"
+    source_url: https://openapi.twse.com.tw/
+    as_of: "2026-10-22"
+    update_cadence: "N/A"
+    caveats: "Never scraped without consent."
+    related_terms: [foreign_ownership, open_data_attribution]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: foreign_ownership
+    display_name: "Foreign Ownership (unavailable)"
+    category: positioning
+    short_definition: "The share of a company held by foreign and mainland investors (外資持股比率): not in the licensed source for every stock."
+    full_definition: "The OpenAPI has only the top 20 holdings table and the sector table; the per-stock report MI_QFIIS is on the website, whose dated queries need TWSE's consent."
+    formula: "N/A"
+    unit: "N/A"
+    example: "Data unavailable."
+    direction: "N/A"
+    interpretation: "Not shown: no licensed source yet."
+    why_it_matters: "Says why it is missing."
+    source: "TWSE OpenAPI (Open Government Data License Taiwan 1.0, attribution required); ADR-039"
+    source_url: https://openapi.twse.com.tw/
+    as_of: "2026-10-22"
+    update_cadence: "N/A"
+    caveats: "Never scraped without consent."
+    related_terms: [institutional_flows]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: open_data_attribution
+    display_name: "Open Data Attribution"
+    category: provenance
+    short_definition: "The source statement the Open Government Data License requires wherever TWSE data is shown."
+    full_definition: "The provider (臺灣證券交易所), the year, the dataset names, the sentence 此開放資料依政府資料開放授權條款 (Open Government Data License) 進行公眾釋出 and https://data.gov.tw/license. Without it the licence counts as never granted."
+    formula: "provider + year + datasets + licence sentence + URL"
+    unit: "text"
+    example: "臺灣證券交易所 2026 上市個股日成交資訊…；此開放資料依政府資料開放授權條款 (Open Government Data License) 進行公眾釋出"
+    direction: "N/A"
+    interpretation: "Where the Taiwan numbers come from and under which licence."
+    why_it_matters: "A licence condition, not decoration."
+    source: "Open Government Data License Taiwan 1.0"
+    source_url: https://data.gov.tw/license
+    as_of: "2026-10-22"
+    update_cadence: "per page"
+    caveats: "Covers the OpenAPI files only."
+    related_terms: [license_status, taiwan_universe]
     methodology_version: 0.1.0
     status: complete
 
