@@ -66,8 +66,9 @@ NEWS_KINDS = ("article", "press_release", "official")
 NEWS_TIME_BASES = ("publisher", "first_seen")
 DATA_MODES = ("live", "fixture")
 SPLIT_KINDS = ("forward_split", "reverse_split", "stock_dividend")
-# exchange_measures units (M3.7): TWD amounts, percent, multiples, lots of 1,000 shares
-EXCHANGE_MEASURE_UNITS = ("TWD", "percent", "x", "lots")
+# exchange_measures units (M3.7, M3.7b): TWD amounts, percent, multiples, lots of 1,000 shares,
+# shares (institutional flows and foreign holdings)
+EXCHANGE_MEASURE_UNITS = ("TWD", "percent", "x", "lots", "shares")
 MENTION_RULES = ("exchange_ticker", "feed_issuer", "company_name", "bare_ticker")
 REVISION_REASONS = ("restatement", "revision", "correction")
 AUDIT_ACTIONS = ("insert", "update", "delete", "supersede")

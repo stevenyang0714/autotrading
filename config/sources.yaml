@@ -85,6 +85,29 @@ sources:
     rate_limit_per_second: 0.334    # one request every 3 seconds
     rate_limit_burst: 1
 
+  - id: finmind
+    name: FinMind (Taiwan market data aggregator, free tier)
+    url: https://finmind.github.io/Disclaimer/
+    tier: 2
+    license_status: licensed_personal
+    note: >-
+      Supplementary source for Taiwan (M3.7b, ADR-040): per-stock institutional investors and
+      foreign shareholding daily, and a one-time history (prices, margin, P/E, ex-dividend
+      results) for the 11-code universe before 2026-10-21. Free anonymous tier (300 requests
+      an hour, no account, no token), personal non-commercial use per
+      https://finmind.github.io/Pricing/ and https://finmind.github.io/PrivacyPolicy/:
+      attribution 資料來源：FinMind wherever the data shows, no redistribution, no mirror.
+      FinMind states its data comes from official open channels but does not name the source
+      per dataset, so it stays tier 2 and never overwrites a twse_openapi row. Read 2026-10-26.
+    access_status: active           # no credentials needed
+    update_cadence: daily
+    freshness_sla_seconds: 129600   # 36 hours; flows run daily at 21:30 SGT
+    enabled: true                   # M3.7b
+    priority: 36
+    topics: [flows, ownership, prices, margin, valuation, corporate_actions, taiwan]
+    rate_limit_per_second: 0.08     # one request every 12.5 s: 288 an hour under the 300 cap
+    rate_limit_burst: 1
+
   - id: gdelt
     name: GDELT DOC 2.0 API
     url: https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/
