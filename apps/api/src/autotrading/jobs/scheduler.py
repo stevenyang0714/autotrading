@@ -18,6 +18,7 @@ from autotrading.ingestion.schedule import (
     DAILY_BARS,
     DELIVERY,
     FACTORS,
+    FINMIND,
     FRED,
     GDELT,
     MOMENTUM,
@@ -143,6 +144,15 @@ def main() -> None:
             coalesce=True,
             misfire_grace_time=12 * 3600,
         )
+    # FinMind (M3.7b, ADR-040 TW25): the Taiwan flows and foreign holdings, daily at 21:30 SGT.
+    scheduler.add_job(
+        lambda: actors.start_finmind_refresh(manual=False),
+        CronTrigger(hour=FINMIND.hour, minute=FINMIND.minute, timezone=REFRESH_TIMEZONE),
+        id="finmind_flows",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=12 * 3600,
+    )
     # Taiwan factor snapshots (M3.7, ADR-039 TW10): daily at 09:50 SGT, after the TWSE runs.
     scheduler.add_job(
         lambda: actors.start_taiwan_factor_evaluation(manual=False),

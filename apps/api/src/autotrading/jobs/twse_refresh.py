@@ -3,6 +3,7 @@
     python -m autotrading.jobs.twse_refresh             # `make twse-refresh`: queue a run now
     python -m autotrading.jobs.twse_refresh --companies # the run also fetches the company file
     python -m autotrading.jobs.twse_refresh --factors   # `make twse-factors`: Taiwan snapshots
+    python -m autotrading.jobs.twse_refresh --factors-backfill  # every session since 2016
     python -m autotrading.jobs.twse_refresh --rank      # `make twse-rank`: the market caps
 
 --rank recomputes the market-cap ranking (TW2) from the latest stored STOCK_DAY_ALL and company
@@ -67,10 +68,15 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--companies", action="store_true")
     parser.add_argument("--factors", action="store_true")
+    parser.add_argument("--factors-backfill", action="store_true")
     parser.add_argument("--rank", action="store_true")
     args = parser.parse_args()
     if args.rank:
         return rank()
+    if args.factors_backfill:
+        years = actors.start_taiwan_factor_backfill()
+        print(f"Queued the Taiwan factor backfill: {years} years (ADR-040 TW17).")
+        return 0
     if args.factors:
         actors.start_taiwan_factor_evaluation(manual=True)
         print("Queued the Taiwan factor snapshots (definitions for market TW).")

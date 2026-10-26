@@ -254,13 +254,13 @@ def test_taiwan_factor_snapshots_read_taipei_closes_against_0050_and_recompute(
 ) -> None:
     with Session(engine) as session:
         at = session.execute(select(func.now())).scalar_one()  # T = S = now, as the daily job
-        assert active_factor_version("TW") == "0.2.0"
-        definitions = stored_definitions(session, "0.2.0")
+        assert active_factor_version("TW") == "0.3.0"
+        definitions = stored_definitions(session, "0.3.0")
         assert definitions is not None and definitions.benchmark == "0050"
         stored = record_universe(session, definitions, [(at, "all")], at, "manual")
         assert stored == len(CODES)
         rows = session.scalars(
-            select(FactorSnapshot).where(FactorSnapshot.definition_version == "0.2.0")
+            select(FactorSnapshot).where(FactorSnapshot.definition_version == "0.3.0")
         ).all()
         by_symbol = {r.symbol: r for r in rows}
         tsmc = by_symbol["2330"]
@@ -359,7 +359,7 @@ def test_taiwan_factors_are_read_against_0050(client: TestClient) -> None:
     assert (found["market"], found["benchmark"], found["definition_version"]) == (
         "TW",
         "0050",
-        "0.2.0",
+        "0.3.0",
     )
     assert found["percentile_min_observations"] == 12
     assert found["fundamentals"] is None
@@ -367,7 +367,7 @@ def test_taiwan_factors_are_read_against_0050(client: TestClient) -> None:
     # the Opportunity Radar's table stays the US universe
     assert all(r["ticker"] not in CODES for r in client.get("/factors").json()["rows"])
     sets = {d["definition_version"]: d["market"] for d in client.get("/factors/definitions").json()}
-    assert sets == {"0.1.0": "US", "0.2.0": "TW"}
+    assert sets == {"0.1.0": "US", "0.2.0": "TW", "0.3.0": "TW"}
 
 
 @pytest.mark.skipif(

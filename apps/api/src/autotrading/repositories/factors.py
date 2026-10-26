@@ -358,9 +358,10 @@ def backfill_points(
     """The points of one New York year to backfill (ADR-030 F2): the end of every session the
     benchmark has a close for (price measures) and every month end (all measures; a month end
     that is also a session counts once, as a month end), up to `system_time`."""
-    bench = targets(session, [definitions.benchmark])
+    bench = targets(session, [definitions.benchmark], definitions.market)
     if not bench:
         return []
+    zone = definitions.zone
     start = datetime(year, 1, 1, tzinfo=UTC) - timedelta(days=1)
     bars = daily_bars(
         session,
@@ -371,24 +372,29 @@ def backfill_points(
         known_at=system_time,
         system_time=system_time,
     )
-    sessions = {end_of_day(b.bar_date) for b in bars if b.bar_date.year == year}
-    # month ends are the end of their New York day, which is the next day in UTC for December
+    sessions = {end_of_day(b.bar_date, zone.key) for b in bars if b.bar_date.year == year}
+    # month ends are the end of their market day (New York, or Taipei), which is the next day
+    # in UTC for a New York December
     months = {
-        p for p in month_ends(date(year, 1, 1), system_time) if p.astimezone(NEW_YORK).year == year
+        p
+        for p in month_ends(date(year, 1, 1), system_time, zone.key)
+        if p.astimezone(zone).year == year
     }
     points = sorted(p for p in sessions | months if p <= system_time)
     return [(p, "all" if p in months else "price") for p in points]
 
 
 def session_points(
-    session: Session, symbol: str, since: date, system_time: datetime
+    session: Session, symbol: str, since: date, system_time: datetime, market: Market = "US"
 ) -> list[datetime]:
-    """The end of every New York session `symbol` has a close for since `since`, and every month
-    end, up to `system_time`: the points the factor backfill stores (ADR-030 F2), so the regime,
-    rotation and momentum backfills find a snapshot at each one (ADR-036 D5)."""
-    found = targets(session, [symbol])
+    """The end of every session `symbol` has a close for since `since` (in its market's zone:
+    New York, or Taipei), and every month end, up to `system_time`: the points the factor
+    backfill stores (ADR-030 F2), so the regime, rotation and momentum backfills find a
+    snapshot at each one (ADR-036 D5)."""
+    found = targets(session, [symbol], market)
     if not found:
         return []
+    zone = MARKETS[market].zone
     bars = daily_bars(
         session,
         found[0].instrument.id,
@@ -398,8 +404,8 @@ def session_points(
         known_at=system_time,
         system_time=system_time,
     )
-    sessions = {end_of_day(b.bar_date) for b in bars if b.bar_date >= since}
-    months = set(month_ends(since, system_time))
+    sessions = {end_of_day(b.bar_date, zone.key) for b in bars if b.bar_date >= since}
+    months = set(month_ends(since, system_time, zone.key))
     return sorted(p for p in sessions | months if p <= system_time)
 
 

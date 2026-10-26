@@ -15,7 +15,7 @@ export NEXT_TELEMETRY_DISABLED := 1
 export COREPACK_ENABLE_DOWNLOAD_PROMPT := 0
 
 .DEFAULT_GOAL := help
-.PHONY: help setup up down ps logs migrate sec-refresh fred-refresh prices-refresh prices-backfill news-refresh news-backfill buyback-evaluate buyback-backfill buyback-verify signals-backfill alerts-backfill regime-evaluate regime-backfill regime-verify factors-evaluate factors-backfill factors-verify portfolio-snapshot risk-verify rotation-evaluate rotation-backfill rotation-verify momentum-evaluate momentum-backfill momentum-verify alerts-deliver alerts-digest telegram-check twse-refresh twse-factors twse-rank backtest-run backtest-verify db-backup db-restore-check replay-fixtures gen test test-unit test-integration e2e lint lint-api lint-web fmt dev-web
+.PHONY: help setup up down ps logs migrate sec-refresh fred-refresh prices-refresh prices-backfill news-refresh news-backfill buyback-evaluate buyback-backfill buyback-verify signals-backfill alerts-backfill regime-evaluate regime-backfill regime-verify factors-evaluate factors-backfill factors-verify portfolio-snapshot risk-verify rotation-evaluate rotation-backfill rotation-verify momentum-evaluate momentum-backfill momentum-verify alerts-deliver alerts-digest telegram-check twse-refresh twse-factors twse-factors-backfill twse-rank finmind-refresh finmind-backfill backtest-run backtest-verify db-backup db-restore-check replay-fixtures gen test test-unit test-integration e2e lint lint-api lint-web fmt dev-web
 
 help: ## Show available targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  %-18s %s\n", $$1, $$2}'
@@ -111,6 +111,15 @@ twse-refresh: ## Queue the Taiwan universe's latest session from the TWSE OpenAP
 
 twse-factors: ## Queue the Taiwan factor snapshots now (definitions 0.2.0 against 0050, M3.7)
 	$(COMPOSE) exec -T api python -m autotrading.jobs.twse_refresh --factors
+
+twse-factors-backfill: ## Queue Taiwan factor snapshots at every 0050 session since 2016 (M3.7b; run once)
+	$(COMPOSE) exec -T api python -m autotrading.jobs.twse_refresh --factors-backfill
+
+finmind-refresh: ## Queue the Taiwan institutional flows and foreign holdings from FinMind now (M3.7b)
+	$(COMPOSE) exec -T api python -m autotrading.jobs.finmind_refresh
+
+finmind-backfill: ## Queue the one-time FinMind history (prices, margin, P/E, dividends, flows since 2016; M3.7b)
+	$(COMPOSE) exec -T api python -m autotrading.jobs.finmind_refresh --backfill
 
 twse-rank: ## Print the TWSE market-cap ranking from the stored files against universe_tw.yaml
 	$(COMPOSE) exec -T api python -m autotrading.jobs.twse_refresh --rank

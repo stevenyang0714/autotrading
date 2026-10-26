@@ -82,11 +82,15 @@ GDELT = IntervalSchedule(60, 20)  # M0.8, hourly at :20
 # business day and stay until the following business day's (Friday's from Monday morning, the
 # weekend still serving Thursday's); three slots a day, weekends too, each a full chance.
 TWSE = MultiDailySchedule(((7, 40), (9, 40), (20, 40)))
+# M3.7b (ADR-040 TW25): FinMind publishes the day's institutional flows about 20:00 and the
+# foreign holdings about 21:00 Taipei; one run at 21:30 SGT.
+FINMIND = DailySchedule(21, 30)
 SCHEDULES: dict[str, DailySchedule | IntervalSchedule | MultiDailySchedule] = {
     "sec_edgar": SEC_EDGAR,
     "fred": FRED,
     "gdelt": GDELT,
     "twse_openapi": TWSE,
+    "finmind": FINMIND,
 }
 # Buyback states (M1.4b): evaluated after the SEC and FRED refreshes of the day.
 BUYBACK_STATES = DailySchedule(11, 0)

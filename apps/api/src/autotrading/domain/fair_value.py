@@ -28,7 +28,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from autotrading.domain.provenance import end_of_day
+from autotrading.domain.provenance import DATE_ONLY_TIMEZONE, end_of_day
 from autotrading.domain.splits import Split
 from autotrading.domain.valuation import (
     NEW_YORK,
@@ -325,12 +325,13 @@ HISTORY_SINCE = date(2016, 1, 1)
 CLOSE_WINDOW = timedelta(days=10)  # longer than STALE_AFTER: older closes are stale anyway
 
 
-def month_ends(since: date, at: datetime) -> list[datetime]:
-    """The end of the last calendar day of each month from `since` (New York), up to `at`."""
+def month_ends(since: date, at: datetime, tz: str = DATE_ONLY_TIMEZONE) -> list[datetime]:
+    """The end of the last calendar day of each month from `since`, in `tz` (New York unless
+    a market says otherwise, M3.7b), up to `at`."""
     out: list[datetime] = []
     year, month = since.year, since.month
     while True:
-        point = end_of_day(date(year, month, monthrange(year, month)[1]))
+        point = end_of_day(date(year, month, monthrange(year, month)[1]), tz)
         if point > at:
             return out
         out.append(point)
