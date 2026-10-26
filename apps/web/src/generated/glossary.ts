@@ -5039,7 +5039,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "display_name": "Missed Session",
     "category": "data_quality",
     "short_definition": "A Taiwan session in the calendar with no stored close: no run caught it.",
-    "full_definition": "The TWSE OpenAPI serves only the latest session, so a session is lost if no run reads it before the next session's files appear (about 05:20 Taipei the next morning). Counted between the first and the last stored session.",
+    "full_definition": "The TWSE OpenAPI serves only the latest session, about 05:20 Taipei on the next business day until the following business day's files replace it, so a session is lost if no run reads it in that business day. Counted between the first and the last stored session.",
     "formula": "calendar sessions without a stored close",
     "unit": "count",
     "example": "0 in the recorded sessions.",
@@ -5055,7 +5055,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "taiwan_market_session",
       "twse_close"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.1.1",
     "name_zh": "缺漏交易日",
     "hint_zh": "日曆上有開盤、卻沒存到收盤的交易日；OpenAPI 只給最新一天，錯過就補不回來。"
   },
