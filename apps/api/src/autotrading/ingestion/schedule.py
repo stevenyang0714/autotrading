@@ -78,9 +78,9 @@ class IntervalSchedule:
 SEC_EDGAR = DailySchedule(10, 0)  # M0.5, about 22:00 ET the previous evening
 FRED = DailySchedule(10, 15)  # M0.6, after SEC
 GDELT = IntervalSchedule(60, 20)  # M0.8, hourly at :20
-# M3.7 (ADR-039 TW5): the TWSE OpenAPI files of a session appear about 05:20 Taipei the next
-# morning and stay until the next session's; three slots a day, weekends too (Saturday's
-# catches Friday), each before a file can change again.
+# M3.7 (ADR-039 TW5): the TWSE OpenAPI files of a session appear about 05:20 Taipei on the next
+# business day and stay until the following business day's (Friday's from Monday morning, the
+# weekend still serving Thursday's); three slots a day, weekends too, each a full chance.
 TWSE = MultiDailySchedule(((7, 40), (9, 40), (20, 40)))
 SCHEDULES: dict[str, DailySchedule | IntervalSchedule | MultiDailySchedule] = {
     "sec_edgar": SEC_EDGAR,

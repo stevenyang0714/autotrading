@@ -187,6 +187,7 @@ class _Store:
         self.unchanged = 0
         self.conflicts: list[str] = []
         self.notes: list[str] = []
+        self.calendar = job.calendar()
         self.previous = self._previous_closes()
 
     # ---------- shared ----------
@@ -253,6 +254,14 @@ class _Store:
         )
 
     # ---------- sessions ----------
+
+    def adjacent(self, earlier: date) -> bool:
+        """Whether `earlier` is the session right before today in the TWSE calendar: no
+        calendar session lies between them (a lost session breaks the chain)."""
+        between = self.calendar.sessions_between(
+            earlier + timedelta(days=1), self.today - timedelta(days=1)
+        )
+        return not between
 
     def session_notes(self, calendar: MarketCalendar) -> list[str]:
         stored = self._stored_sessions()
@@ -408,8 +417,7 @@ class _Store:
             stored = values_on(self.session, ids, ["margin_balance", "short_balance"], before)
             code_of = {v: k for k, v in self.ids.items()}
             previous = {code_of[i]: v for i, v in stored.items()}
-            sessions = sorted(d for d in self._stored_sessions() if d < self.today)
-            adjacent = bool(sessions) and sessions[-1] == before
+            adjacent = self.adjacent(before)
         dating = margin_dating(rows, previous, adjacent=adjacent)
         if not dating.accepted:
             self.notes.append(
@@ -552,14 +560,11 @@ class _Store:
     # ---------- reference price (TW9) ----------
 
     def reference_checks(self, days: Mapping[str, DayRow]) -> None:
-        stored = self._stored_sessions()
-        sessions = sorted(d for d in stored if d < self.today)
-        last = sessions[-1] if sessions else None
         for code, row in days.items():
             previous = self.previous.get(code)
             if row.close is None or row.change is None or previous is None:
                 continue
-            if previous[0] != last:
+            if not self.adjacent(previous[0]):
                 continue  # a lost session in between: TWSE's reference is that session's close
             cash, stock = self._actions_on(code)
             gap = reference_gap(

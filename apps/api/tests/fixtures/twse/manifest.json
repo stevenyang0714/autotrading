@@ -14,6 +14,18 @@
         "https://openapi.twse.com.tw/v1/opendata/t187ap03_L": "d1_t187ap03_L.json",
         "https://openapi.twse.com.tw/v1/holidaySchedule/holidaySchedule": "d1_holidaySchedule.json"
       }
+    },
+    {
+      "label": "d2",
+      "session": "2026-10-22",
+      "fetched_at": "2026-10-26T13:32:04.621289+00:00",
+      "files": {
+        "https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL": "d2_STOCK_DAY_ALL.json",
+        "https://openapi.twse.com.tw/v1/exchangeReport/BWIBBU_d": "d2_BWIBBU_d.json",
+        "https://openapi.twse.com.tw/v1/exchangeReport/MI_MARGN": "d2_MI_MARGN.json",
+        "https://openapi.twse.com.tw/v1/exchangeReport/TWT48U_ALL": "d2_TWT48U_ALL.json",
+        "https://openapi.twse.com.tw/v1/holidaySchedule/holidaySchedule": "d2_holidaySchedule.json"
+      }
     }
   ]
 }

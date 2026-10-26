@@ -111,6 +111,18 @@ def first(runner: IngestionRunner) -> IngestionRun:
         return session.get_one(IngestionRun, run_id)
 
 
+D2 = date(2026, 10, 22)
+
+
+@pytest.fixture(scope="module")
+def second(runner: IngestionRunner, first: IngestionRun) -> IngestionRun:
+    """The next session (2026-10-22), recorded on 2026-10-26: TWSE still served it then (the
+    files of a session stay until the business day after the next one)."""
+    (run_id,) = replay(runner, WINDOW, ["d2"])
+    with runner.sessions() as session:
+        return session.get_one(IngestionRun, run_id)
+
+
 def test_the_first_run_creates_the_taiwan_instruments(engine: Engine, first: IngestionRun) -> None:
     assert first.status == "succeeded", first.error_message
     with Session(engine) as session:
@@ -384,3 +396,34 @@ def test_record_web_fixtures(client: TestClient) -> None:
         (target / f"{name}.json").write_text(
             json.dumps(record, indent=2, ensure_ascii=False) + "\n"
         )
+
+
+def test_the_next_session_chains_its_margin_balances_to_the_stored_ones(
+    engine: Engine, second: IngestionRun
+) -> None:
+    assert second.status == "succeeded", second.error_message
+    assert not any("sessions lost" in n for n in second.notes)
+    assert not any("reference price" in n for n in second.notes)  # no unexplained action
+    with Session(engine) as session:
+        (instrument_id,) = instruments_by_symbol(session, ["2330"], "twse").values()
+        day2 = {
+            m.measure_id: m
+            for m in session.scalars(
+                select(ExchangeMeasure).where(
+                    ExchangeMeasure.instrument_id == instrument_id,
+                    ExchangeMeasure.session_date == D2,
+                )
+            )
+        }
+        # the real 2026-10-22 file's previous balances equal the stored 2026-10-21 balances
+        assert day2["margin_balance_previous"].value == Decimal(35330)
+        assert day2["margin_balance"].confidence == Decimal("1.000")
+        bars = session.scalars(
+            select(PriceBar.bar_date).where(PriceBar.instrument_id == instrument_id)
+        ).all()
+        assert sorted(bars) == [D1, D2]
+        # the company file is fetched only while an instrument is missing
+        payloads = session.scalars(
+            select(RawPayload.source_url).where(RawPayload.ingestion_run_id == second.id)
+        ).all()
+        assert not any(url.endswith("/opendata/t187ap03_L") for url in payloads)

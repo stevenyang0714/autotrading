@@ -1233,7 +1233,7 @@ Next were 2303 UMC (1.61, 3.9% below 10th) and 2408 Nanya Technology (1.51).
 - Splits, closes and dividends carry their market's zone, defaulting to New York, so every US snapshot recomputes identically.
 
 **TW5 Schedule.**
-- Files: the TWSE files of a session appear about 05:20 Taipei the next morning.
+- Files: the TWSE files of a session appear about 05:20 Taipei on the next business day and stay until the following business day's (Friday's from Monday morning; observed 2026-10-26: on a Monday holiday the files still held Thursday's session).
 - Collection: three runs a day, at 07:40, 09:40 and 20:40 SGT, weekends included, each once a day.
 - Factors: Taiwan factor snapshots at 09:50 SGT.
 - Losses: a session no run catches is lost for good (KI-27). Runs note lost sessions, and the pages count them.
