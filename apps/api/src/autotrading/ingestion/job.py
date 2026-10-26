@@ -16,6 +16,10 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
+# Dramatiq stops an attempt of run_ingestion after this long (its time_limit). Adapters keep their
+# own retry sleeps inside it; an attempt cannot legitimately have run longer.
+RUN_TIME_LIMIT_SECONDS = 600
+
 
 @dataclass(frozen=True)
 class Window:
