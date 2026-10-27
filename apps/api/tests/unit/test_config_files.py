@@ -69,6 +69,7 @@ def test_macro_series_are_registered_with_complete_glossary_terms() -> None:
         "CPIAUCSL", "PCEPILFE", "UNRATE", "PAYEMS", "GDPC1", "FEDFUNDS",
         "DGS2", "DGS10", "T10Y2Y", "BAMLH0A0HYM2", "VIXCLS",
         "VXVCLS", "NFCI", "NFCICREDIT", "STLFSI4", "DCOILWTICO", "DTWEXBGS",
+        "DEXTAUS",
     ]  # fmt: skip
 
 

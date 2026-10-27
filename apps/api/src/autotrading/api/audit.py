@@ -30,6 +30,7 @@ from autotrading.db.models import (
     EntityRelationship,
     FactorDefinitionSet,
     FinancialFact,
+    HoldingEntry,
     Identifier,
     Instrument,
     MacroObservation,
@@ -242,6 +243,10 @@ def _labels(session: Session, table: str, ids: list[str]) -> dict[str, str]:
             for row in session.scalars(
                 select(TradeDecision).where(TradeDecision.id.in_(_uuids(ids)))
             )
+        ],
+        "holding_entries": lambda: [
+            (row.id, f"holdings {row.kind} {row.symbol or row.currency} ({row.account})")
+            for row in session.scalars(select(HoldingEntry).where(HoldingEntry.id.in_(_uuids(ids))))
         ],
     }
     resolve = resolvers.get(table)

@@ -21,6 +21,7 @@ from autotrading.ingestion.schedule import (
     FINMIND,
     FRED,
     GDELT,
+    HOLDINGS,
     MOMENTUM,
     NEWS_FEEDS,
     PORTFOLIO,
@@ -111,6 +112,15 @@ def main() -> None:
         lambda: actors.start_portfolio_snapshot(manual=False),
         CronTrigger(hour=PORTFOLIO.hour, minute=PORTFOLIO.minute, timezone=REFRESH_TIMEZONE),
         id="portfolio",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=12 * 3600,
+    )
+    # Real holdings (M3.10): daily at 11:12 SGT, after the closes and the DEXTAUS rate.
+    scheduler.add_job(
+        lambda: actors.start_holdings_snapshot(manual=False),
+        CronTrigger(hour=HOLDINGS.hour, minute=HOLDINGS.minute, timezone=REFRESH_TIMEZONE),
+        id="holdings",
         max_instances=1,
         coalesce=True,
         misfire_grace_time=12 * 3600,

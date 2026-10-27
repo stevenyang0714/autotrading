@@ -178,6 +178,22 @@ Work one sub-milestone at a time, in this order (ADR-035): M3.0, M3.0b, M3.0c (a
 - [x] Ex-dividend results reproduce the reference price or are left out (TW20).
 - [x] Every FinMind number names its dataset, time, tier and the attribution line.
 
+## M3.10 Portfolio Center I: real holdings, exchange rate and the Today page (ADR-041)
+**Decided (ADR-041, H1-H14; Steven on 2026-10-26):** record Steven's real holdings by hand (local only, backed up; no broker connection, no orders): any US listing or TWSE listing plus cash in each currency, valued in USD (DEXTAUS). Kept apart from the paper portfolio and every rule. Then M3.11 (investment policy, rebalancing, custom screens) and M3.12 (performance).
+
+**Build**
+- **Ledger:** `holding_entries` (append-only, audited; buys, sells, cash dividends, deposits, withdrawals, fees; reversals as the only correction) and `holding_snapshots` (daily 11:12 SGT), migration 0033.
+- **Valuation 0.1.0:** average cost per account, fees in cash, splits and stock dividends after the trade, marks at the last close known at T, TWD at the last DEXTAUS rate known at T, the 24-hour change net of deposits and withdrawals.
+- **Tracked listings:** a listing outside the universe becomes a tracked instrument on its first entry; Alpaca bars and splits runs of their own (US), `extra_codes` in the TWSE run (closes and ex-rights only).
+- **Exchange rate:** DEXTAUS joins the FRED series.
+- **Pages:** `/holdings` (summary, positions, cash, totals, entry form, entries with Reverse, As known on); `/` Today (holdings, pushes this week, both markets, the radar, data health) above the macro overview.
+
+**Acceptance**
+- [x] Entries are append-only and audited as `web`; each kind's fields are checked by the database; a reversal undoes its entry from its system time on (tested).
+- [x] The valuation is reproducible: a snapshot recomputes identically at its own T and S (`make holdings-verify`).
+- [x] Only the holdings modules read the ledger: no rule, push, radar or research view sees it (unit test).
+- [x] Every number on the Holdings and Today pages carries its glossary term (vitest and e2e).
+
 ## M3.8 Taiwan fundamentals: monthly revenue and quarterly reports
 **Build**
 - **Monthly revenue** (published by the 10th of the next month): year-on-year and month-on-month change, each at its publication time.

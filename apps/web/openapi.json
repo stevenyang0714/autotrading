@@ -5355,6 +5355,752 @@
         "title": "Holding",
         "type": "object"
       },
+      "HoldingCashOut": {
+        "properties": {
+          "account": {
+            "title": "Account",
+            "type": "string"
+          },
+          "balance": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Balance",
+            "type": "string"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "value_usd": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value Usd"
+          },
+          "weight": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weight"
+          }
+        },
+        "required": [
+          "account",
+          "currency",
+          "balance",
+          "value_usd",
+          "weight"
+        ],
+        "title": "HoldingCashOut",
+        "type": "object"
+      },
+      "HoldingEntriesOut": {
+        "properties": {
+          "accounts": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Accounts",
+            "type": "array"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/HoldingEntryOut"
+            },
+            "title": "Entries",
+            "type": "array"
+          }
+        },
+        "required": [
+          "entries",
+          "accounts"
+        ],
+        "title": "HoldingEntriesOut",
+        "type": "object"
+      },
+      "HoldingEntryOut": {
+        "properties": {
+          "account": {
+            "title": "Account",
+            "type": "string"
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "fee": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fee"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "market": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "name_zh": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name Zh"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "recorded_at": {
+            "format": "date-time",
+            "title": "Recorded At",
+            "type": "string"
+          },
+          "reversed_by": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reversed By"
+          },
+          "reverses_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reverses Id"
+          },
+          "status": {
+            "enum": [
+              "counted",
+              "reversed",
+              "reversal"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "symbol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Symbol"
+          },
+          "trade_date": {
+            "format": "date",
+            "title": "Trade Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "account",
+          "market",
+          "symbol",
+          "name",
+          "name_zh",
+          "currency",
+          "trade_date",
+          "quantity",
+          "price",
+          "amount",
+          "fee",
+          "note",
+          "reverses_id",
+          "reversed_by",
+          "status",
+          "recorded_at"
+        ],
+        "title": "HoldingEntryOut",
+        "type": "object"
+      },
+      "HoldingFxOut": {
+        "properties": {
+          "lag_days": {
+            "title": "Lag Days",
+            "type": "integer"
+          },
+          "observation_date": {
+            "format": "date",
+            "title": "Observation Date",
+            "type": "string"
+          },
+          "published_at": {
+            "format": "date-time",
+            "title": "Published At",
+            "type": "string"
+          },
+          "row_id": {
+            "title": "Row Id",
+            "type": "string"
+          },
+          "series_id": {
+            "title": "Series Id",
+            "type": "string"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "stale": {
+            "title": "Stale",
+            "type": "boolean"
+          },
+          "value": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "series_id",
+          "value",
+          "observation_date",
+          "published_at",
+          "row_id",
+          "source_url",
+          "lag_days",
+          "stale"
+        ],
+        "title": "HoldingFxOut",
+        "type": "object"
+      },
+      "HoldingMarkOut": {
+        "properties": {
+          "close": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Close",
+            "type": "string"
+          },
+          "published_at": {
+            "format": "date-time",
+            "title": "Published At",
+            "type": "string"
+          },
+          "row_id": {
+            "title": "Row Id",
+            "type": "string"
+          },
+          "session": {
+            "format": "date",
+            "title": "Session",
+            "type": "string"
+          }
+        },
+        "required": [
+          "close",
+          "session",
+          "published_at",
+          "row_id"
+        ],
+        "title": "HoldingMarkOut",
+        "type": "object"
+      },
+      "HoldingPositionOut": {
+        "properties": {
+          "account": {
+            "title": "Account",
+            "type": "string"
+          },
+          "average_cost": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Cost"
+          },
+          "cost": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Cost",
+            "type": "string"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "flags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Flags",
+            "type": "array"
+          },
+          "instrument_id": {
+            "format": "uuid",
+            "title": "Instrument Id",
+            "type": "string"
+          },
+          "mark": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HoldingMarkOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "market": {
+            "enum": [
+              "US",
+              "TW"
+            ],
+            "title": "Market",
+            "type": "string"
+          },
+          "market_value": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Market Value",
+            "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "name_zh": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name Zh"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price"
+          },
+          "quantity": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Quantity",
+            "type": "string"
+          },
+          "realized": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Realized",
+            "type": "string"
+          },
+          "research": {
+            "title": "Research",
+            "type": "boolean"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "unrealized": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unrealized"
+          },
+          "value_usd": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value Usd"
+          },
+          "weight": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weight"
+          }
+        },
+        "required": [
+          "account",
+          "market",
+          "instrument_id",
+          "symbol",
+          "name",
+          "name_zh",
+          "research",
+          "currency",
+          "quantity",
+          "cost",
+          "average_cost",
+          "realized",
+          "mark",
+          "price",
+          "market_value",
+          "unrealized",
+          "value_usd",
+          "weight",
+          "flags"
+        ],
+        "title": "HoldingPositionOut",
+        "type": "object"
+      },
+      "HoldingSnapshotRef": {
+        "properties": {
+          "equity_usd": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Equity Usd"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "system_time": {
+            "format": "date-time",
+            "title": "System Time",
+            "type": "string"
+          },
+          "trigger": {
+            "title": "Trigger",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "known_at",
+          "system_time",
+          "equity_usd",
+          "trigger"
+        ],
+        "title": "HoldingSnapshotRef",
+        "type": "object"
+      },
+      "HoldingTotalOut": {
+        "properties": {
+          "cash": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Cash",
+            "type": "string"
+          },
+          "contributions": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Contributions",
+            "type": "string"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "positions": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Positions",
+            "type": "string"
+          },
+          "realized": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Realized",
+            "type": "string"
+          },
+          "total": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Total",
+            "type": "string"
+          },
+          "unrealized": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Unrealized",
+            "type": "string"
+          }
+        },
+        "required": [
+          "currency",
+          "positions",
+          "cash",
+          "total",
+          "realized",
+          "unrealized",
+          "contributions"
+        ],
+        "title": "HoldingTotalOut",
+        "type": "object"
+      },
+      "HoldingsOut": {
+        "properties": {
+          "base_currency": {
+            "title": "Base Currency",
+            "type": "string"
+          },
+          "cash": {
+            "items": {
+              "$ref": "#/components/schemas/HoldingCashOut"
+            },
+            "title": "Cash",
+            "type": "array"
+          },
+          "change_since": {
+            "format": "date-time",
+            "title": "Change Since",
+            "type": "string"
+          },
+          "change_usd": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Usd"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "entries": {
+            "title": "Entries",
+            "type": "integer"
+          },
+          "equity_usd": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Equity Usd"
+          },
+          "flags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Flags",
+            "type": "array"
+          },
+          "fx": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HoldingFxOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "latest_snapshot": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HoldingSnapshotRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "positions": {
+            "items": {
+              "$ref": "#/components/schemas/HoldingPositionOut"
+            },
+            "title": "Positions",
+            "type": "array"
+          },
+          "system_time": {
+            "format": "date-time",
+            "title": "System Time",
+            "type": "string"
+          },
+          "totals": {
+            "items": {
+              "$ref": "#/components/schemas/HoldingTotalOut"
+            },
+            "title": "Totals",
+            "type": "array"
+          },
+          "valuation_version": {
+            "title": "Valuation Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "known_at",
+          "system_time",
+          "valuation_version",
+          "base_currency",
+          "equity_usd",
+          "change_usd",
+          "change_since",
+          "positions",
+          "cash",
+          "totals",
+          "fx",
+          "flags",
+          "entries",
+          "latest_snapshot",
+          "detail"
+        ],
+        "title": "HoldingsOut",
+        "type": "object"
+      },
       "Indicator": {
         "properties": {
           "as_of": {
@@ -7708,6 +8454,164 @@
           "decision"
         ],
         "title": "NewEntry",
+        "type": "object"
+      },
+      "NewHoldingEntry": {
+        "additionalProperties": false,
+        "description": "A ledger entry as typed on the Holdings page. Unknown fields are refused.",
+        "properties": {
+          "account": {
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Account",
+            "type": "string"
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 1000000000000.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d{0,2}0*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "enum": [
+                  "USD",
+                  "TWD"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "fee": {
+            "anyOf": [
+              {
+                "maximum": 10000000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d{0,2}0*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fee"
+          },
+          "kind": {
+            "enum": [
+              "buy",
+              "sell",
+              "dividend",
+              "deposit",
+              "withdrawal",
+              "fee"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "market": {
+            "anyOf": [
+              {
+                "enum": [
+                  "US",
+                  "TW"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 10000000.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d{0,6}0*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 1000000000.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d{0,6}0*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "symbol": {
+            "anyOf": [
+              {
+                "maxLength": 10,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Symbol"
+          },
+          "trade_date": {
+            "format": "date",
+            "title": "Trade Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "account",
+          "trade_date"
+        ],
+        "title": "NewHoldingEntry",
         "type": "object"
       },
       "NewsFeed": {
@@ -10869,6 +11773,25 @@
           "detail"
         ],
         "title": "ReverseDcf",
+        "type": "object"
+      },
+      "ReverseHoldingEntry": {
+        "additionalProperties": false,
+        "properties": {
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "title": "ReverseHoldingEntry",
         "type": "object"
       },
       "RiskCheckOut": {
@@ -15090,6 +16013,173 @@
         "summary": "Live",
         "tags": [
           "health"
+        ]
+      }
+    },
+    "/holdings": {
+      "get": {
+        "description": "The holdings at T (default now) as recorded now.",
+        "operationId": "holdings_holdings_get",
+        "parameters": [
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HoldingsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Holdings",
+        "tags": [
+          "holdings"
+        ]
+      }
+    },
+    "/holdings/entries": {
+      "get": {
+        "operationId": "holding_entries_holdings_entries_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HoldingEntriesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Holding Entries",
+        "tags": [
+          "holdings"
+        ]
+      },
+      "post": {
+        "operationId": "create_holding_entry_holdings_entries_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewHoldingEntry"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HoldingEntryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Holding Entry",
+        "tags": [
+          "holdings"
+        ]
+      }
+    },
+    "/holdings/entries/{entry_id}/reverse": {
+      "post": {
+        "description": "Undo an entry from every time on: a reversal pointing at it (one each).",
+        "operationId": "reverse_holding_entry_holdings_entries__entry_id__reverse_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "entry_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Entry Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReverseHoldingEntry"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HoldingEntryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reverse Holding Entry",
+        "tags": [
+          "holdings"
         ]
       }
     },

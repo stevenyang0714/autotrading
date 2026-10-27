@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-10-12T15:52:11+00:00",
+  "recorded_at": "2026-10-27T03:26:02+00:00",
   "observation_start": {
     "CPIAUCSL": "2023-01-01",
     "PCEPILFE": "2023-01-01",
@@ -17,7 +17,8 @@
     "NFCICREDIT": "2025-01-01",
     "STLFSI4": "2025-01-01",
     "DCOILWTICO": "2025-06-01",
-    "DTWEXBGS": "2025-06-01"
+    "DTWEXBGS": "2025-06-01",
+    "DEXTAUS": "2025-06-01"
   },
   "files": {
     "https://api.stlouisfed.org/fred/series?series_id=CPIAUCSL&file_type=json": "CPIAUCSL_00_series.json",
@@ -78,7 +79,10 @@
     "https://api.stlouisfed.org/fred/series/observations?series_id=DCOILWTICO&realtime_start=1776-07-04&realtime_end=9999-12-31&limit=100000&offset=0&observation_start=2025-06-01&file_type=json": "DCOILWTICO_02_observations.json",
     "https://api.stlouisfed.org/fred/series?series_id=DTWEXBGS&file_type=json": "DTWEXBGS_00_series.json",
     "https://api.stlouisfed.org/fred/series/vintagedates?series_id=DTWEXBGS&limit=10000&offset=0&file_type=json": "DTWEXBGS_01_vintagedates.json",
-    "https://api.stlouisfed.org/fred/series/observations?series_id=DTWEXBGS&realtime_start=1776-07-04&realtime_end=9999-12-31&limit=100000&offset=0&observation_start=2025-06-01&file_type=json": "DTWEXBGS_02_observations.json"
+    "https://api.stlouisfed.org/fred/series/observations?series_id=DTWEXBGS&realtime_start=1776-07-04&realtime_end=9999-12-31&limit=100000&offset=0&observation_start=2025-06-01&file_type=json": "DTWEXBGS_02_observations.json",
+    "https://api.stlouisfed.org/fred/series?series_id=DEXTAUS&file_type=json": "DEXTAUS_00_series.json",
+    "https://api.stlouisfed.org/fred/series/vintagedates?series_id=DEXTAUS&limit=10000&offset=0&file_type=json": "DEXTAUS_01_vintagedates.json",
+    "https://api.stlouisfed.org/fred/series/observations?series_id=DEXTAUS&realtime_start=1776-07-04&realtime_end=9999-12-31&limit=100000&offset=0&observation_start=2025-06-01&file_type=json": "DEXTAUS_02_observations.json"
   },
   "revision_case": {
     "series_id": "PAYEMS",

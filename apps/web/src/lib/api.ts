@@ -1117,3 +1117,80 @@ export async function loadBacktests(knownAt?: string): Promise<BacktestsResponse
     return null;
   }
 }
+
+// ---------- real holdings (M3.10, ADR-041) ----------
+
+export type Holdings = components["schemas"]["HoldingsOut"];
+export type HoldingPosition = components["schemas"]["HoldingPositionOut"];
+export type HoldingCash = components["schemas"]["HoldingCashOut"];
+export type HoldingTotal = components["schemas"]["HoldingTotalOut"];
+export type HoldingEntries = components["schemas"]["HoldingEntriesOut"];
+export type HoldingEntry = components["schemas"]["HoldingEntryOut"];
+export type NewHoldingEntry = components["schemas"]["NewHoldingEntry"];
+
+/** Steven's holdings valued at `knownAt` (default now) as recorded now, or null when the API is
+ * down. Local only: nothing here is pushed anywhere (H12). */
+export async function loadHoldings(knownAt?: string): Promise<Holdings | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/holdings", {
+      params: { query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Every ledger entry, newest first, with the account labels used. */
+export async function loadHoldingEntries(): Promise<HoldingEntries | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/holdings/entries", { cache: "no-store" });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export type HoldingWriteResult =
+  | { status: "ok"; data: HoldingEntry }
+  | { status: "invalid"; errors: string[] }
+  | { status: "unavailable" };
+
+async function holdingWrite(
+  call: (client: ReturnType<typeof createClient<paths>>) => Promise<{
+    data?: HoldingEntry;
+    error?: unknown;
+    response: Response;
+  }>,
+): Promise<HoldingWriteResult> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data, error, response } = await call(client);
+    if (data) return { status: "ok", data };
+    if ([404, 409, 422].includes(response.status)) {
+      return { status: "invalid", errors: validationMessages(error, "The API refused the entry.") };
+    }
+    return { status: "unavailable" };
+  } catch {
+    return { status: "unavailable" };
+  }
+}
+
+/** Record a ledger entry (append-only, audited as `web`); nothing is ever sent to a broker. */
+export async function createHoldingEntry(body: NewHoldingEntry): Promise<HoldingWriteResult> {
+  return holdingWrite((client) => client.POST("/holdings/entries", { body, cache: "no-store" }));
+}
+
+/** Reverse an entry from every date on (one reversal each). */
+export async function reverseHoldingEntry(entryId: string, note: string | null): Promise<HoldingWriteResult> {
+  return holdingWrite((client) =>
+    client.POST("/holdings/entries/{entry_id}/reverse", {
+      params: { path: { entry_id: entryId } },
+      body: { note },
+      cache: "no-store",
+    }),
+  );
+}

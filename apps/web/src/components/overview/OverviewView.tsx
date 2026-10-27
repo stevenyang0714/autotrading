@@ -18,6 +18,8 @@ interface Props {
   sources: SourceHealth[] | null;
   knownOn?: string;
   invalidKnownOn?: boolean;
+  /** 2 below the Today panel (M3.10), 1 when the overview is the page. */
+  level?: 1 | 2;
 }
 
 const BLOCK_TERM: Record<OverviewBlock["id"], CompleteTermId> = {
@@ -70,7 +72,8 @@ function chartFormat(unit: string): (value: number) => string {
  * insight that cites its inputs. Every number renders through <Metric> or inside a chart figure
  * bound to a term; every price carries its feed status.
  */
-export function OverviewView({ data, sources, knownOn, invalidKnownOn }: Props) {
+export function OverviewView({ data, sources, knownOn, invalidKnownOn, level = 1 }: Props) {
+  const Heading = level === 1 ? "h1" : "h2";
   const newest = data.blocks
     .flatMap((block) => block.latest)
     .map((latest) => latest.vintage)
@@ -81,11 +84,11 @@ export function OverviewView({ data, sources, knownOn, invalidKnownOn }: Props) 
     <section className="space-y-6">
       <DemoBanner statuses={prices.map((tile) => tile.feed_status)} />
       <header className="space-y-3">
-        <h1 className="text-2xl font-semibold">
+        <Heading className={level === 1 ? "text-2xl font-semibold" : "text-xl font-semibold"}>
           <Metric termId="page_overview" zh>
             Overview
           </Metric>
-        </h1>
+        </Heading>
         <p className="text-sm text-neutral-500">Research broadly. Trade narrowly.</p>
         <AsKnownOnForm href="/" knownOn={knownOn} invalid={invalidKnownOn} />
         <p className="text-sm text-neutral-400">

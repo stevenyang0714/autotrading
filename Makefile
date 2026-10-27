@@ -15,7 +15,7 @@ export NEXT_TELEMETRY_DISABLED := 1
 export COREPACK_ENABLE_DOWNLOAD_PROMPT := 0
 
 .DEFAULT_GOAL := help
-.PHONY: help setup up down ps logs migrate sec-refresh fred-refresh prices-refresh prices-backfill news-refresh news-backfill buyback-evaluate buyback-backfill buyback-verify signals-backfill alerts-backfill regime-evaluate regime-backfill regime-verify factors-evaluate factors-backfill factors-verify portfolio-snapshot risk-verify rotation-evaluate rotation-backfill rotation-verify momentum-evaluate momentum-backfill momentum-verify alerts-deliver alerts-digest telegram-check twse-refresh twse-factors twse-factors-backfill twse-rank finmind-refresh finmind-backfill backtest-run backtest-verify db-backup db-restore-check replay-fixtures gen test test-unit test-integration e2e lint lint-api lint-web fmt dev-web
+.PHONY: help setup up down ps logs migrate sec-refresh fred-refresh prices-refresh prices-backfill news-refresh news-backfill buyback-evaluate buyback-backfill buyback-verify signals-backfill alerts-backfill regime-evaluate regime-backfill regime-verify factors-evaluate factors-backfill factors-verify portfolio-snapshot risk-verify holdings-snapshot holdings-verify rotation-evaluate rotation-backfill rotation-verify momentum-evaluate momentum-backfill momentum-verify alerts-deliver alerts-digest telegram-check twse-refresh twse-factors twse-factors-backfill twse-rank finmind-refresh finmind-backfill backtest-run backtest-verify db-backup db-restore-check replay-fixtures gen test test-unit test-integration e2e lint lint-api lint-web fmt dev-web
 
 help: ## Show available targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  %-18s %s\n", $$1, $$2}'
@@ -96,6 +96,12 @@ portfolio-snapshot: ## Queue a paper portfolio snapshot (and its drawdown alert)
 
 risk-verify: ## Recompute the latest 20 and 100 random stored risk checks and report any that differ
 	$(COMPOSE) exec -T api python -m autotrading.jobs.risk_evaluate --verify 20 --sample 100
+
+holdings-snapshot: ## Queue a snapshot of the recorded real holdings now (M3.10)
+	$(COMPOSE) exec -T api python -m autotrading.jobs.holdings_snapshot
+
+holdings-verify: ## Recompute the latest 20 and 100 random holdings snapshots and report any that differ
+	$(COMPOSE) exec -T api python -m autotrading.jobs.holdings_snapshot --verify 20 --sample 100
 
 rotation-evaluate: ## Queue an S3 ETF rotation assessment now (M2.4)
 	$(COMPOSE) exec -T api python -m autotrading.jobs.rotation_evaluate

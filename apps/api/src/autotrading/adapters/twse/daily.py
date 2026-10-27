@@ -144,6 +144,7 @@ class TwseDailyJob(IngestionJob):
         store = _Store(self, ctx, session, source, ids, set(universe.etfs), today)
         store.notes += store.session_notes(self.calendar())
         store.bars(days, day_payload)
+        self._extra_codes(store, payloads, codes, today)
         store.day_measures(days, day_payload)
         if VALUATION in payloads:
             store.valuation(payloads[VALUATION], days)
@@ -160,6 +161,34 @@ class TwseDailyJob(IngestionJob):
             conflicted=len(store.conflicts),
             notes=tuple(store.notes + store.conflicts),
         )
+
+    def _extra_codes(
+        self,
+        store: "_Store",
+        payloads: Mapping[str, StoredPayload],
+        universe: set[str],
+        today: date,
+    ) -> None:
+        """Closes and ex-rights of the codes held outside the universe (ADR-041 H6), under the
+        instruments the Holdings page created; no measure of theirs is stored."""
+        extra = sorted(set(map(str, self.params.get("extra_codes") or [])) - universe)
+        if not extra:
+            return
+        listed = {r.code: r for r in day_rows(_json(payloads[DAY])) if r.code in extra}
+        ids = existing_instruments(store.session, list(listed))
+        rows = {code: listed[code] for code in ids}
+        if rows and session_of(list(rows.values())) == today:
+            held = _Store(self, store.ctx, store.session, store.source, ids, set(), today)
+            held.bars(rows, payloads[DAY])
+            if EX_RIGHTS in payloads:
+                held.ex_rights(payloads[EX_RIGHTS], self.calendar())
+            store.count(held.inserted, held.unchanged, held.conflicts)
+            store.notes += held.notes
+        if len(listed) < len(extra):
+            store.notes.append(
+                f"{len(extra) - len(listed)} held code(s) not in STOCK_DAY_ALL: TPEx listings "
+                "are not supported"
+            )
 
 
 class _Store:

@@ -2120,6 +2120,124 @@ class ReconciliationItem(Base):
     detail: Mapped[str | None] = mapped_column(Text)
 
 
+# ---------- holdings (M3.10) ----------
+
+HOLDING_KINDS = ("buy", "sell", "dividend", "deposit", "withdrawal", "fee", "reversal")
+HOLDING_CURRENCIES = ("USD", "TWD")
+HOLDING_MARKETS = ("US", "TW")
+HOLDING_TRIGGERS = ("schedule", "manual")
+HOLDING_USER = JOURNAL_USER
+
+
+class HoldingEntry(Base):
+    """One entry of Steven's real holdings ledger (ADR-041 H1): a buy, sell, cash dividend,
+    deposit, withdrawal or fee on a broker account label, in USD for US listings and TWD for
+    TWSE listings, or a reversal of an earlier entry (the only correction; one each). Kept apart
+    from the paper portfolio (H4); no order, broker or execution column exists. Append-only and
+    audited."""
+
+    __tablename__ = "holding_entries"
+    __table_args__ = (
+        CheckConstraint(sql_in("kind", HOLDING_KINDS), name="kind"),
+        CheckConstraint(sql_in("currency", HOLDING_CURRENCIES), name="currency"),
+        CheckConstraint(f"market IS NULL OR {sql_in('market', HOLDING_MARKETS)}", name="market"),
+        CheckConstraint(
+            "market IS NULL OR (market = 'US' AND currency = 'USD') "
+            "OR (market = 'TW' AND currency = 'TWD')",
+            name="market_currency",
+        ),
+        CheckConstraint(
+            "(kind IN ('buy', 'sell') AND market IS NOT NULL AND instrument_id IS NOT NULL"
+            " AND symbol IS NOT NULL AND coalesce(quantity, 0) > 0 AND coalesce(price, 0) > 0"
+            " AND amount IS NULL"
+            " AND (fee IS NULL OR fee >= 0) AND reverses_id IS NULL)"
+            " OR (kind = 'dividend' AND market IS NOT NULL AND instrument_id IS NOT NULL"
+            " AND symbol IS NOT NULL AND quantity IS NULL AND price IS NULL"
+            " AND coalesce(amount, 0) > 0"
+            " AND fee IS NULL AND reverses_id IS NULL)"
+            " OR (kind IN ('deposit', 'withdrawal', 'fee') AND market IS NULL"
+            " AND instrument_id IS NULL AND symbol IS NULL AND quantity IS NULL"
+            " AND price IS NULL AND coalesce(amount, 0) > 0 AND fee IS NULL"
+            " AND reverses_id IS NULL)"
+            " OR (kind = 'reversal' AND reverses_id IS NOT NULL AND market IS NULL"
+            " AND instrument_id IS NULL AND symbol IS NULL AND quantity IS NULL"
+            " AND price IS NULL AND amount IS NULL AND fee IS NULL)",
+            name="kind_fields",
+        ),
+        CheckConstraint("length(account) BETWEEN 1 AND 40", name="account_length"),
+        CheckConstraint("symbol IS NULL OR symbol ~ '^[A-Z0-9.]{1,10}$'", name="symbol_format"),
+        CheckConstraint("note IS NULL OR length(note) <= 500", name="note_length"),
+        CheckConstraint(
+            "trade_date <= (recorded_at AT TIME ZONE 'Asia/Taipei')::date",
+            name="trade_date_not_future",
+        ),
+        CheckConstraint(f"user_id = '{HOLDING_USER}'", name="single_user"),
+        Index(
+            "uq_holding_entries_reverses_id",
+            "reverses_id",
+            unique=True,
+            postgresql_where=text("reverses_id IS NOT NULL"),
+        ),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    kind: Mapped[str] = mapped_column(Text)
+    account: Mapped[str] = mapped_column(Text)
+    market: Mapped[str | None] = mapped_column(Text)
+    instrument_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, ForeignKey("instruments.id"))
+    symbol: Mapped[str | None] = mapped_column(Text)
+    currency: Mapped[str] = mapped_column(Text)
+    trade_date: Mapped[date] = mapped_column(Date)
+    quantity: Mapped[Decimal | None] = mapped_column(Numeric)
+    price: Mapped[Decimal | None] = mapped_column(Numeric)
+    amount: Mapped[Decimal | None] = mapped_column(Numeric)
+    fee: Mapped[Decimal | None] = mapped_column(Numeric)
+    note: Mapped[str | None] = mapped_column(Text)
+    reverses_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, ForeignKey("holding_entries.id"))
+    user_id: Mapped[str] = mapped_column(Text)
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class HoldingSnapshot(Base):
+    """The holdings valued at a time T (known_at) as the database held them at system_time under
+    one valuation version (ADR-041 H2): USD equity (null when a TWD amount had no exchange rate),
+    cash by currency, the rate used and the whole document with every position and flag. One row
+    per T, system time and version. Append-only."""
+
+    __tablename__ = "holding_snapshots"
+    __table_args__ = (
+        CheckConstraint(sql_in("trigger", HOLDING_TRIGGERS), name="trigger"),
+        CheckConstraint("system_time >= known_at", name="system_time_after_known_at"),
+        CheckConstraint("positions >= 0", name="positions_nonnegative"),
+        UniqueConstraint(
+            "known_at", "system_time", "valuation_version", name="uq_holding_snapshots_point"
+        ),
+        Index("ix_holding_snapshots_known_at", "known_at"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    known_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    system_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    valuation_version: Mapped[str] = mapped_column(Text)
+    equity_usd: Mapped[Decimal | None] = mapped_column(Numeric)
+    cash: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    fx: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    positions: Mapped[int] = mapped_column(SmallInteger)
+    holdings: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    trigger: Mapped[str] = mapped_column(Text)
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
 # ---------- audit (append-only, written by triggers) ----------
 
 

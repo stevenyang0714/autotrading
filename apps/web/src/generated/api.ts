@@ -367,6 +367,64 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/holdings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Holdings
+         * @description The holdings at T (default now) as recorded now.
+         */
+        get: operations["holdings_holdings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/holdings/entries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Holding Entries */
+        get: operations["holding_entries_holdings_entries_get"];
+        put?: never;
+        /** Create Holding Entry */
+        post: operations["create_holding_entry_holdings_entries_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/holdings/entries/{entry_id}/reverse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reverse Holding Entry
+         * @description Undo an entry from every time on: a reversal pointing at it (one each).
+         */
+        post: operations["reverse_holding_entry_holdings_entries__entry_id__reverse_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/ingestion-runs": {
         parameters: {
             query?: never;
@@ -2919,6 +2977,244 @@ export interface components {
             /** Weight Pct */
             weight_pct: string;
         };
+        /** HoldingCashOut */
+        HoldingCashOut: {
+            /** Account */
+            account: string;
+            /** Balance */
+            balance: string;
+            /** Currency */
+            currency: string;
+            /** Value Usd */
+            value_usd: string | null;
+            /** Weight */
+            weight: string | null;
+        };
+        /** HoldingEntriesOut */
+        HoldingEntriesOut: {
+            /** Accounts */
+            accounts: string[];
+            /** Entries */
+            entries: components["schemas"]["HoldingEntryOut"][];
+        };
+        /** HoldingEntryOut */
+        HoldingEntryOut: {
+            /** Account */
+            account: string;
+            /** Amount */
+            amount: string | null;
+            /** Currency */
+            currency: string;
+            /** Fee */
+            fee: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Market */
+            market: string | null;
+            /** Name */
+            name: string | null;
+            /** Name Zh */
+            name_zh: string | null;
+            /** Note */
+            note: string | null;
+            /** Price */
+            price: string | null;
+            /** Quantity */
+            quantity: string | null;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /** Reversed By */
+            reversed_by: string | null;
+            /** Reverses Id */
+            reverses_id: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "counted" | "reversed" | "reversal";
+            /** Symbol */
+            symbol: string | null;
+            /**
+             * Trade Date
+             * Format: date
+             */
+            trade_date: string;
+        };
+        /** HoldingFxOut */
+        HoldingFxOut: {
+            /** Lag Days */
+            lag_days: number;
+            /**
+             * Observation Date
+             * Format: date
+             */
+            observation_date: string;
+            /**
+             * Published At
+             * Format: date-time
+             */
+            published_at: string;
+            /** Row Id */
+            row_id: string;
+            /** Series Id */
+            series_id: string;
+            /** Source Url */
+            source_url: string | null;
+            /** Stale */
+            stale: boolean;
+            /** Value */
+            value: string;
+        };
+        /** HoldingMarkOut */
+        HoldingMarkOut: {
+            /** Close */
+            close: string;
+            /**
+             * Published At
+             * Format: date-time
+             */
+            published_at: string;
+            /** Row Id */
+            row_id: string;
+            /**
+             * Session
+             * Format: date
+             */
+            session: string;
+        };
+        /** HoldingPositionOut */
+        HoldingPositionOut: {
+            /** Account */
+            account: string;
+            /** Average Cost */
+            average_cost: string | null;
+            /** Cost */
+            cost: string;
+            /** Currency */
+            currency: string;
+            /** Flags */
+            flags: string[];
+            /**
+             * Instrument Id
+             * Format: uuid
+             */
+            instrument_id: string;
+            mark: components["schemas"]["HoldingMarkOut"] | null;
+            /**
+             * Market
+             * @enum {string}
+             */
+            market: "US" | "TW";
+            /** Market Value */
+            market_value: string;
+            /** Name */
+            name: string | null;
+            /** Name Zh */
+            name_zh: string | null;
+            /** Price */
+            price: string | null;
+            /** Quantity */
+            quantity: string;
+            /** Realized */
+            realized: string;
+            /** Research */
+            research: boolean;
+            /** Symbol */
+            symbol: string;
+            /** Unrealized */
+            unrealized: string | null;
+            /** Value Usd */
+            value_usd: string | null;
+            /** Weight */
+            weight: string | null;
+        };
+        /** HoldingSnapshotRef */
+        HoldingSnapshotRef: {
+            /** Equity Usd */
+            equity_usd: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /**
+             * System Time
+             * Format: date-time
+             */
+            system_time: string;
+            /** Trigger */
+            trigger: string;
+        };
+        /** HoldingTotalOut */
+        HoldingTotalOut: {
+            /** Cash */
+            cash: string;
+            /** Contributions */
+            contributions: string;
+            /** Currency */
+            currency: string;
+            /** Positions */
+            positions: string;
+            /** Realized */
+            realized: string;
+            /** Total */
+            total: string;
+            /** Unrealized */
+            unrealized: string;
+        };
+        /** HoldingsOut */
+        HoldingsOut: {
+            /** Base Currency */
+            base_currency: string;
+            /** Cash */
+            cash: components["schemas"]["HoldingCashOut"][];
+            /**
+             * Change Since
+             * Format: date-time
+             */
+            change_since: string;
+            /** Change Usd */
+            change_usd: string | null;
+            /** Detail */
+            detail: string;
+            /** Entries */
+            entries: number;
+            /** Equity Usd */
+            equity_usd: string | null;
+            /** Flags */
+            flags: string[];
+            fx: components["schemas"]["HoldingFxOut"] | null;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            latest_snapshot: components["schemas"]["HoldingSnapshotRef"] | null;
+            /** Positions */
+            positions: components["schemas"]["HoldingPositionOut"][];
+            /**
+             * System Time
+             * Format: date-time
+             */
+            system_time: string;
+            /** Totals */
+            totals: components["schemas"]["HoldingTotalOut"][];
+            /** Valuation Version */
+            valuation_version: string;
+        };
         /** Indicator */
         Indicator: {
             /**
@@ -3673,6 +3969,40 @@ export interface components {
             thesis: string;
             /** Ticker */
             ticker: string;
+        };
+        /**
+         * NewHoldingEntry
+         * @description A ledger entry as typed on the Holdings page. Unknown fields are refused.
+         */
+        NewHoldingEntry: {
+            /** Account */
+            account: string;
+            /** Amount */
+            amount?: number | string | null;
+            /** Currency */
+            currency?: ("USD" | "TWD") | null;
+            /** Fee */
+            fee?: number | string | null;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "buy" | "sell" | "dividend" | "deposit" | "withdrawal" | "fee";
+            /** Market */
+            market?: ("US" | "TW") | null;
+            /** Note */
+            note?: string | null;
+            /** Price */
+            price?: number | string | null;
+            /** Quantity */
+            quantity?: number | string | null;
+            /** Symbol */
+            symbol?: string | null;
+            /**
+             * Trade Date
+             * Format: date
+             */
+            trade_date: string;
         };
         /** NewsFeed */
         NewsFeed: {
@@ -4682,6 +5012,11 @@ export interface components {
             detail: string | null;
             /** Growth */
             growth: string | null;
+        };
+        /** ReverseHoldingEntry */
+        ReverseHoldingEntry: {
+            /** Note */
+            note?: string | null;
         };
         /** RiskCheckOut */
         RiskCheckOut: {
@@ -6444,6 +6779,126 @@ export interface operations {
                     "application/json": {
                         [key: string]: string;
                     };
+                };
+            };
+        };
+    };
+    holdings_holdings_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HoldingsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    holding_entries_holdings_entries_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HoldingEntriesOut"];
+                };
+            };
+        };
+    };
+    create_holding_entry_holdings_entries_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewHoldingEntry"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HoldingEntryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reverse_holding_entry_holdings_entries__entry_id__reverse_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entry_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReverseHoldingEntry"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HoldingEntryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

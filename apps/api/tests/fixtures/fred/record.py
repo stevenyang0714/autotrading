@@ -50,6 +50,7 @@ SERIES = {
     "STLFSI4": WEEKLY_START,
     "DCOILWTICO": DAILY_START,
     "DTWEXBGS": DAILY_START,
+    "DEXTAUS": DAILY_START,  # M3.10: TWD per USD for the holdings' USD total
 }
 
 

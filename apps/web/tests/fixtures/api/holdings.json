@@ -1,0 +1,173 @@
+{
+  "recorded_at": "2026-10-27T03:40:35.566392+00:00",
+  "recorded_from": "a made-up ledger, closes and DEXTAUS rates in the integration test database (tests/integration/test_holdings_api.py); no real holdings",
+  "endpoint": "/holdings",
+  "params": {
+    "known_at": "2026-10-27T03:12:00+00:00"
+  },
+  "response": {
+    "known_at": "2026-10-27T03:12:00Z",
+    "system_time": "2026-10-27T03:40:35.509751Z",
+    "valuation_version": "0.1.0",
+    "base_currency": "USD",
+    "equity_usd": "16684.67",
+    "change_usd": "-19.95",
+    "change_since": "2026-10-26T03:12:00Z",
+    "positions": [
+      {
+        "account": "元大",
+        "market": "TW",
+        "instrument_id": "1e606be6-236c-4649-bb22-7e97cf29a4ef",
+        "symbol": "2330",
+        "name": "TSMC",
+        "name_zh": "台積電",
+        "research": true,
+        "currency": "TWD",
+        "quantity": "100.000000",
+        "cost": "145000.00",
+        "average_cost": "1450.000000",
+        "realized": "0.00",
+        "mark": {
+          "close": "1500",
+          "session": "2026-10-22",
+          "published_at": "2026-10-22T21:20:00Z",
+          "row_id": "cf6c4dca-6503-4228-9577-ebe0c12d0a67"
+        },
+        "price": "1500.000000",
+        "market_value": "150000.00",
+        "unrealized": "5000.00",
+        "value_usd": "4672.90",
+        "weight": "0.2801",
+        "flags": []
+      },
+      {
+        "account": "元大",
+        "market": "TW",
+        "instrument_id": "530dff22-3e75-4df5-8631-c7ae8bda470b",
+        "symbol": "2603",
+        "name": null,
+        "name_zh": null,
+        "research": false,
+        "currency": "TWD",
+        "quantity": "2.000000",
+        "cost": "500.00",
+        "average_cost": "250.000000",
+        "realized": "0.00",
+        "mark": null,
+        "price": null,
+        "market_value": "500.00",
+        "unrealized": null,
+        "value_usd": "15.58",
+        "weight": "0.0009",
+        "flags": [
+          "no_mark"
+        ]
+      },
+      {
+        "account": "Firstrade",
+        "market": "US",
+        "instrument_id": "76b62ba8-4e9c-47cb-9607-a1056097bef6",
+        "symbol": "SPY",
+        "name": "SPDR S&P 500 ETF",
+        "name_zh": "標普 500 ETF",
+        "research": false,
+        "currency": "USD",
+        "quantity": "10.000000",
+        "cost": "5800.00",
+        "average_cost": "580.000000",
+        "realized": "0.00",
+        "mark": {
+          "close": "610",
+          "session": "2026-10-23",
+          "published_at": "2026-10-24T00:00:00Z",
+          "row_id": "9e81a338-b542-454b-b73c-d6554f9f5373"
+        },
+        "price": "610.000000",
+        "market_value": "6100.00",
+        "unrealized": "300.00",
+        "value_usd": "6100.00",
+        "weight": "0.3656",
+        "flags": []
+      },
+      {
+        "account": "Firstrade",
+        "market": "US",
+        "instrument_id": "f73e7374-8158-4005-b154-7da9e021a09f",
+        "symbol": "ZZZZ",
+        "name": null,
+        "name_zh": null,
+        "research": false,
+        "currency": "USD",
+        "quantity": "2.000000",
+        "cost": "100.00",
+        "average_cost": "50.000000",
+        "realized": "0.00",
+        "mark": null,
+        "price": null,
+        "market_value": "100.00",
+        "unrealized": null,
+        "value_usd": "100.00",
+        "weight": "0.0060",
+        "flags": [
+          "no_mark"
+        ]
+      }
+    ],
+    "cash": [
+      {
+        "account": "Firstrade",
+        "currency": "USD",
+        "balance": "4099.00",
+        "value_usd": "4099.00",
+        "weight": "0.2457"
+      },
+      {
+        "account": "元大",
+        "currency": "TWD",
+        "balance": "54480.00",
+        "value_usd": "1697.20",
+        "weight": "0.1017"
+      }
+    ],
+    "totals": [
+      {
+        "currency": "USD",
+        "positions": "6200.00",
+        "cash": "4099.00",
+        "total": "10299.00",
+        "realized": "0.00",
+        "unrealized": "300.00",
+        "contributions": "10000.00"
+      },
+      {
+        "currency": "TWD",
+        "positions": "150500.00",
+        "cash": "54480.00",
+        "total": "204980.00",
+        "realized": "0.00",
+        "unrealized": "5000.00",
+        "contributions": "200000.00"
+      }
+    ],
+    "fx": {
+      "series_id": "DEXTAUS",
+      "value": "32.10",
+      "observation_date": "2026-10-23",
+      "published_at": "2026-10-26T21:00:00Z",
+      "row_id": "ee8f89ff-caa9-4dcb-b598-391736de6a75",
+      "source_url": "https://fred.stlouisfed.org/series/DEXTAUS",
+      "lag_days": 3,
+      "stale": false
+    },
+    "flags": [],
+    "entries": 6,
+    "latest_snapshot": {
+      "id": "cf45882a-fa5f-47ea-884c-cb36b8e9b339",
+      "known_at": "2026-10-27T03:12:00Z",
+      "system_time": "2026-10-27T03:40:35.397332Z",
+      "equity_usd": "16684.67",
+      "trigger": "manual"
+    },
+    "detail": "Your holdings as you recorded them, kept on this machine only. Each position is marked at the last end-of-day close known at the time shown (TWSE listings in TWD, US listings in USD) and TWD is converted at the last DEXTAUS rate. A record, not advice: nothing here is ever sent to a broker."
+  }
+}
