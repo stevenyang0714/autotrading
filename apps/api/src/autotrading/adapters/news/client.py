@@ -2,8 +2,10 @@
 
 Hosts are fixed: GDELT's API host and the hosts of config/news_feeds.yaml; anything else is
 refused. sec.gov requests carry SEC_USER_AGENT (fair access policy); others a plain product
-User-Agent. Every request takes a token from the per-source rate limiter first. 429 and 5xx are
-retried with backoff (GDELT answers 429 even below its stated one request per 5 seconds).
+User-Agent. Every request takes a token from the per-source rate limiter first. 5xx answers are
+retried with backoff; a 429 is retried once, and a second one raises NewsThrottledError so the job
+can pause the source instead of holding a worker thread (KI-30: GDELT answers 429 even below its
+stated one request per 5 seconds, sometimes for hours).
 A feed request may send If-Modified-Since; a 304 answer returns no payload.
 A client made by for_hosts lives for one run's fetch and has a time budget inside the run's time
 limit: past it, no request starts and no backoff sleep runs past it, so a throttled GDELT run
@@ -40,8 +42,15 @@ FETCH_TIME_BUDGET_SECONDS = RUN_TIME_LIMIT_SECONDS - 120.0
 BUDGET_USED = "stopped: the run's time budget is used up"
 
 
+THROTTLE_RETRIES = 1  # a 429 is retried this many times before the source is paused
+
+
 class NewsRequestError(RuntimeError):
     """A news request was refused, or kept failing after the client's own retries."""
+
+
+class NewsThrottledError(NewsRequestError):
+    """The server kept answering 429: the source is throttling this address (KI-30)."""
 
 
 def public_url(url: str, params: dict[str, str] | None = None) -> str:
@@ -117,6 +126,7 @@ class NewsClient:
             raise NewsRequestError(f"refused: {url} is not a configured news endpoint")
         shown = public_url(url, params)
         headers = self._headers(host, if_modified_since)
+        throttled = 0
         for attempt in range(1, MAX_ATTEMPTS + 1):
             if not self._time_left(0.0):
                 raise NewsRequestError(f"GET {shown} not sent: {BUDGET_USED}")
@@ -141,6 +151,13 @@ class NewsClient:
                     source_url=shown,
                     fetched_at=datetime.now(UTC),
                 )
+            if response.status_code == 429:
+                throttled += 1
+                if throttled > THROTTLE_RETRIES:
+                    raise NewsThrottledError(
+                        f"GET {shown} returned HTTP 429 {throttled} times: the source is "
+                        "throttling this address"
+                    ) from None
             if response.status_code not in RETRY_STATUSES or attempt == MAX_ATTEMPTS:
                 raise NewsRequestError(
                     f"GET {shown} returned HTTP {response.status_code} after {attempt} attempt(s)"

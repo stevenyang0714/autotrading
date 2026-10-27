@@ -20,6 +20,7 @@ from autotrading.adapters.news.client import NewsClient
 from autotrading.adapters.news.config import feeds
 from autotrading.adapters.news.gdelt import GdeltJob
 from autotrading.adapters.news.rss import RssJob, job_for
+from autotrading.ingestion.cooldown import Cooldown, MemoryCooldown
 from autotrading.ingestion.job import JobRegistry, Window, register_job
 from autotrading.ingestion.runner import IngestionRunner
 
@@ -46,6 +47,9 @@ def recorded_client() -> NewsClient:
 class ReplayedGdelt(GdeltJob):
     def client(self) -> NewsClient:
         return recorded_client()
+
+    def cooldown(self) -> Cooldown:
+        return MemoryCooldown()  # recorded answers never throttle; no Redis key touched
 
 
 class FixtureGdelt(ReplayedGdelt):

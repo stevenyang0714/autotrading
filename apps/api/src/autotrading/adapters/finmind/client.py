@@ -15,14 +15,13 @@ import logging
 import time
 from collections.abc import Callable
 from datetime import UTC, date, datetime
-from typing import Protocol, Self
+from typing import Self
 from urllib.parse import urlencode
 
 import httpx2 as httpx
 
-from autotrading.infra.redis_client import make_redis
+from autotrading.ingestion.cooldown import Cooldown, MemoryCooldown, RedisCooldown
 from autotrading.ingestion.job import FetchedPayload
-from autotrading.settings import get_settings
 
 logger = logging.getLogger(__name__)
 
@@ -67,41 +66,7 @@ class FinMindCooldownError(FinMindRequestError):
     """A cooldown from an earlier quota error is still running: no request was made."""
 
 
-class Cooldown(Protocol):
-    def active(self) -> bool: ...
-
-    def start(self, seconds: int) -> None: ...
-
-
-class RedisCooldown:
-    """The cooldown shared by every process through Redis (the worker's retries included)."""
-
-    def __init__(self, redis: object, key: str = COOLDOWN_KEY) -> None:
-        self._redis = redis
-        self._key = key
-
-    @classmethod
-    def from_settings(cls) -> Self:
-        return cls(make_redis(get_settings()))
-
-    def active(self) -> bool:
-        return bool(self._redis.exists(self._key))  # type: ignore[attr-defined]
-
-    def start(self, seconds: int) -> None:
-        self._redis.setex(self._key, seconds, datetime.now(UTC).isoformat())  # type: ignore[attr-defined]
-
-
-class MemoryCooldown:
-    """A cooldown inside one process (tests, the recorder)."""
-
-    def __init__(self) -> None:
-        self.until = 0.0
-
-    def active(self) -> bool:
-        return time.monotonic() < self.until
-
-    def start(self, seconds: int) -> None:
-        self.until = time.monotonic() + seconds
+__all__ = ["Cooldown", "MemoryCooldown", "RedisCooldown"]
 
 
 def public_url(dataset: str, code: str, start: date, end: date) -> str:
@@ -133,7 +98,7 @@ class FinMindClient:
 
     @classmethod
     def from_settings(cls) -> Self:
-        return cls(cooldown=RedisCooldown.from_settings())
+        return cls(cooldown=RedisCooldown.from_settings(COOLDOWN_KEY))
 
     def close(self) -> None:
         self._client.close()
