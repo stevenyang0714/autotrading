@@ -1,0 +1,170 @@
+{
+  "recorded_at": "2026-10-22T04:09:39.903430+00:00",
+  "recorded_from": "recorded TWSE OpenAPI files replayed into the integration test database (tests/integration/test_twse.py)",
+  "endpoint": "/taiwan",
+  "params": {
+    "known_at": "2026-10-22T23:59:59+08:00"
+  },
+  "response": {
+    "known_at": "2026-10-22T23:59:59+08:00",
+    "benchmark": "0050",
+    "ranked_on": "2026-10-21",
+    "market_session": {
+      "open": false,
+      "last_close": "2026-10-22T05:30:00Z",
+      "next_open": "2026-10-23T01:00:00Z",
+      "timezone": "Asia/Taipei",
+      "calendar_covered_until": "2026-12-31"
+    },
+    "latest_session": "2026-10-21",
+    "missing_sessions": [],
+    "rows": [
+      {
+        "code": "2330",
+        "name": "TSMC",
+        "name_zh": "台積電",
+        "instrument_type": "equity",
+        "session": "2026-10-21",
+        "close": "2420.00",
+        "feed_status": "end_of_day",
+        "change": "15.0000",
+        "history_since": "2026-10-21",
+        "sessions": 1
+      },
+      {
+        "code": "2454",
+        "name": "MediaTek",
+        "name_zh": "聯發科",
+        "instrument_type": "equity",
+        "session": "2026-10-21",
+        "close": "4140.00",
+        "feed_status": "end_of_day",
+        "change": "-10.0000",
+        "history_since": "2026-10-21",
+        "sessions": 1
+      },
+      {
+        "code": "2308",
+        "name": "Delta Electronics",
+        "name_zh": "台達電",
+        "instrument_type": "equity",
+        "session": "2026-10-21",
+        "close": "1625.00",
+        "feed_status": "end_of_day",
+        "change": "20.0000",
+        "history_since": "2026-10-21",
+        "sessions": 1
+      },
+      {
+        "code": "2317",
+        "name": "Hon Hai Precision (Foxconn)",
+        "name_zh": "鴻海",
+        "instrument_type": "equity",
+        "session": "2026-10-21",
+        "close": "250.00",
+        "feed_status": "end_of_day",
+        "change": "8.5000",
+        "history_since": "2026-10-21",
+        "sessions": 1
+      },
+      {
+        "code": "3711",
+        "name": "ASE Technology",
+        "name_zh": "日月光投控",
+        "instrument_type": "equity",
+        "session": "2026-10-21",
+        "close": "684.00",
+        "feed_status": "end_of_day",
+        "change": "24.0000",
+        "history_since": "2026-10-21",
+        "sessions": 1
+      },
+      {
+        "code": "1303",
+        "name": "Nan Ya Plastics",
+        "name_zh": "南亞",
+        "instrument_type": "equity",
+        "session": "2026-10-21",
+        "close": "320.50",
+        "feed_status": "end_of_day",
+        "change": "24.5000",
+        "history_since": "2026-10-21",
+        "sessions": 1
+      },
+      {
+        "code": "2881",
+        "name": "Fubon Financial",
+        "name_zh": "富邦金",
+        "instrument_type": "equity",
+        "session": "2026-10-21",
+        "close": "158.50",
+        "feed_status": "end_of_day",
+        "change": "5.0000",
+        "history_since": "2026-10-21",
+        "sessions": 1
+      },
+      {
+        "code": "3037",
+        "name": "Unimicron",
+        "name_zh": "欣興",
+        "instrument_type": "equity",
+        "session": "2026-10-21",
+        "close": "1100.00",
+        "feed_status": "end_of_day",
+        "change": "45.0000",
+        "history_since": "2026-10-21",
+        "sessions": 1
+      },
+      {
+        "code": "2383",
+        "name": "Elite Material",
+        "name_zh": "台光電",
+        "instrument_type": "equity",
+        "session": "2026-10-21",
+        "close": "4990.00",
+        "feed_status": "end_of_day",
+        "change": "45.0000",
+        "history_since": "2026-10-21",
+        "sessions": 1
+      },
+      {
+        "code": "2882",
+        "name": "Cathay Financial",
+        "name_zh": "國泰金",
+        "instrument_type": "equity",
+        "session": "2026-10-21",
+        "close": "114.00",
+        "feed_status": "end_of_day",
+        "change": "4.0000",
+        "history_since": "2026-10-21",
+        "sessions": 1
+      },
+      {
+        "code": "0050",
+        "name": "Yuanta Taiwan Top 50 ETF",
+        "name_zh": "元大台灣50",
+        "instrument_type": "etf",
+        "session": "2026-10-21",
+        "close": "108.15",
+        "feed_status": "end_of_day",
+        "change": "0.9000",
+        "history_since": "2026-10-21",
+        "sessions": 1
+      }
+    ],
+    "attribution": {
+      "provider": "臺灣證券交易所",
+      "year": 2026,
+      "datasets": [
+        "上市個股日成交資訊",
+        "上市個股日本益比、殖利率及股價淨值比",
+        "集中市場融資融券餘額",
+        "上市股票除權除息預告表"
+      ],
+      "license": "此開放資料依政府資料開放授權條款 (Open Government Data License) 進行公眾釋出",
+      "license_url": "https://data.gov.tw/license",
+      "text": "臺灣證券交易所 2026 上市個股日成交資訊、上市個股日本益比、殖利率及股價淨值比、集中市場融資融券餘額、上市股票除權除息預告表；此開放資料依政府資料開放授權條款 (Open Government Data License) 進行公眾釋出，https://data.gov.tw/license"
+    },
+    "detail": "Research only: no strategy, signal, alert or paper portfolio reads Taiwan (ADR-039 TW12). History starts with the first collected session; values are what TWSE published, as known at the time shown. Not advice."
+  }
+}

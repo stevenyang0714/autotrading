@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatMeasure, isSortKey, ordinal, windowText } from "./factors";
+import { formatMeasure, groupLabel, isSortKey, meta, ordinal, windowText } from "./factors";
 
 describe("factor formats", () => {
   it("signs returns and relative values, and keeps multiples and beta plain", () => {
@@ -33,5 +33,14 @@ describe("factor formats", () => {
     expect(isSortKey("drop table")).toBe(false);
     expect(windowText({ start: "2025-10-02", end: "2026-09-03" })).toBe("2025-10-02 to 2026-09-03");
     expect(windowText({ start: null, end: "2026-10-05" })).toBe("2026-10-05");
+  });
+});
+
+describe("the benchmark in factor labels (M3.7)", () => {
+  it("names 0050 for a Taiwan instrument and SPY otherwise", () => {
+    expect(meta("beta_252d").label).toBe("Beta to SPY (252 sessions)");
+    expect(meta("beta_252d", "0050").label).toBe("Beta to 0050 (252 sessions)");
+    expect(meta("relative_momentum_12_1", "0050").short).toBe("12-1 vs 0050");
+    expect(groupLabel("Against SPY", "0050")).toBe("Against 0050");
   });
 });

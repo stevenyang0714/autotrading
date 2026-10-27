@@ -130,19 +130,37 @@ Work one sub-milestone at a time, in this order (ADR-035): M3.0, M3.0b, M3.0c (a
 - [ ] Every layer cites its source and time; no physical reading reaches a decision without the causal graph.
 
 ## M3.7 Taiwan market: prices, valuation and flows (ADR-035)
+**Decided (ADR-039, TW1-TW14, Claude under ADR-035; the history question by Steven on 2026-10-22):**
+- **Source:** the TWSE OpenAPI only. It serves the latest session only, so Taiwan is collected daily from 2026-10-21.
+- **History, institutional flows and foreign ownership:** these wait for TWSE's written consent. The website's dated queries fall under its terms of use, Art. 6. Steven sends the request: `docs/requests/twse_history_consent_zh.md`.
+- **No TPEx.** Every universe member is TWSE-listed.
+- **Universe:** the top 10 by market cap on 2026-10-21, plus 0050, frozen in `config/universe_tw.yaml`.
+- **Research only.**
+
 **Build**
-- **Multi-market support:** an exchange per instrument (NYSE/Nasdaq or TWSE/TPEx), the Taipei session and holiday calendar, TWD, and "as known at" times from each market's own close.
-- **Sources:** the TWSE and TPEx OpenAPI with provenance like every other source:
-  - daily prices and volume with ex-rights and ex-dividend adjustment;
-  - P/E, P/B and dividend yield;
-  - net buying of the three institutional investor groups and foreign ownership;
-  - margin and short balances.
-- **Universe:** the 10 largest TWSE companies by market cap at build time and 0050 (list recorded in the ADR).
-- **Pages:** Taiwan instrument pages with the same factor table (momentum, averages, volatility, beta against 0050), and the flows.
+- **Multi-market support:**
+  - `domain/markets.py` (US and TW);
+  - XTAI instruments in TWD with `twse` identifiers;
+  - the Taipei calendar (`config/market_calendar_xtai.yaml`);
+  - Taiwan dates in Taipei time: sessions, the end of day, ex-dates.
+- **Source:** the `twse_openapi` adapter, limited to six OpenAPI files, three runs a day:
+  - STOCK_DAY_ALL closes;
+  - the BWIBBU_d P/E, P/B and dividend yield;
+  - MI_MARGN margin and short balances (dated by the chain of balances);
+  - TWT48U_ALL dividends;
+  - the reference price check;
+  - `exchange_measures` (migration 0031).
+- **Universe:** the ranking recomputed from the recorded files in a unit test.
+- **Factors:** definitions 0.2.0 for Taiwan, against 0050 on Taipei dates; S3, S4 and the Radar keep 0.1.0.
+- **Pages:**
+  - the Taiwan section on `/instruments`;
+  - `/instruments/{code}`: close, valuation with percentiles, margin, dividends, factors against 0050, flows "Data unavailable", the open-data attribution.
 
 **Acceptance**
-- [ ] Every Taiwan value cites its source and its time; As known on reproduces the stored rows.
-- [ ] A Taiwan session never borrows a New York close or calendar.
+- [x] Every Taiwan value cites its source and its time; As known on reproduces the stored rows (integration tests on the recorded 2026-10-21 files: a close is known from the end of its Taipei day).
+- [x] A Taiwan session never borrows a New York close or calendar (Taipei session dates, ex-dates, month ends and stale check; tests at the New York–Taipei boundary).
+- [x] The source is used within its licence: the six OpenAPI files only, the attribution on every Taiwan page, nothing scraped.
+- [ ] History before 2026-10-21, institutional flows and foreign ownership: after TWSE's consent (KI-27).
 
 ## M3.8 Taiwan fundamentals: monthly revenue and quarterly reports
 **Build**

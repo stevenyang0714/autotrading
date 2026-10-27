@@ -4,7 +4,13 @@ import { Metric } from "@/components/Metric";
 import { DemoBanner } from "@/components/prices/DemoBanner";
 import { PriceBadge, changeTone } from "@/components/prices/PriceBadge";
 import { SourceFreshness } from "@/components/SourceFreshness";
-import type { InstrumentList as InstrumentListData, LatestPrices, Quote, SourceHealth } from "@/lib/api";
+import type {
+  FeedStatus,
+  InstrumentList as InstrumentListData,
+  LatestPrices,
+  Quote,
+  SourceHealth,
+} from "@/lib/api";
 import { formatChange, formatPrice } from "@/lib/format";
 import { formatSgtEt } from "@/lib/time";
 
@@ -16,10 +22,13 @@ export function InstrumentList({
   data,
   prices,
   sources,
+  otherStatuses = [],
 }: {
   data: InstrumentListData | null;
   prices?: LatestPrices | null;
   sources?: SourceHealth[] | null;
+  /** Feed statuses of other data on the page (the Taiwan closes, M3.7): one DEMO banner. */
+  otherStatuses?: (FeedStatus | null)[];
 }) {
   const quotes = new Map((prices?.quotes ?? []).map((quote) => [quote.symbol, quote]));
   const newest = data?.instruments
@@ -29,7 +38,7 @@ export function InstrumentList({
     .at(-1);
   return (
     <section className="space-y-6">
-      <DemoBanner statuses={[...quotes.values()].map((quote) => quote.feed_status)} />
+      <DemoBanner statuses={[...[...quotes.values()].map((quote) => quote.feed_status), ...otherStatuses]} />
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold">
           <Metric termId="page_instruments" zh>

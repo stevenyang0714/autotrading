@@ -66,6 +66,8 @@ NEWS_KINDS = ("article", "press_release", "official")
 NEWS_TIME_BASES = ("publisher", "first_seen")
 DATA_MODES = ("live", "fixture")
 SPLIT_KINDS = ("forward_split", "reverse_split", "stock_dividend")
+# exchange_measures units (M3.7): TWD amounts, percent, multiples, lots of 1,000 shares
+EXCHANGE_MEASURE_UNITS = ("TWD", "percent", "x", "lots")
 MENTION_RULES = ("exchange_ticker", "feed_issuer", "company_name", "bare_ticker")
 REVISION_REASONS = ("restatement", "revision", "correction")
 AUDIT_ACTIONS = ("insert", "update", "delete", "supersede")
@@ -587,6 +589,66 @@ class MacroObservation(FactMixin, Base):
     vintage: Mapped[date] = mapped_column(Date)  # ALFRED realtime_start
     supersedes_id: Mapped[uuid.UUID | None] = mapped_column(
         Uuid, ForeignKey("macro_observations.id")
+    )
+    revision_reason: Mapped[str | None] = mapped_column(Text)
+
+
+class ExchangeMeasure(FactMixin, Base):
+    """A value an exchange publishes for one instrument and session (M3.7, ADR-039 TW7): the
+    TWSE OpenAPI's price change and trade value, its P/E, P/B and dividend yield, and the margin
+    and short balances. Long format, one measure per row; a later different value for the same
+    session is a new version (`revision`). published_at is the end of the session's day in
+    Taipei (ADR-012). `detail` keeps the basis TWSE states (the earnings quarter, the dividend
+    year, a margin note). data_mode `fixture` marks recorded test data (the DEMO banner).
+    """
+
+    __tablename__ = "exchange_measures"
+    __fact_key__ = ("instrument_id", "measure_id", "session_date")
+    __table_args__ = (
+        *provenance_constraints(),
+        *bitemporal_constraints(),
+        CheckConstraint("measure_id ~ '^[a-z][a-z0-9_]*$'", name="measure_id_format"),
+        CheckConstraint(sql_in("unit", EXCHANGE_MEASURE_UNITS), name="unit"),
+        CheckConstraint(sql_in("data_mode", DATA_MODES), name="data_mode"),
+        CheckConstraint("value NOT IN ('NaN', 'Infinity', '-Infinity')", name="value_finite"),
+        CheckConstraint(
+            "revision_reason IS NULL OR " + sql_in("revision_reason", REVISION_REASONS),
+            name="revision_reason",
+        ),
+        CheckConstraint(
+            "(supersedes_id IS NULL) = (revision_reason IS NULL)",
+            name="revision_link",
+        ),
+        Index(
+            "uq_exchange_measures_key_version",
+            *__fact_key__,
+            "version",
+            unique=True,
+        ),
+        # One current version per measure, session and publication time; the idempotency key.
+        Index(
+            "uq_exchange_measures_current_key_published",
+            *__fact_key__,
+            "published_at",
+            unique=True,
+            postgresql_where=text("superseded_at IS NULL"),
+        ),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    instrument_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("instruments.id"))
+    symbol: Mapped[str] = mapped_column(Text)
+    session_date: Mapped[date] = mapped_column(Date)
+    measure_id: Mapped[str] = mapped_column(Text)
+    value: Mapped[Decimal] = mapped_column(Numeric)
+    unit: Mapped[str] = mapped_column(Text)
+    detail: Mapped[str | None] = mapped_column(Text)
+    data_mode: Mapped[str] = mapped_column(Text)
+    supersedes_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("exchange_measures.id")
     )
     revision_reason: Mapped[str | None] = mapped_column(Text)
 

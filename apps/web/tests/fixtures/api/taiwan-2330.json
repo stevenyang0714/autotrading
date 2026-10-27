@@ -1,0 +1,159 @@
+{
+  "recorded_at": "2026-10-22T04:09:39.918208+00:00",
+  "recorded_from": "recorded TWSE OpenAPI files replayed into the integration test database (tests/integration/test_twse.py)",
+  "endpoint": "/taiwan/instruments/2330",
+  "params": {
+    "known_at": "2026-10-22T23:59:59+08:00"
+  },
+  "response": {
+    "code": "2330",
+    "name": "TSMC",
+    "name_zh": "台積電",
+    "about_zh": "晶圓代工",
+    "sector_zh": "半導體業",
+    "instrument_type": "equity",
+    "currency": "TWD",
+    "known_at": "2026-10-22T23:59:59+08:00",
+    "market_session": {
+      "open": false,
+      "last_close": "2026-10-22T05:30:00Z",
+      "next_open": "2026-10-23T01:00:00Z",
+      "timezone": "Asia/Taipei",
+      "calendar_covered_until": "2026-12-31"
+    },
+    "price": {
+      "session": "2026-10-21",
+      "open": "2425.00",
+      "high": "2435.00",
+      "low": "2400.00",
+      "close": "2420.00",
+      "change": "15.0000",
+      "reference": "2405.0000",
+      "volume": 27095005,
+      "trade_value": "65515856247",
+      "feed_status": "end_of_day",
+      "history": [
+        {
+          "session": "2026-10-21",
+          "close": "2420.00",
+          "adjusted_close": "2420.00"
+        }
+      ],
+      "history_since": "2026-10-21",
+      "sessions": 1,
+      "source": {
+        "dataset": "上市個股日成交資訊",
+        "source_url": "https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL",
+        "published_at": "2026-10-21T15:59:59.999999Z",
+        "ingested_at": "2026-10-22T04:09:38.715995Z",
+        "ingestion_run_id": "71251594-29d6-4c7e-8ab3-50d25bfc59a3",
+        "raw_payload_sha256": "720a2c1bc6b7b8629daa38a4e4a816c01836e9f7ea6e460b55562550d2836ef6",
+        "license_status": "public",
+        "confidence": "1.000"
+      }
+    },
+    "valuation": {
+      "session": "2026-10-21",
+      "measures": [
+        {
+          "measure_id": "exchange_pe_ratio",
+          "value": "28.05",
+          "reason": null,
+          "detail": "earnings and book value of 2026Q2",
+          "percentile": null,
+          "median": null,
+          "observations": 1,
+          "since": "2026-10-21"
+        },
+        {
+          "measure_id": "exchange_pb_ratio",
+          "value": "9.76",
+          "reason": null,
+          "detail": "earnings and book value of 2026Q2",
+          "percentile": null,
+          "median": null,
+          "observations": 1,
+          "since": "2026-10-21"
+        },
+        {
+          "measure_id": "exchange_dividend_yield",
+          "value": "0.91",
+          "reason": null,
+          "detail": "dividends of 2025",
+          "percentile": null,
+          "median": null,
+          "observations": 1,
+          "since": "2026-10-21"
+        }
+      ],
+      "percentile_min_observations": 12,
+      "source": {
+        "dataset": "上市個股日本益比、殖利率及股價淨值比",
+        "source_url": "https://openapi.twse.com.tw/v1/exchangeReport/BWIBBU_d",
+        "published_at": "2026-10-21T15:59:59.999999Z",
+        "ingested_at": "2026-10-22T04:09:38.719248Z",
+        "ingestion_run_id": "71251594-29d6-4c7e-8ab3-50d25bfc59a3",
+        "raw_payload_sha256": "d5218ab46baedf6ade399d2876a18ccac3c4a53c4c267947efcd41bff686b17c",
+        "license_status": "public",
+        "confidence": "1.000"
+      }
+    },
+    "margin": {
+      "session": "2026-10-21",
+      "unit": "lots",
+      "values": {
+        "margin_balance": "35330",
+        "margin_balance_previous": "34401",
+        "margin_limit": "6483092",
+        "margin_purchase": "1236",
+        "margin_sale": "261",
+        "margin_short_offset": "0",
+        "short_balance": "6",
+        "short_balance_previous": "14",
+        "short_covering": "8",
+        "short_limit": "6483092",
+        "short_sale": "0"
+      },
+      "margin_change": "929",
+      "short_change": "-8",
+      "margin_usage": "0.54",
+      "short_to_margin": "0.02",
+      "note": null,
+      "source": {
+        "dataset": "集中市場融資融券餘額",
+        "source_url": "https://openapi.twse.com.tw/v1/exchangeReport/MI_MARGN",
+        "published_at": "2026-10-21T15:59:59.999999Z",
+        "ingested_at": "2026-10-22T04:09:38.723439Z",
+        "ingestion_run_id": "71251594-29d6-4c7e-8ab3-50d25bfc59a3",
+        "raw_payload_sha256": "a3bf204dcd26615f0ddfe4e2cc0788e4edcd474996efa194039674e485eccdbc",
+        "license_status": "public",
+        "confidence": "0.900"
+      }
+    },
+    "actions": [],
+    "reference_gaps": [],
+    "missing_sessions": [],
+    "flows": {
+      "status": "unavailable",
+      "reason": "Data unavailable: per-stock institutional net buying (T86) and foreign ownership (MI_QFIIS) are not in the licensed TWSE OpenAPI; the website's dated queries need TWSE's written consent (requested, ADR-039).",
+      "datasets": [
+        "三大法人買賣超日報 (T86)",
+        "外資及陸資投資持股統計 (MI_QFIIS)"
+      ]
+    },
+    "attribution": {
+      "provider": "臺灣證券交易所",
+      "year": 2026,
+      "datasets": [
+        "上市個股日成交資訊",
+        "上市個股日本益比、殖利率及股價淨值比",
+        "集中市場融資融券餘額",
+        "上市股票除權除息預告表"
+      ],
+      "license": "此開放資料依政府資料開放授權條款 (Open Government Data License) 進行公眾釋出",
+      "license_url": "https://data.gov.tw/license",
+      "text": "臺灣證券交易所 2026 上市個股日成交資訊、上市個股日本益比、殖利率及股價淨值比、集中市場融資融券餘額、上市股票除權除息預告表；此開放資料依政府資料開放授權條款 (Open Government Data License) 進行公眾釋出，https://data.gov.tw/license"
+    },
+    "detail": "Research only: no strategy, signal, alert or paper portfolio reads Taiwan (ADR-039 TW12). History starts with the first collected session; values are what TWSE published, as known at the time shown. Not advice."
+  }
+}

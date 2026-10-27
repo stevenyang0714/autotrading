@@ -65,6 +65,26 @@ sources:
     rate_limit_per_second: 5
     rate_limit_burst: 10
 
+  - id: twse_openapi
+    name: TWSE OpenAPI (Taiwan Stock Exchange open data)
+    url: https://openapi.twse.com.tw/
+    tier: 1
+    license_status: public
+    note: >-
+      Open Government Data License Taiwan 1.0 (https://data.gov.tw/license), free, no key;
+      attribution required (provider, year, dataset, the licence sentence and URL), shown on
+      every Taiwan page. Only the six OpenAPI files of M3.7 (ADR-039 TW1), each the latest
+      session only. The website's dated queries (www.twse.com.tw/rwd) are not used: its terms
+      of use (Art. 6) forbid automated download without TWSE's consent. Re-verified 2026-10-22.
+    access_status: active           # no credentials needed
+    update_cadence: daily
+    freshness_sla_seconds: 129600   # 36 hours; three runs a day at 07:40, 09:40, 20:40 SGT
+    enabled: true                   # M3.7
+    priority: 35
+    topics: [prices, valuation, margin, corporate_actions, taiwan]
+    rate_limit_per_second: 0.334    # one request every 3 seconds
+    rate_limit_burst: 1
+
   - id: gdelt
     name: GDELT DOC 2.0 API
     url: https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/

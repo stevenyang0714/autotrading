@@ -1,5 +1,6 @@
 """Display names of the universe (M3.0c, ADR-038): config/instrument_labels.yaml, with each
-symbol's GICS sector from the risk rules. For display only; nothing computes with them."""
+symbol's GICS sector from the risk rules, or for a Taiwan code its TWSE industry from the file
+(M3.7, ADR-039). For display only; nothing computes with them."""
 
 from dataclasses import dataclass
 from functools import lru_cache
@@ -17,6 +18,7 @@ class _Label(BaseModel):
     name: str
     zh: str
     about_zh: str
+    sector: str | None = None  # a Taiwan code's TWSE industry (US sectors: the risk rules)
 
 
 class LabelsFile(BaseModel):
@@ -57,7 +59,7 @@ def label(symbol: str, sectors: dict[str, str] | None = None) -> Label:
     symbols to GICS keys (the risk rules' table)."""
     file = _file()
     found = file.instruments.get(symbol)
-    sector = (sectors or {}).get(symbol)
+    sector = (sectors or {}).get(symbol) or (found.sector if found else None)
     sector_zh = file.sectors.get(sector) if sector else None
     if found is None:
         return Label(symbol, symbol, symbol, "", sector, sector_zh)

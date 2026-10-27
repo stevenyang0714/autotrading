@@ -2,7 +2,9 @@
 # for pushed messages and the pages. Reviewed by hand; for display only: no rule, score or
 # calculation reads these names. Sectors are the risk rules' GICS keys (config/risk_rules.yaml),
 # shown with the Chinese labels below. A unit test keeps every universe symbol listed.
-version: 0.1.0
+# 0.2.0 (M3.7, ADR-039): the Taiwan universe (config/universe_tw.yaml), codes quoted, each with
+# its TWSE industry (產業別 of /opendata/t187ap03_L; ETFs: tw_broad_market) as `sector`.
+version: 0.2.0
 sectors:
   information_technology: 資訊科技
   communication_services: 通訊服務
@@ -12,6 +14,13 @@ sectors:
   broad_market: 大盤
   fixed_income: 美國公債
   commodity: 商品
+  # TWSE industries (產業別 codes 03, 17, 24, 28, 31) and the Taiwan broad market
+  tw_plastics: 塑膠工業
+  tw_financials: 金融保險業
+  tw_semiconductors: 半導體業
+  tw_electronic_components: 電子零組件業
+  tw_other_electronics: 其他電子業
+  tw_broad_market: 台股大盤
 instruments:
   AAPL: {name: Apple, zh: 蘋果, about_zh: iPhone、Mac 與服務}
   MSFT: {name: Microsoft, zh: 微軟, about_zh: Windows、Office 與 Azure 雲端}
@@ -31,3 +40,14 @@ instruments:
   GLD: {name: SPDR Gold Shares, zh: 黃金 ETF, about_zh: 實體黃金}
   XLE: {name: Energy Select Sector SPDR, zh: 能源類股 ETF, about_zh: 標普 500 能源類股}
   XLK: {name: Technology Select Sector SPDR, zh: 科技類股 ETF, about_zh: 標普 500 資訊科技類股}
+  "2330": {name: TSMC, zh: 台積電, about_zh: 晶圓代工, sector: tw_semiconductors}
+  "2454": {name: MediaTek, zh: 聯發科, about_zh: 手機與通訊晶片設計, sector: tw_semiconductors}
+  "2308": {name: Delta Electronics, zh: 台達電, about_zh: 電源與散熱、資料中心電力, sector: tw_electronic_components}
+  "2317": {name: Hon Hai Precision (Foxconn), zh: 鴻海, about_zh: 電子代工與 AI 伺服器組裝, sector: tw_other_electronics}
+  "3711": {name: ASE Technology, zh: 日月光投控, about_zh: 半導體封裝與測試, sector: tw_semiconductors}
+  "1303": {name: Nan Ya Plastics, zh: 南亞, about_zh: 塑化與電子材料（玻纖布、銅箔基板）, sector: tw_plastics}
+  "2881": {name: Fubon Financial, zh: 富邦金, about_zh: 金融控股（壽險、銀行、證券）, sector: tw_financials}
+  "3037": {name: Unimicron, zh: 欣興, about_zh: IC 載板與印刷電路板, sector: tw_electronic_components}
+  "2383": {name: Elite Material, zh: 台光電, about_zh: 高速傳輸用銅箔基板, sector: tw_electronic_components}
+  "2882": {name: Cathay Financial, zh: 國泰金, about_zh: 金融控股（壽險、銀行、證券）, sector: tw_financials}
+  "0050": {name: Yuanta Taiwan Top 50 ETF, zh: 元大台灣50, about_zh: 台灣市值前 50 大公司, sector: tw_broad_market}

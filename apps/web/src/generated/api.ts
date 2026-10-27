@@ -1022,6 +1022,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/taiwan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Taiwan List */
+        get: operations["taiwan_list_taiwan_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/taiwan/instruments/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Taiwan Instrument */
+        get: operations["taiwan_instrument_taiwan_instruments__code__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1371,6 +1405,21 @@ export interface components {
             subtract_sbc: boolean;
             /** Terminal Growth */
             terminal_growth: string;
+        };
+        /** Attribution */
+        Attribution: {
+            /** Datasets */
+            datasets: string[];
+            /** License */
+            license: string;
+            /** License Url */
+            license_url: string;
+            /** Provider */
+            provider: string;
+            /** Text */
+            text: string;
+            /** Year */
+            year: number;
         };
         /** AuditEntry */
         AuditEntry: {
@@ -1891,6 +1940,22 @@ export interface components {
             /** Rule Version */
             rule_version: string;
         };
+        /** CorporateAction */
+        CorporateAction: {
+            /**
+             * Ex Date
+             * Format: date
+             */
+            ex_date: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "cash_dividend" | "stock_dividend";
+            source: components["schemas"]["SourceRef"];
+            /** Value */
+            value: string;
+        };
         /** DataAsOf */
         DataAsOf: {
             latest_filing: components["schemas"]["FilingRef"] | null;
@@ -2399,6 +2464,11 @@ export interface components {
             /** Definition Version */
             definition_version: string;
             /**
+             * Market
+             * @enum {string}
+             */
+            market: "US" | "TW";
+            /**
              * Released
              * Format: date
              */
@@ -2555,6 +2625,18 @@ export interface components {
             threshold: string;
             /** Value */
             value: string | null;
+        };
+        /** FlowsBlock */
+        FlowsBlock: {
+            /** Datasets */
+            datasets: string[];
+            /** Reason */
+            reason: string;
+            /**
+             * Status
+             * @constant
+             */
+            status: "unavailable";
         };
         /** Fold */
         Fold: {
@@ -2843,6 +2925,8 @@ export interface components {
         };
         /** InstrumentFactorsOut */
         InstrumentFactorsOut: {
+            /** Benchmark */
+            benchmark: string;
             /** Definition Version */
             definition_version: string;
             /**
@@ -2863,8 +2947,15 @@ export interface components {
              * Format: date-time
              */
             known_at: string;
+            /**
+             * Market
+             * @enum {string}
+             */
+            market: "US" | "TW";
             /** Measures */
             measures: components["schemas"]["MeasureOut"][];
+            /** Percentile Min Observations */
+            percentile_min_observations: number | null;
             price: components["schemas"]["SnapshotRef"] | null;
             /** Ticker */
             ticker: string;
@@ -3212,6 +3303,31 @@ export interface components {
             last_refresh_at: string | null;
             /** Series */
             series: components["schemas"]["SeriesSummary"][];
+        };
+        /** MarginBlock */
+        MarginBlock: {
+            /** Margin Change */
+            margin_change: string | null;
+            /** Margin Usage */
+            margin_usage: string | null;
+            /** Note */
+            note: string | null;
+            /**
+             * Session
+             * Format: date
+             */
+            session: string;
+            /** Short Change */
+            short_change: string | null;
+            /** Short To Margin */
+            short_to_margin: string | null;
+            source: components["schemas"]["SourceRef"];
+            /** Unit */
+            unit: string;
+            /** Values */
+            values: {
+                [key: string]: string;
+            };
         };
         /** MarketContext */
         MarketContext: {
@@ -3850,6 +3966,42 @@ export interface components {
             /** Value */
             value: string;
         };
+        /** PriceBlock */
+        PriceBlock: {
+            /** Change */
+            change: string | null;
+            /** Close */
+            close: string;
+            /** Feed Status */
+            feed_status: string;
+            /** High */
+            high: string;
+            /** History */
+            history: components["schemas"]["PricePoint"][];
+            /**
+             * History Since
+             * Format: date
+             */
+            history_since: string;
+            /** Low */
+            low: string;
+            /** Open */
+            open: string;
+            /** Reference */
+            reference: string | null;
+            /**
+             * Session
+             * Format: date
+             */
+            session: string;
+            /** Sessions */
+            sessions: number;
+            source: components["schemas"]["SourceRef"];
+            /** Trade Value */
+            trade_value: string | null;
+            /** Volume */
+            volume: number;
+        };
         /** PriceComparison */
         PriceComparison: {
             /** Detail */
@@ -3879,6 +4031,18 @@ export interface components {
              * @enum {string}
              */
             status: "ok" | "fixture" | "demo" | "stale" | "none";
+        };
+        /** PricePoint */
+        PricePoint: {
+            /** Adjusted Close */
+            adjusted_close: string;
+            /** Close */
+            close: string;
+            /**
+             * Session
+             * Format: date
+             */
+            session: string;
         };
         /**
          * PriceTile
@@ -4134,6 +4298,27 @@ export interface components {
             status: "pass" | "warn" | "fail";
             /** Ticker */
             ticker: string | null;
+        };
+        /** ReferenceCheck */
+        ReferenceCheck: {
+            /** Expected */
+            expected: string;
+            /** Note */
+            note: string;
+            /** Previous Close */
+            previous_close: string;
+            /**
+             * Previous Session
+             * Format: date
+             */
+            previous_session: string;
+            /** Reference */
+            reference: string;
+            /**
+             * Session
+             * Format: date
+             */
+            session: string;
         };
         /**
          * Regime
@@ -5072,6 +5257,31 @@ export interface components {
             /** Value */
             value: string;
         };
+        /** SourceRef */
+        SourceRef: {
+            /** Confidence */
+            confidence: string;
+            /** Dataset */
+            dataset: string;
+            /**
+             * Ingested At
+             * Format: date-time
+             */
+            ingested_at: string;
+            /** Ingestion Run Id */
+            ingestion_run_id: string | null;
+            /** License Status */
+            license_status: string;
+            /**
+             * Published At
+             * Format: date-time
+             */
+            published_at: string;
+            /** Raw Payload Sha256 */
+            raw_payload_sha256: string | null;
+            /** Source Url */
+            source_url: string;
+        };
         /**
          * SplitAdjusted
          * @description The value on the basis of known_at: share counts times `factor`, per-share amounts
@@ -5263,6 +5473,121 @@ export interface components {
             /** Strategy Id */
             strategy_id: string;
         };
+        /** TaiwanInstrumentOut */
+        TaiwanInstrumentOut: {
+            /** About Zh */
+            about_zh: string;
+            /** Actions */
+            actions: components["schemas"]["CorporateAction"][];
+            attribution: components["schemas"]["Attribution"];
+            /** Code */
+            code: string;
+            /** Currency */
+            currency: string;
+            /**
+             * Detail
+             * @default Research only: no strategy, signal, alert or paper portfolio reads Taiwan (ADR-039 TW12). History starts with the first collected session; values are what TWSE published, as known at the time shown. Not advice.
+             */
+            detail: string;
+            flows: components["schemas"]["FlowsBlock"];
+            /**
+             * Instrument Type
+             * @enum {string}
+             */
+            instrument_type: "equity" | "etf";
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            margin: components["schemas"]["MarginBlock"] | null;
+            market_session: components["schemas"]["TaiwanSession"];
+            /** Missing Sessions */
+            missing_sessions: string[];
+            /** Name */
+            name: string;
+            /** Name Zh */
+            name_zh: string;
+            price: components["schemas"]["PriceBlock"] | null;
+            /** Reference Gaps */
+            reference_gaps: components["schemas"]["ReferenceCheck"][];
+            /** Sector Zh */
+            sector_zh: string | null;
+            valuation: components["schemas"]["ValuationBlock"] | null;
+        };
+        /** TaiwanListOut */
+        TaiwanListOut: {
+            attribution: components["schemas"]["Attribution"];
+            /** Benchmark */
+            benchmark: string;
+            /**
+             * Detail
+             * @default Research only: no strategy, signal, alert or paper portfolio reads Taiwan (ADR-039 TW12). History starts with the first collected session; values are what TWSE published, as known at the time shown. Not advice.
+             */
+            detail: string;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Latest Session */
+            latest_session: string | null;
+            market_session: components["schemas"]["TaiwanSession"];
+            /** Missing Sessions */
+            missing_sessions: string[];
+            /** Ranked On */
+            ranked_on: string;
+            /** Rows */
+            rows: components["schemas"]["TaiwanRow"][];
+        };
+        /** TaiwanRow */
+        TaiwanRow: {
+            /** Change */
+            change: string | null;
+            /** Close */
+            close: string | null;
+            /** Code */
+            code: string;
+            /** Feed Status */
+            feed_status: string | null;
+            /** History Since */
+            history_since: string | null;
+            /**
+             * Instrument Type
+             * @enum {string}
+             */
+            instrument_type: "equity" | "etf";
+            /** Name */
+            name: string;
+            /** Name Zh */
+            name_zh: string;
+            /** Session */
+            session: string | null;
+            /** Sessions */
+            sessions: number;
+        };
+        /** TaiwanSession */
+        TaiwanSession: {
+            /**
+             * Calendar Covered Until
+             * Format: date
+             */
+            calendar_covered_until: string;
+            /**
+             * Last Close
+             * Format: date-time
+             */
+            last_close: string;
+            /**
+             * Next Open
+             * Format: date-time
+             */
+            next_open: string;
+            /** Open */
+            open: boolean;
+            /** Timezone */
+            timezone: string;
+        };
         /** Trade */
         Trade: {
             /** Cost Bps */
@@ -5340,6 +5665,38 @@ export interface components {
             price: components["schemas"]["PriceOut"];
             /** Ticker */
             ticker: string;
+        };
+        /** ValuationBlock */
+        ValuationBlock: {
+            /** Measures */
+            measures: components["schemas"]["ValuationMeasure"][];
+            /** Percentile Min Observations */
+            percentile_min_observations: number;
+            /**
+             * Session
+             * Format: date
+             */
+            session: string;
+            source: components["schemas"]["SourceRef"];
+        };
+        /** ValuationMeasure */
+        ValuationMeasure: {
+            /** Detail */
+            detail: string | null;
+            /** Measure Id */
+            measure_id: string;
+            /** Median */
+            median: string | null;
+            /** Observations */
+            observations: number;
+            /** Percentile */
+            percentile: string | null;
+            /** Reason */
+            reason: "not_meaningful" | null;
+            /** Since */
+            since: string | null;
+            /** Value */
+            value: string | null;
         };
         /** ValuationSnapshot */
         ValuationSnapshot: {
@@ -7267,6 +7624,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SignalsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    taiwan_list_taiwan_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaiwanListOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    taiwan_instrument_taiwan_instruments__code__get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+            };
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaiwanInstrumentOut"];
                 };
             };
             /** @description Validation Error */

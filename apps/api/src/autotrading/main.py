@@ -34,6 +34,7 @@ from autotrading.api.research import router as research_router
 from autotrading.api.risk import router as risk_router
 from autotrading.api.rotation import router as rotation_router
 from autotrading.api.signals import router as signals_router
+from autotrading.api.taiwan import router as taiwan_router
 from autotrading.api.valuation import router as valuation_router
 from autotrading.infra.dependencies import Dependencies
 from autotrading.infra.object_store import ensure_bucket
@@ -77,6 +78,7 @@ def create_app(
     app.include_router(audit_router)
     app.include_router(glossary_router)
     app.include_router(instruments_router)
+    app.include_router(taiwan_router)
     app.include_router(macro_router)
     app.include_router(news_router)
     app.include_router(overview_router)

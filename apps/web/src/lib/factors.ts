@@ -72,8 +72,16 @@ export const FUNDAMENTAL_COLUMNS = [
   "net_debt_to_ebitda",
 ] as const;
 
-export function meta(measureId: string): MeasureMeta {
-  return MEASURES[measureId] ?? { label: measureId, short: measureId, termId: "factor_definition_set" };
+export function meta(measureId: string, benchmark = "SPY"): MeasureMeta {
+  const found = MEASURES[measureId] ?? { label: measureId, short: measureId, termId: "factor_definition_set" };
+  if (benchmark === "SPY") return found;
+  // M3.7: a Taiwan instrument is measured against 0050, never SPY
+  return { ...found, label: found.label.replace("SPY", benchmark), short: found.short.replace("SPY", benchmark) };
+}
+
+/** A group's heading against the instrument's benchmark: "Against SPY", "Against 0050". */
+export function groupLabel(label: string, benchmark = "SPY"): string {
+  return label.replace("SPY", benchmark);
 }
 
 /** "+21.09%", "+4.60 pts", "38.18x", "1.882". Returns and relative values carry a sign. */

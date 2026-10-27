@@ -46,6 +46,8 @@ test.describe("every page loads without console errors", () => {
     "/system/reconciliation/0000320193-25-000079",
     "/instruments/META",
     "/instruments/SPY",
+    "/instruments/2330?known_on=2026-10-22",
+    "/instruments/0050?known_on=2026-10-22",
     "/system/progress",
     "/journal/new?ticker=AAPL",
     ...DASHBOARD_SLUGS.map((s) => `/dashboards/${s}`),
@@ -140,6 +142,9 @@ for (const path of [
   "/dashboards/strategy-lab?known_on=2026-10-06",
   "/instruments/AAPL?known_on=2026-10-06",
   "/instruments/TLT",
+  "/instruments/2330?known_on=2026-10-22",
+  "/instruments/2330?known_on=2026-10-21",
+  "/instruments/0050?known_on=2026-10-22",
   "/dashboards/portfolio-risk",
   "/dashboards/portfolio-risk?known_on=2026-10-06",
 ]) {
@@ -725,6 +730,37 @@ test("a past date shows that day's last public close", async ({ page }) => {
   await expect(price).toContainText("close of 2026-09-29");
   await expect(price.locator("[data-feed-status]").first()).toBeVisible();
   await expect(price).not.toContainText("US market");
+});
+
+// ---------- Taiwan (M3.7, ADR-039) ----------
+// The 2026-10-21 TWSE session: replayed from recorded files in CI, collected live on the Mac.
+
+test("Taiwan: a TWSE company page reads the exchange's numbers with their source", async ({ page }) => {
+  await page.goto("/instruments/2330?known_on=2026-10-22");
+  await expect(page.locator("h1")).toContainText("台積電（TSMC）");
+  await expect(page.locator('[data-block="taiwan-prices"]')).toContainText("NT$2,420.00");
+  await expect(page.locator('[data-block="taiwan-prices"]')).toContainText("上市個股日成交資訊");
+  await expect(page.locator('[data-measure="exchange_pe_ratio"]')).toContainText("28.05x");
+  await expect(page.locator('[data-measure="margin_balance"]')).toContainText("35,330 lots");
+  await expect(page.locator('[data-block="factors"]')).toContainText("Against 0050");
+  await expect(page.locator('[data-block="taiwan-flows"]')).toContainText("Data unavailable");
+  await expect(page.locator('[data-block="attribution"]')).toContainText("政府資料開放授權條款");
+  await expect(page.locator("main")).not.toContainText("US market");
+  await expect(page.locator("main")).not.toContainText("SPY");
+});
+
+test("Taiwan: a session is known only after the end of its Taipei day", async ({ page }) => {
+  await page.goto("/instruments/2330?known_on=2026-10-21");
+  await expect(page.locator('[data-block="taiwan-prices"]')).toContainText("No close stored by this date.");
+});
+
+test("Taiwan: the instruments page lists the TWSE universe", async ({ page }) => {
+  await page.goto("/instruments");
+  const taiwan = page.getByRole("list", { name: "Taiwan instruments" });
+  await expect(taiwan.locator("li[data-code]")).toHaveCount(11);
+  await taiwan.locator('li[data-code="2330"] a').click();
+  await expect(page).toHaveURL(/\/instruments\/2330$/, { timeout: 15_000 });
+  await expect(page.locator("h1")).toContainText("2330");
 });
 
 // ---------- news (M0.8, ADR-018) ----------

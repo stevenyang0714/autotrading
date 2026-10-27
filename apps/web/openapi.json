@@ -1076,6 +1076,47 @@
         "title": "Assumptions",
         "type": "object"
       },
+      "Attribution": {
+        "properties": {
+          "datasets": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Datasets",
+            "type": "array"
+          },
+          "license": {
+            "title": "License",
+            "type": "string"
+          },
+          "license_url": {
+            "title": "License Url",
+            "type": "string"
+          },
+          "provider": {
+            "title": "Provider",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "year": {
+            "title": "Year",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "provider",
+          "year",
+          "datasets",
+          "license",
+          "license_url",
+          "text"
+        ],
+        "title": "Attribution",
+        "type": "object"
+      },
       "AuditEntry": {
         "properties": {
           "action": {
@@ -2564,6 +2605,39 @@
         "title": "ConvergenceOut",
         "type": "object"
       },
+      "CorporateAction": {
+        "properties": {
+          "ex_date": {
+            "format": "date",
+            "title": "Ex Date",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "cash_dividend",
+              "stock_dividend"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/components/schemas/SourceRef"
+          },
+          "value": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ex_date",
+          "kind",
+          "value",
+          "source"
+        ],
+        "title": "CorporateAction",
+        "type": "object"
+      },
       "DataAsOf": {
         "properties": {
           "latest_filing": {
@@ -4027,6 +4101,14 @@
             "title": "Definition Version",
             "type": "string"
           },
+          "market": {
+            "enum": [
+              "US",
+              "TW"
+            ],
+            "title": "Market",
+            "type": "string"
+          },
           "released": {
             "format": "date",
             "title": "Released",
@@ -4043,6 +4125,7 @@
         },
         "required": [
           "definition_version",
+          "market",
           "status",
           "released",
           "content",
@@ -4472,6 +4555,33 @@
           "inputs"
         ],
         "title": "Flag",
+        "type": "object"
+      },
+      "FlowsBlock": {
+        "properties": {
+          "datasets": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Datasets",
+            "type": "array"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "status": {
+            "const": "unavailable",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "reason",
+          "datasets"
+        ],
+        "title": "FlowsBlock",
         "type": "object"
       },
       "Fold": {
@@ -5238,6 +5348,10 @@
       },
       "InstrumentFactorsOut": {
         "properties": {
+          "benchmark": {
+            "title": "Benchmark",
+            "type": "string"
+          },
           "definition_version": {
             "title": "Definition Version",
             "type": "string"
@@ -5277,12 +5391,31 @@
             "title": "Known At",
             "type": "string"
           },
+          "market": {
+            "enum": [
+              "US",
+              "TW"
+            ],
+            "title": "Market",
+            "type": "string"
+          },
           "measures": {
             "items": {
               "$ref": "#/components/schemas/MeasureOut"
             },
             "title": "Measures",
             "type": "array"
+          },
+          "percentile_min_observations": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Percentile Min Observations"
           },
           "price": {
             "anyOf": [
@@ -5304,6 +5437,9 @@
           "instrument_type",
           "known_at",
           "definition_version",
+          "market",
+          "benchmark",
+          "percentile_min_observations",
           "price",
           "fundamentals",
           "measures",
@@ -6401,6 +6537,102 @@
           "last_refresh_at"
         ],
         "title": "MacroSeriesList",
+        "type": "object"
+      },
+      "MarginBlock": {
+        "properties": {
+          "margin_change": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin Change"
+          },
+          "margin_usage": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin Usage"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "session": {
+            "format": "date",
+            "title": "Session",
+            "type": "string"
+          },
+          "short_change": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short Change"
+          },
+          "short_to_margin": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short To Margin"
+          },
+          "source": {
+            "$ref": "#/components/schemas/SourceRef"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          },
+          "values": {
+            "additionalProperties": {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            "title": "Values",
+            "type": "object"
+          }
+        },
+        "required": [
+          "session",
+          "unit",
+          "values",
+          "margin_change",
+          "short_change",
+          "margin_usage",
+          "short_to_margin",
+          "note",
+          "source"
+        ],
+        "title": "MarginBlock",
         "type": "object"
       },
       "MarketContext": {
@@ -8358,6 +8590,116 @@
         "title": "PreviousVersion",
         "type": "object"
       },
+      "PriceBlock": {
+        "properties": {
+          "change": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change"
+          },
+          "close": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Close",
+            "type": "string"
+          },
+          "feed_status": {
+            "title": "Feed Status",
+            "type": "string"
+          },
+          "high": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "High",
+            "type": "string"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/PricePoint"
+            },
+            "title": "History",
+            "type": "array"
+          },
+          "history_since": {
+            "format": "date",
+            "title": "History Since",
+            "type": "string"
+          },
+          "low": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Low",
+            "type": "string"
+          },
+          "open": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Open",
+            "type": "string"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          },
+          "session": {
+            "format": "date",
+            "title": "Session",
+            "type": "string"
+          },
+          "sessions": {
+            "title": "Sessions",
+            "type": "integer"
+          },
+          "source": {
+            "$ref": "#/components/schemas/SourceRef"
+          },
+          "trade_value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trade Value"
+          },
+          "volume": {
+            "title": "Volume",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "session",
+          "open",
+          "high",
+          "low",
+          "close",
+          "change",
+          "reference",
+          "volume",
+          "trade_value",
+          "feed_status",
+          "history",
+          "history_since",
+          "sessions",
+          "source"
+        ],
+        "title": "PriceBlock",
+        "type": "object"
+      },
       "PriceComparison": {
         "properties": {
           "detail": {
@@ -8494,6 +8836,32 @@
           "source_url"
         ],
         "title": "PriceOut",
+        "type": "object"
+      },
+      "PricePoint": {
+        "properties": {
+          "adjusted_close": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Adjusted Close",
+            "type": "string"
+          },
+          "close": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Close",
+            "type": "string"
+          },
+          "session": {
+            "format": "date",
+            "title": "Session",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session",
+          "close",
+          "adjusted_close"
+        ],
+        "title": "PricePoint",
         "type": "object"
       },
       "PriceTile": {
@@ -9404,6 +9772,49 @@
           "recorded_at"
         ],
         "title": "ReconciliationOut",
+        "type": "object"
+      },
+      "ReferenceCheck": {
+        "properties": {
+          "expected": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Expected",
+            "type": "string"
+          },
+          "note": {
+            "title": "Note",
+            "type": "string"
+          },
+          "previous_close": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Previous Close",
+            "type": "string"
+          },
+          "previous_session": {
+            "format": "date",
+            "title": "Previous Session",
+            "type": "string"
+          },
+          "reference": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Reference",
+            "type": "string"
+          },
+          "session": {
+            "format": "date",
+            "title": "Session",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session",
+          "reference",
+          "expected",
+          "previous_session",
+          "previous_close",
+          "note"
+        ],
+        "title": "ReferenceCheck",
         "type": "object"
       },
       "Regime": {
@@ -12018,6 +12429,72 @@
         "title": "SourceOut",
         "type": "object"
       },
+      "SourceRef": {
+        "properties": {
+          "confidence": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Confidence",
+            "type": "string"
+          },
+          "dataset": {
+            "title": "Dataset",
+            "type": "string"
+          },
+          "ingested_at": {
+            "format": "date-time",
+            "title": "Ingested At",
+            "type": "string"
+          },
+          "ingestion_run_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ingestion Run Id"
+          },
+          "license_status": {
+            "title": "License Status",
+            "type": "string"
+          },
+          "published_at": {
+            "format": "date-time",
+            "title": "Published At",
+            "type": "string"
+          },
+          "raw_payload_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raw Payload Sha256"
+          },
+          "source_url": {
+            "title": "Source Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dataset",
+          "source_url",
+          "published_at",
+          "ingested_at",
+          "ingestion_run_id",
+          "raw_payload_sha256",
+          "license_status",
+          "confidence"
+        ],
+        "title": "SourceRef",
+        "type": "object"
+      },
       "SplitAdjusted": {
         "description": "The value on the basis of known_at: share counts times `factor`, per-share amounts\ndivided by it, for the splits after the value's filing (ADR-021).",
         "properties": {
@@ -12419,6 +12896,345 @@
         "title": "StrategyOverlap",
         "type": "object"
       },
+      "TaiwanInstrumentOut": {
+        "properties": {
+          "about_zh": {
+            "title": "About Zh",
+            "type": "string"
+          },
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/CorporateAction"
+            },
+            "title": "Actions",
+            "type": "array"
+          },
+          "attribution": {
+            "$ref": "#/components/schemas/Attribution"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "detail": {
+            "default": "Research only: no strategy, signal, alert or paper portfolio reads Taiwan (ADR-039 TW12). History starts with the first collected session; values are what TWSE published, as known at the time shown. Not advice.",
+            "title": "Detail",
+            "type": "string"
+          },
+          "flows": {
+            "$ref": "#/components/schemas/FlowsBlock"
+          },
+          "instrument_type": {
+            "enum": [
+              "equity",
+              "etf"
+            ],
+            "title": "Instrument Type",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "margin": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MarginBlock"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "market_session": {
+            "$ref": "#/components/schemas/TaiwanSession"
+          },
+          "missing_sessions": {
+            "items": {
+              "format": "date",
+              "type": "string"
+            },
+            "title": "Missing Sessions",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "name_zh": {
+            "title": "Name Zh",
+            "type": "string"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PriceBlock"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reference_gaps": {
+            "items": {
+              "$ref": "#/components/schemas/ReferenceCheck"
+            },
+            "title": "Reference Gaps",
+            "type": "array"
+          },
+          "sector_zh": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sector Zh"
+          },
+          "valuation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ValuationBlock"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "name_zh",
+          "about_zh",
+          "sector_zh",
+          "instrument_type",
+          "currency",
+          "known_at",
+          "market_session",
+          "price",
+          "valuation",
+          "margin",
+          "actions",
+          "reference_gaps",
+          "missing_sessions",
+          "flows",
+          "attribution"
+        ],
+        "title": "TaiwanInstrumentOut",
+        "type": "object"
+      },
+      "TaiwanListOut": {
+        "properties": {
+          "attribution": {
+            "$ref": "#/components/schemas/Attribution"
+          },
+          "benchmark": {
+            "title": "Benchmark",
+            "type": "string"
+          },
+          "detail": {
+            "default": "Research only: no strategy, signal, alert or paper portfolio reads Taiwan (ADR-039 TW12). History starts with the first collected session; values are what TWSE published, as known at the time shown. Not advice.",
+            "title": "Detail",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "latest_session": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Session"
+          },
+          "market_session": {
+            "$ref": "#/components/schemas/TaiwanSession"
+          },
+          "missing_sessions": {
+            "items": {
+              "format": "date",
+              "type": "string"
+            },
+            "title": "Missing Sessions",
+            "type": "array"
+          },
+          "ranked_on": {
+            "title": "Ranked On",
+            "type": "string"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/TaiwanRow"
+            },
+            "title": "Rows",
+            "type": "array"
+          }
+        },
+        "required": [
+          "known_at",
+          "benchmark",
+          "ranked_on",
+          "market_session",
+          "latest_session",
+          "missing_sessions",
+          "rows",
+          "attribution"
+        ],
+        "title": "TaiwanListOut",
+        "type": "object"
+      },
+      "TaiwanRow": {
+        "properties": {
+          "change": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change"
+          },
+          "close": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Close"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "feed_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feed Status"
+          },
+          "history_since": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "History Since"
+          },
+          "instrument_type": {
+            "enum": [
+              "equity",
+              "etf"
+            ],
+            "title": "Instrument Type",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "name_zh": {
+            "title": "Name Zh",
+            "type": "string"
+          },
+          "session": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session"
+          },
+          "sessions": {
+            "title": "Sessions",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "name_zh",
+          "instrument_type",
+          "session",
+          "close",
+          "feed_status",
+          "change",
+          "history_since",
+          "sessions"
+        ],
+        "title": "TaiwanRow",
+        "type": "object"
+      },
+      "TaiwanSession": {
+        "properties": {
+          "calendar_covered_until": {
+            "format": "date",
+            "title": "Calendar Covered Until",
+            "type": "string"
+          },
+          "last_close": {
+            "format": "date-time",
+            "title": "Last Close",
+            "type": "string"
+          },
+          "next_open": {
+            "format": "date-time",
+            "title": "Next Open",
+            "type": "string"
+          },
+          "open": {
+            "title": "Open",
+            "type": "boolean"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "open",
+          "last_close",
+          "next_open",
+          "timezone",
+          "calendar_covered_until"
+        ],
+        "title": "TaiwanSession",
+        "type": "object"
+      },
       "Trade": {
         "properties": {
           "cost_bps": {
@@ -12624,6 +13440,132 @@
           "metrics"
         ],
         "title": "Valuation",
+        "type": "object"
+      },
+      "ValuationBlock": {
+        "properties": {
+          "measures": {
+            "items": {
+              "$ref": "#/components/schemas/ValuationMeasure"
+            },
+            "title": "Measures",
+            "type": "array"
+          },
+          "percentile_min_observations": {
+            "title": "Percentile Min Observations",
+            "type": "integer"
+          },
+          "session": {
+            "format": "date",
+            "title": "Session",
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/components/schemas/SourceRef"
+          }
+        },
+        "required": [
+          "session",
+          "measures",
+          "percentile_min_observations",
+          "source"
+        ],
+        "title": "ValuationBlock",
+        "type": "object"
+      },
+      "ValuationMeasure": {
+        "properties": {
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "measure_id": {
+            "title": "Measure Id",
+            "type": "string"
+          },
+          "median": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median"
+          },
+          "observations": {
+            "title": "Observations",
+            "type": "integer"
+          },
+          "percentile": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Percentile"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "const": "not_meaningful",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "since": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Since"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "measure_id",
+          "value",
+          "reason",
+          "detail",
+          "percentile",
+          "median",
+          "observations",
+          "since"
+        ],
+        "title": "ValuationMeasure",
         "type": "object"
       },
       "ValuationSnapshot": {
@@ -16219,6 +17161,119 @@
         "summary": "Signals",
         "tags": [
           "signals"
+        ]
+      }
+    },
+    "/taiwan": {
+      "get": {
+        "operationId": "taiwan_list_taiwan_get",
+        "parameters": [
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaiwanListOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Taiwan List",
+        "tags": [
+          "taiwan"
+        ]
+      }
+    },
+    "/taiwan/instruments/{code}": {
+      "get": {
+        "operationId": "taiwan_instrument_taiwan_instruments__code__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "title": "Code",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaiwanInstrumentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Taiwan Instrument",
+        "tags": [
+          "taiwan"
         ]
       }
     }

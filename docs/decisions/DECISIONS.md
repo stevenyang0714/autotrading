@@ -1185,6 +1185,115 @@ When an id does not resolve, the message falls back to the evidence labels. A me
 
 ---
 
+## ADR-039 M3.7: the Taiwan universe from the TWSE OpenAPI — Accepted (2026-10-22, Claude's decisions under ADR-035; plan and the history question approved by Steven)
+ADR-035 approved the TWSE and TPEx OpenAPI for the 10 largest TWSE companies by market cap plus 0050, with the terms re-verified before building. The re-verification on 2026-10-22 found three limits:
+
+1. **Latest session only.** Each of the 143 OpenAPI endpoints serves only the latest session, with no date parameter.
+2. **No history by script.** History exists only behind the website's dated queries (www.twse.com.tw/rwd). Article 6 of the website's terms of use forbids automated download without TWSE's consent; Article 8 exempts only data on the government open data platform.
+3. **No flows.** Per-stock institutional net buying (T86) and per-stock foreign ownership (MI_QFIIS) are not in the OpenAPI.
+
+**Steven's decision (2026-10-22):** collect daily from the OpenAPI from now on, and ask TWSE for consent to a one-time history download (draft letter: `docs/requests/twse_history_consent_zh.md`; Steven sends it). Nothing is backfilled before written consent. Claude decided the rest.
+
+**TW1 Source.** `twse_openapi`: tier 1, public, Open Government Data License Taiwan 1.0 with attribution, one request every 3 seconds. The client reaches six files only and refuses any other path or host:
+- STOCK_DAY_ALL (closes);
+- BWIBBU_d (P/E, P/B, dividend yield);
+- MI_MARGN (margin and short balances);
+- TWT48U_ALL (the ex-rights and ex-dividend schedule);
+- t187ap03_L (companies and shares);
+- holidaySchedule.
+
+TPEx is not used, since every universe member is TWSE-listed.
+
+**TW2 Universe.** Ranked once by close × issued common shares from the recorded 2026-10-21 files and frozen in `config/universe_tw.yaml` with the files' sha256. A unit test recomputes the ranking. There is no re-ranking and no survivorship handling.
+
+| # | Code | Company | Market cap (TWD trillion) |
+|---|---|---|---|
+| 1 | 2330 | TSMC | 62.76 |
+| 2 | 2454 | MediaTek | 6.64 |
+| 3 | 2308 | Delta | 4.22 |
+| 4 | 2317 | Hon Hai | 3.52 |
+| 5 | 3711 | ASE | 3.06 |
+| 6 | 1303 | Nan Ya Plastics | 2.54 |
+| 7 | 2881 | Fubon | 2.22 |
+| 8 | 3037 | Unimicron | 1.81 |
+| 9 | 2383 | Elite Material | 1.79 |
+| 10 | 2882 | Cathay | 1.67 |
+| — | 0050 | (ETF, the benchmark) | — |
+
+Next were 2303 UMC (1.61, 3.9% below 10th) and 2408 Nanya Technology (1.51).
+
+**TW3 Markets.** `domain/markets.py` defines US and TW: time zone, currency, calendar, identifier namespace, universe file.
+- Taiwan instruments are XTAI, TWD, with `twse` ticker identifiers; companies get TW issuer entities.
+- Lookups take the market; the US default is unchanged.
+
+**TW4 Time.**
+- Calendar: `MarketCalendar` takes the exchange's zone. `config/market_calendar_xtai.yaml` covers 09:00–13:30 Taipei with the 2026 holidays, and a unit test checks it against the recorded schedule.
+- Session date: the date STOCK_DAY_ALL names. If it did not advance, there is no new session (holidays and typhoon closures alike).
+- Publication time: the end of the session's day in Taipei, at day precision (ADR-012). As known on D therefore shows Taiwan through D−1, as for the US.
+- Splits, closes and dividends carry their market's zone, defaulting to New York, so every US snapshot recomputes identically.
+
+**TW5 Schedule.**
+- Files: the TWSE files of a session appear about 05:20 Taipei on the next business day and stay until the following business day's (Friday's from Monday morning; observed 2026-10-26: on a Monday holiday the files still held Thursday's session).
+- Collection: three runs a day, at 07:40, 09:40 and 20:40 SGT, weekends included, each once a day.
+- Factors: Taiwan factor snapshots at 09:50 SGT.
+- Losses: a session no run catches is lost for good (KI-27). Runs note lost sessions, and the pages count them.
+
+**TW6 Margin dating.** MI_MARGN has no date. It is dated to the run's STOCK_DAY_ALL session and checked by the chain of balances: each 前日餘額 must equal the stored 今日餘額 of the session before.
+- A file whose balances all equal the stored ones is "not updated" and is stored later.
+- The first file, or one after a lost session, is accepted with confidence 0.9 and checked at the next session.
+- Units are lots of 1,000 shares, confirmed because 2330's margin limit equals 25% of its shares in lots.
+
+**TW7 Storage.**
+- OHLCV goes in `price_bars` (raw, feed `twse`).
+- Migration 0031 adds `exchange_measures`: bitemporal, append-only, audited, one measure per row. It holds:
+  - the price change and trade value;
+  - the exchange P/E, P/B and dividend yield, with TWSE's basis in `detail`;
+  - 13 margin and short measures.
+- A blank P/E (a loss) is not stored; the page shows it as not meaningful. BWIBBU_d is stored only when its date and close equal the session's.
+
+**TW8 Dividends.** From TWT48U_ALL, for ex-dates up to the next session:
+- cash dividends go to `dividend_events` (TWD per share);
+- stock dividends go to `split_events` as `stock_dividend`, with ratio 1 + 配股率 (KI-28: checked against the reference price at the first case);
+- rights offerings are noted, not modelled.
+
+**TW9 Reference price check.** TWSE's change is against the session's reference price, so the reference is close − change.
+- A reference more than one tick from the previous close less the recorded dividends is a `reference_price_gap`: a capital reduction, a rights offering or a dividend not recorded.
+- It is noted at ingest and shown on the page. This stands in for TWT49U and TWTAUU, which are not in the OpenAPI.
+
+**TW10 Factors.**
+- Factor definition sets gain `market` (default US) and `percentile_min_observations`; 0.1.0's hash is unchanged. There is exactly one active set per market.
+- 0.2.0 (TW): the price measures of 0.1.0 against 0050, on Taipei dates, `stale_after_days` 14 (longer than the 2026 Lunar New Year closure), no fundamentals, percentiles after 12 month ends.
+- S3 and S4 keep 0.1.0. The Radar table stays US only.
+
+**TW11 Valuation percentiles.** The P/E, P/B and yield percentiles use the last session of each Taipei month in `exchange_measures`, and are shown from 12 month ends. They are not mixed with the Research Record's SEC-based P/E.
+
+**TW12 Research only.** No strategy, signal, alert, Telegram push, paper portfolio or risk rule reads Taiwan. There is no TWD/USD rate until M3.9.
+
+**TW13 Pages.**
+- `/instruments` gains a Taiwan (TWSE) section.
+- `/instruments/{code}` for a TWSE code shows:
+  - the close in NT$, the reference price, volume and trade value, and a year of closes on T's split basis;
+  - the exchange valuation with percentiles;
+  - margin and short balances with usage and 券資比;
+  - dividends and reference checks;
+  - factors against 0050;
+  - flows as "Data unavailable";
+  - the attribution: provider, year, datasets, the licence sentence and URL.
+- Every block names its file and publication time in Taipei.
+
+**TW14 Glossary.** 18 Taiwan terms with Chinese hints. `beta_252d` and `relative_momentum_*` 0.2.0 name the market's benchmark.
+
+**Out of scope:**
+- history before 2026-10-21, institutional flows and foreign ownership (until TWSE consents);
+- TPEx;
+- Taiwan fundamentals (M3.8);
+- the Taiwan regime and TWD/USD (M3.9);
+- any Taiwan strategy or position.
+
+**Live check:** see the M3.7 row of `docs/STATUS.md`.
+
+---
+
 ## Open decisions (owner: Steven)
 
 | ID | Decision | Needed by | Default until decided |

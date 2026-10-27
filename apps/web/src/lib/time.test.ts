@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { endOfDaySgt, formatDuration, formatSgtEt } from "./time";
+import { endOfDaySgt, formatDuration, formatSgtEt, formatTaipei } from "./time";
 
 describe("time display (ADR-005)", () => {
   it("shows SGT with ET alongside", () => {
@@ -24,5 +24,11 @@ describe("endOfDaySgt", () => {
 
   it.each(["2026-02-30", "2010-1-25", "yesterday", ""])("rejects %s", (value) => {
     expect(endOfDaySgt(value)).toBeNull();
+  });
+});
+
+describe("Taipei time (M3.7)", () => {
+  it("shows a TWSE publication time in Taipei", () => {
+    expect(formatTaipei("2026-10-21T15:59:59.999999Z")).toBe("2026-10-21 23:59 Taipei");
   });
 });

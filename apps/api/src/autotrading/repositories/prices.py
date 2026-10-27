@@ -7,7 +7,7 @@
 
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Any
 from uuid import UUID, uuid4
@@ -39,6 +39,9 @@ class BarIn:
     feed: str
     feed_status: str  # end_of_day, or fixture for recorded test data
     provenance: Provenance
+    # The session date when the source states it (TWSE, M3.7); otherwise the New York date of
+    # bar_time, as for Alpaca's bars.
+    bar_date: date | None = None
 
     def fact_key(self) -> tuple[Any, ...]:
         return (self.instrument_id, self.adjustment, self.bar_time)
@@ -97,7 +100,7 @@ class PriceRepository:
                 symbol=bar.symbol,
                 adjustment=bar.adjustment,
                 bar_time=bar.bar_time,
-                bar_date=bar.bar_time.astimezone(NEW_YORK).date(),
+                bar_date=bar.bar_date or bar.bar_time.astimezone(NEW_YORK).date(),
                 open=bar.open,
                 high=bar.high,
                 low=bar.low,
@@ -126,12 +129,13 @@ class PriceRepository:
 
 
 def instruments_by_symbol(
-    session: Session, symbols: Sequence[str] | None = None
+    session: Session, symbols: Sequence[str] | None = None, namespace: str = "alpaca"
 ) -> dict[str, UUID]:
-    """Open alpaca ticker identifiers -> instrument ids (all universe symbols if None)."""
+    """Open ticker identifiers of a namespace -> instrument ids (all of them if None): alpaca
+    for US symbols, twse for Taiwan codes (M3.7)."""
     query = select(Identifier.id_value, Identifier.instrument_id).where(
         Identifier.id_type == "ticker",
-        Identifier.id_namespace == "alpaca",
+        Identifier.id_namespace == namespace,
         Identifier.valid_to.is_(None),
         Identifier.instrument_id.is_not(None),
     )

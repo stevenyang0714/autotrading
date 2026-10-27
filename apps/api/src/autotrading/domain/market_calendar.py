@@ -1,5 +1,7 @@
-"""US equity market sessions (M0.7, ADR-017): NYSE regular hours with holidays and early
-closes from config/market_calendar.yaml. Pure; all times are aware datetimes."""
+"""Market sessions (M0.7, ADR-017): regular hours with holidays and early closes from a
+calendar file, in the exchange's own time zone: config/market_calendar.yaml (NYSE) and, since
+M3.7, config/market_calendar_xtai.yaml (TWSE, ADR-039 TW4). Pure; all times are aware
+datetimes."""
 
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta
@@ -23,25 +25,27 @@ class MarketCalendar:
     open_time: time = time(9, 30)
     close_time: time = time(16, 0)
     early_close_time: time = time(13, 0)
+    zone: ZoneInfo = NEW_YORK  # the exchange's time zone: its dates and session times
 
     def session(self, day: date) -> Session | None:
-        """The regular session on `day` (New York date), or None on weekends and holidays."""
+        """The regular session on `day` (a date in the exchange's zone), or None on weekends
+        and holidays."""
         if day.weekday() >= 5 or day in self.holidays:
             return None
         close = self.early_close_time if day in self.early_closes else self.close_time
         return Session(
             day=day,
-            open=datetime.combine(day, self.open_time, NEW_YORK).astimezone(UTC),
-            close=datetime.combine(day, close, NEW_YORK).astimezone(UTC),
+            open=datetime.combine(day, self.open_time, self.zone).astimezone(UTC),
+            close=datetime.combine(day, close, self.zone).astimezone(UTC),
         )
 
     def is_open(self, at: datetime) -> bool:
-        session = self.session(at.astimezone(NEW_YORK).date())
+        session = self.session(at.astimezone(self.zone).date())
         return session is not None and session.open <= at < session.close
 
     def last_close(self, at: datetime) -> datetime:
         """The most recent session close at or before `at`."""
-        day = at.astimezone(NEW_YORK).date()
+        day = at.astimezone(self.zone).date()
         for back in range(15):
             session = self.session(day - timedelta(days=back))
             if session is not None and session.close <= at:
@@ -50,7 +54,7 @@ class MarketCalendar:
 
     def next_open(self, at: datetime) -> datetime:
         """The next session open strictly after `at`."""
-        day = at.astimezone(NEW_YORK).date()
+        day = at.astimezone(self.zone).date()
         for ahead in range(15):
             session = self.session(day + timedelta(days=ahead))
             if session is not None and session.open > at:
@@ -64,7 +68,7 @@ class MarketCalendar:
 
 
 def load_calendar(data: dict[str, object]) -> MarketCalendar:
-    """Build the calendar from the parsed config/market_calendar.yaml."""
+    """Build the calendar from a parsed calendar file (its `timezone`, New York if absent)."""
 
     def days(key: str) -> frozenset[date]:
         raw = data.get(key) or []
@@ -84,4 +88,5 @@ def load_calendar(data: dict[str, object]) -> MarketCalendar:
         open_time=clock(regular.get("open", "09:30")),
         close_time=clock(regular.get("close", "16:00")),
         early_close_time=clock(data.get("early_close", "13:00")),
+        zone=ZoneInfo(str(data.get("timezone") or "America/New_York")),
     )

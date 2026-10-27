@@ -1,4 +1,4 @@
-"""CI only (`make replay-fixtures`): load the recorded SEC, FRED, Alpaca and news responses
+"""CI only (`make replay-fixtures`): load the recorded SEC, FRED, Alpaca, news and TWSE responses
 into the stack database through the real ingestion jobs, offline and without credentials, so
 the e2e tests see real data. Prices and news are labelled `fixture`, so the UI shows its
 DEMO DATA banner (ADR-006).
@@ -14,6 +14,7 @@ from sqlalchemy.orm import sessionmaker
 from autotrading.adapters.sec.refresh import universe_predecessors
 from autotrading.api.buyback_states import evaluate_universe
 from autotrading.domain.fair_value import month_ends
+from autotrading.domain.provenance import end_of_day
 from autotrading.infra.db import make_engine
 from autotrading.infra.object_store import ensure_bucket, make_s3_client
 from autotrading.infra.redis_client import make_redis
@@ -27,12 +28,16 @@ from autotrading.repositories.backtest import (
     stored_backtest_rules,
     stored_momentum_rules,
 )
-from autotrading.repositories.factors import record_universe, stored_definitions
+from autotrading.repositories.factors import (
+    active_factor_version,
+    record_universe,
+    stored_definitions,
+)
 from autotrading.repositories.regime import record_regime, stored_regime_rules
 from autotrading.repositories.risk import record_portfolio, stored_risk_rules
 from autotrading.repositories.rotation import record_points, stored_rotation_rules
 from autotrading.settings import get_settings
-from tests import alpaca_replay, fred_replay, news_replay, sec_replay
+from tests import alpaca_replay, fred_replay, news_replay, sec_replay, twse_replay
 
 REPLAY_BACKFILL_SINCE = date(2025, 1, 1)  # enough history for the pages, short for CI
 
@@ -45,10 +50,13 @@ def main() -> None:
         sessionmaker(make_engine(settings)),
         RawPayloadStore(s3, settings.s3_bucket),
         TokenBucketLimiter(make_redis(settings)),
-        news_replay.register_recorded(
-            alpaca_replay.register_recorded(
-                fred_replay.register_recorded(sec_replay.recorded_registry())
-            )
+        twse_replay.register_recorded(
+            news_replay.register_recorded(
+                alpaca_replay.register_recorded(
+                    fred_replay.register_recorded(sec_replay.recorded_registry())
+                )
+            ),
+            fixture=True,
         ),
     )
     window = refresh_window(datetime.now(UTC), manual=True)
@@ -61,9 +69,10 @@ def main() -> None:
     fred_runs = fred_replay.replay(runner, window)
     alpaca_runs = alpaca_replay.replay(runner, window)
     news_runs = news_replay.replay(runner, window)
+    twse_runs = twse_replay.replay(runner, window)
     print(
-        f"replayed {len(sec_runs)} SEC, {len(fred_runs)} FRED, {len(alpaca_runs)} Alpaca and "
-        f"{len(news_runs)} news runs from recorded fixtures"
+        f"replayed {len(sec_runs)} SEC, {len(fred_runs)} FRED, {len(alpaca_runs)} Alpaca, "
+        f"{len(news_runs)} news and {len(twse_runs)} TWSE runs from recorded fixtures"
     )
     # Buyback states (M1.4b) now and at the month ends since REPLAY_BACKFILL_SINCE, as the
     # daily job and `make buyback-backfill` store them, so the pages have states and history.
@@ -81,6 +90,19 @@ def main() -> None:
         assert definitions is not None, "factor definitions not loaded: run `make migrate` first"
         snapshots = record_universe(
             session, definitions, [(at, "all") for at in points], now, "replay"
+        )
+        # Taiwan factor snapshots (M3.7) at the end of each recorded Taipei session and now.
+        taiwan = stored_definitions(session, active_factor_version("TW"))
+        assert taiwan is not None, "Taiwan factor definitions not loaded: run `make migrate`"
+        taiwan_points = [
+            *(
+                end_of_day(date.fromisoformat(d["session"]), "Asia/Taipei")
+                for d in twse_replay.MANIFEST["days"]
+            ),
+            now,
+        ]
+        snapshots += record_universe(
+            session, taiwan, [(at, "all") for at in taiwan_points], now, "replay"
         )
         # The paper portfolio (M2.3) at the same points: empty until the journal has a TRADE.
         risk_rules = stored_risk_rules(session)
