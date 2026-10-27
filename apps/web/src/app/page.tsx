@@ -2,21 +2,27 @@ import type { Metadata } from "next";
 
 import { Metric } from "@/components/Metric";
 import { OverviewView } from "@/components/overview/OverviewView";
-import { loadOverview, loadSourceHealth } from "@/lib/api";
+import { TodayPanel } from "@/components/today/TodayPanel";
+import { loadAlerts, loadCandidates, loadHoldings, loadOverview, loadSourceHealth, loadTaiwan } from "@/lib/api";
 import { endOfDaySgt } from "@/lib/time";
 
 // Point-in-time data: always read live, never serve a cached page.
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "Overview" };
+export const metadata: Metadata = { title: "Today" };
 
 export default async function Home({ searchParams }: PageProps<"/">) {
   const query = await searchParams;
   const knownOn = typeof query.known_on === "string" && query.known_on ? query.known_on : undefined;
   const knownAt = knownOn ? endOfDaySgt(knownOn) : null;
-  const [overview, sources] = await Promise.all([
+  const today = knownAt === null; // Today is about now; As known on shows the overview alone
+  const [overview, sources, holdings, alerts, candidates, taiwan] = await Promise.all([
     loadOverview(knownAt ?? undefined),
     loadSourceHealth(),
+    today ? loadHoldings() : null,
+    today ? loadAlerts({ status: "all" }) : null,
+    today ? loadCandidates() : null,
+    today ? loadTaiwan() : null,
   ]);
   if (overview === null) {
     return (
@@ -31,12 +37,28 @@ export default async function Home({ searchParams }: PageProps<"/">) {
       </section>
     );
   }
-  return (
+  const overviewView = (
     <OverviewView
       data={overview}
       sources={sources}
       knownOn={knownAt ? knownOn : undefined}
       invalidKnownOn={Boolean(knownOn) && knownAt === null}
+      level={today ? 2 : 1}
     />
+  );
+  if (!today) return overviewView;
+  return (
+    <div className="space-y-10">
+      <TodayPanel
+        holdings={holdings}
+        alerts={alerts}
+        candidates={candidates}
+        us={overview.market ?? null}
+        taiwan={taiwan}
+        sources={sources}
+        now={overview.known_at}
+      />
+      {overviewView}
+    </div>
   );
 }

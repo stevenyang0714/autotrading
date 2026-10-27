@@ -252,6 +252,7 @@ export type CompleteTermId =
   | "page_overview"
   | "page_progress"
   | "page_reconciliation"
+  | "page_today"
   | "paper_mode"
   | "paper_portfolio"
   | "paper_return"
@@ -6697,6 +6698,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "財報對帳",
     "hint_zh": "每家公司最新 10-K、10-Q 與申報檔本身的 XBRL 逐項比對的結果。"
+  },
+  "page_today": {
+    "term_id": "page_today",
+    "display_name": "Today",
+    "category": "navigation",
+    "short_definition": "The home page: your holdings, this week's pushes, both markets, the radar and data health, above the macro overview.",
+    "full_definition": "The first page (M3.10, ADR-041 H10): the USD total of your recorded holdings with the 24-hour change and the largest weights, the alerts pushed to Telegram in the past week and the open alerts, the US and Taiwan sessions, the Opportunity Radar's counts and any enabled source that is stale or failing. The macro overview follows below. With As known on, only the overview shows.",
+    "formula": "not a calculation; reads GET /holdings, /alerts, /taiwan, /candidates, /data-health/sources and /overview",
+    "unit": "page",
+    "example": "Holdings $16,684.67, -$19.95 in 24 h; nothing pushed this week; US closed; Taiwan open now.",
+    "direction": "N/A",
+    "interpretation": "What to look at first each day.",
+    "why_it_matters": "Puts what the platform pushes and what you own on one page, so nothing needs Telegram to be found.",
+    "source": "Milestone M3.10 (Portfolio Center I); ADR-041",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md",
+    "as_of": "2026-10-27",
+    "update_cadence": "live (each page load)",
+    "caveats": "Rule signals and records, not advice; nothing places an order. Holdings stay on this machine.",
+    "related_terms": [
+      "page_holdings",
+      "alert_delivery",
+      "page_overview"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "今日",
+    "hint_zh": "首頁：你的持股、本週推播、美台兩地交易時段、雷達候選數與資料健康，下方是總經概覽。"
   },
   "paper_mode": {
     "term_id": "paper_mode",

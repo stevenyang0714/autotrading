@@ -183,10 +183,10 @@ export interface SystemPageDef {
 
 export const SYSTEM_PAGES: readonly SystemPageDef[] = [
   {
-    id: "overview",
+    id: "today",
     href: "/",
-    label: "Overview",
-    termId: "page_overview",
+    label: "Today",
+    termId: "page_today",
   },
   {
     id: "holdings",

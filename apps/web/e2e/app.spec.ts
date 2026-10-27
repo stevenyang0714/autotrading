@@ -871,6 +871,17 @@ test("unknown instrument returns 404", async ({ page }) => {
   expect(response?.status()).toBe(404);
 });
 
+test("Today puts the holdings, pushes, markets, radar and data health above the overview (M3.10)", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Today");
+  for (const block of ["holdings", "pushes", "markets", "radar", "health"]) {
+    await expect(page.locator(`[data-today="${block}"]`)).toBeVisible();
+  }
+  await expect(page.getByRole("heading", { level: 2, name: /Overview/ })).toBeVisible();
+});
+
 test("Holdings records a deposit and two buys, values them and reverses one (M3.10)", async ({
   page,
   isMobile,

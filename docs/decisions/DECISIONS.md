@@ -1337,6 +1337,49 @@ Cash goes to `dividend_events`, stock dividends to `split_events` (kind stock_di
 
 ---
 
+## ADR-041 M3.10: Portfolio Center I, the real holdings ledger and the Today page — Accepted (2026-10-26, Steven approved recording real holdings, their scope and USD as the base currency; Claude's decisions under ADR-035)
+Steven asked on 2026-10-26 for the pushes to show on a dashboard and to manage his own portfolio, following five steps (investment policy, security analysis, portfolio construction, rebalancing, performance evaluation). The platform had a paper portfolio only. Steven decided: record his real holdings (manual entry, local only, backed up; no broker connection, no orders), any US listing or TWSE listing plus cash in each currency, and USD as the base currency (US listings in USD, TWSE listings in TWD, DEXTAUS for the conversion). The Portfolio Center has three parts: M3.10 (this ADR: ledger, valuation, Holdings and Today pages), M3.11 (investment policy, rebalancing, custom screens) and M3.12 (performance).
+
+**H1 Ledger.** Migration 0033 `holding_entries`, append-only and audited (actor `web`): kind buy, sell, dividend (cash), deposit, withdrawal, fee or reversal; an account label; the market (US or TW; none for cash); the instrument and symbol; the currency (a CHECK ties US to USD and TW to TWD); the trade date (never after the Taipei date of recording); quantity and price (and an optional fee) for a trade, an amount otherwise; a note. Each kind's fields are one CHECK, and a NULL never passes as positive. A mistake is never edited: a reversal points at one entry (one each, a unique index) and the entry is entered again. There is no order, broker or execution column; requests with unknown fields are refused (422).
+
+**H2 Snapshots.** `holding_snapshots`, append-only: T, system time, the valuation version, the USD total (null without a rate), cash by currency, the rate and the whole valuation document. Daily at 11:12 SGT (after the closes and FRED's DEXTAUS), none before the first entry; `make holdings-snapshot`.
+
+**H3 Valuation 0.1.0** (`domain/holdings.py`, pure; parameters pinned in a unit test).
+- An entry counts at T once its trade date has begun in its zone (New York for US listings and USD cash, Taipei for TWSE listings and TWD cash) and it was recorded by S. A reversed entry and its reversal never count from the reversal's system time on, and both count as before for any earlier S.
+- Average cost per account and instrument. Buys before sells within a trade date. Fees reduce cash only (never the cost). Splits and stock dividends effective after the trade date and by T scale the quantity.
+- Cash per account and currency; a negative balance is flagged, not refused.
+- Marks: the last raw close known at T, moved to T's split basis; stale after 5 days (US) or 14 days (TW, up to nine days closed at Lunar New Year); without a close a position counts at its cost and is flagged.
+- USD: TWD divided by the last DEXTAUS value known at T (ALFRED vintages); without one the USD total is unavailable (each currency's total still shows); a rate more than 10 days old is flagged. Weights are of the USD total.
+- The 24-hour change is the USD total at T less the total at T minus 24 hours (both as recorded now), less the deposits and withdrawals in between, converted at the later rate.
+
+**H4 Apart from research and the paper book.** Only the holdings modules name the ledger (a unit test lists them). No rule, alert, push, radar, factor, journal or risk check reads it; the paper portfolio is unchanged. A held listing outside the research universe has no issuer or SEC identifier, so no research view lists it; Taiwan codes stay out of every rule (ADR-039 TW12).
+
+**H5 Tracked US listings.** The first entry of a US symbol outside the universe creates an instrument of type `other` with an `alpaca` ticker. The daily Alpaca refresh adds bars and splits runs of their own for the tracked symbols, from their earliest trade date, so a symbol Alpaca does not know fails only those runs. Names are not fetched (the Alpaca client reaches market data only).
+
+**H6 Tracked TWSE listings.** The first entry of a TWSE code outside the universe creates an instrument (type `other`, XTAI) with a `twse` ticker. The daily TWSE run carries the held codes as `extra_codes` and stores their closes and ex-rights only (no measure). A code not in STOCK_DAY_ALL is noted (TPEx is not supported). The TWSE OpenAPI has no history: a tracked code's closes start at its first tracked session, and earlier views value it at cost (flagged).
+
+**H7 Exchange rate.** `config/macro_series.yaml` gains DEXTAUS (glossary `macro_twd_usd`), fetched by the daily FRED refresh with every vintage. The H.10 release publishes a week's rates on Mondays, so the rate used is usually 3 to 7 days old; the age shows next to every USD total.
+
+**H8 API.** `GET /holdings?known_at` (positions, cash, totals per currency, the USD total, the change, the rate used and its age, flags, the latest snapshot), `GET /holdings/entries` (newest first, each counted, reversed or a reversal, and the account labels), `POST /holdings/entries` (422 on invalid fields, an unknown symbol format, a future trade date, or a sell that would leave the account short on its date or now; 409 on a race), `POST /holdings/entries/{id}/reverse` (404, 409 when already reversed or a reversal).
+
+**H9 Holdings page** (`/holdings`, System): the summary, flags, positions, cash, totals per currency, the entry form (fields by kind) and the entries with Reverse; As known on reads the past, and the form and Reverse show only when viewing now.
+
+**H10 Today page** (`/`): the holdings card (USD total, change, largest weights, a flag), the alerts pushed to Telegram in the past week and the open alerts, the US and Taiwan sessions, the radar's counts and any enabled source that is stale or failing, above the macro overview. With As known on, only the overview shows. The nav's first System entry is Today.
+
+**H11 Glossary.** 19 terms with Chinese hints (page_today, page_holdings, holding_entry, holding_reversal, holdings_account, holdings_equity, holdings_change, average_cost, unrealized_pnl, realized_pnl, cash_balance, price_mark, fx_rate_used, fx_lag, holding_weight, holding_flag, holdings_snapshot, net_contributions, macro_twd_usd); the computed ones are registered at valuation 0.1.0.
+
+**H12 Privacy.** Holdings stay on this machine: the API binds to localhost, the backups include them, and no push, log line or verify output names a position. Whether a push may ever mention holdings is M3.11's question.
+
+**H13 Verify.** `make holdings-verify` recomputes stored snapshots at their own T and S and must report all identical.
+
+**H14 Later.** M3.11 and M3.12 read the ledger and the snapshots; nothing here anticipates them.
+
+**Out of scope.** Broker connections, imports and any execution path; TPEx and other Asian markets; lot-level (FIFO) cost; taxes; holdings in pushes.
+
+**Live check:** see the M3.10 row of `docs/STATUS.md`.
+
+---
+
 ## Open decisions (owner: Steven)
 
 | ID | Decision | Needed by | Default until decided |

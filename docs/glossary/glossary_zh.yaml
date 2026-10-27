@@ -410,3 +410,4 @@ terms:
   holdings_snapshot: {name: 持股快照, hint: 每天 11:12 存下的估值，可在當時的時間點重算驗證。}
   net_contributions: {name: 淨存入, hint: 存入減提領的累計金額（各幣別）。}
   macro_twd_usd: {name: 美元兌台幣, hint: 聯準會 H.10 公布的紐約中午匯率：1 美元兌多少台幣。}
+  page_today: {name: 今日, hint: 首頁：你的持股、本週推播、美台兩地交易時段、雷達候選數與資料健康，下方是總經概覽。}
