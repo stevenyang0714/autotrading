@@ -1,7 +1,7 @@
-"""CI only (`make replay-fixtures`): load the recorded SEC, FRED, Alpaca, news and TWSE responses
-into the stack database through the real ingestion jobs, offline and without credentials, so
-the e2e tests see real data. Prices and news are labelled `fixture`, so the UI shows its
-DEMO DATA banner (ADR-006).
+"""CI only (`make replay-fixtures`): load the recorded SEC, FRED, Alpaca, news, TWSE and FinMind
+responses into the stack database through the real ingestion jobs, offline and without
+credentials, so the e2e tests see real data. Prices and news are labelled `fixture`, so the UI
+shows its DEMO DATA banner (ADR-006).
 
     cd apps/api && uv run python -m tests.replay
 """
@@ -37,7 +37,7 @@ from autotrading.repositories.regime import record_regime, stored_regime_rules
 from autotrading.repositories.risk import record_portfolio, stored_risk_rules
 from autotrading.repositories.rotation import record_points, stored_rotation_rules
 from autotrading.settings import get_settings
-from tests import alpaca_replay, fred_replay, news_replay, sec_replay, twse_replay
+from tests import alpaca_replay, finmind_replay, fred_replay, news_replay, sec_replay, twse_replay
 
 REPLAY_BACKFILL_SINCE = date(2025, 1, 1)  # enough history for the pages, short for CI
 
@@ -50,11 +50,14 @@ def main() -> None:
         sessionmaker(make_engine(settings)),
         RawPayloadStore(s3, settings.s3_bucket),
         TokenBucketLimiter(make_redis(settings)),
-        twse_replay.register_recorded(
-            news_replay.register_recorded(
-                alpaca_replay.register_recorded(
-                    fred_replay.register_recorded(sec_replay.recorded_registry())
-                )
+        finmind_replay.register_recorded(
+            twse_replay.register_recorded(
+                news_replay.register_recorded(
+                    alpaca_replay.register_recorded(
+                        fred_replay.register_recorded(sec_replay.recorded_registry())
+                    )
+                ),
+                fixture=True,
             ),
             fixture=True,
         ),
@@ -70,9 +73,11 @@ def main() -> None:
     alpaca_runs = alpaca_replay.replay(runner, window)
     news_runs = news_replay.replay(runner, window)
     twse_runs = twse_replay.replay(runner, window)
+    finmind_runs = finmind_replay.replay_history(runner, window)  # after TWSE: it never overwrites
     print(
         f"replayed {len(sec_runs)} SEC, {len(fred_runs)} FRED, {len(alpaca_runs)} Alpaca, "
-        f"{len(news_runs)} news and {len(twse_runs)} TWSE runs from recorded fixtures"
+        f"{len(news_runs)} news, {len(twse_runs)} TWSE and {len(finmind_runs)} FinMind runs "
+        "from recorded fixtures"
     )
     # Buyback states (M1.4b) now and at the month ends since REPLAY_BACKFILL_SINCE, as the
     # daily job and `make buyback-backfill` store them, so the pages have states and history.

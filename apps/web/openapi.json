@@ -1097,6 +1097,14 @@
             "title": "Provider",
             "type": "string"
           },
+          "supplementary": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/SupplementaryAttribution"
+            },
+            "title": "Supplementary",
+            "type": "array"
+          },
           "text": {
             "title": "Text",
             "type": "string"
@@ -4557,29 +4565,210 @@
         "title": "Flag",
         "type": "object"
       },
-      "FlowsBlock": {
+      "FlowGroup": {
         "properties": {
-          "datasets": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Datasets",
-            "type": "array"
-          },
-          "reason": {
-            "title": "Reason",
+          "measure_id": {
+            "title": "Measure Id",
             "type": "string"
           },
+          "net_last": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Net Last",
+            "type": "string"
+          },
+          "net_window": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Net Window",
+            "type": "string"
+          },
+          "sessions_in_window": {
+            "title": "Sessions In Window",
+            "type": "integer"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "measure_id",
+          "net_last",
+          "net_window",
+          "sessions_in_window",
+          "unit"
+        ],
+        "title": "FlowGroup",
+        "type": "object"
+      },
+      "FlowPoint": {
+        "properties": {
+          "foreign_net": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Foreign Net",
+            "type": "string"
+          },
+          "session": {
+            "format": "date",
+            "title": "Session",
+            "type": "string"
+          },
+          "total_net": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Total Net",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session",
+          "foreign_net",
+          "total_net"
+        ],
+        "title": "FlowPoint",
+        "type": "object"
+      },
+      "FlowsBlock": {
+        "properties": {
+          "attribution": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attribution"
+          },
+          "foreign_limit_ratio": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Foreign Limit Ratio"
+          },
+          "foreign_ratio": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Foreign Ratio"
+          },
+          "foreign_shares": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Foreign Shares"
+          },
+          "groups": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/FlowGroup"
+            },
+            "title": "Groups",
+            "type": "array"
+          },
+          "history": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/FlowPoint"
+            },
+            "title": "History",
+            "type": "array"
+          },
+          "holding_session": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Holding Session"
+          },
+          "holding_source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "session": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session"
+          },
+          "shares_issued": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shares Issued"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "status": {
-            "const": "unavailable",
+            "enum": [
+              "ok",
+              "unavailable"
+            ],
             "title": "Status",
             "type": "string"
           }
         },
         "required": [
-          "status",
-          "reason",
-          "datasets"
+          "status"
         ],
         "title": "FlowsBlock",
         "type": "object"
@@ -12894,6 +13083,29 @@
           "sectors"
         ],
         "title": "StrategyOverlap",
+        "type": "object"
+      },
+      "SupplementaryAttribution": {
+        "properties": {
+          "provider": {
+            "title": "Provider",
+            "type": "string"
+          },
+          "terms_url": {
+            "title": "Terms Url",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "provider",
+          "text",
+          "terms_url"
+        ],
+        "title": "SupplementaryAttribution",
         "type": "object"
       },
       "TaiwanInstrumentOut": {

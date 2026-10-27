@@ -5666,7 +5666,7 @@ terms:
     display_name: "Missed Session"
     category: data_quality
     short_definition: "A Taiwan session in the calendar with no stored close: no run caught it."
-    full_definition: "The TWSE OpenAPI serves only the latest session, about 05:20 Taipei on the next business day until the following business day's files replace it, so a session is lost if no run reads it in that business day. Counted between the first and the last stored session."
+    full_definition: "The TWSE OpenAPI serves only the latest session, from about 05:20 Taipei the next morning until the next session's files replace it, so a session is lost if no run reads it in that time; since M3.7b FinMind fills it at its next run. Closures no schedule lists (a typhoon day) are calendar entries, not missed sessions. Counted between the first and the last stored session."
     formula: "calendar sessions without a stored close"
     unit: "count"
     example: "0 in the recorded sessions."
@@ -5679,47 +5679,47 @@ terms:
     update_cadence: "daily (07:40, 09:40 and 20:40 SGT), the latest session only"
     caveats: "Cannot be filled without TWSE's consent to its dated queries (KI-27)."
     related_terms: [taiwan_market_session, twse_close]
-    methodology_version: 0.1.1
+    methodology_version: 0.1.2
     status: complete
 
   - term_id: institutional_flows
-    display_name: "Institutional Flows (unavailable)"
+    display_name: "Institutional Flows"
     category: positioning
-    short_definition: "Net buying of foreign investors, investment trusts and dealers per stock (三大法人買賣超): not in the licensed source."
-    full_definition: "TWSE publishes it per stock in the daily report T86 on its website, not in the OpenAPI. Its dated queries need TWSE's written consent (website terms Art. 6), which Steven requested; until then the pages say Data unavailable."
-    formula: "N/A"
-    unit: "N/A"
-    example: "Data unavailable."
-    direction: "N/A"
-    interpretation: "Not shown: no licensed source yet."
-    why_it_matters: "Says why the flows are missing."
-    source: "TWSE OpenAPI (Open Government Data License Taiwan 1.0, attribution required); ADR-039"
-    source_url: https://openapi.twse.com.tw/
-    as_of: "2026-10-22"
-    update_cadence: "N/A"
-    caveats: "Never scraped without consent."
-    related_terms: [foreign_ownership, open_data_attribution]
-    methodology_version: 0.1.0
+    short_definition: "The three institutional investor groups' net buying per stock (三大法人買賣超), from FinMind since M3.7b."
+    full_definition: "Foreign investors, investment trusts and dealers: shares bought minus sold per session, as TWSE publishes in its T86 report and FinMind serves per stock with history since 2016. Not in the TWSE OpenAPI; stored from FinMind (tier 2) with the attribution 資料來源：FinMind. The page shows the latest session and the sum of the last 20 sessions."
+    formula: "buy - sell per group and session"
+    unit: "shares"
+    example: "See the Taiwan page."
+    direction: "Positive = net buying"
+    interpretation: "Who bought and who sold the stock, by institution type."
+    why_it_matters: "Flows by group are Taiwan's most watched positioning signal."
+    source: "FinMind TaiwanStockInstitutionalInvestorsBuySell (tier 2, free tier, 資料來源：FinMind); ADR-040"
+    source_url: https://finmind.github.io/tutor/TaiwanMarket/Chip/
+    as_of: "2026-10-26"
+    update_cadence: "daily (21:30 SGT, FinMind publishes about 20:00 Taipei), history since 2016"
+    caveats: "Tier 2 source; revised figures become new versions. Never a buy or sell signal."
+    related_terms: [inst_foreign_net, inst_trust_net, inst_dealer_net, inst_total_net, foreign_ownership, finmind_attribution]
+    methodology_version: 0.2.0
     status: complete
 
   - term_id: foreign_ownership
-    display_name: "Foreign Ownership (unavailable)"
+    display_name: "Foreign Ownership"
     category: positioning
-    short_definition: "The share of a company held by foreign and mainland investors (外資持股比率): not in the licensed source for every stock."
-    full_definition: "The OpenAPI has only the top 20 holdings table and the sector table; the per-stock report MI_QFIIS is on the website, whose dated queries need TWSE's consent."
-    formula: "N/A"
-    unit: "N/A"
-    example: "Data unavailable."
-    direction: "N/A"
-    interpretation: "Not shown: no licensed source yet."
-    why_it_matters: "Says why it is missing."
-    source: "TWSE OpenAPI (Open Government Data License Taiwan 1.0, attribution required); ADR-039"
-    source_url: https://openapi.twse.com.tw/
-    as_of: "2026-10-22"
-    update_cadence: "N/A"
-    caveats: "Never scraped without consent."
-    related_terms: [institutional_flows]
-    methodology_version: 0.1.0
+    short_definition: "The share of a company held by foreign and mainland investors (外資持股比率), from FinMind since M3.7b."
+    full_definition: "TWSE's MI_QFIIS report per stock as FinMind serves it, daily with history since 2016: foreign-held shares, the issued shares, the ratio and the legal limit. Not in the TWSE OpenAPI per stock; stored from FinMind (tier 2) with the attribution 資料來源：FinMind."
+    formula: "foreign-held shares / issued shares x 100"
+    unit: "percent"
+    example: "2330 on 2026-10-21: 68.63%, limit 100%."
+    direction: "Higher = more foreign-owned"
+    interpretation: "How much of the company global investors own, and the room left."
+    why_it_matters: "Ownership levels frame the daily flows."
+    source: "FinMind TaiwanStockShareholding (tier 2, free tier, 資料來源：FinMind); ADR-040"
+    source_url: https://finmind.github.io/tutor/TaiwanMarket/Chip/
+    as_of: "2026-10-26"
+    update_cadence: "daily (21:30 SGT), history since 2016"
+    caveats: "Tier 2 source; revised figures become new versions."
+    related_terms: [foreign_ratio, foreign_limit_ratio, foreign_shares, institutional_flows]
+    methodology_version: 0.2.0
     status: complete
 
   - term_id: open_data_attribution
@@ -5739,6 +5739,206 @@ terms:
     update_cadence: "per page"
     caveats: "Covers the OpenAPI files only."
     related_terms: [license_status, taiwan_universe]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: inst_foreign_net
+    display_name: "Foreign Net Buying"
+    category: positioning
+    short_definition: "Shares foreign investors bought minus sold in the session (外資買賣超), in shares."
+    full_definition: "The sum of FinMind's Foreign_Investor and Foreign_Dealer_Self rows: buy minus sell on the Taiwan Stock Exchange that session, in shares (TWSE's T86 columns). Stored per session; a revised figure becomes a new version public at the fetch day."
+    formula: "buy - sell (foreign investors and foreign dealers)"
+    unit: "shares"
+    example: "2330 on 2026-10-21: see the Taiwan page."
+    direction: "Positive = net buying"
+    interpretation: "Whether foreign money came in or left the stock that day."
+    why_it_matters: "Foreign investors hold most of the large Taiwan companies; their flow moves prices."
+    source: "FinMind TaiwanStockInstitutionalInvestorsBuySell (tier 2, free tier, 資料來源：FinMind); ADR-040"
+    source_url: https://finmind.github.io/tutor/TaiwanMarket/Chip/
+    as_of: "2026-10-26"
+    update_cadence: "daily (21:30 SGT, FinMind publishes about 20:00 Taipei), history since 2016"
+    caveats: "Tier 2: FinMind states its data comes from official open channels without naming the source per dataset; the figures may be revised the next day (stored as revisions)."
+    related_terms: [inst_trust_net, inst_dealer_net, inst_total_net, foreign_ratio]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: inst_trust_net
+    display_name: "Investment Trust Net Buying"
+    category: positioning
+    short_definition: "Shares domestic investment trusts bought minus sold in the session (投信買賣超), in shares."
+    full_definition: "FinMind's Investment_Trust row: buy minus sell that session, in shares."
+    formula: "buy - sell (investment trusts)"
+    unit: "shares"
+    example: "See the Taiwan page."
+    direction: "Positive = net buying"
+    interpretation: "Domestic funds' flow, often steadier than foreign flow."
+    why_it_matters: "Trusts buy for domestic ETFs and funds; a steady buyer or seller."
+    source: "FinMind TaiwanStockInstitutionalInvestorsBuySell (tier 2, free tier, 資料來源：FinMind); ADR-040"
+    source_url: https://finmind.github.io/tutor/TaiwanMarket/Chip/
+    as_of: "2026-10-26"
+    update_cadence: "daily (21:30 SGT, FinMind publishes about 20:00 Taipei), history since 2016"
+    caveats: "Tier 2: FinMind states its data comes from official open channels without naming the source per dataset; the figures may be revised the next day (stored as revisions)."
+    related_terms: [inst_foreign_net, inst_total_net]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: inst_dealer_net
+    display_name: "Dealer Net Buying"
+    category: positioning
+    short_definition: "Shares securities dealers bought minus sold in the session (自營商買賣超), proprietary and hedging together, in shares."
+    full_definition: "FinMind's Dealer_self and Dealer_Hedging rows summed (the Dealer total is not stored twice): buy minus sell that session, in shares."
+    formula: "buy - sell (dealers' own book and hedging)"
+    unit: "shares"
+    example: "See the Taiwan page."
+    direction: "Positive = net buying"
+    interpretation: "Dealers' flow, much of it hedging of warrants and ETFs."
+    why_it_matters: "Completes the three groups TWSE publishes."
+    source: "FinMind TaiwanStockInstitutionalInvestorsBuySell (tier 2, free tier, 資料來源：FinMind); ADR-040"
+    source_url: https://finmind.github.io/tutor/TaiwanMarket/Chip/
+    as_of: "2026-10-26"
+    update_cadence: "daily (21:30 SGT, FinMind publishes about 20:00 Taipei), history since 2016"
+    caveats: "Tier 2: FinMind states its data comes from official open channels without naming the source per dataset; the figures may be revised the next day (stored as revisions)."
+    related_terms: [inst_foreign_net, inst_total_net]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: inst_total_net
+    display_name: "Institutional Net Buying"
+    category: positioning
+    short_definition: "The three groups' net buying together (三大法人合計買賣超), in shares."
+    full_definition: "Foreign net plus investment trust net plus dealer net for the session, in shares."
+    formula: "foreign net + trust net + dealer net"
+    unit: "shares"
+    example: "See the Taiwan page."
+    direction: "Positive = net buying"
+    interpretation: "The institutions' combined flow that day."
+    why_it_matters: "The headline figure Taiwan's market reads every evening."
+    source: "FinMind TaiwanStockInstitutionalInvestorsBuySell (tier 2, free tier, 資料來源：FinMind); ADR-040"
+    source_url: https://finmind.github.io/tutor/TaiwanMarket/Chip/
+    as_of: "2026-10-26"
+    update_cadence: "daily (21:30 SGT, FinMind publishes about 20:00 Taipei), history since 2016"
+    caveats: "Tier 2: FinMind states its data comes from official open channels without naming the source per dataset; the figures may be revised the next day (stored as revisions)."
+    related_terms: [inst_foreign_net, inst_trust_net, inst_dealer_net, inst_net_window]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: inst_net_window
+    display_name: "Net Buying, Last 20 Sessions"
+    category: positioning
+    short_definition: "A group's net buying summed over the last 20 stored sessions, in shares."
+    full_definition: "The sum of the group's daily net buying over the latest 20 sessions that have a stored flow (fewer at the start of the history; the count is shown)."
+    formula: "sum of the daily net over the last 20 sessions"
+    unit: "shares"
+    example: "See the Taiwan page."
+    direction: "Positive = net buying over the month"
+    interpretation: "Whether the flow is a one-day event or a month-long trend."
+    why_it_matters: "A month of flow says more than one day."
+    source: "FinMind TaiwanStockInstitutionalInvestorsBuySell (tier 2, free tier, 資料來源：FinMind); ADR-040"
+    source_url: https://finmind.github.io/tutor/TaiwanMarket/Chip/
+    as_of: "2026-10-26"
+    update_cadence: "daily (21:30 SGT, FinMind publishes about 20:00 Taipei), history since 2016"
+    caveats: "Fewer than 20 sessions right after the history starts; the count is shown beside the sum."
+    related_terms: [inst_total_net]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: foreign_ratio
+    display_name: "Foreign Holding Ratio"
+    category: positioning
+    short_definition: "The share of a company's issued shares held by foreign and mainland investors (外資持股比率), in percent."
+    full_definition: "FinMind's ForeignInvestmentSharesRatio of TaiwanStockShareholding (TWSE's MI_QFIIS): foreign-held shares over issued shares, in percent, per session."
+    formula: "foreign-held shares / issued shares x 100"
+    unit: "percent"
+    example: "2330 on 2026-10-21: 68.63%."
+    direction: "Higher = more foreign-owned"
+    interpretation: "How much of the company foreign investors own."
+    why_it_matters: "A high ratio ties the stock to global flows."
+    source: "FinMind TaiwanStockShareholding (tier 2, free tier, 資料來源：FinMind); ADR-040"
+    source_url: https://finmind.github.io/tutor/TaiwanMarket/Chip/
+    as_of: "2026-10-26"
+    update_cadence: "daily (21:30 SGT, FinMind publishes about 21:00 Taipei), history since 2016"
+    caveats: "Tier 2: FinMind states its data comes from official open channels without naming the source per dataset; the figures may be revised the next day (stored as revisions)."
+    related_terms: [foreign_limit_ratio, foreign_shares, shares_issued]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: foreign_limit_ratio
+    display_name: "Foreign Holding Limit"
+    category: positioning
+    short_definition: "The highest share of the company foreign investors may hold (外資持股上限), in percent."
+    full_definition: "FinMind's ForeignInvestmentUpperLimitRatio: the statutory or company limit on foreign ownership, in percent."
+    formula: "limit set by law or the company"
+    unit: "percent"
+    example: "2330: 100%."
+    direction: "N/A"
+    interpretation: "The room left for foreign buying when compared with the ratio held."
+    why_it_matters: "A stock near its limit cannot absorb more foreign buying."
+    source: "FinMind TaiwanStockShareholding (tier 2, free tier, 資料來源：FinMind); ADR-040"
+    source_url: https://finmind.github.io/tutor/TaiwanMarket/Chip/
+    as_of: "2026-10-26"
+    update_cadence: "daily"
+    caveats: "Tier 2: FinMind states its data comes from official open channels without naming the source per dataset; the figures may be revised the next day (stored as revisions)."
+    related_terms: [foreign_ratio]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: foreign_shares
+    display_name: "Foreign-Held Shares"
+    category: positioning
+    short_definition: "Shares held by foreign and mainland investors (外資持股股數)."
+    full_definition: "FinMind's ForeignInvestmentShares, in shares, per session."
+    formula: "shares held by foreign and mainland investors"
+    unit: "shares"
+    example: "2330 on 2026-10-21: 17,799,392,069."
+    direction: "Higher = more foreign-owned"
+    interpretation: "The holding in shares, behind the ratio."
+    why_it_matters: "Lets the ratio be checked against the issued shares."
+    source: "FinMind TaiwanStockShareholding (tier 2, free tier, 資料來源：FinMind); ADR-040"
+    source_url: https://finmind.github.io/tutor/TaiwanMarket/Chip/
+    as_of: "2026-10-26"
+    update_cadence: "daily"
+    caveats: "Tier 2: FinMind states its data comes from official open channels without naming the source per dataset; the figures may be revised the next day (stored as revisions)."
+    related_terms: [foreign_ratio, shares_issued]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: shares_issued
+    display_name: "Shares Issued"
+    category: fundamentals
+    short_definition: "The company's issued shares as the foreign-holding report states them (已發行股數)."
+    full_definition: "FinMind's NumberOfSharesIssued of TaiwanStockShareholding, in shares, per session; the same figure as the TWSE company file's 已發行普通股數 on the recorded session."
+    formula: "issued shares"
+    unit: "shares"
+    example: "2330: 25,932,370,067."
+    direction: "N/A"
+    interpretation: "The denominator of the foreign holding ratio and of market cap."
+    why_it_matters: "Needed for the ratio and for the universe ranking."
+    source: "FinMind TaiwanStockShareholding (tier 2, free tier, 資料來源：FinMind); ADR-040"
+    source_url: https://finmind.github.io/tutor/TaiwanMarket/Chip/
+    as_of: "2026-10-26"
+    update_cadence: "daily"
+    caveats: "Tier 2: FinMind states its data comes from official open channels without naming the source per dataset; the figures may be revised the next day (stored as revisions)."
+    related_terms: [foreign_ratio, taiwan_universe]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: finmind_attribution
+    display_name: "FinMind Attribution"
+    category: provenance
+    short_definition: "The line FinMind's terms require wherever its data shows: 資料來源：FinMind."
+    full_definition: "FinMind is a tier 2 aggregator used under its free anonymous tier for personal non-commercial research (ADR-040): the institutional investors and foreign holdings every day, and the Taiwan history before 2026-10-21. Its terms require the attribution and forbid redistribution; the platform is local and closed. The TWSE OpenAPI stays the primary source and is never overwritten by FinMind."
+    formula: "資料來源：FinMind"
+    unit: "text"
+    example: "資料來源：FinMind"
+    direction: "N/A"
+    interpretation: "Which numbers on a Taiwan page come from FinMind rather than the TWSE OpenAPI."
+    why_it_matters: "A licence condition, and the tier the reader should weigh."
+    source: "FinMind terms (Pricing, 使用條款與隱私權政策, 免責聲明與資料授權), read 2026-10-26"
+    source_url: https://finmind.github.io/Pricing/
+    as_of: "2026-10-26"
+    update_cadence: "per page"
+    caveats: "FinMind may change its terms or move datasets to paid tiers; the Data Health page shows the source's state."
+    related_terms: [open_data_attribution, institutional_flows]
     methodology_version: 0.1.0
     status: complete
 

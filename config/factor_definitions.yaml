@@ -51,7 +51,7 @@ definition_sets:
         - revenue_growth
     percentile_since: "2016-01-01"  # own history: the last snapshot of each month since then
   - definition_version: 0.2.0
-    status: active
+    status: retired  # M3.7b: 0.3.0 reads the FinMind history since 2016 (ADR-040 TW26)
     market: TW
     released: "2026-10-22"
     note: >-
@@ -75,4 +75,29 @@ definition_sets:
       relative: [momentum_12_1, momentum_6_1]
     fundamentals: {value: [], quality: []}  # Taiwan fundamentals are M3.8
     percentile_since: "2026-10-21"
+    percentile_min_observations: 12
+  - definition_version: 0.3.0
+    status: active
+    market: TW
+    released: "2026-10-26"
+    note: >-
+      M3.7b (ADR-040 TW26): 0.2.0's measures over the Taiwan history FinMind supplies before
+      2026-10-21 (closes, ex-dividend results; tier 2, 資料來源：FinMind) and the TWSE OpenAPI
+      from then on, so momentum, beta and the percentiles of the Taiwan universe are computed
+      from 2016 like the US ones. Still no fundamentals (M3.8).
+    benchmark: "0050"
+    stale_after_days: 14
+    dividend_gap_ratio: 1.25
+    dividends_since: "2016-01-01"
+    price:
+      momentum_12_1: {from_sessions: 252, to_sessions: 21}
+      momentum_6_1: {from_sessions: 126, to_sessions: 21}
+      reversal_1m: {sessions: 21}
+      close_vs_sma_50: {sessions: 50}
+      close_vs_sma_200: {sessions: 200}
+      volatility_60d: {sessions: 60, annualization_sessions: 252}
+      beta_252d: {sessions: 252, min_paired_share: 0.9}
+      relative: [momentum_12_1, momentum_6_1]
+    fundamentals: {value: [], quality: []}
+    percentile_since: "2016-01-01"
     percentile_min_observations: 12

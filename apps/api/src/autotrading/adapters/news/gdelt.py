@@ -16,11 +16,18 @@ import logging
 from datetime import UTC, datetime
 from typing import Any, ClassVar, cast
 
-from autotrading.adapters.news.client import GDELT_DOC_URL, GDELT_HOST, NewsClient, NewsRequestError
+from autotrading.adapters.news.client import (
+    GDELT_DOC_URL,
+    GDELT_HOST,
+    NewsClient,
+    NewsRequestError,
+    NewsThrottledError,
+)
 from autotrading.adapters.news.config import entities, publisher_tiers, universe_companies
 from autotrading.db.models import Source
 from autotrading.domain.news import find_mentions, publisher_domain
 from autotrading.domain.provenance import LicenseStatus, Provenance
+from autotrading.ingestion.cooldown import Cooldown, RedisCooldown
 from autotrading.ingestion.job import (
     FetchContext,
     FetchedPayload,
@@ -77,14 +84,30 @@ class GdeltJob(IngestionJob):
     name: ClassVar[str] = "news.gdelt"
     # Recorded fixtures override it with "fixture" (ADR-006).
     data_mode: ClassVar[str] = "live"
+    # KI-30: after GDELT throttles, no GDELT request for this long, in any process.
+    cooldown_seconds: ClassVar[int] = 30 * 60
+    cooldown_key: ClassVar[str] = "gdelt:cooldown"
+
+    def __init__(self, params: dict[str, Any], window: Any) -> None:
+        super().__init__(params, window)
+        self.pause_note: str | None = None
 
     def client(self) -> NewsClient:
         return NewsClient.for_hosts([GDELT_HOST])
 
+    def cooldown(self) -> Cooldown:
+        return RedisCooldown.from_settings(self.cooldown_key)
+
     def fetch(self, ctx: FetchContext) -> list[FetchedPayload]:
-        """One query per equity. When GDELT keeps refusing (it throttles per address), the run
-        stops and keeps what it has: the next hourly run searches the same 24 hours again,
-        starting from another equity. Only a run that got nothing fails."""
+        """One query per equity. When GDELT throttles (a repeated 429), the run stops, keeps what
+        it has and pauses GDELT for 30 minutes; while paused a run sends nothing and ends with a
+        note. Either way the run succeeds, so Dramatiq does not repeat it: the next hourly run
+        searches the same 24 hours again, starting from another equity (KI-30). A run that gets
+        nothing for another reason fails."""
+        pause = self.cooldown()
+        if pause.active():
+            self.pause_note = "skipped: GDELT is paused after throttling this address (KI-30)"
+            return []
         companies = entities().companies
         start, end = str(self.params["start"]), str(self.params["end"])
         maxrecords = int(self.params.get("maxrecords", MAX_RECORDS))
@@ -96,6 +119,14 @@ class GdeltJob(IngestionJob):
                 params = query_params(companies[ticker].gdelt_query, start, end, maxrecords)
                 try:
                     payload = client.get(GDELT_DOC_URL, params, ctx.acquire)
+                except NewsThrottledError:
+                    pause.start(self.cooldown_seconds)
+                    self.pause_note = (
+                        f"GDELT throttled at {ticker}: paused 30 minutes; kept {len(payloads)} "
+                        "of the queries (KI-30)"
+                    )
+                    logger.warning("gdelt: %s", self.pause_note)
+                    break
                 except NewsRequestError as exc:
                     if not payloads:
                         raise
@@ -167,4 +198,5 @@ class GdeltJob(IngestionJob):
             result.unchanged,
             skipped,
         )
-        return StoreResult(inserted=result.inserted, unchanged=result.unchanged)
+        notes = (self.pause_note,) if self.pause_note else ()
+        return StoreResult(inserted=result.inserted, unchanged=result.unchanged, notes=notes)

@@ -1233,7 +1233,7 @@ Next were 2303 UMC (1.61, 3.9% below 10th) and 2408 Nanya Technology (1.51).
 - Splits, closes and dividends carry their market's zone, defaulting to New York, so every US snapshot recomputes identically.
 
 **TW5 Schedule.**
-- Files: the TWSE files of a session appear about 05:20 Taipei on the next business day and stay until the following business day's (Friday's from Monday morning; observed 2026-10-26: on a Monday holiday the files still held Thursday's session).
+- Files: the TWSE files of a session appear about 05:20 Taipei the next morning and stay until the next session's files replace them. (Corrected 2026-10-27: on 2026-10-26 the files still held 2026-10-22 because 2026-10-23 was a typhoon closure, not because files wait for a business day.)
 - Collection: three runs a day, at 07:40, 09:40 and 20:40 SGT, weekends included, each once a day.
 - Factors: Taiwan factor snapshots at 09:50 SGT.
 - Losses: a session no run catches is lost for good (KI-27). Runs note lost sessions, and the pages count them.
@@ -1291,6 +1291,49 @@ Next were 2303 UMC (1.61, 3.9% below 10th) and 2408 Nanya Technology (1.51).
 - any Taiwan strategy or position.
 
 **Live check:** see the M3.7 row of `docs/STATUS.md`.
+
+---
+
+## ADR-040 M3.7b: FinMind as a tier 2 source for Taiwan flows and history — Accepted (2026-10-26, Steven approved the provider and its scope; Claude's decisions under ADR-035)
+ADR-039 left three gaps: the TWSE OpenAPI serves only the latest session, its history sits behind website queries that need TWSE's consent, and per-stock institutional flows and foreign ownership are not in the OpenAPI at all. On 2026-10-26 Claude read FinMind's terms (Pricing, 使用條款與隱私權政策, 免責聲明與資料授權) and Steven approved it for the flows and for the price history.
+
+**What FinMind allows.** The free anonymous tier (300 requests an hour, no account, no token) permits personal non-commercial use. Every tier requires the attribution 資料來源：FinMind and forbids redistributing the raw data or building a mirror. FinMind states its data comes from official open channels but does not name the source per dataset. The platform is local and closed, so nothing is redistributed.
+
+**TW15 Rate.** `rate_limit_per_second: 0.08`, burst 1: one request every 12.5 seconds, 288 an hour under the cap. The daily run is 22 to 33 requests.
+
+**TW16 Quota.** A 402 (over the cap) or 403 ("ip banned") is never retried. The client starts a 35-minute cooldown shared through Redis, and every later request checks it before connecting, so the ingestion actor's retries burn no quota.
+
+**TW17 Taiwan factor backfill.** `backfill_points` and `session_points` follow the definition set's market and zone: 0050's sessions and Taipei month ends. The US path keeps its defaults, so the stored US snapshots recompute identically. `make twse-factors-backfill`.
+
+**TW18 Revisions.** A session stored for the first time is public at the end of its Taipei day. When a later fetch shows a different value for a session already stored, that row is public at the end of the fetch day in Taipei, strictly later, so it is stored as a revision and the earlier value stays what was known before (as ALFRED vintages).
+
+**TW19 Units.** On the sessions both sources cover, the FinMind values are compared with the stored TWSE ones (close, volume, trades, change, the margin and short measures, P/E, P/B, yield). All equal gives the batch confidence 1.0; any difference gives 0.9 and a run note naming the fields. On 2026-10-21 every field matched (unit test on the recorded files): FinMind's volume is in shares, its margin in lots, like the TWSE files.
+
+**TW20 Ex-dividend results.** From TaiwanStockDividendResult:
+- a 息 row is a cash dividend; its amount must reproduce the reference price (before − cash, within one tick), else the row is noted and skipped;
+- a 權 row's stated amount is a price drop, not a ratio; the stock dividend ratio is before / reference − 1 (2881 on 2021-09-06: 84.8 / 77.09 − 1 = 10%);
+- a 權息 row cannot be split from two prices and is left out with a note.
+Cash goes to `dividend_events`, stock dividends to `split_events` (kind stock_dividend, 1 + ratio), both public at the start of the ex-date in Taipei. The history settles KI-28 for the past cases.
+
+**TW21 Source.** `config/sources.yaml` `finmind`: tier 2, `licensed_personal`, daily, 36-hour SLA, the terms URLs and obligations in its note.
+
+**TW22 Client.** One endpoint, `https://api.finmindtrade.com/api/v4/data`, six datasets: TaiwanStockPrice, TaiwanStockMarginPurchaseShortSale, TaiwanStockPER, TaiwanStockDividendResult, TaiwanStockInstitutionalInvestorsBuySell, TaiwanStockShareholding. A response counts only with `status 200`, `msg success` and a data list. The stored `source_url` is the request URL (no token exists).
+
+**TW23 Storage.** Flows and holdings go to `exchange_measures` in long format: `inst_foreign_buy`, `inst_foreign_sell`, `inst_foreign_net` (Foreign_Investor + Foreign_Dealer_Self), `inst_trust_net`, `inst_dealer_net` (Dealer_self + Dealer_Hedging), `inst_total_net`, in shares; `foreign_shares`, `shares_issued` (shares), `foreign_ratio`, `foreign_limit_ratio` (percent). Migration 0032 adds `shares` to the unit CHECK. Prices go to `price_bars` with feed `finmind`; margin and P/E, P/B, yield use the TWSE measure ids. Every row: source finmind, tier 2, Asia/Taipei, the run and payload hash.
+
+**TW24 TWSE primacy.** A session that has a current `twse_openapi` row for a measure or bar is never written by FinMind. FinMind fills the sessions before the first TWSE session (2016 to 2026-10-20) and any later session with no TWSE close (a lost session, KI-27). Flows and holdings have no TWSE rows, so every session is written.
+
+**TW25 Jobs.**
+- `finmind.flows`: daily at 21:30 SGT (FinMind publishes the flows about 20:00 and the holdings about 21:00 Taipei), the 11 codes over the last 10 days (revisions), plus closes for codes with a calendar session without a stored close. `make finmind-refresh`.
+- `finmind.history`: `make finmind-backfill`, one run per code and dataset (66 runs, about 14 minutes at the rate), 2016-01-01 to 2026-10-20, idempotent.
+
+**TW26 Factor definitions 0.3.0 (TW).** 0.2.0's measures with `dividends_since` and `percentile_since` 2016-01-01; 0.2.0 retired, its content and hash unchanged. The Taiwan universe is backfilled at every 0050 session and Taipei month end since 2016.
+
+**Pages.** The Taiwan instrument page shows the institutional net buying by group (latest session and the last 20 sessions), the foreign holding and limit, each with its FinMind dataset, publication time and the attribution line; the attribution block names both sources. The Data Health page shows `finmind`.
+
+**Out of scope.** TPEx; FinMind for US data; any FinMind dataset beyond the six; paid tiers (Steven decides, not needed: 22 requests a day).
+
+**Live check:** see the M3.7b row of `docs/STATUS.md`.
 
 ---
 

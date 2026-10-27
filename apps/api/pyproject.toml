@@ -61,6 +61,12 @@ known-first-party = ["autotrading"]
 "tests/integration/test_twse.py" = ["RUF001", "RUF002", "RUF003"]
 "tests/twse_replay.py" = ["RUF001", "RUF002", "RUF003"]
 "tests/fixtures/twse/*.py" = ["RUF001", "RUF002", "RUF003"]
+"src/autotrading/domain/finmind.py" = ["RUF001", "RUF002", "RUF003"]
+"src/autotrading/adapters/finmind/*.py" = ["RUF001", "RUF002", "RUF003"]
+"tests/unit/test_finmind.py" = ["RUF001", "RUF002", "RUF003"]
+"tests/integration/test_finmind.py" = ["RUF001", "RUF002", "RUF003"]
+"tests/finmind_replay.py" = ["RUF001", "RUF002", "RUF003"]
+"tests/fixtures/finmind/*.py" = ["RUF001", "RUF002", "RUF003"]
 
 [tool.mypy]
 python_version = "3.12"

@@ -27,6 +27,7 @@ FILE = FactorDefinitionsFile.model_validate(
 PINNED = {
     "0.1.0": "c6c48b837f99adfe052cc8dd85cc7a5db58aa58bfd6496d401525655e53b0605",
     "0.2.0": "5a75798b5dc31bb74d7cc5d4149bb1c7062ed42a446ec061ec488a6d5fe744f9",
+    "0.3.0": "dd952f16182b729eea6f3be1e69f9e835baea04bba77833af622af8bf8d0b8c4",
 }
 
 
@@ -56,7 +57,12 @@ def test_an_unquoted_code_is_refused(tmp_path: Path) -> None:
 def test_each_market_has_one_active_definition_set_and_released_ones_are_pinned() -> None:
     us, tw = FILE.active("US"), FILE.active("TW")
     assert (us.definition_version, us.benchmark, us.market) == ("0.1.0", "SPY", "US")
-    assert (tw.definition_version, tw.benchmark, tw.market) == ("0.2.0", "0050", "TW")
+    assert (tw.definition_version, tw.benchmark, tw.market) == ("0.3.0", "0050", "TW")
+    assert {d.definition_version: d.status for d in FILE.definition_sets if d.market == "TW"} == {
+        "0.2.0": "retired",
+        "0.3.0": "active",
+    }
+    assert str(tw.percentile_since) == "2016-01-01"  # the FinMind history (ADR-040 TW26)
     assert FILE.active() == us  # the default: the S3 and S4 rules pin 0.1.0
     assert {d.definition_version: d.content_sha256() for d in FILE.definition_sets} == PINNED
     assert tw.fundamentals.value == [] and tw.percentile_min_observations == 12
@@ -65,8 +71,13 @@ def test_each_market_has_one_active_definition_set_and_released_ones_are_pinned(
 
 def test_two_active_sets_in_one_market_are_refused() -> None:
     data = yaml.safe_load((CONFIG / "factor_definitions.yaml").read_text())
-    data["definition_sets"][1]["market"] = "US"
-    with pytest.raises(ValidationError, match="exactly one US definition set"):
+    active_tw = next(
+        d
+        for d in data["definition_sets"]
+        if d["status"] == "active" and d.get("market", "US") == "TW"
+    )
+    active_tw["market"] = "US"  # two active US sets, and no active TW set
+    with pytest.raises(ValidationError, match=r"exactly one (US|TW) definition set"):
         FactorDefinitionsFile.model_validate(data)
 
 

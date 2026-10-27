@@ -144,3 +144,28 @@ def values_on(
     for row in rows:
         out.setdefault(row.instrument_id, {})[row.measure_id] = row.value
     return out
+
+
+def current_values(
+    session: Session,
+    instrument_ids: Iterable[UUID],
+    measure_ids: Sequence[str],
+    *,
+    since: date | None = None,
+    until: date | None = None,
+) -> dict[tuple[UUID, str, date], tuple[Decimal, str]]:
+    """The current stored value and source of each (instrument, measure, session) in the range:
+    what a later fetch is compared with (a revision, or another source's row to leave alone)."""
+    query = select(ExchangeMeasure).where(
+        ExchangeMeasure.instrument_id.in_(list(instrument_ids)),
+        ExchangeMeasure.measure_id.in_(list(measure_ids)),
+        ExchangeMeasure.superseded_at.is_(None),
+    )
+    if since is not None:
+        query = query.where(ExchangeMeasure.session_date >= since)
+    if until is not None:
+        query = query.where(ExchangeMeasure.session_date <= until)
+    return {
+        (row.instrument_id, row.measure_id, row.session_date): (row.value, row.source_id)
+        for row in session.scalars(query)
+    }

@@ -24,7 +24,7 @@
 - **Cloud and sign-in:** local only (ADR-034).
 - **Language models deciding anything:** they extract, link and summarize; valuation, factors, risk, sizing and eligibility stay deterministic (02 §24).
 
-Work one sub-milestone at a time, in this order (ADR-035): M3.0, M3.0b, M3.0c (added 2026-10-21, ADR-038), M3.7, M3.1, M3.2, M3.8, M3.3, M3.4, M3.9, M3.5, M3.6. Each one ends with the Build Output Contract and a `docs/STATUS.md` update. Every new metric, rule and page ships with its glossary entry and Chinese hint in the same PR.
+Work one sub-milestone at a time, in this order (ADR-035): M3.0, M3.0b, M3.0c (added 2026-10-21, ADR-038), M3.7, M3.7b (added 2026-10-26, ADR-040), M3.1, M3.2, M3.8, M3.3, M3.4, M3.9, M3.5, M3.6. Each one ends with the Build Output Contract and a `docs/STATUS.md` update. Every new metric, rule and page ships with its glossary entry and Chinese hint in the same PR.
 
 ---
 
@@ -160,7 +160,23 @@ Work one sub-milestone at a time, in this order (ADR-035): M3.0, M3.0b, M3.0c (a
 - [x] Every Taiwan value cites its source and its time; As known on reproduces the stored rows (integration tests on the recorded 2026-10-21 files: a close is known from the end of its Taipei day).
 - [x] A Taiwan session never borrows a New York close or calendar (Taipei session dates, ex-dates, month ends and stale check; tests at the New York–Taipei boundary).
 - [x] The source is used within its licence: the six OpenAPI files only, the attribution on every Taiwan page, nothing scraped.
-- [ ] History before 2026-10-21, institutional flows and foreign ownership: after TWSE's consent (KI-27).
+- [x] History before 2026-10-21, institutional flows and foreign ownership: from FinMind as a tier 2 source (M3.7b, ADR-040); TWSE's own history still waits for its consent (KI-27).
+
+## M3.7b FinMind: Taiwan flows and history (ADR-040)
+**Decided (ADR-040, TW15-TW26; the provider and its scope by Steven on 2026-10-26):** FinMind as a tier 2 supplementary source under its free anonymous tier (personal non-commercial, 資料來源：FinMind, no redistribution): the institutional investors and foreign holdings daily with history since 2016, and the Taiwan history before 2026-10-21 (closes, margin, P/E, ex-dividend results). The TWSE OpenAPI stays primary and is never overwritten.
+
+**Build**
+- **Source and client:** six datasets, one request every 12.5 seconds, a 35-minute cooldown on a quota error.
+- **Jobs:** `finmind.flows` daily at 21:30 SGT; `finmind.history` once (`make finmind-backfill`).
+- **Storage:** flows and holdings in `exchange_measures` (migration 0032 adds the `shares` unit); closes in `price_bars` (feed finmind); dividends from the ex-dividend results (TW20).
+- **Factors:** definitions 0.3.0 (TW) with history since 2016; the Taiwan backfill on 0050's sessions (TW17).
+- **Pages:** the flows block (net buying by group, latest and last 20 sessions; foreign holding and limit) with the FinMind attribution; both sources in the attribution block.
+
+**Acceptance**
+- [x] FinMind never overwrites a TWSE row; on the shared session its values equal TWSE's (TW19, tested on 2026-10-21).
+- [x] A changed value is a revision public at the fetch day; the earlier value stays known before it (TW18).
+- [x] Ex-dividend results reproduce the reference price or are left out (TW20).
+- [x] Every FinMind number names its dataset, time, tier and the attribution line.
 
 ## M3.8 Taiwan fundamentals: monthly revenue and quarterly reports
 **Build**

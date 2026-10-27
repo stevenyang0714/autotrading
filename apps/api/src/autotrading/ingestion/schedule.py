@@ -78,15 +78,19 @@ class IntervalSchedule:
 SEC_EDGAR = DailySchedule(10, 0)  # M0.5, about 22:00 ET the previous evening
 FRED = DailySchedule(10, 15)  # M0.6, after SEC
 GDELT = IntervalSchedule(60, 20)  # M0.8, hourly at :20
-# M3.7 (ADR-039 TW5): the TWSE OpenAPI files of a session appear about 05:20 Taipei on the next
-# business day and stay until the following business day's (Friday's from Monday morning, the
-# weekend still serving Thursday's); three slots a day, weekends too, each a full chance.
+# M3.7 (ADR-039 TW5): the TWSE OpenAPI files of a session appear about 05:20 Taipei the next
+# morning and stay until the next session's files replace them (through weekends, holidays and
+# closures); three slots a day, weekends too, each a full chance.
 TWSE = MultiDailySchedule(((7, 40), (9, 40), (20, 40)))
+# M3.7b (ADR-040 TW25): FinMind publishes the day's institutional flows about 20:00 and the
+# foreign holdings about 21:00 Taipei; one run at 21:30 SGT.
+FINMIND = DailySchedule(21, 30)
 SCHEDULES: dict[str, DailySchedule | IntervalSchedule | MultiDailySchedule] = {
     "sec_edgar": SEC_EDGAR,
     "fred": FRED,
     "gdelt": GDELT,
     "twse_openapi": TWSE,
+    "finmind": FINMIND,
 }
 # Buyback states (M1.4b): evaluated after the SEC and FRED refreshes of the day.
 BUYBACK_STATES = DailySchedule(11, 0)

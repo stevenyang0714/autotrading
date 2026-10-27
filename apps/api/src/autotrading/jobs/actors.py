@@ -8,7 +8,7 @@ and configures the broker before any actor is declared.
 import logging
 from datetime import UTC, date, datetime
 from functools import lru_cache
-from typing import Any
+from typing import Any, cast
 from uuid import UUID
 
 import dramatiq
@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from autotrading import adapters  # noqa: F401  (adapters register their ingestion jobs)
 from autotrading.adapters.alpaca import refresh as alpaca_refresh
+from autotrading.adapters.finmind import refresh as finmind_refresh
 from autotrading.adapters.fred import refresh as fred_refresh
 from autotrading.adapters.news import refresh as news_refresh
 from autotrading.adapters.sec import refresh as sec_refresh
@@ -24,6 +25,7 @@ from autotrading.adapters.telegram import client as telegram
 from autotrading.adapters.twse import refresh as twse_refresh
 from autotrading.api import buyback_states
 from autotrading.domain.fair_value import month_ends
+from autotrading.domain.markets import Market
 from autotrading.infra.db import make_background_engine
 from autotrading.infra.heartbeat import write_heartbeat
 from autotrading.infra.object_store import make_s3_client
@@ -151,6 +153,46 @@ def start_twse_refresh(
     else:
         run_ingestion.send(str(run_id))
     return run_id
+
+
+# ---------- FinMind (M3.7b) ----------
+
+
+def start_finmind_refresh(*, manual: bool) -> UUID | None:
+    """Queue the Taiwan universe's institutional flows and foreign holdings of the last days
+    (ADR-040 TW25); None when finmind is not enabled."""
+    from autotrading.domain.markets import TW
+    from autotrading.ingestion.schedule import market_calendar
+    from autotrading.repositories.universe import taiwan_universe
+
+    run_id = finmind_refresh.start_flows(
+        ingestion_runner(),
+        now=datetime.now(UTC),
+        manual=manual,
+        universe=taiwan_universe(),
+        calendar=market_calendar(TW.exchange),
+    )
+    if run_id is None:
+        logger.info("FinMind refresh skipped: finmind is not enabled")
+    else:
+        run_ingestion.send(str(run_id))
+    return run_id
+
+
+def start_finmind_backfill(end: date | None = None) -> int:
+    """Queue the one-time history: one run per code and dataset since 2016, up to `end`
+    (default: the day before the first TWSE session, 2026-10-20)."""
+    from autotrading.repositories.universe import taiwan_universe
+
+    run_ids = finmind_refresh.start_history(
+        ingestion_runner(),
+        now=datetime.now(UTC),
+        universe=taiwan_universe(),
+        end=end or date(2026, 10, 20),
+    )
+    for run_id in run_ids:
+        run_ingestion.send(str(run_id))
+    return len(run_ids)
 
 
 # ---------- Alpaca market data (M0.7) ----------
@@ -341,12 +383,14 @@ def evaluate_factors(trigger: str) -> None:
 @dramatiq.actor(
     queue_name=EVALUATION_QUEUE, max_retries=1, time_limit=FACTORS_TIME_LIMIT_MS, broker=broker
 )
-def backfill_factors(year: int, system_time: str) -> None:
+def backfill_factors(year: int, system_time: str, market: str = "US") -> None:
     """One year of snapshots (every session, all measures at month ends), as the database held
-    them at `system_time`."""
+    them at `system_time`, under the market's active definitions (TW since M3.7b)."""
     held = datetime.fromisoformat(system_time)
     with sessions()() as session:
-        definitions = factors.stored_definitions(session)
+        definitions = factors.stored_definitions(
+            session, factors.active_factor_version(cast(Market, market))
+        )
         if definitions is None:
             logger.warning("Factor definitions not loaded (make migrate): nothing computed")
             return
@@ -379,14 +423,20 @@ def start_taiwan_factor_evaluation(*, manual: bool) -> None:
     evaluate_taiwan_factors.send("manual" if manual else "schedule")
 
 
-def start_factor_backfill() -> int:
+def start_factor_backfill(market: str = "US") -> int:
     """One message per year since 2016, all with one system time (now)."""
     with sessions()() as session:
         now = _now(session)
     years = list(range(FACTORS_BACKFILL_SINCE, now.year + 1))
     for year in years:
-        backfill_factors.send(year, now.isoformat())
+        backfill_factors.send(year, now.isoformat(), market)
     return len(years)
+
+
+def start_taiwan_factor_backfill() -> int:
+    """The Taiwan universe's snapshots at every 0050 session and Taipei month end since 2016,
+    under the active TW definitions (ADR-040 TW17, TW26)."""
+    return start_factor_backfill("TW")
 
 
 # ---------- paper portfolio (M2.3) ----------

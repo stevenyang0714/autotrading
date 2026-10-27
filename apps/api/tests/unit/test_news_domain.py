@@ -13,6 +13,7 @@ from autotrading.adapters.news.client import (
     TIMEOUT_SECONDS,
     NewsClient,
     NewsRequestError,
+    NewsThrottledError,
 )
 from autotrading.adapters.news.gdelt import GdeltJob, articles, seen_at
 from autotrading.adapters.news.rss import parse_feed, strip_full_text
@@ -31,6 +32,7 @@ from autotrading.domain.news import (
     snippet,
     title_similarity,
 )
+from autotrading.ingestion.cooldown import Cooldown, MemoryCooldown
 from autotrading.ingestion.job import RUN_TIME_LIMIT_SECONDS, FetchContext, Window
 from autotrading.ingestion.schedule import IntervalSchedule
 
@@ -406,10 +408,19 @@ def budgeted_client(answers: list[httpx.Response], clock: FakeClock, budget: flo
 
 def test_the_time_budget_stops_backoff_sleeps_that_would_pass_it() -> None:
     clock = FakeClock()
-    client = budgeted_client([httpx.Response(429)] * 5, clock, budget=100)
+    client = budgeted_client([httpx.Response(503)] * 5, clock, budget=100)
     with pytest.raises(NewsRequestError, match=r"after 3 attempt\(s\); stopped: the run's time"):
         client.get(GDELT_DOC, {"query": "x"}, lambda: None)
     assert clock.sleeps == [15.0, 30.0]  # the third wait (60 s) would end at 105 s
+
+
+def test_a_repeated_429_is_a_throttle_not_a_wait() -> None:
+    """KI-30: one retry of a 429, then NewsThrottledError (the job pauses the source)."""
+    clock = FakeClock()
+    client = budgeted_client([httpx.Response(429)] * 5, clock, budget=1000)
+    with pytest.raises(NewsThrottledError, match="429 2 times"):
+        client.get(GDELT_DOC, {"query": "x"}, lambda: None)
+    assert clock.sleeps == [15.0]
 
 
 def test_no_request_starts_once_the_budget_is_used() -> None:
@@ -459,11 +470,18 @@ def test_interval_schedules() -> None:
 
 
 def gdelt_job(
-    answers: list[httpx.Response], clock: FakeClock | None = None, budget: float | None = None
+    answers: list[httpx.Response],
+    clock: FakeClock | None = None,
+    budget: float | None = None,
+    pause: Cooldown | None = None,
 ) -> GdeltJob:
     replies = iter(answers)
+    held: Cooldown = pause or MemoryCooldown()
 
     class Job(GdeltJob):
+        def cooldown(self) -> Cooldown:
+            return held
+
         def client(self) -> NewsClient:
             if clock is not None:
                 return budgeted_client(list(replies), clock, budget or FETCH_TIME_BUDGET_SECONDS)
@@ -484,9 +502,31 @@ def test_a_throttled_gdelt_run_keeps_what_it_got() -> None:
     assert len(payloads) == 1  # AAPL kept; stopped at MSFT, NVDA not tried
 
 
-def test_a_gdelt_run_that_gets_nothing_fails() -> None:
-    job = gdelt_job([httpx.Response(429)] * 10)
-    with pytest.raises(NewsRequestError, match="HTTP 429"):
+def test_a_throttled_gdelt_run_pauses_gdelt_instead_of_failing() -> None:
+    """KI-30: a repeated 429 pauses GDELT for 30 minutes; the run ends (no Dramatiq retry
+    holding a worker thread) and the next runs send nothing while paused."""
+    pause = MemoryCooldown()
+    calls: list[int] = []
+
+    def answer(_: httpx.Request) -> httpx.Response:
+        calls.append(1)
+        return httpx.Response(429)
+
+    job = gdelt_job([], pause=pause)
+    job.client = lambda: NewsClient(  # type: ignore[method-assign]
+        {"api.gdeltproject.org"}, transport=httpx.MockTransport(answer), sleep=lambda _: None
+    )
+    assert job.fetch(FetchContext(run_id=uuid4(), acquire=lambda: None)) == []
+    assert len(calls) == 2  # one retry, then the pause
+    assert pause.active() and "paused 30 minutes" in (job.pause_note or "")
+    again = gdelt_job([], pause=pause)
+    assert again.fetch(FetchContext(run_id=uuid4(), acquire=lambda: None)) == []
+    assert len(calls) == 2 and "skipped" in (again.pause_note or "")
+
+
+def test_a_gdelt_run_that_gets_nothing_for_another_reason_fails() -> None:
+    job = gdelt_job([httpx.Response(503)] * 10)
+    with pytest.raises(NewsRequestError, match="HTTP 503"):
         job.fetch(FetchContext(run_id=uuid4(), acquire=lambda: None))
 
 
@@ -500,6 +540,6 @@ def test_a_gdelt_run_out_of_time_keeps_what_it_got() -> None:
 
 
 def test_a_gdelt_run_out_of_time_with_nothing_fails() -> None:
-    job = gdelt_job([httpx.Response(429)] * 10, FakeClock(), budget=40)
+    job = gdelt_job([httpx.Response(503)] * 10, FakeClock(), budget=40)
     with pytest.raises(NewsRequestError, match="time budget is used up"):
         job.fetch(FetchContext(run_id=uuid4(), acquire=lambda: None))

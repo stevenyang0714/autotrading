@@ -1,0 +1,21 @@
+{
+  "note": "Real FinMind API responses, unmodified, recorded with `uv run python -m tests.fixtures.finmind.record` (free anonymous tier). 2330 and 2317 over 2026-10-01..2026-10-22; ex-dividend results since 2016 for 2330, 2881 and 2317.",
+  "attribution": "資料來源：FinMind",
+  "terms": "https://finmind.github.io/Pricing/",
+  "recorded_at": "2026-10-26T14:59:47.889463+00:00",
+  "files": {
+    "https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=2330&start_date=2026-10-01&end_date=2026-10-22": "2330_TaiwanStockPrice.json",
+    "https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockMarginPurchaseShortSale&data_id=2330&start_date=2026-10-01&end_date=2026-10-22": "2330_TaiwanStockMarginPurchaseShortSale.json",
+    "https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPER&data_id=2330&start_date=2026-10-01&end_date=2026-10-22": "2330_TaiwanStockPER.json",
+    "https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockInstitutionalInvestorsBuySell&data_id=2330&start_date=2026-10-01&end_date=2026-10-22": "2330_TaiwanStockInstitutionalInvestorsBuySell.json",
+    "https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockShareholding&data_id=2330&start_date=2026-10-01&end_date=2026-10-22": "2330_TaiwanStockShareholding.json",
+    "https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=2317&start_date=2026-10-01&end_date=2026-10-22": "2317_TaiwanStockPrice.json",
+    "https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockMarginPurchaseShortSale&data_id=2317&start_date=2026-10-01&end_date=2026-10-22": "2317_TaiwanStockMarginPurchaseShortSale.json",
+    "https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPER&data_id=2317&start_date=2026-10-01&end_date=2026-10-22": "2317_TaiwanStockPER.json",
+    "https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockInstitutionalInvestorsBuySell&data_id=2317&start_date=2026-10-01&end_date=2026-10-22": "2317_TaiwanStockInstitutionalInvestorsBuySell.json",
+    "https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockShareholding&data_id=2317&start_date=2026-10-01&end_date=2026-10-22": "2317_TaiwanStockShareholding.json",
+    "https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockDividendResult&data_id=2330&start_date=2016-01-01&end_date=2026-10-26": "2330_TaiwanStockDividendResult.json",
+    "https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockDividendResult&data_id=2881&start_date=2016-01-01&end_date=2026-10-26": "2881_TaiwanStockDividendResult.json",
+    "https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockDividendResult&data_id=2317&start_date=2016-01-01&end_date=2026-10-26": "2317_TaiwanStockDividendResult.json"
+  }
+}

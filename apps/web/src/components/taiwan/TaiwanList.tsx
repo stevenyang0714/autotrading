@@ -20,7 +20,7 @@ export function TaiwanList({ data, sources }: { data: TaiwanListData | null; sou
           Taiwan (TWSE)
         </Metric>
       </h2>
-      {sources !== undefined ? <SourceFreshness sources={sources} ids={["twse_openapi"]} /> : null}
+      {sources !== undefined ? <SourceFreshness sources={sources} ids={["twse_openapi", "finmind"]} /> : null}
       {data === null ? (
         <div role="alert" className="rounded border border-amber-600/60 bg-amber-950/40 p-4 text-sm">
           <p className="font-medium">Data unavailable</p>
