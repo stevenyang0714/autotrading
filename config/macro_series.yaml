@@ -23,3 +23,5 @@ series:
   - {id: STLFSI4, term_id: macro_stlfsi, position: 150, observation_start: 2015-01-01}
   - {id: DCOILWTICO, term_id: macro_wti_oil, position: 160}
   - {id: DTWEXBGS, term_id: macro_dollar_index, position: 170}
+  # Real holdings (M3.10, ADR-041 H7): Taiwan dollars per US dollar, for the USD total.
+  - {id: DEXTAUS, term_id: macro_twd_usd, position: 180}

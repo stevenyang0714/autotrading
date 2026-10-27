@@ -7,11 +7,11 @@ journal, the risk book or any rule, and no research view reads the ledger.
 """
 
 from collections.abc import Iterable
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any, cast
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session, aliased
 
 from autotrading.api.valuation import recorded_by
@@ -37,6 +37,7 @@ from autotrading.domain.holdings import (
 from autotrading.domain.markets import MARKETS, Market
 from autotrading.domain.splits import Split
 from autotrading.repositories.facts import as_of_query
+from autotrading.repositories.universe import universe_symbols
 
 ACTOR = "web"
 
@@ -186,3 +187,18 @@ def latest_snapshot(session: Session, at: datetime) -> HoldingSnapshot | None:
         .order_by(HoldingSnapshot.known_at.desc(), HoldingSnapshot.system_time.desc())
         .limit(1)
     ).first()
+
+
+def tracked(session: Session, market: Market) -> tuple[list[str], date | None]:
+    """The symbols traded in the ledger (as recorded now, reversals applied) outside the market's
+    research universe, and their earliest trade date (H5, H6): their closes are fetched for the
+    valuation only, never for a rule or a research view."""
+    now = session.execute(select(func.now())).scalar_one()
+    universe = set(universe_symbols(market))
+    trades = [
+        e
+        for e in counted(ledger(session), now, now)
+        if e.kind in TRADES and e.market == market and e.symbol and e.symbol not in universe
+    ]
+    symbols = sorted({e.symbol for e in trades if e.symbol})
+    return symbols, min((e.trade_date for e in trades), default=None)

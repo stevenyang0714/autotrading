@@ -18,6 +18,7 @@ from sqlalchemy import Engine, create_engine, func, select
 from sqlalchemy.engine import URL
 from sqlalchemy.orm import Session, sessionmaker
 
+from autotrading.adapters.alpaca import refresh as alpaca_refresh
 from autotrading.config_sync import load_sources, sync_sources
 from autotrading.db.models import (
     AuditLog,
@@ -30,7 +31,7 @@ from autotrading.db.models import (
 from autotrading.domain.macro import MacroObservationIn
 from autotrading.domain.markets import TW, US
 from autotrading.main import create_app
-from autotrading.repositories.holdings import recompute, record_snapshot
+from autotrading.repositories.holdings import recompute, record_snapshot, tracked
 from autotrading.repositories.macro import MacroObservationRepository
 from autotrading.repositories.prices import BarIn, PriceRepository
 from tests.factories import TEST_SOURCE_ID, provenance
@@ -236,7 +237,7 @@ def ledger(client: TestClient) -> dict[str, dict[str, Any]]:
     [
         ({"broker": "alpaca"}, 422, "extra"),
         ({"symbol": "2330"}, 422, "not a US symbol"),
-        ({"symbol": "ZZZZ"}, 422, "not a US instrument this platform tracks"),
+        ({"symbol": "BRK-B"}, 422, "not a US symbol"),  # Alpaca writes BRK.B
         ({"trade_date": "2099-01-01"}, 422, "after today"),
         ({"quantity": "500", "kind": "sell"}, 422, "short"),
         ({"amount": "5"}, 422, "a trade not"),
@@ -354,3 +355,68 @@ def test_a_snapshot_recomputes_identically(
         assert snapshot.positions == 2 and snapshot.cash.keys() == {"USD", "TWD"}
         assert recompute(session, snapshot) == snapshot.holdings
         assert snapshot.holdings["equity_usd"] == str(snapshot.equity_usd)
+
+
+class FakeRunner:
+    def __init__(self, sessions: sessionmaker[Session]) -> None:
+        self.sessions = sessions
+        self.created: list[tuple[str, dict[str, Any]]] = []
+
+    def create_run(self, name: str, params: dict[str, Any], window: object) -> UUID:
+        self.created.append((name, params))
+        return UUID(int=len(self.created))
+
+
+def test_a_listing_outside_the_universe_becomes_tracked(
+    client: TestClient,
+    sessions: sessionmaker[Session],
+    ledger: dict[str, dict[str, Any]],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # H5, H6: the first entry of ZZZZ (US) and 2603 (TWSE) creates tracked instruments; the daily
+    # runs then fetch their closes. Until then each is valued at cost and flagged.
+    buy = {"kind": "buy", "quantity": "2", "price": "50", "trade_date": "2026-10-09"}
+    post(client, account="Firstrade", market="US", symbol="ZZZZ", **buy)
+    post(client, account="元大", market="TW", symbol="2603", **{**buy, "price": "250"})
+    with sessions() as session:
+        made = {
+            row.id_value: (row.id_namespace, row.source_id, instrument.instrument_type)
+            for row, instrument in session.execute(
+                select(Identifier, Instrument)
+                .join(Instrument, Instrument.id == Identifier.instrument_id)
+                .where(Identifier.id_value.in_(["ZZZZ", "2603"]))
+            )
+        }
+        assert made == {
+            "ZZZZ": ("alpaca", "alpaca_iex", "other"),
+            "2603": ("twse", "twse_openapi", "other"),
+        }
+        assert tracked(session, "US") == (["ZZZZ"], date(2026, 10, 9))  # SPY is the universe's
+        assert tracked(session, "TW") == (["2603"], date(2026, 10, 9))
+    body = client.get("/holdings", params={"known_at": T.isoformat()}).json()
+    zzzz = next(p for p in body["positions"] if p["symbol"] == "ZZZZ")
+    assert (zzzz["flags"], zzzz["market_value"], zzzz["name"]) == (["no_mark"], "100.00", None)
+
+    monkeypatch.setattr(alpaca_refresh, "source_ready", lambda session: True)
+    runner = FakeRunner(sessions)
+    alpaca_refresh.start_tracked(
+        runner,  # type: ignore[arg-type]
+        now=T,
+        manual=False,
+        symbols=["ZZZZ"],
+        since=date(2026, 10, 9),
+    )
+    assert runner.created == [
+        ("alpaca.daily_bars", {"symbols": ["ZZZZ"], "etfs": [], "start": "2026-10-06"}),
+        ("alpaca.splits", {"symbols": ["ZZZZ"], "start": "2016-01-01"}),
+    ]
+    assert (
+        alpaca_refresh.start_tracked(
+            runner,  # type: ignore[arg-type]
+            now=T,
+            manual=False,
+            symbols=[],
+            since=None,
+        )
+        == []
+    )

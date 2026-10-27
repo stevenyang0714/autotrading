@@ -8,7 +8,7 @@ from collections.abc import Callable, Iterator
 from datetime import UTC, date, datetime
 from decimal import Decimal
 from typing import Any
-from uuid import uuid4
+from uuid import UUID, uuid4
 from zoneinfo import ZoneInfo
 
 import pytest
@@ -396,3 +396,48 @@ def test_the_next_session_chains_its_margin_balances_to_the_stored_ones(
             select(RawPayload.source_url).where(RawPayload.ingestion_run_id == second.id)
         ).all()
         assert not any(url.endswith("/opendata/t187ap03_L") for url in payloads)
+
+
+def test_codes_held_outside_the_universe_get_their_closes_only(
+    engine: Engine, runner: IngestionRunner, second: IngestionRun
+) -> None:
+    # ADR-041 H6: the Holdings page created 2603 and 6488 (a TPEx code). 2603 gets its close of
+    # the session and nothing else; 6488 is not on the TWSE and is noted; 2330 is the universe's.
+    held: dict[str, UUID] = {}
+    with Session(engine) as session:
+        for code in ("2603", "6488"):
+            instrument = Instrument(
+                instrument_type="other", primary_exchange="XTAI", currency="TWD"
+            )
+            session.add(instrument)
+            session.flush()
+            session.add(
+                Identifier(
+                    instrument_id=instrument.id,
+                    id_type="ticker",
+                    id_namespace="twse",
+                    id_value=code,
+                    valid_from=datetime(2026, 10, 27, tzinfo=UTC),
+                    source_id="twse_openapi",
+                )
+            )
+            held[code] = instrument.id
+        session.commit()
+    params = {"slot": "held", "fixture_day": "d1", "extra_codes": ["2330", "2603", "6488"]}
+    run_id = runner.create_run("twse.daily", params, WINDOW)
+    runner.execute(run_id)
+    with Session(engine) as session:
+        run = session.get_one(IngestionRun, run_id)
+        assert run.status == "succeeded"
+        assert "1 held code(s) not in STOCK_DAY_ALL: TPEx listings are not supported" in run.notes
+        bars = session.scalars(select(PriceBar).where(PriceBar.instrument_id == held["2603"]))
+        assert [(b.bar_date, b.close, b.feed) for b in bars] == [(D1, Decimal("257.50"), "twse")]
+        for instrument_id in held.values():
+            assert not session.scalar(
+                select(func.count())
+                .select_from(ExchangeMeasure)
+                .where(ExchangeMeasure.instrument_id == instrument_id)
+            )
+        assert not session.scalar(
+            select(func.count()).select_from(PriceBar).where(PriceBar.instrument_id == held["6488"])
+        )

@@ -107,6 +107,7 @@ MACRO_SERIES_TERMS = (
     "macro_stlfsi",
     "macro_wti_oil",
     "macro_dollar_index",
+    "macro_twd_usd",  # M3.10 (ADR-041 H7): the holdings' TWD conversion
 )
 
 # Indicators computed on the overview (M0.6, ADR-016): term id -> function in domain/indicators.

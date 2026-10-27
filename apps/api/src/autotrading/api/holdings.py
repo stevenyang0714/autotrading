@@ -6,6 +6,8 @@
   deposits and withdrawals.
 - Entries are append-only and audited (actor `web`), written at the database's now. A mistake is
   corrected by reversing the entry (one reversal each), then entering it again.
+- A listing outside the research universe becomes a tracked instrument on its first entry: the
+  daily Alpaca or TWSE run fetches its closes (H5, H6). TPEx listings have no TWSE close.
 - Holdings stay on this machine: the API binds to localhost, and nothing here is pushed or sent
   anywhere (H12). There is no order, broker or execution field; requests with unknown fields are
   refused.
@@ -25,7 +27,7 @@ from sqlalchemy.orm import Session
 
 from autotrading.api.data_health import SessionDep
 from autotrading.api.research import KnownAt
-from autotrading.db.models import Entity, HoldingEntry, Instrument
+from autotrading.db.models import Entity, HoldingEntry, Identifier, Instrument
 from autotrading.domain.holdings import (
     BASE_CURRENCY,
     FX_SERIES,
@@ -54,6 +56,7 @@ router = APIRouter(tags=["holdings"])
 
 USER = "steven"  # one user (errata E1); the API binds to localhost only
 CHANGE_WINDOW = timedelta(days=1)
+TRACKED_SOURCE: dict[Market, str] = {"US": "alpaca_iex", "TW": "twse_openapi"}  # whose closes
 SYMBOL_PATTERNS: dict[Market, str] = {
     "US": r"^[A-Z][A-Z0-9.]{0,9}$",  # Alpaca's convention: BRK.B
     "TW": r"^[0-9][0-9A-Z]{3,5}$",  # TWSE codes: 2330, 0050, 00878, 00632R
@@ -381,13 +384,33 @@ def _commit(session: Session, conflict: str) -> None:
         raise HTTPException(status_code=409, detail=conflict) from exc
 
 
-def _instrument(session: Session, market: Market, symbol: str) -> UUID:
-    found = current_identifier(session, "ticker", MARKETS[market].namespace, symbol)
-    if found is None or found.instrument_id is None:
-        raise HTTPException(
-            status_code=422, detail=f"{symbol} is not a {market} instrument this platform tracks"
+def _instrument(session: Session, market: Market, symbol: str, now: datetime) -> UUID:
+    """The listing's instrument, or a new tracked one (H5, H6): an instrument of type `other`
+    with a ticker in the market's namespace, whose closes the daily runs then fetch. It has no
+    issuer or SEC identifier, so no research view lists it."""
+    spec = MARKETS[market]
+    found = current_identifier(session, "ticker", spec.namespace, symbol)
+    if found is not None and found.instrument_id is not None:
+        return found.instrument_id
+    instrument = Instrument(
+        instrument_type="other",
+        primary_exchange=spec.exchange if market == "TW" else None,
+        currency=spec.currency,
+    )
+    session.add(instrument)
+    session.flush()
+    session.add(
+        Identifier(
+            instrument_id=instrument.id,
+            id_type="ticker",
+            id_namespace=spec.namespace,
+            id_value=symbol,
+            valid_from=now,
+            source_id=TRACKED_SOURCE[market],
         )
-    return found.instrument_id
+    )
+    session.flush()
+    return instrument.id
 
 
 def _check_sell(
@@ -430,7 +453,7 @@ def create_holding_entry(body: NewHoldingEntry, session: SessionDep) -> EntryOut
         raise HTTPException(status_code=422, detail="the trade date is after today")
     instrument_id = None
     if body.market is not None and body.symbol is not None:
-        instrument_id = _instrument(session, body.market, body.symbol)
+        instrument_id = _instrument(session, body.market, body.symbol, now)
         if body.kind == "sell":
             _check_sell(session, body, instrument_id, now)
     row = HoldingEntry(

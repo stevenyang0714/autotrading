@@ -7,9 +7,12 @@
   history since 2016 for a backfill.
 - Splits: the universe's splits since 2016, queued with the daily bars (M1.1; ETFs since M2.2).
 - Dividends: the universe's cash dividends since 2016, queued with the daily bars (M2.2).
+- Tracked symbols: listings held outside the universe get their own bars and splits runs from
+  their earliest trade date (M3.10, ADR-041 H5), so a symbol Alpaca does not know fails only
+  those runs. Their closes value the holdings; no rule or research view reads them.
 """
 
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from uuid import UUID
 
@@ -116,3 +119,29 @@ def start_dividends(
         {"symbols": symbols, "start": HISTORY_START},
         refresh_window(now, manual=manual),
     )
+
+
+def start_tracked(
+    runner: IngestionRunner,
+    *,
+    now: datetime,
+    manual: bool,
+    symbols: list[str],
+    since: date | None,
+) -> list[UUID]:
+    """The bars and splits runs of the tracked symbols (none when there are none)."""
+    if not symbols or since is None:
+        return []
+    with runner.sessions() as session:
+        if not source_ready(session):
+            return []
+    start = min(since, now.date() - DAILY_LOOKBACK).isoformat()
+    window = refresh_window(now, manual=manual)
+    return [
+        runner.create_run(
+            AlpacaDailyBarsJob.name, {"symbols": symbols, "etfs": [], "start": start}, window
+        ),
+        runner.create_run(
+            AlpacaSplitsJob.name, {"symbols": symbols, "start": HISTORY_START}, window
+        ),
+    ]

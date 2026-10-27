@@ -144,10 +144,17 @@ def start_fred_refresh(*, manual: bool) -> list[UUID]:
 def start_twse_refresh(
     *, manual: bool, slot: str = "manual", companies: bool = False
 ) -> UUID | None:
-    """Queue the Taiwan universe's latest session (ADR-039 TW5); None when twse_openapi is not
-    enabled."""
+    """Queue the Taiwan universe's latest session (ADR-039 TW5), with the codes held outside it
+    (ADR-041 H6); None when twse_openapi is not enabled."""
+    with sessions()() as session:
+        extra, _ = holdings.tracked(session, "TW")
     run_id = twse_refresh.start_daily(
-        ingestion_runner(), now=datetime.now(UTC), manual=manual, slot=slot, companies=companies
+        ingestion_runner(),
+        now=datetime.now(UTC),
+        manual=manual,
+        slot=slot,
+        companies=companies,
+        extra_codes=extra,
     )
     if run_id is None:
         logger.info("TWSE refresh skipped: twse_openapi is not enabled")
@@ -241,6 +248,16 @@ def start_alpaca_daily_bars(*, manual: bool, backfill: bool = False) -> UUID | N
     )
     if dividends_run is not None:
         run_ingestion.send(str(dividends_run))
+    with sessions()() as session:
+        tracked, since = holdings.tracked(session, "US")
+    for tracked_run in alpaca_refresh.start_tracked(
+        ingestion_runner(),
+        now=datetime.now(UTC),
+        manual=manual or backfill,
+        symbols=tracked,
+        since=since,
+    ):
+        run_ingestion.send(str(tracked_run))
     return run_id
 
 
