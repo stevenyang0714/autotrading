@@ -1721,19 +1721,6 @@ export interface components {
             /** Version */
             version: number;
         };
-        /** CashOut */
-        CashOut: {
-            /** Account */
-            account: string;
-            /** Balance */
-            balance: string;
-            /** Currency */
-            currency: string;
-            /** Value Usd */
-            value_usd: string | null;
-            /** Weight */
-            weight: string | null;
-        };
         /** Catalyst */
         Catalyst: {
             /** Description */
@@ -2031,23 +2018,6 @@ export interface components {
             source: components["schemas"]["SourceRef"];
             /** Value */
             value: string;
-        };
-        /** CurrencyTotalOut */
-        CurrencyTotalOut: {
-            /** Cash */
-            cash: string;
-            /** Contributions */
-            contributions: string;
-            /** Currency */
-            currency: string;
-            /** Positions */
-            positions: string;
-            /** Realized */
-            realized: string;
-            /** Total */
-            total: string;
-            /** Unrealized */
-            unrealized: string;
         };
         /** DataAsOf */
         DataAsOf: {
@@ -2350,64 +2320,6 @@ export interface components {
             /** Succeeded At */
             succeeded_at?: string | null;
         };
-        /** EntriesOut */
-        EntriesOut: {
-            /** Accounts */
-            accounts: string[];
-            /** Entries */
-            entries: components["schemas"]["EntryOut"][];
-        };
-        /** EntryOut */
-        EntryOut: {
-            /** Account */
-            account: string;
-            /** Amount */
-            amount: string | null;
-            /** Currency */
-            currency: string;
-            /** Fee */
-            fee: string | null;
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /** Kind */
-            kind: string;
-            /** Market */
-            market: string | null;
-            /** Name */
-            name: string | null;
-            /** Name Zh */
-            name_zh: string | null;
-            /** Note */
-            note: string | null;
-            /** Price */
-            price: string | null;
-            /** Quantity */
-            quantity: string | null;
-            /**
-             * Recorded At
-             * Format: date-time
-             */
-            recorded_at: string;
-            /** Reversed By */
-            reversed_by: string | null;
-            /** Reverses Id */
-            reverses_id: string | null;
-            /**
-             * Status
-             * @enum {string}
-             */
-            status: "counted" | "reversed" | "reversal";
-            /** Symbol */
-            symbol: string | null;
-            /**
-             * Trade Date
-             * Format: date
-             */
-            trade_date: string;
-        };
         /** EquityPoint */
         EquityPoint: {
             /**
@@ -2650,13 +2562,13 @@ export interface components {
         };
         /** FactorRow */
         FactorRow: {
-            fundamentals: components["schemas"]["autotrading__api__factors__SnapshotRef"] | null;
+            fundamentals: components["schemas"]["SnapshotRef"] | null;
             /**
              * Instrument Type
              * @enum {string}
              */
             instrument_type: "equity" | "etf";
-            price: components["schemas"]["autotrading__api__factors__SnapshotRef"] | null;
+            price: components["schemas"]["SnapshotRef"] | null;
             /** Ticker */
             ticker: string;
             /** Values */
@@ -2899,31 +2811,6 @@ export interface components {
             /** Ticker */
             ticker: string;
         };
-        /** FxOut */
-        FxOut: {
-            /** Lag Days */
-            lag_days: number;
-            /**
-             * Observation Date
-             * Format: date
-             */
-            observation_date: string;
-            /**
-             * Published At
-             * Format: date-time
-             */
-            published_at: string;
-            /** Row Id */
-            row_id: string;
-            /** Series Id */
-            series_id: string;
-            /** Source Url */
-            source_url: string | null;
-            /** Stale */
-            stale: boolean;
-            /** Value */
-            value: string;
-        };
         /** Gate */
         Gate: {
             /** High Beta */
@@ -3090,12 +2977,210 @@ export interface components {
             /** Weight Pct */
             weight_pct: string;
         };
+        /** HoldingCashOut */
+        HoldingCashOut: {
+            /** Account */
+            account: string;
+            /** Balance */
+            balance: string;
+            /** Currency */
+            currency: string;
+            /** Value Usd */
+            value_usd: string | null;
+            /** Weight */
+            weight: string | null;
+        };
+        /** HoldingEntriesOut */
+        HoldingEntriesOut: {
+            /** Accounts */
+            accounts: string[];
+            /** Entries */
+            entries: components["schemas"]["HoldingEntryOut"][];
+        };
+        /** HoldingEntryOut */
+        HoldingEntryOut: {
+            /** Account */
+            account: string;
+            /** Amount */
+            amount: string | null;
+            /** Currency */
+            currency: string;
+            /** Fee */
+            fee: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Market */
+            market: string | null;
+            /** Name */
+            name: string | null;
+            /** Name Zh */
+            name_zh: string | null;
+            /** Note */
+            note: string | null;
+            /** Price */
+            price: string | null;
+            /** Quantity */
+            quantity: string | null;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /** Reversed By */
+            reversed_by: string | null;
+            /** Reverses Id */
+            reverses_id: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "counted" | "reversed" | "reversal";
+            /** Symbol */
+            symbol: string | null;
+            /**
+             * Trade Date
+             * Format: date
+             */
+            trade_date: string;
+        };
+        /** HoldingFxOut */
+        HoldingFxOut: {
+            /** Lag Days */
+            lag_days: number;
+            /**
+             * Observation Date
+             * Format: date
+             */
+            observation_date: string;
+            /**
+             * Published At
+             * Format: date-time
+             */
+            published_at: string;
+            /** Row Id */
+            row_id: string;
+            /** Series Id */
+            series_id: string;
+            /** Source Url */
+            source_url: string | null;
+            /** Stale */
+            stale: boolean;
+            /** Value */
+            value: string;
+        };
+        /** HoldingMarkOut */
+        HoldingMarkOut: {
+            /** Close */
+            close: string;
+            /**
+             * Published At
+             * Format: date-time
+             */
+            published_at: string;
+            /** Row Id */
+            row_id: string;
+            /**
+             * Session
+             * Format: date
+             */
+            session: string;
+        };
+        /** HoldingPositionOut */
+        HoldingPositionOut: {
+            /** Account */
+            account: string;
+            /** Average Cost */
+            average_cost: string | null;
+            /** Cost */
+            cost: string;
+            /** Currency */
+            currency: string;
+            /** Flags */
+            flags: string[];
+            /**
+             * Instrument Id
+             * Format: uuid
+             */
+            instrument_id: string;
+            mark: components["schemas"]["HoldingMarkOut"] | null;
+            /**
+             * Market
+             * @enum {string}
+             */
+            market: "US" | "TW";
+            /** Market Value */
+            market_value: string;
+            /** Name */
+            name: string | null;
+            /** Name Zh */
+            name_zh: string | null;
+            /** Price */
+            price: string | null;
+            /** Quantity */
+            quantity: string;
+            /** Realized */
+            realized: string;
+            /** Research */
+            research: boolean;
+            /** Symbol */
+            symbol: string;
+            /** Unrealized */
+            unrealized: string | null;
+            /** Value Usd */
+            value_usd: string | null;
+            /** Weight */
+            weight: string | null;
+        };
+        /** HoldingSnapshotRef */
+        HoldingSnapshotRef: {
+            /** Equity Usd */
+            equity_usd: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /**
+             * System Time
+             * Format: date-time
+             */
+            system_time: string;
+            /** Trigger */
+            trigger: string;
+        };
+        /** HoldingTotalOut */
+        HoldingTotalOut: {
+            /** Cash */
+            cash: string;
+            /** Contributions */
+            contributions: string;
+            /** Currency */
+            currency: string;
+            /** Positions */
+            positions: string;
+            /** Realized */
+            realized: string;
+            /** Total */
+            total: string;
+            /** Unrealized */
+            unrealized: string;
+        };
         /** HoldingsOut */
         HoldingsOut: {
             /** Base Currency */
             base_currency: string;
             /** Cash */
-            cash: components["schemas"]["CashOut"][];
+            cash: components["schemas"]["HoldingCashOut"][];
             /**
              * Change Since
              * Format: date-time
@@ -3111,22 +3196,22 @@ export interface components {
             equity_usd: string | null;
             /** Flags */
             flags: string[];
-            fx: components["schemas"]["FxOut"] | null;
+            fx: components["schemas"]["HoldingFxOut"] | null;
             /**
              * Known At
              * Format: date-time
              */
             known_at: string;
-            latest_snapshot: components["schemas"]["autotrading__api__holdings__SnapshotRef"] | null;
+            latest_snapshot: components["schemas"]["HoldingSnapshotRef"] | null;
             /** Positions */
-            positions: components["schemas"]["PositionOut"][];
+            positions: components["schemas"]["HoldingPositionOut"][];
             /**
              * System Time
              * Format: date-time
              */
             system_time: string;
             /** Totals */
-            totals: components["schemas"]["CurrencyTotalOut"][];
+            totals: components["schemas"]["HoldingTotalOut"][];
             /** Valuation Version */
             valuation_version: string;
         };
@@ -3199,7 +3284,7 @@ export interface components {
              * @default Each value is compared with the instrument's own history since 2016, never ranked against the other instruments: the universe has no delisted companies (P2-3, KI-1). Descriptions of the past, not forecasts or signals.
              */
             detail: string;
-            fundamentals: components["schemas"]["autotrading__api__factors__SnapshotRef"] | null;
+            fundamentals: components["schemas"]["SnapshotRef"] | null;
             /** History */
             history: components["schemas"]["HistoryPoint"][];
             /**
@@ -3221,7 +3306,7 @@ export interface components {
             measures: components["schemas"]["MeasureOut"][];
             /** Percentile Min Observations */
             percentile_min_observations: number | null;
-            price: components["schemas"]["autotrading__api__factors__SnapshotRef"] | null;
+            price: components["schemas"]["SnapshotRef"] | null;
             /** Ticker */
             ticker: string;
         };
@@ -3593,23 +3678,6 @@ export interface components {
             values: {
                 [key: string]: string;
             };
-        };
-        /** MarkOut */
-        MarkOut: {
-            /** Close */
-            close: string;
-            /**
-             * Published At
-             * Format: date-time
-             */
-            published_at: string;
-            /** Row Id */
-            row_id: string;
-            /**
-             * Session
-             * Format: date
-             */
-            session: string;
         };
         /** MarketContext */
         MarketContext: {
@@ -4275,50 +4343,6 @@ export interface components {
             ticker: string;
             /** Weight Pct */
             weight_pct: string | null;
-        };
-        /** PositionOut */
-        PositionOut: {
-            /** Account */
-            account: string;
-            /** Average Cost */
-            average_cost: string | null;
-            /** Cost */
-            cost: string;
-            /** Currency */
-            currency: string;
-            /** Flags */
-            flags: string[];
-            /**
-             * Instrument Id
-             * Format: uuid
-             */
-            instrument_id: string;
-            mark: components["schemas"]["MarkOut"] | null;
-            /**
-             * Market
-             * @enum {string}
-             */
-            market: "US" | "TW";
-            /** Market Value */
-            market_value: string;
-            /** Name */
-            name: string | null;
-            /** Name Zh */
-            name_zh: string | null;
-            /** Price */
-            price: string | null;
-            /** Quantity */
-            quantity: string;
-            /** Realized */
-            realized: string;
-            /** Symbol */
-            symbol: string;
-            /** Unrealized */
-            unrealized: string | null;
-            /** Value Usd */
-            value_usd: string | null;
-            /** Weight */
-            weight: string | null;
         };
         /** PreviousVersion */
         PreviousVersion: {
@@ -4989,8 +5013,8 @@ export interface components {
             /** Growth */
             growth: string | null;
         };
-        /** ReverseEntry */
-        ReverseEntry: {
+        /** ReverseHoldingEntry */
+        ReverseHoldingEntry: {
             /** Note */
             note?: string | null;
         };
@@ -5544,6 +5568,30 @@ export interface components {
             rule_versions: {
                 [key: string]: string;
             };
+        };
+        /** SnapshotRef */
+        SnapshotRef: {
+            /** Backfilled */
+            backfilled: boolean;
+            /** Feed Status */
+            feed_status: string | null;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Last Close */
+            last_close: string | null;
+            /**
+             * Scope
+             * @enum {string}
+             */
+            scope: "price" | "all";
+            /**
+             * System Time
+             * Format: date-time
+             */
+            system_time: string;
         };
         /** SourceHealth */
         SourceHealth: {
@@ -6111,52 +6159,6 @@ export interface components {
             metric: string;
             /** Value */
             value?: null;
-        };
-        /** SnapshotRef */
-        autotrading__api__factors__SnapshotRef: {
-            /** Backfilled */
-            backfilled: boolean;
-            /** Feed Status */
-            feed_status: string | null;
-            /**
-             * Known At
-             * Format: date-time
-             */
-            known_at: string;
-            /** Last Close */
-            last_close: string | null;
-            /**
-             * Scope
-             * @enum {string}
-             */
-            scope: "price" | "all";
-            /**
-             * System Time
-             * Format: date-time
-             */
-            system_time: string;
-        };
-        /** SnapshotRef */
-        autotrading__api__holdings__SnapshotRef: {
-            /** Equity Usd */
-            equity_usd: string | null;
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /**
-             * Known At
-             * Format: date-time
-             */
-            known_at: string;
-            /**
-             * System Time
-             * Format: date-time
-             */
-            system_time: string;
-            /** Trigger */
-            trigger: string;
         };
     };
     responses: never;
@@ -6828,7 +6830,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EntriesOut"];
+                    "application/json": components["schemas"]["HoldingEntriesOut"];
                 };
             };
         };
@@ -6852,7 +6854,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EntryOut"];
+                    "application/json": components["schemas"]["HoldingEntryOut"];
                 };
             };
             /** @description Validation Error */
@@ -6877,7 +6879,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ReverseEntry"];
+                "application/json": components["schemas"]["ReverseHoldingEntry"];
             };
         };
         responses: {
@@ -6887,7 +6889,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EntryOut"];
+                    "application/json": components["schemas"]["HoldingEntryOut"];
                 };
             };
             /** @description Validation Error */

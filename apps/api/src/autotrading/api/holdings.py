@@ -25,6 +25,7 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from autotrading.adapters.alpaca.refresh import universe
 from autotrading.api.data_health import SessionDep
 from autotrading.api.research import KnownAt
 from autotrading.db.models import Entity, HoldingEntry, Identifier, Instrument
@@ -51,6 +52,8 @@ from autotrading.repositories.holdings import (
 )
 from autotrading.repositories.identifiers import current_identifier
 from autotrading.repositories.labels import label
+from autotrading.repositories.universe import universe_symbols
+from autotrading.settings import get_settings
 
 router = APIRouter(tags=["holdings"])
 
@@ -75,26 +78,27 @@ Symbol = Annotated[str, StringConstraints(strip_whitespace=True, to_upper=True, 
 # ---------- valuation ----------
 
 
-class MarkOut(BaseModel):
+class HoldingMarkOut(BaseModel):
     close: Decimal
     session: date
     published_at: datetime
     row_id: str
 
 
-class PositionOut(BaseModel):
+class HoldingPositionOut(BaseModel):
     account: str
     market: Market
     instrument_id: UUID
     symbol: str
     name: str | None
     name_zh: str | None
+    research: bool  # a research-universe listing with its own instrument page
     currency: str
     quantity: Decimal
     cost: Decimal
     average_cost: Decimal | None
     realized: Decimal
-    mark: MarkOut | None
+    mark: HoldingMarkOut | None
     price: Decimal | None
     market_value: Decimal
     unrealized: Decimal | None
@@ -103,7 +107,7 @@ class PositionOut(BaseModel):
     flags: list[str]
 
 
-class CashOut(BaseModel):
+class HoldingCashOut(BaseModel):
     account: str
     currency: str
     balance: Decimal
@@ -111,7 +115,7 @@ class CashOut(BaseModel):
     weight: Decimal | None
 
 
-class CurrencyTotalOut(BaseModel):
+class HoldingTotalOut(BaseModel):
     currency: str
     positions: Decimal
     cash: Decimal
@@ -121,7 +125,7 @@ class CurrencyTotalOut(BaseModel):
     contributions: Decimal
 
 
-class FxOut(BaseModel):
+class HoldingFxOut(BaseModel):
     series_id: str
     value: Decimal  # TWD per USD
     observation_date: date
@@ -132,7 +136,7 @@ class FxOut(BaseModel):
     stale: bool
 
 
-class SnapshotRef(BaseModel):
+class HoldingSnapshotRef(BaseModel):
     id: UUID
     known_at: datetime
     system_time: datetime
@@ -148,13 +152,13 @@ class HoldingsOut(BaseModel):
     equity_usd: Decimal | None
     change_usd: Decimal | None  # over CHANGE_WINDOW, less deposits and withdrawals
     change_since: datetime
-    positions: list[PositionOut]
-    cash: list[CashOut]
-    totals: list[CurrencyTotalOut]
-    fx: FxOut | None
+    positions: list[HoldingPositionOut]
+    cash: list[HoldingCashOut]
+    totals: list[HoldingTotalOut]
+    fx: HoldingFxOut | None
     flags: list[str]
     entries: int
-    latest_snapshot: SnapshotRef | None
+    latest_snapshot: HoldingSnapshotRef | None
     detail: str
 
 
@@ -182,16 +186,27 @@ def display_name(
     return None, None
 
 
+def research_pages() -> set[tuple[str, str]]:
+    """(market, symbol) of the listings with an instrument page: the US universe's equities and
+    the Taiwan universe's codes (ETFs of the US universe have none)."""
+    _, etfs = universe(get_settings().resolved_config_dir())
+    us = {("US", s) for s in universe_symbols("US") if s not in set(etfs)}
+    return us | {("TW", code) for code in universe_symbols("TW")}
+
+
 def holdings_out(session: Session, valuation: Valuation, before: Valuation) -> HoldingsOut:
     stored = document(valuation)
     issuers = _names(session, {p.instrument_id for p in valuation.positions})
+    pages = research_pages()
     positions = []
     for raw, position in zip(stored["positions"], valuation.positions, strict=True):
         name, name_zh = display_name(position.symbol, position.instrument_id, issuers)
-        positions.append(PositionOut.model_validate({**raw, "name": name, "name_zh": name_zh}))
+        research = (position.market, position.symbol) in pages
+        named = {**raw, "name": name, "name_zh": name_zh, "research": research}
+        positions.append(HoldingPositionOut.model_validate(named))
     fx = None
     if valuation.fx is not None and valuation.fx_lag_days is not None:
-        fx = FxOut(
+        fx = HoldingFxOut(
             series_id=FX_SERIES,
             value=valuation.fx.value,
             observation_date=valuation.fx.observation_date,
@@ -211,13 +226,13 @@ def holdings_out(session: Session, valuation: Valuation, before: Valuation) -> H
         change_usd=change(before, valuation),
         change_since=before.known_at,
         positions=positions,
-        cash=[CashOut.model_validate(c) for c in stored["cash"]],
-        totals=[CurrencyTotalOut.model_validate(t) for t in stored["totals"]],
+        cash=[HoldingCashOut.model_validate(c) for c in stored["cash"]],
+        totals=[HoldingTotalOut.model_validate(t) for t in stored["totals"]],
         fx=fx,
         flags=list(valuation.flags),
         entries=valuation.entries,
         latest_snapshot=(
-            SnapshotRef(
+            HoldingSnapshotRef(
                 id=snapshot.id,
                 known_at=snapshot.known_at,
                 system_time=snapshot.system_time,
@@ -248,10 +263,10 @@ def holdings(session: SessionDep, known_at: KnownAt = None) -> HoldingsOut:
 # ---------- entries ----------
 
 
-EntryStatus = Literal["counted", "reversed", "reversal"]
+HoldingEntryStatus = Literal["counted", "reversed", "reversal"]
 
 
-class EntryOut(BaseModel):
+class HoldingEntryOut(BaseModel):
     id: UUID
     kind: str
     account: str
@@ -268,12 +283,12 @@ class EntryOut(BaseModel):
     note: str | None
     reverses_id: UUID | None
     reversed_by: UUID | None
-    status: EntryStatus
+    status: HoldingEntryStatus
     recorded_at: datetime
 
 
-class EntriesOut(BaseModel):
-    entries: list[EntryOut]  # newest first
+class HoldingEntriesOut(BaseModel):
+    entries: list[HoldingEntryOut]  # newest first
     accounts: list[str]  # every account label used, for the form
 
 
@@ -323,13 +338,13 @@ class NewHoldingEntry(BaseModel):
         return MARKETS[self.market].currency if self.market else str(self.currency)
 
 
-class ReverseEntry(BaseModel):
+class ReverseHoldingEntry(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     note: Annotated[str, StringConstraints(strip_whitespace=True, max_length=500)] | None = None
 
 
-def entries_out(session: Session, rows: list[HoldingEntry]) -> list[EntryOut]:
+def entries_out(session: Session, rows: list[HoldingEntry]) -> list[HoldingEntryOut]:
     reversed_by = {row.reverses_id: row.id for row in rows if row.reverses_id is not None}
     issuers = _names(session, {r.instrument_id for r in rows if r.instrument_id is not None})
     out = []
@@ -337,13 +352,13 @@ def entries_out(session: Session, rows: list[HoldingEntry]) -> list[EntryOut]:
         name, name_zh = (
             display_name(row.symbol, row.instrument_id, issuers) if row.symbol else (None, None)
         )
-        status: EntryStatus = "counted"
+        status: HoldingEntryStatus = "counted"
         if row.kind == "reversal":
             status = "reversal"
         elif row.id in reversed_by:
             status = "reversed"
         out.append(
-            EntryOut(
+            HoldingEntryOut(
                 id=row.id,
                 kind=row.kind,
                 account=row.account,
@@ -368,9 +383,9 @@ def entries_out(session: Session, rows: list[HoldingEntry]) -> list[EntryOut]:
 
 
 @router.get("/holdings/entries")
-def holding_entries(session: SessionDep) -> EntriesOut:
+def holding_entries(session: SessionDep) -> HoldingEntriesOut:
     rows = list(session.scalars(select(HoldingEntry)))
-    return EntriesOut(
+    return HoldingEntriesOut(
         entries=entries_out(session, rows),
         accounts=sorted({row.account for row in rows}),
     )
@@ -445,7 +460,7 @@ def _check_sell(
 
 
 @router.post("/holdings/entries", status_code=201)
-def create_holding_entry(body: NewHoldingEntry, session: SessionDep) -> EntryOut:
+def create_holding_entry(body: NewHoldingEntry, session: SessionDep) -> HoldingEntryOut:
     set_actor(session, ACTOR)
     now = _now(session)
     zone = MARKETS[body.market].zone if body.market else ZONE_OF_CURRENCY[body.currency_code]
@@ -477,7 +492,9 @@ def create_holding_entry(body: NewHoldingEntry, session: SessionDep) -> EntryOut
 
 
 @router.post("/holdings/entries/{entry_id}/reverse", status_code=201)
-def reverse_holding_entry(entry_id: UUID, body: ReverseEntry, session: SessionDep) -> EntryOut:
+def reverse_holding_entry(
+    entry_id: UUID, body: ReverseHoldingEntry, session: SessionDep
+) -> HoldingEntryOut:
     """Undo an entry from every time on: a reversal pointing at it (one each)."""
     original = session.get(HoldingEntry, entry_id)
     if original is None:

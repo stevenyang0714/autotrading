@@ -146,6 +146,7 @@ for (const path of [
   "/instruments/2330?known_on=2026-10-21",
   "/instruments/0050?known_on=2026-10-22",
   "/dashboards/portfolio-risk",
+  "/holdings",
   "/dashboards/portfolio-risk?known_on=2026-10-06",
 ]) {
   test(`numbers on ${path} are all explained`, async ({ page }) => {
@@ -868,6 +869,43 @@ test("unknown macro series returns 404", async ({ page }) => {
 test("unknown instrument returns 404", async ({ page }) => {
   const response = await page.goto("/instruments/NOPE");
   expect(response?.status()).toBe(404);
+});
+
+test("Holdings records a deposit and two buys, values them and reverses one (M3.10)", async ({
+  page,
+  isMobile,
+}) => {
+  await page.goto("/holdings");
+  await expect(page.locator('[data-page="holdings"]')).toBeVisible();
+  await expect(page.locator('[data-tile="holdings_equity"]')).toBeVisible();
+  // The ledger is append-only and, on a real machine, holds real holdings: write only to CI's
+  // throwaway database, and once.
+  if (isMobile || !process.env.CI) return;
+  test.setTimeout(90_000);
+  const form = page.getByRole("form", { name: "Record an entry" });
+  const record = async (kind: string, fields: Record<string, string>, selects: Record<string, string> = {}) => {
+    await form.locator('select[name="kind"]').selectOption(kind);
+    for (const [name, value] of Object.entries(selects)) await form.locator(`select[name="${name}"]`).selectOption(value);
+    await form.locator('input[name="account"]').fill("e2e broker");
+    for (const [name, value] of Object.entries(fields)) await form.locator(`input[name="${name}"]`).fill(value);
+    await form.getByRole("button", { name: "Record" }).click();
+  };
+  const positions = page.getByRole("table", { name: "Positions" });
+
+  await record("deposit", { amount: "10000", trade_date: "2026-10-01" }, { currency: "USD" });
+  await expect(page.getByRole("table", { name: "Cash" })).toContainText("$10,000.00", { timeout: 20_000 });
+  await record("buy", { trade_date: "2026-10-01", symbol: "SPY", quantity: "10", price: "500" }, { market: "US" });
+  await expect(positions.locator('[data-symbol="SPY"]')).toContainText("$500.00", { timeout: 20_000 }); // avg cost
+  await record("buy", { trade_date: "2026-10-01", symbol: "0050", quantity: "1000", price: "60" }, { market: "TW" });
+  await expect(positions.locator('[data-symbol="0050"]')).toContainText("NT$", { timeout: 20_000 });
+  await expect(page.locator('[data-tile="fx_rate_used"]')).toContainText("DEXTAUS");
+  await expect(page.locator('[data-tile="holdings_equity"]')).toContainText("$");
+
+  const buy = page.getByRole("table", { name: "Entries" }).locator('tr[data-status="counted"]', { hasText: "0050" });
+  await buy.getByRole("button", { name: "Reverse" }).click();
+  await expect(positions.locator('[data-symbol="0050"]')).toHaveCount(0, { timeout: 20_000 });
+  await expect(page.getByRole("table", { name: "Entries" }).locator('tr[data-status="reversed"]')).toContainText("0050");
+  expect(await unexplainedNumbers(page)).toEqual([]);
 });
 
 test.describe("desktop tooltips", () => {

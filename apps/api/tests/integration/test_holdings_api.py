@@ -3,6 +3,8 @@ pinned T with closes, a TWD rate and the change, reversals, the entry list, the 
 snapshot that recomputes identically. Trade dates are October 2026, before any run of this test;
 the system time is always the database's."""
 
+import json
+import os
 from collections.abc import Callable, Iterator
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
@@ -280,6 +282,7 @@ def test_the_valuation_at_t(client: TestClient, ledger: dict[str, dict[str, Any]
         "3660.00",
         "180.00",
     )
+    assert (spy["research"], tsmc["research"]) == (False, True)  # SPY: a universe ETF, no page
     assert (tsmc["market_value"], tsmc["unrealized"], tsmc["currency"]) == (
         "150000.00",
         "5000.00",
@@ -420,3 +423,32 @@ def test_a_listing_outside_the_universe_becomes_tracked(
         )
         == []
     )
+
+
+# ---------- web fixtures (opt-in recorder) ----------
+
+
+@pytest.mark.skipif(
+    not os.environ.get("RECORD_WEB_FIXTURES"),
+    reason="recorder: set RECORD_WEB_FIXTURES=1 to refresh apps/web/tests/fixtures/api",
+)
+def test_record_web_fixtures(client: TestClient, ledger: dict[str, dict[str, Any]]) -> None:
+    target = Path(__file__).resolve().parents[3] / "web" / "tests" / "fixtures" / "api"
+    recorded: tuple[tuple[str, str, dict[str, Any]], ...] = (
+        ("holdings", "/holdings", {"known_at": T.isoformat()}),
+        ("holdings-entries", "/holdings/entries", {}),
+    )
+    for name, path, params in recorded:
+        response = client.get(path, params=params)
+        assert response.status_code == 200
+        record = {
+            "recorded_at": datetime.now(UTC).isoformat(),
+            "recorded_from": "a made-up ledger, closes and DEXTAUS rates in the integration test "
+            "database (tests/integration/test_holdings_api.py); no real holdings",
+            "endpoint": path,
+            "params": params,
+            "response": response.json(),
+        }
+        (target / f"{name}.json").write_text(
+            json.dumps(record, indent=2, ensure_ascii=False) + "\n"
+        )

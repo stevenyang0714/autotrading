@@ -70,6 +70,8 @@ import factorsNvdaEarlier from "../../tests/fixtures/api/factors-nvda-earlier.js
 import factorsNvda from "../../tests/fixtures/api/factors-nvda.json";
 import factors2330 from "../../tests/fixtures/api/factors-2330.json";
 import taiwan from "../../tests/fixtures/api/taiwan.json";
+import holdingsEntries from "../../tests/fixtures/api/holdings-entries.json";
+import holdings from "../../tests/fixtures/api/holdings.json";
 import taiwan0050 from "../../tests/fixtures/api/taiwan-0050.json";
 import taiwan2330 from "../../tests/fixtures/api/taiwan-2330.json";
 import factorsTlt from "../../tests/fixtures/api/factors-tlt.json";
@@ -85,6 +87,8 @@ import momentum from "../../tests/fixtures/api/momentum.json";
 import signalsMomentum from "../../tests/fixtures/api/signals-momentum.json";
 
 import type {
+  HoldingEntries,
+  Holdings,
   AlertDetail,
   BacktestsResponse,
   MomentumResponse,
@@ -301,6 +305,12 @@ export const recordedTaiwan = taiwan.response as unknown as TaiwanList;
 export const recordedTaiwan2330 = taiwan2330.response as unknown as TaiwanInstrument;
 export const recordedTaiwan0050 = taiwan0050.response as unknown as TaiwanInstrument;
 export const recordedFactors2330 = factors2330.response as unknown as InstrumentFactors;
+
+/** Holdings (M3.10) from tests/integration/test_holdings_api.py: a made-up ledger (no real
+ * holdings) valued at 2026-10-27 11:12 SGT, with a reversed sell and two tracked listings
+ * without a close yet. */
+export const recordedHoldings = holdings.response as unknown as Holdings;
+export const recordedHoldingEntries = holdingsEntries.response as unknown as HoldingEntries;
 
 /** The S3 ETF rotation (M2.4) from tests/integration/test_rotation.py, as known on 2026-10-06
  * (the October month start: SPY only, the other ETFs without a year of recorded closes for 12-1

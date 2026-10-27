@@ -189,6 +189,12 @@ export const SYSTEM_PAGES: readonly SystemPageDef[] = [
     termId: "page_overview",
   },
   {
+    id: "holdings",
+    href: "/holdings",
+    label: "Holdings",
+    termId: "page_holdings",
+  },
+  {
     id: "data_health",
     href: "/system/data-health",
     label: "Data Health",

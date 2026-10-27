@@ -1797,56 +1797,6 @@
         "title": "CardOut",
         "type": "object"
       },
-      "CashOut": {
-        "properties": {
-          "account": {
-            "title": "Account",
-            "type": "string"
-          },
-          "balance": {
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-            "title": "Balance",
-            "type": "string"
-          },
-          "currency": {
-            "title": "Currency",
-            "type": "string"
-          },
-          "value_usd": {
-            "anyOf": [
-              {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Value Usd"
-          },
-          "weight": {
-            "anyOf": [
-              {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Weight"
-          }
-        },
-        "required": [
-          "account",
-          "currency",
-          "balance",
-          "value_usd",
-          "weight"
-        ],
-        "title": "CashOut",
-        "type": "object"
-      },
       "Catalyst": {
         "additionalProperties": false,
         "properties": {
@@ -2694,55 +2644,6 @@
           "source"
         ],
         "title": "CorporateAction",
-        "type": "object"
-      },
-      "CurrencyTotalOut": {
-        "properties": {
-          "cash": {
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-            "title": "Cash",
-            "type": "string"
-          },
-          "contributions": {
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-            "title": "Contributions",
-            "type": "string"
-          },
-          "currency": {
-            "title": "Currency",
-            "type": "string"
-          },
-          "positions": {
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-            "title": "Positions",
-            "type": "string"
-          },
-          "realized": {
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-            "title": "Realized",
-            "type": "string"
-          },
-          "total": {
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-            "title": "Total",
-            "type": "string"
-          },
-          "unrealized": {
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-            "title": "Unrealized",
-            "type": "string"
-          }
-        },
-        "required": [
-          "currency",
-          "positions",
-          "cash",
-          "total",
-          "realized",
-          "unrealized",
-          "contributions"
-        ],
-        "title": "CurrencyTotalOut",
         "type": "object"
       },
       "DataAsOf": {
@@ -3629,219 +3530,6 @@
         "title": "EntityOut",
         "type": "object"
       },
-      "EntriesOut": {
-        "properties": {
-          "accounts": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Accounts",
-            "type": "array"
-          },
-          "entries": {
-            "items": {
-              "$ref": "#/components/schemas/EntryOut"
-            },
-            "title": "Entries",
-            "type": "array"
-          }
-        },
-        "required": [
-          "entries",
-          "accounts"
-        ],
-        "title": "EntriesOut",
-        "type": "object"
-      },
-      "EntryOut": {
-        "properties": {
-          "account": {
-            "title": "Account",
-            "type": "string"
-          },
-          "amount": {
-            "anyOf": [
-              {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Amount"
-          },
-          "currency": {
-            "title": "Currency",
-            "type": "string"
-          },
-          "fee": {
-            "anyOf": [
-              {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Fee"
-          },
-          "id": {
-            "format": "uuid",
-            "title": "Id",
-            "type": "string"
-          },
-          "kind": {
-            "title": "Kind",
-            "type": "string"
-          },
-          "market": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Market"
-          },
-          "name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Name"
-          },
-          "name_zh": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Name Zh"
-          },
-          "note": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Note"
-          },
-          "price": {
-            "anyOf": [
-              {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Price"
-          },
-          "quantity": {
-            "anyOf": [
-              {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Quantity"
-          },
-          "recorded_at": {
-            "format": "date-time",
-            "title": "Recorded At",
-            "type": "string"
-          },
-          "reversed_by": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Reversed By"
-          },
-          "reverses_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Reverses Id"
-          },
-          "status": {
-            "enum": [
-              "counted",
-              "reversed",
-              "reversal"
-            ],
-            "title": "Status",
-            "type": "string"
-          },
-          "symbol": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Symbol"
-          },
-          "trade_date": {
-            "format": "date",
-            "title": "Trade Date",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "kind",
-          "account",
-          "market",
-          "symbol",
-          "name",
-          "name_zh",
-          "currency",
-          "trade_date",
-          "quantity",
-          "price",
-          "amount",
-          "fee",
-          "note",
-          "reverses_id",
-          "reversed_by",
-          "status",
-          "recorded_at"
-        ],
-        "title": "EntryOut",
-        "type": "object"
-      },
       "EquityPoint": {
         "properties": {
           "day": {
@@ -4528,7 +4216,7 @@
           "fundamentals": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/autotrading__api__factors__SnapshotRef"
+                "$ref": "#/components/schemas/SnapshotRef"
               },
               {
                 "type": "null"
@@ -4546,7 +4234,7 @@
           "price": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/autotrading__api__factors__SnapshotRef"
+                "$ref": "#/components/schemas/SnapshotRef"
               },
               {
                 "type": "null"
@@ -5251,64 +4939,6 @@
         "title": "Fundamentals",
         "type": "object"
       },
-      "FxOut": {
-        "properties": {
-          "lag_days": {
-            "title": "Lag Days",
-            "type": "integer"
-          },
-          "observation_date": {
-            "format": "date",
-            "title": "Observation Date",
-            "type": "string"
-          },
-          "published_at": {
-            "format": "date-time",
-            "title": "Published At",
-            "type": "string"
-          },
-          "row_id": {
-            "title": "Row Id",
-            "type": "string"
-          },
-          "series_id": {
-            "title": "Series Id",
-            "type": "string"
-          },
-          "source_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Source Url"
-          },
-          "stale": {
-            "title": "Stale",
-            "type": "boolean"
-          },
-          "value": {
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-            "title": "Value",
-            "type": "string"
-          }
-        },
-        "required": [
-          "series_id",
-          "value",
-          "observation_date",
-          "published_at",
-          "row_id",
-          "source_url",
-          "lag_days",
-          "stale"
-        ],
-        "title": "FxOut",
-        "type": "object"
-      },
       "Gate": {
         "additionalProperties": false,
         "properties": {
@@ -5725,6 +5355,626 @@
         "title": "Holding",
         "type": "object"
       },
+      "HoldingCashOut": {
+        "properties": {
+          "account": {
+            "title": "Account",
+            "type": "string"
+          },
+          "balance": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Balance",
+            "type": "string"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "value_usd": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value Usd"
+          },
+          "weight": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weight"
+          }
+        },
+        "required": [
+          "account",
+          "currency",
+          "balance",
+          "value_usd",
+          "weight"
+        ],
+        "title": "HoldingCashOut",
+        "type": "object"
+      },
+      "HoldingEntriesOut": {
+        "properties": {
+          "accounts": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Accounts",
+            "type": "array"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/HoldingEntryOut"
+            },
+            "title": "Entries",
+            "type": "array"
+          }
+        },
+        "required": [
+          "entries",
+          "accounts"
+        ],
+        "title": "HoldingEntriesOut",
+        "type": "object"
+      },
+      "HoldingEntryOut": {
+        "properties": {
+          "account": {
+            "title": "Account",
+            "type": "string"
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "fee": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fee"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "market": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "name_zh": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name Zh"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "recorded_at": {
+            "format": "date-time",
+            "title": "Recorded At",
+            "type": "string"
+          },
+          "reversed_by": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reversed By"
+          },
+          "reverses_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reverses Id"
+          },
+          "status": {
+            "enum": [
+              "counted",
+              "reversed",
+              "reversal"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "symbol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Symbol"
+          },
+          "trade_date": {
+            "format": "date",
+            "title": "Trade Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "account",
+          "market",
+          "symbol",
+          "name",
+          "name_zh",
+          "currency",
+          "trade_date",
+          "quantity",
+          "price",
+          "amount",
+          "fee",
+          "note",
+          "reverses_id",
+          "reversed_by",
+          "status",
+          "recorded_at"
+        ],
+        "title": "HoldingEntryOut",
+        "type": "object"
+      },
+      "HoldingFxOut": {
+        "properties": {
+          "lag_days": {
+            "title": "Lag Days",
+            "type": "integer"
+          },
+          "observation_date": {
+            "format": "date",
+            "title": "Observation Date",
+            "type": "string"
+          },
+          "published_at": {
+            "format": "date-time",
+            "title": "Published At",
+            "type": "string"
+          },
+          "row_id": {
+            "title": "Row Id",
+            "type": "string"
+          },
+          "series_id": {
+            "title": "Series Id",
+            "type": "string"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "stale": {
+            "title": "Stale",
+            "type": "boolean"
+          },
+          "value": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "series_id",
+          "value",
+          "observation_date",
+          "published_at",
+          "row_id",
+          "source_url",
+          "lag_days",
+          "stale"
+        ],
+        "title": "HoldingFxOut",
+        "type": "object"
+      },
+      "HoldingMarkOut": {
+        "properties": {
+          "close": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Close",
+            "type": "string"
+          },
+          "published_at": {
+            "format": "date-time",
+            "title": "Published At",
+            "type": "string"
+          },
+          "row_id": {
+            "title": "Row Id",
+            "type": "string"
+          },
+          "session": {
+            "format": "date",
+            "title": "Session",
+            "type": "string"
+          }
+        },
+        "required": [
+          "close",
+          "session",
+          "published_at",
+          "row_id"
+        ],
+        "title": "HoldingMarkOut",
+        "type": "object"
+      },
+      "HoldingPositionOut": {
+        "properties": {
+          "account": {
+            "title": "Account",
+            "type": "string"
+          },
+          "average_cost": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Cost"
+          },
+          "cost": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Cost",
+            "type": "string"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "flags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Flags",
+            "type": "array"
+          },
+          "instrument_id": {
+            "format": "uuid",
+            "title": "Instrument Id",
+            "type": "string"
+          },
+          "mark": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HoldingMarkOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "market": {
+            "enum": [
+              "US",
+              "TW"
+            ],
+            "title": "Market",
+            "type": "string"
+          },
+          "market_value": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Market Value",
+            "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "name_zh": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name Zh"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price"
+          },
+          "quantity": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Quantity",
+            "type": "string"
+          },
+          "realized": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Realized",
+            "type": "string"
+          },
+          "research": {
+            "title": "Research",
+            "type": "boolean"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "unrealized": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unrealized"
+          },
+          "value_usd": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value Usd"
+          },
+          "weight": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weight"
+          }
+        },
+        "required": [
+          "account",
+          "market",
+          "instrument_id",
+          "symbol",
+          "name",
+          "name_zh",
+          "research",
+          "currency",
+          "quantity",
+          "cost",
+          "average_cost",
+          "realized",
+          "mark",
+          "price",
+          "market_value",
+          "unrealized",
+          "value_usd",
+          "weight",
+          "flags"
+        ],
+        "title": "HoldingPositionOut",
+        "type": "object"
+      },
+      "HoldingSnapshotRef": {
+        "properties": {
+          "equity_usd": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Equity Usd"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "system_time": {
+            "format": "date-time",
+            "title": "System Time",
+            "type": "string"
+          },
+          "trigger": {
+            "title": "Trigger",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "known_at",
+          "system_time",
+          "equity_usd",
+          "trigger"
+        ],
+        "title": "HoldingSnapshotRef",
+        "type": "object"
+      },
+      "HoldingTotalOut": {
+        "properties": {
+          "cash": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Cash",
+            "type": "string"
+          },
+          "contributions": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Contributions",
+            "type": "string"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "positions": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Positions",
+            "type": "string"
+          },
+          "realized": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Realized",
+            "type": "string"
+          },
+          "total": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Total",
+            "type": "string"
+          },
+          "unrealized": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Unrealized",
+            "type": "string"
+          }
+        },
+        "required": [
+          "currency",
+          "positions",
+          "cash",
+          "total",
+          "realized",
+          "unrealized",
+          "contributions"
+        ],
+        "title": "HoldingTotalOut",
+        "type": "object"
+      },
       "HoldingsOut": {
         "properties": {
           "base_currency": {
@@ -5733,7 +5983,7 @@
           },
           "cash": {
             "items": {
-              "$ref": "#/components/schemas/CashOut"
+              "$ref": "#/components/schemas/HoldingCashOut"
             },
             "title": "Cash",
             "type": "array"
@@ -5785,7 +6035,7 @@
           "fx": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/FxOut"
+                "$ref": "#/components/schemas/HoldingFxOut"
               },
               {
                 "type": "null"
@@ -5800,7 +6050,7 @@
           "latest_snapshot": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/autotrading__api__holdings__SnapshotRef"
+                "$ref": "#/components/schemas/HoldingSnapshotRef"
               },
               {
                 "type": "null"
@@ -5809,7 +6059,7 @@
           },
           "positions": {
             "items": {
-              "$ref": "#/components/schemas/PositionOut"
+              "$ref": "#/components/schemas/HoldingPositionOut"
             },
             "title": "Positions",
             "type": "array"
@@ -5821,7 +6071,7 @@
           },
           "totals": {
             "items": {
-              "$ref": "#/components/schemas/CurrencyTotalOut"
+              "$ref": "#/components/schemas/HoldingTotalOut"
             },
             "title": "Totals",
             "type": "array"
@@ -6049,7 +6299,7 @@
           "fundamentals": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/autotrading__api__factors__SnapshotRef"
+                "$ref": "#/components/schemas/SnapshotRef"
               },
               {
                 "type": "null"
@@ -6105,7 +6355,7 @@
           "price": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/autotrading__api__factors__SnapshotRef"
+                "$ref": "#/components/schemas/SnapshotRef"
               },
               {
                 "type": "null"
@@ -7318,37 +7568,6 @@
           "source"
         ],
         "title": "MarginBlock",
-        "type": "object"
-      },
-      "MarkOut": {
-        "properties": {
-          "close": {
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-            "title": "Close",
-            "type": "string"
-          },
-          "published_at": {
-            "format": "date-time",
-            "title": "Published At",
-            "type": "string"
-          },
-          "row_id": {
-            "title": "Row Id",
-            "type": "string"
-          },
-          "session": {
-            "format": "date",
-            "title": "Session",
-            "type": "string"
-          }
-        },
-        "required": [
-          "close",
-          "session",
-          "published_at",
-          "row_id"
-        ],
-        "title": "MarkOut",
         "type": "object"
       },
       "MarketContext": {
@@ -9444,176 +9663,6 @@
           "max_loss"
         ],
         "title": "Position",
-        "type": "object"
-      },
-      "PositionOut": {
-        "properties": {
-          "account": {
-            "title": "Account",
-            "type": "string"
-          },
-          "average_cost": {
-            "anyOf": [
-              {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Average Cost"
-          },
-          "cost": {
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-            "title": "Cost",
-            "type": "string"
-          },
-          "currency": {
-            "title": "Currency",
-            "type": "string"
-          },
-          "flags": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Flags",
-            "type": "array"
-          },
-          "instrument_id": {
-            "format": "uuid",
-            "title": "Instrument Id",
-            "type": "string"
-          },
-          "mark": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/MarkOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "market": {
-            "enum": [
-              "US",
-              "TW"
-            ],
-            "title": "Market",
-            "type": "string"
-          },
-          "market_value": {
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-            "title": "Market Value",
-            "type": "string"
-          },
-          "name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Name"
-          },
-          "name_zh": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Name Zh"
-          },
-          "price": {
-            "anyOf": [
-              {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Price"
-          },
-          "quantity": {
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-            "title": "Quantity",
-            "type": "string"
-          },
-          "realized": {
-            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-            "title": "Realized",
-            "type": "string"
-          },
-          "symbol": {
-            "title": "Symbol",
-            "type": "string"
-          },
-          "unrealized": {
-            "anyOf": [
-              {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Unrealized"
-          },
-          "value_usd": {
-            "anyOf": [
-              {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Value Usd"
-          },
-          "weight": {
-            "anyOf": [
-              {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Weight"
-          }
-        },
-        "required": [
-          "account",
-          "market",
-          "instrument_id",
-          "symbol",
-          "name",
-          "name_zh",
-          "currency",
-          "quantity",
-          "cost",
-          "average_cost",
-          "realized",
-          "mark",
-          "price",
-          "market_value",
-          "unrealized",
-          "value_usd",
-          "weight",
-          "flags"
-        ],
-        "title": "PositionOut",
         "type": "object"
       },
       "PreviousVersion": {
@@ -11726,7 +11775,7 @@
         "title": "ReverseDcf",
         "type": "object"
       },
-      "ReverseEntry": {
+      "ReverseHoldingEntry": {
         "additionalProperties": false,
         "properties": {
           "note": {
@@ -11742,7 +11791,7 @@
             "title": "Note"
           }
         },
-        "title": "ReverseEntry",
+        "title": "ReverseHoldingEntry",
         "type": "object"
       },
       "RiskCheckOut": {
@@ -13246,6 +13295,65 @@
           "history"
         ],
         "title": "SignalsOut",
+        "type": "object"
+      },
+      "SnapshotRef": {
+        "properties": {
+          "backfilled": {
+            "title": "Backfilled",
+            "type": "boolean"
+          },
+          "feed_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feed Status"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "last_close": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Close"
+          },
+          "scope": {
+            "enum": [
+              "price",
+              "all"
+            ],
+            "title": "Scope",
+            "type": "string"
+          },
+          "system_time": {
+            "format": "date-time",
+            "title": "System Time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "known_at",
+          "system_time",
+          "backfilled",
+          "scope",
+          "last_close",
+          "feed_status"
+        ],
+        "title": "SnapshotRef",
         "type": "object"
       },
       "SourceHealth": {
@@ -14808,109 +14916,6 @@
         ],
         "title": "Withheld",
         "type": "object"
-      },
-      "autotrading__api__factors__SnapshotRef": {
-        "properties": {
-          "backfilled": {
-            "title": "Backfilled",
-            "type": "boolean"
-          },
-          "feed_status": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Feed Status"
-          },
-          "known_at": {
-            "format": "date-time",
-            "title": "Known At",
-            "type": "string"
-          },
-          "last_close": {
-            "anyOf": [
-              {
-                "format": "date",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Last Close"
-          },
-          "scope": {
-            "enum": [
-              "price",
-              "all"
-            ],
-            "title": "Scope",
-            "type": "string"
-          },
-          "system_time": {
-            "format": "date-time",
-            "title": "System Time",
-            "type": "string"
-          }
-        },
-        "required": [
-          "known_at",
-          "system_time",
-          "backfilled",
-          "scope",
-          "last_close",
-          "feed_status"
-        ],
-        "title": "SnapshotRef",
-        "type": "object"
-      },
-      "autotrading__api__holdings__SnapshotRef": {
-        "properties": {
-          "equity_usd": {
-            "anyOf": [
-              {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Equity Usd"
-          },
-          "id": {
-            "format": "uuid",
-            "title": "Id",
-            "type": "string"
-          },
-          "known_at": {
-            "format": "date-time",
-            "title": "Known At",
-            "type": "string"
-          },
-          "system_time": {
-            "format": "date-time",
-            "title": "System Time",
-            "type": "string"
-          },
-          "trigger": {
-            "title": "Trigger",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "known_at",
-          "system_time",
-          "equity_usd",
-          "trigger"
-        ],
-        "title": "SnapshotRef",
-        "type": "object"
       }
     }
   },
@@ -16072,7 +16077,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/EntriesOut"
+                  "$ref": "#/components/schemas/HoldingEntriesOut"
                 }
               }
             },
@@ -16101,7 +16106,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/EntryOut"
+                  "$ref": "#/components/schemas/HoldingEntryOut"
                 }
               }
             },
@@ -16144,7 +16149,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ReverseEntry"
+                "$ref": "#/components/schemas/ReverseHoldingEntry"
               }
             }
           },
@@ -16155,7 +16160,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/EntryOut"
+                  "$ref": "#/components/schemas/HoldingEntryOut"
                 }
               }
             },

@@ -28,6 +28,7 @@ describe("Nav", () => {
     const links = linksIn("System");
     expect(links.map((link) => [link.textContent, link.getAttribute("href")])).toEqual([
       ["Overview", "/"],
+      ["Holdings", "/holdings"],
       ["Data Health", "/system/data-health"],
       ["Instruments", "/instruments"],
       ["Macro", "/macro"],
