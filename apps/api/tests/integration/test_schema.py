@@ -86,6 +86,8 @@ APP_TABLES = {
     "alert_deliveries",
     "digest_deliveries",
     "exchange_measures",
+    "holding_entries",
+    "holding_snapshots",
 }
 FEB = datetime(2025, 2, 1, 21, 5, tzinfo=UTC)
 AUG = datetime(2025, 8, 1, 20, 30, tzinfo=UTC)
@@ -278,6 +280,11 @@ def test_guardrails_exist(engine: Engine) -> None:
         "backtest_runs_append_only",
         "backtest_runs_no_truncate",
         "trade_decisions_risk_check",
+        "holding_entries_append_only",
+        "holding_entries_no_truncate",
+        "holding_entries_audit",
+        "holding_snapshots_append_only",
+        "holding_snapshots_no_truncate",
     } <= triggers
     assert exclusions == {"ex_identifiers_value_period", "ex_identifiers_subject_period"}
 
