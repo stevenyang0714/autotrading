@@ -854,8 +854,9 @@ test("PAYEMS: As known on before the revision shows the first release", async ({
   await expect(august()).not.toContainText("Revised");
 
   // "Today" is a client-side link: the URL changes only once the server has rendered the
-  // page, which can take more than the default 5 s on a busy stack.
-  await page.getByRole("link", { name: "Today" }).click();
+  // page, which can take more than the default 5 s on a busy stack. The nav's Today (the home
+  // page, M3.10) has the same name, so look inside main.
+  await page.getByRole("main").getByRole("link", { name: "Today" }).click();
   await expect(page).not.toHaveURL(/known_on/, { timeout: 15_000 });
   await expect(august()).toContainText("Revised");
   await expect(august()).toContainText("159,075 on 2026-09-04");
@@ -954,6 +955,8 @@ test.describe("mobile popover", () => {
   test("the menu opens the navigation including System", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("button", { name: "Menu" }).tap();
-    await expect(page.getByRole("link", { name: "Data Health" })).toBeVisible();
+    // The Today panel links Data Health too (M3.10): look inside the navigation.
+    const nav = page.getByRole("navigation", { name: "Main" });
+    await expect(nav.getByRole("link", { name: "Data Health" })).toBeVisible();
   });
 });
