@@ -752,8 +752,15 @@ test("Taiwan: a TWSE company page reads the exchange's numbers with their source
 });
 
 test("Taiwan: a session is known only after the end of its Taipei day", async ({ page }) => {
+  // As known on 2026-10-21 the TWSE close of that day is not public yet: the latest close is
+  // 2026-10-20, from the FinMind history (M3.7b), named as such
   await page.goto("/instruments/2330?known_on=2026-10-21");
-  await expect(page.locator('[data-block="taiwan-prices"]')).toContainText("No close stored by this date.");
+  const prices = page.locator('[data-block="taiwan-prices"]');
+  await expect(prices).toContainText("session 2026-10-20");
+  await expect(prices).toContainText("FinMind TaiwanStockPrice");
+  await page.goto("/instruments/2330?known_on=2026-10-22");
+  await expect(page.locator('[data-block="taiwan-prices"]')).toContainText("session 2026-10-21");
+  await expect(page.locator('[data-block="taiwan-prices"]')).toContainText("上市個股日成交資訊");
 });
 
 test("Taiwan: the instruments page lists the TWSE universe", async ({ page }) => {
