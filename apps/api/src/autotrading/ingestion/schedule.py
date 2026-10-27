@@ -101,6 +101,9 @@ FACTORS = DailySchedule(11, 5)
 PORTFOLIO = DailySchedule(11, 10)
 # M2.4: the S3 ETF rotation, after the regime (10:55) and the factor snapshots (11:05)
 ROTATION = DailySchedule(11, 15)
+# M3.10: the real holdings snapshot, after the closes (06:30, TWSE 07:40/09:40) and FRED
+# (10:15, DEXTAUS); a record of Steven's holdings, apart from every rule
+HOLDINGS = DailySchedule(11, 12)
 # M3.0: S4's daily assessment, after the factor snapshots (11:05) and before the backtests
 MOMENTUM = DailySchedule(11, 17)
 # M3.7: the Taiwan factor snapshots (definitions 0.2.0), after the 07:40 and 09:40 TWSE runs

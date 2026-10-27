@@ -40,6 +40,7 @@ from autotrading.repositories import (
     backtest,
     delivery,
     factors,
+    holdings,
     momentum,
     regime,
     risk,
@@ -464,6 +465,33 @@ def snapshot_portfolio(trigger: str) -> None:
 
 def start_portfolio_snapshot(*, manual: bool) -> None:
     snapshot_portfolio.send("manual" if manual else "schedule")
+
+
+# ---------- real holdings (M3.10) ----------
+
+
+@dramatiq.actor(queue_name=EVALUATION_QUEUE, max_retries=1, broker=broker)
+def snapshot_holdings(trigger: str) -> None:
+    """Steven's recorded holdings now (T = S = now; ADR-041 H2). Nothing when none recorded.
+    The log names no position (H12)."""
+    with sessions()() as session:
+        now = _now(session)
+        snapshot = holdings.record_snapshot(session, now, now, trigger)
+        session.commit()
+        if snapshot is None:
+            logger.info("No holdings recorded: no holdings snapshot")
+            return
+        logger.info(
+            "Holdings snapshot at %s (%s): %s positions, valuation %s",
+            now,
+            trigger,
+            snapshot.positions,
+            snapshot.valuation_version,
+        )
+
+
+def start_holdings_snapshot(*, manual: bool) -> None:
+    snapshot_holdings.send("manual" if manual else "schedule")
 
 
 # ---------- S3 ETF rotation (M2.4) ----------

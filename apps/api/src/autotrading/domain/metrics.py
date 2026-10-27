@@ -189,6 +189,24 @@ METRICS: tuple[MetricDefinition, ...] = (
             "foreign_limit_ratio": "finmind.shareholding_days",
             "foreign_shares": "finmind.shareholding_days",
             "shares_issued": "finmind.shareholding_days",
+            # M3.10 (ADR-041): Steven's real holdings, valuation 0.1.0
+            **{
+                term_id: "holdings.value"
+                for term_id in (
+                    "holdings_equity",
+                    "average_cost",
+                    "unrealized_pnl",
+                    "realized_pnl",
+                    "cash_balance",
+                    "price_mark",
+                    "fx_rate_used",
+                    "fx_lag",
+                    "holding_weight",
+                    "holding_flag",
+                    "net_contributions",
+                )
+            },
+            "holdings_change": "holdings.change",
             # M1.2 (ADR-022)
             "valuation_price": "valuation.select_price",
             "market_cap": "valuation.valuation",

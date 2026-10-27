@@ -392,3 +392,21 @@ terms:
   foreign_shares: {name: 外資持股股數, hint: 外資與陸資持有的股數。}
   shares_issued: {name: 已發行股數, hint: 外資持股報表所載的已發行股數，是持股比率和市值的分母。}
   finmind_attribution: {name: FinMind 出處標示, hint: FinMind 條款要求的「資料來源：FinMind」；它是第二級來源，只補證交所 OpenAPI 沒有的資料和 2026-10-21 之前的歷史，不覆蓋證交所的資料。}
+  page_holdings: {name: 持股, hint: 你自己記錄的真實持股：部位、現金、美元總計與每一筆分錄；只存在本機，不推播。}
+  holding_entry: {name: 持股分錄, hint: 帳本的一行：買進、賣出、現金股利、存入、提領或費用；只能新增，錯了用反向分錄更正。}
+  holding_reversal: {name: 反向分錄, hint: 撤銷先前某一筆分錄；記錄後，兩筆在任何日期都不再計入，之前的檢視不變。}
+  holdings_account: {name: 帳戶, hint: 你自訂的券商帳戶名稱；部位與現金都按帳戶分開。}
+  holdings_equity: {name: 持股總計（美元）, hint: 所有部位加現金換成美元；台幣用當時已知最新的 DEXTAUS 匯率。}
+  holdings_change: {name: 24 小時變動, hint: 美元總計與 24 小時前相比的變化，扣除期間的存入與提領。}
+  average_cost: {name: 平均成本, hint: 仍持有股數的每股平均買進價（依拆股調整）；不含手續費。}
+  unrealized_pnl: {name: 未實現損益, hint: 以最新收盤計算的市值減去剩餘成本。}
+  realized_pnl: {name: 已實現損益, hint: 賣出所得減去所賣股數的平均成本。}
+  cash_balance: {name: 現金餘額, hint: 每個帳戶、每種幣別的現金，由分錄推算；負數會標示。}
+  price_mark: {name: 估值收盤價, hint: 部位估值用的價格：當時已知的最後一個收盤價。}
+  fx_rate_used: {name: 使用的匯率, hint: 台幣換美元用的 DEXTAUS 匯率（每 1 美元兌多少台幣）。}
+  fx_lag: {name: 匯率天數, hint: 匯率觀測日到現在幾天；聯準會每週一發布，通常落後 3 到 7 天，超過 10 天標示。}
+  holding_weight: {name: 權重, hint: 部位或現金占美元總計的比例。}
+  holding_flag: {name: 持股警示, hint: 收盤價過舊或缺少、賣超、現金為負、匯率缺少或過舊。}
+  holdings_snapshot: {name: 持股快照, hint: 每天 11:12 存下的估值，可在當時的時間點重算驗證。}
+  net_contributions: {name: 淨存入, hint: 存入減提領的累計金額（各幣別）。}
+  macro_twd_usd: {name: 美元兌台幣, hint: 聯準會 H.10 公布的紐約中午匯率：1 美元兌多少台幣。}

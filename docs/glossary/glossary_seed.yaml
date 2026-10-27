@@ -5942,6 +5942,366 @@ terms:
     methodology_version: 0.1.0
     status: complete
 
+  - term_id: page_holdings
+    display_name: "Holdings"
+    category: navigation
+    short_definition: "Your real holdings as you record them: positions, cash, the USD total and every entry."
+    full_definition: "System page for Steven's own holdings, kept apart from the paper portfolio (ADR-041 H4): enter buys, sells, cash dividends, deposits, withdrawals and fees by broker account; see each position at the last close known, cash by currency, totals per currency and the USD total, with As known on. Holdings stay on this machine and are never pushed."
+    formula: "not a calculation; reads GET /holdings and /holdings/entries"
+    unit: "page"
+    example: "A TWSE position shows in TWD with its USD value at the DEXTAUS rate used."
+    direction: "N/A"
+    interpretation: "Where you keep the record of what you actually own."
+    why_it_matters: "Every later portfolio view (policy, rebalancing, performance) reads this ledger."
+    source: "Milestone M3.10 (Portfolio Center I); ADR-041"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-10-27"
+    update_cadence: "live (each page load)"
+    caveats: "Only what you enter: there is no broker connection, so a trade you do not record is not here."
+    related_terms: [holding_entry, holdings_equity, page_data_health]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: holding_entry
+    display_name: "Holdings Entry"
+    category: portfolio
+    short_definition: "One line of your holdings ledger: a buy, sell, cash dividend, deposit, withdrawal or fee on an account."
+    full_definition: "Entries are append-only and audited (actor web), written at the system time. A buy or sell has a quantity and price (and an optional fee) in the listing's currency (USD for US listings, TWD for TWSE listings); a dividend, deposit, withdrawal or fee has an amount. The trade date is never after today in its market."
+    formula: "kind, account, trade date, quantity x price or amount"
+    unit: "entry"
+    example: "buy 10 SPY at 580.00 USD on 2026-10-20, fee 1.00, account Firstrade."
+    direction: "N/A"
+    interpretation: "What happened in your account, as you recorded it."
+    why_it_matters: "The valuation is computed from these lines alone, so it can always be rebuilt."
+    source: "Holdings valuation 0.1.0 (domain/holdings.py); ADR-041"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-10-27"
+    update_cadence: "when you record one"
+    caveats: "A mistake is never edited: reverse the entry and enter it again."
+    related_terms: [holding_reversal, holdings_account, page_holdings]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: holding_reversal
+    display_name: "Reversal"
+    category: portfolio
+    short_definition: "An entry that undoes an earlier one from every date on, once it is recorded."
+    full_definition: "The only correction the ledger allows: a reversal points at one entry (one reversal each). From its system time on, neither the reversed entry nor the reversal counts at any date; before it, the original still counts, so a view as recorded earlier is unchanged."
+    formula: "the reversed entry and its reversal both leave the valuation"
+    unit: "entry"
+    example: "A buy of 100 recorded as 1000 is reversed, then entered again as 100."
+    direction: "N/A"
+    interpretation: "A correction that keeps the history of what was recorded."
+    why_it_matters: "Snapshots taken before a correction still recompute identically."
+    source: "Holdings valuation 0.1.0 (domain/holdings.py); ADR-041"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-10-27"
+    update_cadence: "when you record one"
+    caveats: "A reversal cannot itself be reversed; enter the entry again instead."
+    related_terms: [holding_entry]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: holdings_account
+    display_name: "Account"
+    category: portfolio
+    short_definition: "The broker account label an entry belongs to, as you name it."
+    full_definition: "A free label (1 to 40 characters) that groups positions and cash: each position is one instrument on one account, and cash is per account and currency. The platform never connects to the broker."
+    formula: "a label, not a calculation"
+    unit: "label"
+    example: "Firstrade (USD) and 元大 (TWD)."
+    direction: "N/A"
+    interpretation: "Which broker holds the shares and the cash."
+    why_it_matters: "Cash balances and average costs are kept per account, as your statements are."
+    source: "Holdings valuation 0.1.0 (domain/holdings.py); ADR-041"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-10-27"
+    update_cadence: "when you record an entry"
+    caveats: "Use the same spelling each time; a different spelling is a different account."
+    related_terms: [holding_entry, cash_balance]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: holdings_equity
+    display_name: "Holdings Total (USD)"
+    category: portfolio
+    short_definition: "Everything you hold, positions plus cash, in US dollars at T."
+    full_definition: "The sum over every currency of positions at their marks plus cash, with TWD divided by the last DEXTAUS rate known at T. Unavailable when a TWD amount exists and no rate is known; each currency's own total still shows."
+    formula: "sum(positions + cash in USD) + sum(positions + cash in TWD) / DEXTAUS"
+    unit: "USD"
+    example: "USD 10,279 + TWD 204,980 / 32.10 = USD 16,664.67."
+    direction: "Higher = more wealth"
+    interpretation: "Your holdings in one number, on the base currency (USD)."
+    why_it_matters: "The base of the weights and of later performance measures."
+    source: "Holdings valuation 0.1.0 (domain/holdings.py); ADR-041"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-10-27"
+    update_cadence: "each page load and daily snapshot (11:12 SGT)"
+    caveats: "End-of-day closes only; a position without a close counts at its cost (flagged)."
+    related_terms: [holding_weight, fx_rate_used, holdings_change]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: holdings_change
+    display_name: "Change (24 h)"
+    category: portfolio
+    short_definition: "How much the USD total moved over the previous 24 hours, leaving out money moved in or out."
+    full_definition: "The USD total at T less the USD total at T minus 24 hours (both as recorded now), less the deposits and withdrawals dated in between, converted at the later rate. Dividends and fees count; buying or selling only moves value between cash and positions."
+    formula: "total(T) - total(T - 24 h) - (deposits - withdrawals in between)"
+    unit: "USD"
+    example: "Monday morning in Singapore often shows 0: no market has closed since Saturday's files."
+    direction: "Positive = gain"
+    interpretation: "The day's gain or loss in dollars, including the exchange rate."
+    why_it_matters: "A quick check of how much the day moved your holdings."
+    source: "Holdings valuation 0.1.0 (domain/holdings.py); ADR-041"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-10-27"
+    update_cadence: "each page load"
+    caveats: "Unavailable when either total is; a new TWD rate alone moves it (rates are published weekly)."
+    related_terms: [holdings_equity, net_contributions]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: average_cost
+    display_name: "Average Cost"
+    category: portfolio
+    short_definition: "What you paid per share on average for the shares you still hold, on today's split basis."
+    full_definition: "Each buy adds quantity x price to the cost; each sell removes the average cost of the shares sold. Splits and stock dividends after a buy scale its quantity (the cost is unchanged), so the average is per share on T's basis. Fees are not in the cost (they reduce cash)."
+    formula: "remaining cost / quantity held"
+    unit: "currency per share"
+    example: "Buy 10 at 400 and 10 at 500: average 450; sell 5 and the average stays 450."
+    direction: "N/A"
+    interpretation: "The break-even price of the position, before fees."
+    why_it_matters: "Sets the unrealized and realized gains."
+    source: "Holdings valuation 0.1.0 (domain/holdings.py); ADR-041"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-10-27"
+    update_cadence: "each page load"
+    caveats: "Average cost, not lot-by-lot (FIFO) as some tax rules use; fees are left out."
+    related_terms: [unrealized_pnl, realized_pnl]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: unrealized_pnl
+    display_name: "Unrealized Gain"
+    category: portfolio
+    short_definition: "The gain or loss on shares you still hold, at the mark against their average cost."
+    full_definition: "Market value at the last close known at T less the remaining cost, in the listing's currency. Not shown for a position without a close."
+    formula: "quantity x mark - remaining cost"
+    unit: "currency"
+    example: "6 SPY at 610 against an average of 580: +180 USD."
+    direction: "Positive = gain"
+    interpretation: "What the position would have gained if sold at the last close."
+    why_it_matters: "Shows where your gains and losses sit."
+    source: "Holdings valuation 0.1.0 (domain/holdings.py); ADR-041"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-10-27"
+    update_cadence: "each page load"
+    caveats: "Before fees and taxes; in the listing's currency (no exchange-rate effect)."
+    related_terms: [average_cost, realized_pnl, price_mark]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: realized_pnl
+    display_name: "Realized Gain"
+    category: portfolio
+    short_definition: "The gain or loss locked in by sells: proceeds less the average cost of the shares sold."
+    full_definition: "Each sell adds quantity x price less quantity x the average cost at the time. Summed per position and currency, including positions you no longer hold."
+    formula: "sum over sells of quantity x (price - average cost)"
+    unit: "currency"
+    example: "Sell 4 at 605 with an average of 580: +100 USD."
+    direction: "Positive = gain"
+    interpretation: "What your sells earned."
+    why_it_matters: "Separates closed results from open ones."
+    source: "Holdings valuation 0.1.0 (domain/holdings.py); ADR-041"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-10-27"
+    update_cadence: "each page load"
+    caveats: "Before fees and taxes; cash dividends are cash, not realized gain."
+    related_terms: [unrealized_pnl, average_cost]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: cash_balance
+    display_name: "Cash Balance"
+    category: portfolio
+    short_definition: "The cash on an account in one currency, from your entries."
+    full_definition: "Deposits, sells (less fees) and cash dividends add; withdrawals, buys (plus fees) and fees subtract. A negative balance is flagged, not refused: a deposit may be missing."
+    formula: "deposits + sells + dividends - withdrawals - buys - fees"
+    unit: "currency"
+    example: "Deposit 10,000, buy 5,801 with fee, sell 2,420: 6,619 USD."
+    direction: "N/A"
+    interpretation: "Money not invested, per account and currency."
+    why_it_matters: "Part of the total and of each weight."
+    source: "Holdings valuation 0.1.0 (domain/holdings.py); ADR-041"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-10-27"
+    update_cadence: "each page load"
+    caveats: "Interest and broker charges count only if you record them."
+    related_terms: [holdings_account, holdings_equity]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: price_mark
+    display_name: "Mark"
+    category: portfolio
+    short_definition: "The close a position is valued at: the last end-of-day close known at T."
+    full_definition: "The last raw daily close whose publication time is at or before T (Alpaca for US listings, the TWSE OpenAPI or FinMind for TWSE listings), moved to T's split basis. Stale when older than 5 days (US) or 14 days (TWSE, which closes up to nine days at Lunar New Year)."
+    formula: "last close published by T / splits since its session"
+    unit: "currency per share"
+    example: "At 11:12 Singapore on Tuesday, a TWSE position is marked at Monday's close (files at 05:20 Taipei)."
+    direction: "N/A"
+    interpretation: "The price behind each market value."
+    why_it_matters: "Shows how old the valuation's prices are."
+    source: "Holdings valuation 0.1.0 (domain/holdings.py); ADR-041"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-10-27"
+    update_cadence: "each page load"
+    caveats: "Closes only, never intraday prices."
+    related_terms: [holding_flag, unrealized_pnl]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: fx_rate_used
+    display_name: "Exchange Rate Used"
+    category: portfolio
+    short_definition: "The TWD per USD rate a TWD amount was converted at: the last DEXTAUS value known at T."
+    full_definition: "FRED series DEXTAUS (Taiwan dollars to one US dollar, noon buying rate in New York, H.10), read as of T with its ALFRED vintage, so a past view uses the rate that was public then."
+    formula: "USD = TWD / DEXTAUS"
+    unit: "TWD per USD"
+    example: "32.10 for 2026-10-23, public on Monday 2026-10-26."
+    direction: "Higher = weaker Taiwan dollar"
+    interpretation: "How TWD positions turn into the USD total."
+    why_it_matters: "Exchange-rate moves change the USD total even when prices do not."
+    source: "Board of Governors of the Federal Reserve System via FRED (DEXTAUS); ADR-041"
+    source_url: https://fred.stlouisfed.org/series/DEXTAUS
+    as_of: "2026-10-27"
+    update_cadence: "weekly (H.10 publishes each day's rate on Mondays)"
+    caveats: "Up to a week old by design; flagged when more than 10 days old."
+    related_terms: [fx_lag, macro_twd_usd, holdings_equity]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: fx_lag
+    display_name: "Rate Age"
+    category: portfolio
+    short_definition: "Days between the rate's observation date and T's date in New York."
+    full_definition: "The H.10 release publishes a week's daily rates on Monday, so the rate used is usually 3 to 7 days old. More than 10 days is flagged as stale."
+    formula: "T's New York date - observation date"
+    unit: "days"
+    example: "Tuesday's view uses the previous Friday's rate: 4 days."
+    direction: "Higher = older rate"
+    interpretation: "How current the conversion to USD is."
+    why_it_matters: "A large move in TWD since the observation is not yet in the total."
+    source: "Holdings valuation 0.1.0 (domain/holdings.py); ADR-041"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-10-27"
+    update_cadence: "each page load"
+    caveats: "Flagged after 10 days."
+    related_terms: [fx_rate_used]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: holding_weight
+    display_name: "Weight"
+    category: portfolio
+    short_definition: "A position's or a cash balance's share of the USD total."
+    full_definition: "Its value in USD divided by the holdings total in USD. Unavailable when the total is (no rate for a TWD amount) or not positive."
+    formula: "value in USD / holdings total in USD"
+    unit: "percent"
+    example: "USD 3,660 of USD 16,664.67 = 21.96%."
+    direction: "Higher = more concentrated"
+    interpretation: "How much of everything you own one position is."
+    why_it_matters: "Concentration is the first thing an investment policy limits (M3.11)."
+    source: "Holdings valuation 0.1.0 (domain/holdings.py); ADR-041"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-10-27"
+    update_cadence: "each page load"
+    caveats: "Different from the paper Position Weight, which is of the notional capital."
+    related_terms: [holdings_equity, position_weight]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: holding_flag
+    display_name: "Holdings Flag"
+    category: portfolio
+    short_definition: "A warning on a position or the total: stale or missing close, oversold, negative cash, missing or old rate."
+    full_definition: "stale_mark: the close is older than 5 (US) or 14 (TWSE) days; no_mark: no close known, valued at cost; oversold: more sold than bought (after a reversal); negative_cash: an account's balance is below zero; fx_missing: TWD held and no rate known; fx_stale: the rate is more than 10 days old."
+    formula: "rules of valuation 0.1.0"
+    unit: "flag"
+    example: "A ticker the price feed does not know shows no_mark."
+    direction: "N/A"
+    interpretation: "Something in the valuation needs a look."
+    why_it_matters: "The total is only as good as its inputs."
+    source: "Holdings valuation 0.1.0 (domain/holdings.py); ADR-041"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-10-27"
+    update_cadence: "each page load"
+    caveats: "Flags explain; they never change the numbers."
+    related_terms: [price_mark, fx_lag, cash_balance]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: holdings_snapshot
+    display_name: "Holdings Snapshot"
+    category: portfolio
+    short_definition: "The valuation stored daily at 11:12 SGT, recomputable at its own times."
+    full_definition: "Stores the whole valuation at T = S = the run's time under valuation 0.1.0. make holdings-verify recomputes stored snapshots at their own T and S and must report all identical. Nothing is stored before the first entry."
+    formula: "the valuation at (T, S)"
+    unit: "snapshot"
+    example: "One snapshot each morning after the closes and the rate."
+    direction: "N/A"
+    interpretation: "A daily record of the total and the positions."
+    why_it_matters: "Performance over time (M3.12) is computed from these."
+    source: "Holdings valuation 0.1.0 (domain/holdings.py); ADR-041"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-10-27"
+    update_cadence: "daily (11:12 SGT) and make holdings-snapshot"
+    caveats: "A later correction changes later snapshots only."
+    related_terms: [holdings_equity, holding_reversal]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: net_contributions
+    display_name: "Net Deposits"
+    category: portfolio
+    short_definition: "Deposits less withdrawals to T, per currency."
+    full_definition: "Money you moved into the accounts less money you took out, from your entries; the change leaves these out so moving money is not a gain."
+    formula: "sum(deposits) - sum(withdrawals)"
+    unit: "currency"
+    example: "Deposit 10,000 USD, withdraw 200: 9,800 USD."
+    direction: "N/A"
+    interpretation: "How much of the total is money you put in."
+    why_it_matters: "The base for returns (M3.12)."
+    source: "Holdings valuation 0.1.0 (domain/holdings.py); ADR-041"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-10-27"
+    update_cadence: "each page load"
+    caveats: "Only what you record; transfers between your own accounts are a withdrawal and a deposit."
+    related_terms: [holdings_change, cash_balance]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: macro_twd_usd
+    display_name: "TWD per USD"
+    category: macro
+    short_definition: "Taiwan dollars to one US dollar, noon buying rate in New York."
+    full_definition: "The Federal Reserve's H.10 rate for the Taiwan dollar, daily on business days, published weekly. Used to convert TWD holdings to USD."
+    formula: "FRED series DEXTAUS, value as published in the vintage shown"
+    unit: "TWD per USD"
+    example: "32.10 on 2026-10-23."
+    direction: "Higher = weaker Taiwan dollar"
+    interpretation: "The price of a US dollar in Taiwan dollars."
+    why_it_matters: "Converts Taiwan positions to the base currency."
+    source: "Board of Governors of the Federal Reserve System via FRED (DEXTAUS)"
+    source_url: https://fred.stlouisfed.org/series/DEXTAUS
+    as_of: "2026-10-27"
+    update_cadence: "weekly (daily rates, published Mondays)"
+    caveats: "A week behind the market by design; not an intraday rate."
+    related_terms: [fx_rate_used]
+    methodology_version: 0.1.0
+    status: complete
+
   - term_id: backtest
     display_name: "Backtest"
     category: methodology

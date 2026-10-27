@@ -23,13 +23,15 @@
 
 from collections import defaultdict
 from collections.abc import Iterable, Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 from fractions import Fraction
-from typing import Literal
+from typing import Any, Literal
 from uuid import UUID
 from zoneinfo import ZoneInfo
+
+from pydantic_core import to_jsonable_python
 
 from autotrading.domain.markets import MARKETS, TW, US, Market
 from autotrading.domain.splits import Split, splits_between
@@ -429,3 +431,10 @@ def change(before: Valuation, after: Valuation) -> Decimal | None:
 def _contributions(valuation: Valuation, currency: str) -> Decimal:
     total = valuation.total(currency)
     return total.contributions if total else Decimal(0)
+
+
+def document(valuation: Valuation) -> dict[str, Any]:
+    """The valuation as stored in a snapshot (and recomputed by the verify): JSON values only,
+    decimals as strings."""
+    stored: dict[str, Any] = to_jsonable_python(asdict(valuation))
+    return stored
