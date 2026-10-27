@@ -7,7 +7,8 @@ check (TW9).
   state, the sessions no run caught, the source attribution.
 - `GET /taiwan/instruments/{code}`: one instrument: its closes (raw, and on T's split basis),
   the exchange's P/E, P/B and dividend yield with percentiles, the margin and short balances,
-  its dividends, the reference price check and the flows this licence does not cover.
+  its dividends, the reference price check, and (M3.7b, ADR-040) the institutional investors'
+  net buying and the foreign holding from FinMind, a tier 2 source named on the block.
 
 Research only: no strategy, signal, alert or portfolio reads Taiwan (TW12). Every value cites
 its file, publication time and run; every page shows the Open Government Data attribution.
@@ -18,6 +19,7 @@ from datetime import date, datetime, timedelta
 from decimal import Decimal
 from itertools import pairwise
 from typing import Literal
+from urllib.parse import parse_qs, urlparse
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
@@ -25,6 +27,9 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from autotrading.adapters.finmind.client import ATTRIBUTION as FINMIND_ATTRIBUTION
+from autotrading.adapters.finmind.client import DATASET_NAMES as FINMIND_DATASET_NAMES
+from autotrading.adapters.finmind.client import SOURCE_ID as FINMIND_SOURCE_ID
 from autotrading.adapters.twse.client import (
     DATASET_NAMES,
     DAY,
@@ -37,6 +42,7 @@ from autotrading.api.research import KnownAt
 from autotrading.api.valuation import known_at_or_now
 from autotrading.db.models import DividendEvent, ExchangeMeasure, Instrument, PriceBar, SplitEvent
 from autotrading.domain.fair_value import relative
+from autotrading.domain.finmind import FLOW_UNITS, SHAREHOLDING_UNITS
 from autotrading.domain.market_calendar import MarketCalendar
 from autotrading.domain.markets import TW
 from autotrading.domain.splits import Split, adjust
@@ -69,10 +75,14 @@ MARGIN_MEASURES = (
     "margin_short_offset",
 )
 FLOWS_REASON = (
-    "Data unavailable: per-stock institutional net buying (T86) and foreign ownership "
-    "(MI_QFIIS) are not in the licensed TWSE OpenAPI; the website's dated queries need TWSE's "
-    "written consent (requested, ADR-039)."
+    "Data unavailable: no institutional investor row stored yet (FinMind, daily at 21:30 SGT; "
+    "the TWSE OpenAPI does not publish them per stock)."
 )
+FLOW_MEASURES = tuple(FLOW_UNITS)
+HOLDING_MEASURES = tuple(SHAREHOLDING_UNITS)
+FLOW_GROUPS = ("inst_foreign_net", "inst_trust_net", "inst_dealer_net", "inst_total_net")
+FLOW_WINDOW = 20  # sessions summed on the page
+FINMIND_TERMS_URL = "https://finmind.github.io/Pricing/"
 RESEARCH_ONLY = (
     "Research only: no strategy, signal, alert or paper portfolio reads Taiwan (ADR-039 TW12). "
     "History starts with the first collected session; values are what TWSE published, as known "
@@ -91,6 +101,12 @@ class SourceRef(BaseModel):
     confidence: Decimal
 
 
+class SupplementaryAttribution(BaseModel):
+    provider: str
+    text: str  # the line the source's terms require
+    terms_url: str
+
+
 class Attribution(BaseModel):
     provider: str
     year: int
@@ -98,6 +114,7 @@ class Attribution(BaseModel):
     license: str
     license_url: str
     text: str
+    supplementary: list[SupplementaryAttribution] = []  # FinMind when its data is shown
 
 
 class TaiwanSession(BaseModel):
@@ -202,10 +219,34 @@ class ReferenceCheck(BaseModel):
     note: str
 
 
+class FlowGroup(BaseModel):
+    measure_id: str  # inst_foreign_net, inst_trust_net, inst_dealer_net, inst_total_net
+    net_last: Decimal  # shares, the latest session
+    net_window: Decimal  # shares, summed over the last `sessions_in_window` sessions
+    sessions_in_window: int
+    unit: str
+
+
+class FlowPoint(BaseModel):
+    session: date
+    foreign_net: Decimal
+    total_net: Decimal
+
+
 class FlowsBlock(BaseModel):
-    status: Literal["unavailable"]
-    reason: str
-    datasets: list[str]
+    status: Literal["ok", "unavailable"]
+    reason: str | None = None
+    session: date | None = None
+    groups: list[FlowGroup] = []
+    history: list[FlowPoint] = []  # the last sessions, oldest first
+    holding_session: date | None = None
+    foreign_shares: Decimal | None = None
+    shares_issued: Decimal | None = None
+    foreign_ratio: Decimal | None = None  # percent
+    foreign_limit_ratio: Decimal | None = None  # percent
+    source: SourceRef | None = None
+    holding_source: SourceRef | None = None
+    attribution: str | None = None  # 資料來源：FinMind
 
 
 class TaiwanInstrumentOut(BaseModel):
@@ -229,7 +270,7 @@ class TaiwanInstrumentOut(BaseModel):
     detail: str = RESEARCH_ONLY
 
 
-def attribution(at: datetime) -> Attribution:
+def attribution(at: datetime, *, finmind: bool = False) -> Attribution:
     year = at.astimezone(TW.zone).year
     datasets = [DATASET_NAMES[p] for p in (DAY, VALUATION, MARGIN, EX_RIGHTS)]
     return Attribution(
@@ -239,6 +280,13 @@ def attribution(at: datetime) -> Attribution:
         license=LICENSE,
         license_url=LICENSE_URL,
         text=f"{PROVIDER} {year} {'、'.join(datasets)}；{LICENSE}，{LICENSE_URL}",
+        supplementary=[
+            SupplementaryAttribution(
+                provider="FinMind", text=FINMIND_ATTRIBUTION, terms_url=FINMIND_TERMS_URL
+            )
+        ]
+        if finmind
+        else [],
     )
 
 
@@ -252,9 +300,17 @@ def taiwan_session(calendar: MarketCalendar, at: datetime) -> TaiwanSession:
     )
 
 
+def _dataset_name(row: PriceBar | ExchangeMeasure | DividendEvent | SplitEvent, path: str) -> str:
+    """The file a row came from: a TWSE OpenAPI file, or the FinMind dataset its URL names."""
+    if row.source_id == FINMIND_SOURCE_ID:
+        dataset = parse_qs(urlparse(row.source_url).query).get("dataset", [""])[0]
+        return FINMIND_DATASET_NAMES.get(dataset, f"FinMind {dataset}")
+    return DATASET_NAMES.get(path, path)
+
+
 def _ref(row: PriceBar | ExchangeMeasure | DividendEvent | SplitEvent, path: str) -> SourceRef:
     return SourceRef(
-        dataset=DATASET_NAMES.get(path, path),
+        dataset=_dataset_name(row, path),
         source_url=row.source_url,
         published_at=row.published_at,
         ingested_at=row.ingested_at,
@@ -298,6 +354,7 @@ def taiwan_list(session: SessionDep, known_at: KnownAt = None) -> TaiwanListOut:
     ids = instruments_by_symbol(session, list(universe.codes), TW.namespace)
     rows = []
     stored: set[date] = set()
+    finmind = False
     for code in universe.codes:
         found = label(code)
         if code not in ids:
@@ -318,6 +375,7 @@ def taiwan_list(session: SessionDep, known_at: KnownAt = None) -> TaiwanListOut:
             continue
         bars = _bars(session, ids[code], at, at - HISTORY)
         stored |= {b.bar_date for b in bars}
+        finmind = finmind or any(b.source_id == FINMIND_SOURCE_ID for b in bars)
         last = bars[-1] if bars else None
         change = None
         if last is not None:
@@ -352,7 +410,7 @@ def taiwan_list(session: SessionDep, known_at: KnownAt = None) -> TaiwanListOut:
         latest_session=max(stored) if stored else None,
         missing_sessions=_missing(calendar, stored, at),
         rows=rows,
-        attribution=attribution(at),
+        attribution=attribution(at, finmind=finmind),
     )
 
 
@@ -380,8 +438,18 @@ def taiwan_instrument(
     stored_measures = measures(
         session,
         instrument_id,
-        ["price_change", "trade_value", *VALUATION_MEASURES, *MARGIN_MEASURES],
+        [
+            "price_change",
+            "trade_value",
+            *VALUATION_MEASURES,
+            *MARGIN_MEASURES,
+            *FLOW_MEASURES,
+            *HOLDING_MEASURES,
+        ],
         known_at=at,
+    )
+    finmind = any(b.source_id == FINMIND_SOURCE_ID for b in bars) or any(
+        m.source_id == FINMIND_SOURCE_ID for m in stored_measures
     )
     by_session: dict[date, dict[str, ExchangeMeasure]] = {}
     for m in stored_measures:
@@ -423,12 +491,55 @@ def taiwan_instrument(
             code, _kind(instrument), bars, by_session, dividends, splits_rows, calendar
         ),
         missing_sessions=_missing(calendar, {b.bar_date for b in bars}, at),
-        flows=FlowsBlock(
-            status="unavailable",
-            reason=FLOWS_REASON,
-            datasets=["三大法人買賣超日報 (T86)", "外資及陸資投資持股統計 (MI_QFIIS)"],
+        flows=_flows(by_session),
+        attribution=attribution(at, finmind=finmind),
+    )
+
+
+def _flows(by_session: dict[date, dict[str, ExchangeMeasure]]) -> FlowsBlock:
+    """The institutional investors' net buying (FinMind) of the latest session and summed over
+    the last sessions, and the latest foreign holding."""
+    sessions = [d for d in sorted(by_session) if "inst_total_net" in by_session[d]]
+    if not sessions:
+        return FlowsBlock(status="unavailable", reason=FLOWS_REASON)
+    window = sessions[-FLOW_WINDOW:]
+    latest = by_session[sessions[-1]]
+    groups = [
+        FlowGroup(
+            measure_id=measure_id,
+            net_last=latest[measure_id].value,
+            net_window=sum((by_session[d][measure_id].value for d in window), Decimal(0)),
+            sessions_in_window=len(window),
+            unit=FLOW_UNITS[measure_id],
+        )
+        for measure_id in FLOW_GROUPS
+        if measure_id in latest
+    ]
+    holding_sessions = [d for d in sorted(by_session) if "foreign_ratio" in by_session[d]]
+    holding = by_session[holding_sessions[-1]] if holding_sessions else {}
+    return FlowsBlock(
+        status="ok",
+        session=sessions[-1],
+        groups=groups,
+        history=[
+            FlowPoint(
+                session=d,
+                foreign_net=by_session[d]["inst_foreign_net"].value,
+                total_net=by_session[d]["inst_total_net"].value,
+            )
+            for d in window
+            if "inst_foreign_net" in by_session[d]
+        ],
+        holding_session=holding_sessions[-1] if holding_sessions else None,
+        foreign_shares=holding["foreign_shares"].value if "foreign_shares" in holding else None,
+        shares_issued=holding["shares_issued"].value if "shares_issued" in holding else None,
+        foreign_ratio=holding["foreign_ratio"].value if "foreign_ratio" in holding else None,
+        foreign_limit_ratio=(
+            holding["foreign_limit_ratio"].value if "foreign_limit_ratio" in holding else None
         ),
-        attribution=attribution(at),
+        source=_ref(latest["inst_total_net"], ""),
+        holding_source=_ref(holding["foreign_ratio"], "") if "foreign_ratio" in holding else None,
+        attribution=FINMIND_ATTRIBUTION,
     )
 
 

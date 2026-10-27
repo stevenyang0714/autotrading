@@ -1416,6 +1416,11 @@ export interface components {
             license_url: string;
             /** Provider */
             provider: string;
+            /**
+             * Supplementary
+             * @default []
+             */
+            supplementary: components["schemas"]["SupplementaryAttribution"][];
             /** Text */
             text: string;
             /** Year */
@@ -2626,17 +2631,66 @@ export interface components {
             /** Value */
             value: string | null;
         };
+        /** FlowGroup */
+        FlowGroup: {
+            /** Measure Id */
+            measure_id: string;
+            /** Net Last */
+            net_last: string;
+            /** Net Window */
+            net_window: string;
+            /** Sessions In Window */
+            sessions_in_window: number;
+            /** Unit */
+            unit: string;
+        };
+        /** FlowPoint */
+        FlowPoint: {
+            /** Foreign Net */
+            foreign_net: string;
+            /**
+             * Session
+             * Format: date
+             */
+            session: string;
+            /** Total Net */
+            total_net: string;
+        };
         /** FlowsBlock */
         FlowsBlock: {
-            /** Datasets */
-            datasets: string[];
+            /** Attribution */
+            attribution?: string | null;
+            /** Foreign Limit Ratio */
+            foreign_limit_ratio?: string | null;
+            /** Foreign Ratio */
+            foreign_ratio?: string | null;
+            /** Foreign Shares */
+            foreign_shares?: string | null;
+            /**
+             * Groups
+             * @default []
+             */
+            groups: components["schemas"]["FlowGroup"][];
+            /**
+             * History
+             * @default []
+             */
+            history: components["schemas"]["FlowPoint"][];
+            /** Holding Session */
+            holding_session?: string | null;
+            holding_source?: components["schemas"]["SourceRef"] | null;
             /** Reason */
-            reason: string;
+            reason?: string | null;
+            /** Session */
+            session?: string | null;
+            /** Shares Issued */
+            shares_issued?: string | null;
+            source?: components["schemas"]["SourceRef"] | null;
             /**
              * Status
-             * @constant
+             * @enum {string}
              */
-            status: "unavailable";
+            status: "ok" | "unavailable";
         };
         /** Fold */
         Fold: {
@@ -5472,6 +5526,15 @@ export interface components {
             };
             /** Strategy Id */
             strategy_id: string;
+        };
+        /** SupplementaryAttribution */
+        SupplementaryAttribution: {
+            /** Provider */
+            provider: string;
+            /** Terms Url */
+            terms_url: string;
+            /** Text */
+            text: string;
         };
         /** TaiwanInstrumentOut */
         TaiwanInstrumentOut: {

@@ -31,4 +31,8 @@ holidays:
   - 2026-10-09  # 國慶日（補假）
   - 2026-10-26  # 臺灣光復暨金門古寧頭大捷紀念日（補假）
   - 2026-12-25  # 行憲紀念日
+# Closures no schedule lists, added when they happen (a typhoon day: the market closes when
+# Taipei City stops work). Not compared with the TWSE holiday schedule.
+unscheduled_closures:
+  - 2026-10-23  # 颱風休市（臺北市停止上班，2026-10-22 公告）
 early_closes: []

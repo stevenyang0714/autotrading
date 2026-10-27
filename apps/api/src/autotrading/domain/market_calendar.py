@@ -26,11 +26,13 @@ class MarketCalendar:
     close_time: time = time(16, 0)
     early_close_time: time = time(13, 0)
     zone: ZoneInfo = NEW_YORK  # the exchange's time zone: its dates and session times
+    # Closures no published schedule lists (a typhoon day in Taipei, M3.7b): no session either.
+    unscheduled: frozenset[date] = frozenset()
 
     def session(self, day: date) -> Session | None:
         """The regular session on `day` (a date in the exchange's zone), or None on weekends
         and holidays."""
-        if day.weekday() >= 5 or day in self.holidays:
+        if day.weekday() >= 5 or day in self.holidays or day in self.unscheduled:
             return None
         close = self.early_close_time if day in self.early_closes else self.close_time
         return Session(
@@ -89,4 +91,5 @@ def load_calendar(data: dict[str, object]) -> MarketCalendar:
         close_time=clock(regular.get("close", "16:00")),
         early_close_time=clock(data.get("early_close", "13:00")),
         zone=ZoneInfo(str(data.get("timezone") or "America/New_York")),
+        unscheduled=days("unscheduled_closures"),
     )

@@ -7,9 +7,11 @@ migrated database.
 """
 
 import json
+import os
 from collections.abc import Callable, Iterator
 from datetime import UTC, date, datetime
 from decimal import Decimal
+from pathlib import Path
 from typing import Any, ClassVar
 from uuid import uuid4
 from zoneinfo import ZoneInfo
@@ -17,6 +19,7 @@ from zoneinfo import ZoneInfo
 import httpx2 as httpx
 import pytest
 from alembic import command
+from fastapi.testclient import TestClient
 from sqlalchemy import Engine, create_engine, func, select
 from sqlalchemy.engine import URL
 from sqlalchemy.orm import Session, sessionmaker
@@ -43,8 +46,9 @@ from autotrading.ingestion.job import JobRegistry, Window, register_job
 from autotrading.ingestion.rate_limit import TokenBucketLimiter
 from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
+from autotrading.main import create_app
 from autotrading.repositories.exchange_measures import measures
-from autotrading.repositories.factors import backfill_points, stored_definitions
+from autotrading.repositories.factors import backfill_points, record_universe, stored_definitions
 from autotrading.repositories.prices import instruments_by_symbol
 from autotrading.settings import get_settings
 from tests import finmind_replay, twse_replay
@@ -313,9 +317,88 @@ def test_taiwan_backfill_points_are_taipei_sessions(
     with Session(engine) as session:
         definitions = stored_definitions(session, "0.3.0")
         assert definitions is not None and definitions.market == "TW"
-        points = backfill_points(session, definitions, 2026, datetime(2026, 10, 27, tzinfo=UTC))
+        held = session.execute(select(func.now())).scalar_one()  # after the rows were recorded
+        points = backfill_points(session, definitions, 2026, held)
         assert points, "0050 has sessions in 2026 (the recorded TWSE days)"
         for point, _scope in points:
             assert point.astimezone(TAIPEI).strftime("%H:%M:%S") == "23:59:59"
         assert (end_of_day(D1, "Asia/Taipei"), "price") in points
         assert (end_of_day(date(2026, 9, 30), "Asia/Taipei"), "all") in points
+
+
+class OkChecker:
+    def core(self) -> dict[str, Any]:
+        return {}
+
+    def background(self) -> dict[str, Any]:
+        return {}
+
+
+@pytest.fixture(scope="module")
+def client(engine: Engine, history: list[IngestionRun]) -> Iterator[TestClient]:
+    with TestClient(create_app(health_checker=OkChecker(), sessions=sessionmaker(engine))) as c:
+        yield c
+
+
+AFTER_D2 = "2026-10-23T23:59:59+08:00"  # As known on 2026-10-23: both TWSE sessions and the flows
+
+
+def test_the_taiwan_page_reads_the_flows_with_the_finmind_attribution(client: TestClient) -> None:
+    found = client.get("/taiwan/instruments/2330", params={"known_at": AFTER_D2}).json()
+    flows = found["flows"]
+    assert flows["status"] == "ok" and flows["session"] == "2026-10-22"
+    groups = {g["measure_id"]: g for g in flows["groups"]}
+    assert set(groups) == {
+        "inst_foreign_net",
+        "inst_trust_net",
+        "inst_dealer_net",
+        "inst_total_net",
+    }
+    assert groups["inst_total_net"]["unit"] == "shares"
+    assert groups["inst_total_net"]["sessions_in_window"] == 15  # the recorded window
+    assert flows["foreign_ratio"] == "68.58" and flows["foreign_limit_ratio"] == "100.0"
+    assert flows["attribution"] == "資料來源：FinMind"
+    assert flows["source"]["dataset"].startswith("FinMind TaiwanStockInstitutionalInvestorsBuySell")
+    assert flows["source"]["published_at"] == "2026-10-22T15:59:59.999999Z"
+    assert [s["provider"] for s in found["attribution"]["supplementary"]] == ["FinMind"]
+    # the closes before the TWSE sessions name their FinMind dataset; the TWSE ones their file
+    assert found["price"]["source"]["dataset"] == "上市個股日成交資訊"
+    assert found["price"]["history_since"] == "2026-10-01"
+    # the list names FinMind too, since the history fills its closes
+    listed = client.get("/taiwan", params={"known_at": AFTER_D2}).json()
+    assert [s["provider"] for s in listed["attribution"]["supplementary"]] == ["FinMind"]
+    assert listed["rows"][0]["sessions"] == 15  # 2026-10-01..22: 13 FinMind, 2 TWSE
+
+
+@pytest.mark.skipif(
+    not os.environ.get("RECORD_WEB_FIXTURES"),
+    reason="recorder: set RECORD_WEB_FIXTURES=1 to refresh apps/web/tests/fixtures/api",
+)
+def test_record_web_fixtures(engine: Engine, client: TestClient) -> None:
+    target = Path(__file__).resolve().parents[3] / "web" / "tests" / "fixtures" / "api"
+    with Session(engine) as session:  # a Taiwan snapshot at the recorded time, as the daily job
+        definitions = stored_definitions(session, "0.3.0")
+        assert definitions is not None
+        at = datetime.fromisoformat(AFTER_D2)
+        record_universe(session, definitions, [(at, "all")], at, "manual")
+        session.commit()
+    recorded: tuple[tuple[str, str, dict[str, Any]], ...] = (
+        ("taiwan", "/taiwan", {"known_at": AFTER_D2}),
+        ("taiwan-2330", "/taiwan/instruments/2330", {"known_at": AFTER_D2}),
+        ("taiwan-0050", "/taiwan/instruments/0050", {"known_at": AFTER_D2}),
+        ("factors-2330", "/instruments/2330/factors", {"known_at": AFTER_D2}),
+    )
+    for name, path, params in recorded:
+        response = client.get(path, params=params)
+        assert response.status_code == 200
+        record = {
+            "recorded_at": datetime.now(UTC).isoformat(),
+            "recorded_from": "recorded TWSE OpenAPI files and FinMind responses replayed into the "
+            "integration test database (tests/integration/test_finmind.py)",
+            "endpoint": path,
+            "params": params,
+            "response": response.json(),
+        }
+        (target / f"{name}.json").write_text(
+            json.dumps(record, indent=2, ensure_ascii=False) + "\n"
+        )

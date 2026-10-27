@@ -4,12 +4,9 @@ and time; As known on at the Taipei day boundary; repeats unchanged; Taiwan fact
 that recompute identically; nothing Taiwan in the US universe. Uses its own migrated database.
 """
 
-import json
-import os
 from collections.abc import Callable, Iterator
 from datetime import UTC, date, datetime
 from decimal import Decimal
-from pathlib import Path
 from typing import Any
 from uuid import uuid4
 from zoneinfo import ZoneInfo
@@ -348,7 +345,7 @@ def test_a_taiwan_instrument_reads_prices_valuation_margin_and_no_flows(
     assert margin["values"]["margin_balance"] == "35330" and margin["unit"] == "lots"
     assert margin["margin_change"] == "929"  # 35330 - 34401
     assert margin["source"]["confidence"] == "0.900"
-    assert found["flows"]["status"] == "unavailable" and "T86" in found["flows"]["reason"]
+    assert found["flows"]["status"] == "unavailable" and "FinMind" in found["flows"]["reason"]
     assert found["reference_gaps"] == [] and found["missing_sessions"] == []
     assert client.get("/taiwan/instruments/9999").status_code == 404
     assert client.get("/taiwan/instruments/AAPL").status_code == 404
@@ -368,34 +365,6 @@ def test_taiwan_factors_are_read_against_0050(client: TestClient) -> None:
     assert all(r["ticker"] not in CODES for r in client.get("/factors").json()["rows"])
     sets = {d["definition_version"]: d["market"] for d in client.get("/factors/definitions").json()}
     assert sets == {"0.1.0": "US", "0.2.0": "TW", "0.3.0": "TW"}
-
-
-@pytest.mark.skipif(
-    not os.environ.get("RECORD_WEB_FIXTURES"),
-    reason="recorder: set RECORD_WEB_FIXTURES=1 to refresh apps/web/tests/fixtures/api",
-)
-def test_record_web_fixtures(client: TestClient) -> None:
-    target = Path(__file__).resolve().parents[3] / "web" / "tests" / "fixtures" / "api"
-    recorded: tuple[tuple[str, str, dict[str, Any]], ...] = (
-        ("taiwan", "/taiwan", {"known_at": AFTER_D1}),
-        ("taiwan-2330", "/taiwan/instruments/2330", {"known_at": AFTER_D1}),
-        ("taiwan-0050", "/taiwan/instruments/0050", {"known_at": AFTER_D1}),
-        ("factors-2330", "/instruments/2330/factors", {"known_at": AFTER_D1}),
-    )
-    for name, path, params in recorded:
-        response = client.get(path, params=params)
-        assert response.status_code == 200
-        record = {
-            "recorded_at": datetime.now(UTC).isoformat(),
-            "recorded_from": "recorded TWSE OpenAPI files replayed into the integration test "
-            "database (tests/integration/test_twse.py)",
-            "endpoint": path,
-            "params": params,
-            "response": response.json(),
-        }
-        (target / f"{name}.json").write_text(
-            json.dumps(record, indent=2, ensure_ascii=False) + "\n"
-        )
 
 
 def test_the_next_session_chains_its_margin_balances_to_the_stored_ones(

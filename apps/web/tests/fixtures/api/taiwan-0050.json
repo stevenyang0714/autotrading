@@ -1,9 +1,9 @@
 {
-  "recorded_at": "2026-10-22T04:09:39.932900+00:00",
-  "recorded_from": "recorded TWSE OpenAPI files replayed into the integration test database (tests/integration/test_twse.py)",
+  "recorded_at": "2026-10-26T15:23:55.259758+00:00",
+  "recorded_from": "recorded TWSE OpenAPI files and FinMind responses replayed into the integration test database (tests/integration/test_finmind.py)",
   "endpoint": "/taiwan/instruments/0050",
   "params": {
-    "known_at": "2026-10-22T23:59:59+08:00"
+    "known_at": "2026-10-23T23:59:59+08:00"
   },
   "response": {
     "code": "0050",
@@ -13,74 +13,79 @@
     "sector_zh": "台股大盤",
     "instrument_type": "etf",
     "currency": "TWD",
-    "known_at": "2026-10-22T23:59:59+08:00",
+    "known_at": "2026-10-23T23:59:59+08:00",
     "market_session": {
       "open": false,
-      "last_close": "2026-10-22T05:30:00Z",
-      "next_open": "2026-10-23T01:00:00Z",
+      "last_close": "2026-10-23T05:30:00Z",
+      "next_open": "2026-10-27T01:00:00Z",
       "timezone": "Asia/Taipei",
       "calendar_covered_until": "2026-12-31"
     },
     "price": {
-      "session": "2026-10-21",
-      "open": "108.80",
-      "high": "109.20",
-      "low": "107.60",
-      "close": "108.15",
-      "change": "0.9000",
-      "reference": "107.2500",
-      "volume": 83301839,
-      "trade_value": "9028161400",
+      "session": "2026-10-22",
+      "open": "108.95",
+      "high": "109.15",
+      "low": "106.75",
+      "close": "106.90",
+      "change": "-1.2500",
+      "reference": "108.1500",
+      "volume": 132441805,
+      "trade_value": "14246779496",
       "feed_status": "end_of_day",
       "history": [
         {
           "session": "2026-10-21",
           "close": "108.15",
           "adjusted_close": "108.15"
+        },
+        {
+          "session": "2026-10-22",
+          "close": "106.90",
+          "adjusted_close": "106.90"
         }
       ],
       "history_since": "2026-10-21",
-      "sessions": 1,
+      "sessions": 2,
       "source": {
         "dataset": "上市個股日成交資訊",
         "source_url": "https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL",
-        "published_at": "2026-10-21T15:59:59.999999Z",
-        "ingested_at": "2026-10-22T04:09:38.715995Z",
-        "ingestion_run_id": "71251594-29d6-4c7e-8ab3-50d25bfc59a3",
-        "raw_payload_sha256": "720a2c1bc6b7b8629daa38a4e4a816c01836e9f7ea6e460b55562550d2836ef6",
+        "published_at": "2026-10-22T15:59:59.999999Z",
+        "ingested_at": "2026-10-26T15:23:52.944752Z",
+        "ingestion_run_id": "4e0b3b7e-1211-483d-b21a-2d7c24155eca",
+        "raw_payload_sha256": "279454be41ee236def2c7bea080d7339633320c7f8bd21838b51e8ccc31273be",
         "license_status": "public",
         "confidence": "1.000"
       }
     },
     "valuation": null,
     "margin": {
-      "session": "2026-10-21",
+      "session": "2026-10-22",
       "unit": "lots",
       "values": {
-        "margin_balance": "25176",
-        "margin_balance_previous": "24187",
-        "margin_limit": "5777000",
-        "margin_purchase": "1546",
-        "margin_sale": "554",
-        "margin_short_offset": "86",
-        "short_balance": "692",
-        "short_balance_previous": "3409",
-        "short_covering": "2724",
-        "short_limit": "5777000",
-        "short_sale": "7"
+        "margin_balance": "24793",
+        "margin_balance_previous": "25177",
+        "margin_limit": "5789500",
+        "margin_purchase": "1009",
+        "margin_sale": "1381",
+        "margin_short_offset": "2",
+        "short_balance": "724",
+        "short_balance_previous": "692",
+        "short_covering": "34",
+        "short_limit": "5789500",
+        "short_sale": "66"
       },
-      "margin_change": "989",
-      "short_change": "-2717",
-      "margin_usage": "0.44",
-      "short_to_margin": "2.75",
+      "margin_change": "-384",
+      "short_change": "32",
+      "margin_usage": "0.43",
+      "short_to_margin": "2.92",
       "note": null,
       "source": {
         "dataset": "集中市場融資融券餘額",
         "source_url": "https://openapi.twse.com.tw/v1/exchangeReport/MI_MARGN",
-        "published_at": "2026-10-21T15:59:59.999999Z",
-        "ingested_at": "2026-10-22T04:09:38.723439Z",
-        "ingestion_run_id": "71251594-29d6-4c7e-8ab3-50d25bfc59a3",
-        "raw_payload_sha256": "a3bf204dcd26615f0ddfe4e2cc0788e4edcd474996efa194039674e485eccdbc",
+        "published_at": "2026-10-22T15:59:59.999999Z",
+        "ingested_at": "2026-10-26T15:23:52.950819Z",
+        "ingestion_run_id": "4e0b3b7e-1211-483d-b21a-2d7c24155eca",
+        "raw_payload_sha256": "476a39cca6cfb8d928468b5eff012cedfbfe2f9184d6b07e67ae326357f9495b",
         "license_status": "public",
         "confidence": "0.900"
       }
@@ -90,11 +95,18 @@
     "missing_sessions": [],
     "flows": {
       "status": "unavailable",
-      "reason": "Data unavailable: per-stock institutional net buying (T86) and foreign ownership (MI_QFIIS) are not in the licensed TWSE OpenAPI; the website's dated queries need TWSE's written consent (requested, ADR-039).",
-      "datasets": [
-        "三大法人買賣超日報 (T86)",
-        "外資及陸資投資持股統計 (MI_QFIIS)"
-      ]
+      "reason": "Data unavailable: no institutional investor row stored yet (FinMind, daily at 21:30 SGT; the TWSE OpenAPI does not publish them per stock).",
+      "session": null,
+      "groups": [],
+      "history": [],
+      "holding_session": null,
+      "foreign_shares": null,
+      "shares_issued": null,
+      "foreign_ratio": null,
+      "foreign_limit_ratio": null,
+      "source": null,
+      "holding_source": null,
+      "attribution": null
     },
     "attribution": {
       "provider": "臺灣證券交易所",
@@ -107,7 +119,8 @@
       ],
       "license": "此開放資料依政府資料開放授權條款 (Open Government Data License) 進行公眾釋出",
       "license_url": "https://data.gov.tw/license",
-      "text": "臺灣證券交易所 2026 上市個股日成交資訊、上市個股日本益比、殖利率及股價淨值比、集中市場融資融券餘額、上市股票除權除息預告表；此開放資料依政府資料開放授權條款 (Open Government Data License) 進行公眾釋出，https://data.gov.tw/license"
+      "text": "臺灣證券交易所 2026 上市個股日成交資訊、上市個股日本益比、殖利率及股價淨值比、集中市場融資融券餘額、上市股票除權除息預告表；此開放資料依政府資料開放授權條款 (Open Government Data License) 進行公眾釋出，https://data.gov.tw/license",
+      "supplementary": []
     },
     "detail": "Research only: no strategy, signal, alert or paper portfolio reads Taiwan (ADR-039 TW12). History starts with the first collected session; values are what TWSE published, as known at the time shown. Not advice."
   }

@@ -180,6 +180,15 @@ METRICS: tuple[MetricDefinition, ...] = (
             "exchange_dividend_yield": "twse.valuation_rows",
             "margin_balance": "twse.margin_rows",
             "short_balance": "twse.margin_rows",
+            # M3.7b (ADR-040): the FinMind flows and foreign holdings
+            "inst_foreign_net": "finmind.flow_days",
+            "inst_trust_net": "finmind.flow_days",
+            "inst_dealer_net": "finmind.flow_days",
+            "inst_total_net": "finmind.flow_days",
+            "foreign_ratio": "finmind.shareholding_days",
+            "foreign_limit_ratio": "finmind.shareholding_days",
+            "foreign_shares": "finmind.shareholding_days",
+            "shares_issued": "finmind.shareholding_days",
             # M1.2 (ADR-022)
             "valuation_price": "valuation.select_price",
             "market_cap": "valuation.valuation",

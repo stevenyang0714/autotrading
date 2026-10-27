@@ -743,7 +743,9 @@ test("Taiwan: a TWSE company page reads the exchange's numbers with their source
   await expect(page.locator('[data-measure="exchange_pe_ratio"]')).toContainText("28.05x");
   await expect(page.locator('[data-measure="margin_balance"]')).toContainText("35,330 lots");
   await expect(page.locator('[data-block="factors"]')).toContainText("Against 0050");
-  await expect(page.locator('[data-block="taiwan-flows"]')).toContainText("Data unavailable");
+  // the flows come from FinMind (M3.7b), named on the block
+  await expect(page.locator('[data-block="taiwan-flows"]')).toContainText("資料來源：FinMind");
+  await expect(page.locator('[data-measure="inst_total_net"]')).toContainText("shares");
   await expect(page.locator('[data-block="attribution"]')).toContainText("政府資料開放授權條款");
   await expect(page.locator("main")).not.toContainText("US market");
   await expect(page.locator("main")).not.toContainText("SPY");

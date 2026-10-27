@@ -82,8 +82,20 @@ def test_taiwan_holidays_follow_the_twse_schedule_not_new_york() -> None:
 
 def test_last_close_reads_the_taipei_date() -> None:
     cal = calendar("market_calendar_xtai.yaml")
-    # Saturday 2026-10-24 07:40 Taipei is still Friday 2026-10-23 in New York
-    saturday = datetime(2026, 10, 24, 7, 40, tzinfo=TAIPEI)
-    assert cal.last_close(saturday) == datetime(2026, 10, 23, 5, 30, tzinfo=UTC)
-    tuesday = datetime(2026, 10, 27, 7, 40, tzinfo=TAIPEI)  # Monday 10-26 is a holiday
-    assert cal.last_close(tuesday) == datetime(2026, 10, 23, 5, 30, tzinfo=UTC)
+    # Saturday 2026-10-31 07:40 Taipei is still Friday 2026-10-30 in New York
+    saturday = datetime(2026, 10, 31, 7, 40, tzinfo=TAIPEI)
+    assert cal.last_close(saturday) == datetime(2026, 10, 30, 5, 30, tzinfo=UTC)
+    # Tuesday 2026-10-27: Friday was a typhoon closure, Monday a holiday
+    tuesday = datetime(2026, 10, 27, 7, 40, tzinfo=TAIPEI)
+    assert cal.last_close(tuesday) == datetime(2026, 10, 22, 5, 30, tzinfo=UTC)
+
+
+def test_an_unscheduled_closure_has_no_session() -> None:
+    """The 2026-10-23 typhoon closure (M3.7b): not in the TWSE schedule, still no session."""
+    cal = calendar("market_calendar_xtai.yaml")
+    assert cal.session(date(2026, 10, 23)) is None
+    assert date(2026, 10, 23) not in cal.holidays  # kept apart from the published schedule
+    # after it: Friday closed, Monday a holiday, Tuesday 2026-10-27 the next session
+    assert cal.next_open(datetime(2026, 10, 22, 6, 0, tzinfo=UTC)) == datetime(
+        2026, 10, 27, 1, 0, tzinfo=UTC
+    )

@@ -379,6 +379,16 @@ terms:
   short_to_margin_ratio: {name: 券資比, hint: 融券餘額除以融資餘額（%）；偏高時可能有軋空。}
   reference_price_gap: {name: 參考價缺口, hint: 參考價跟「前收盤扣掉已記錄股利」差超過一檔：可能是減資、現增或還沒記到的股利。}
   missed_session: {name: 缺漏交易日, hint: 日曆上有開盤、卻沒存到收盤的交易日；OpenAPI 只給最新一天，錯過就補不回來。}
-  institutional_flows: {name: 三大法人買賣超（無資料）, hint: 逐檔的外資、投信、自營商買賣超不在授權的 OpenAPI 裡，等證交所書面同意前顯示「資料不可得」。}
-  foreign_ownership: {name: 外資持股比率（無資料）, hint: 全市場逐檔的外資持股只在證交所網站，需要書面同意才能自動取得。}
+  institutional_flows: {name: 三大法人買賣超, hint: 外資、投信、自營商逐檔的買賣超（股），來自 FinMind（第二級來源，資料來源：FinMind），有 2016 年起的歷史；不是買賣訊號。}
+  foreign_ownership: {name: 外資持股, hint: 外資與陸資持有的股數、比率與上限，來自 FinMind（第二級來源），每天更新、有 2016 年起的歷史。}
   open_data_attribution: {name: 開放資料出處標示, hint: 政府資料開放授權條款要求的出處：提供單位、年份、資料名稱、授權條款句與網址；沒有標示就視同未授權。}
+  inst_foreign_net: {name: 外資買賣超, hint: 當日外資（含外資自營商）買進減賣出的股數；正值是買超。}
+  inst_trust_net: {name: 投信買賣超, hint: 當日投信買進減賣出的股數。}
+  inst_dealer_net: {name: 自營商買賣超, hint: 當日自營商（自行買賣加避險）買進減賣出的股數。}
+  inst_total_net: {name: 三大法人合計買賣超, hint: 外資、投信、自營商當日買賣超的合計（股）。}
+  inst_net_window: {name: 近 20 日累計買賣超, hint: 最近 20 個有資料的交易日買賣超加總；歷史剛開始時不足 20 日，旁邊會寫幾日。}
+  foreign_ratio: {name: 外資持股比率, hint: 外資與陸資持股除以已發行股數（%）。}
+  foreign_limit_ratio: {name: 外資持股上限, hint: 法規或公司規定外資最多可持有的比率（%）。}
+  foreign_shares: {name: 外資持股股數, hint: 外資與陸資持有的股數。}
+  shares_issued: {name: 已發行股數, hint: 外資持股報表所載的已發行股數，是持股比率和市值的分母。}
+  finmind_attribution: {name: FinMind 出處標示, hint: FinMind 條款要求的「資料來源：FinMind」；它是第二級來源，只補證交所 OpenAPI 沒有的資料和 2026-10-21 之前的歷史，不覆蓋證交所的資料。}

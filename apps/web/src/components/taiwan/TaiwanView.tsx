@@ -70,6 +70,17 @@ export function TwseAttribution({ attribution }: { attribution: TaiwanAttributio
       <a href={attribution.license_url} className="underline-offset-2 hover:underline" rel="noreferrer" target="_blank">
         Open Government Data License
       </a>
+      {attribution.supplementary.map((s) => (
+        <span key={s.provider} data-attribution={s.provider}>
+          {" · "}
+          <Metric termId="finmind_attribution" icon={false}>
+            {s.text}
+          </Metric>{" "}
+          <a href={s.terms_url} className="underline-offset-2 hover:underline" rel="noreferrer" target="_blank">
+            {s.provider} terms
+          </a>
+        </span>
+      ))}
     </p>
   );
 }
@@ -327,7 +338,25 @@ function ActionsPanel({ data }: { data: TaiwanInstrument }) {
   );
 }
 
+const FLOW_GROUPS: Record<string, { label: string; termId: CompleteTermId }> = {
+  inst_foreign_net: { label: "Foreign investors", termId: "inst_foreign_net" },
+  inst_trust_net: { label: "Investment trusts", termId: "inst_trust_net" },
+  inst_dealer_net: { label: "Dealers", termId: "inst_dealer_net" },
+  inst_total_net: { label: "All three", termId: "inst_total_net" },
+};
+
+function present(value: string | null | undefined): value is string {
+  return value !== null && value !== undefined;
+}
+
+/** "+1,234,567", "-89": shares with a sign and thousands separators. */
+function signedShares(value: string): string {
+  const grouped = groupDigits(value.replace(/\.0+$/, ""));
+  return value.startsWith("-") || Number(value) === 0 ? grouped : `+${grouped}`;
+}
+
 function FlowsPanel({ data }: { data: TaiwanInstrument }) {
+  const flows = data.flows;
   return (
     <section className="space-y-2" data-block="taiwan-flows" aria-labelledby="tw-flows">
       <h2 id="tw-flows" className="text-lg font-medium">
@@ -335,14 +364,114 @@ function FlowsPanel({ data }: { data: TaiwanInstrument }) {
           Institutional flows and foreign ownership
         </Metric>
       </h2>
-      <div role="note" className="rounded border border-neutral-700 bg-neutral-900/60 p-3 text-sm">
-        <p className="font-medium">Data unavailable</p>
-        <p className="mt-1 text-neutral-400">
-          <Metric termId="institutional_flows" icon={false}>
-            {data.flows.reason}
-          </Metric>
-        </p>
-      </div>
+      {flows.status !== "ok" ? (
+        <div role="note" className="rounded border border-neutral-700 bg-neutral-900/60 p-3 text-sm">
+          <p className="font-medium">Data unavailable</p>
+          <p className="mt-1 text-neutral-400">
+            <Metric termId="institutional_flows" icon={false}>
+              {flows.reason}
+            </Metric>
+          </p>
+        </div>
+      ) : (
+        <>
+          <p className="text-xs text-neutral-400">
+            <Metric termId="taiwan_market_session" icon={false}>
+              session {flows.session}
+            </Metric>
+          </p>
+          <table className="w-full text-sm" aria-label="Institutional net buying">
+            <thead>
+              <tr className="text-left text-xs text-neutral-400">
+                <th className="py-1 font-normal">Group</th>
+                <th className="py-1 text-right font-normal">
+                  <Metric termId="inst_total_net" icon={false}>
+                    Net, latest session
+                  </Metric>
+                </th>
+                <th className="py-1 text-right font-normal">
+                  <Metric termId="inst_net_window" icon={false}>
+                    Net, last {flows.groups[0]?.sessions_in_window ?? 0} sessions
+                  </Metric>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {flows.groups.map((g) => {
+                const info = FLOW_GROUPS[g.measure_id] ?? { label: g.measure_id, termId: "institutional_flows" as const };
+                return (
+                  <tr key={g.measure_id} data-measure={g.measure_id} className="border-t border-neutral-900">
+                    <td className="py-1">
+                      <Metric termId={info.termId}>{info.label}</Metric>
+                    </td>
+                    <td className="py-1 text-right tabular-nums">
+                      <Metric termId={info.termId} icon={false}>
+                        {signedShares(g.net_last)} shares
+                      </Metric>
+                    </td>
+                    <td className="py-1 text-right tabular-nums">
+                      <Metric termId="inst_net_window" icon={false}>
+                        {signedShares(g.net_window)} shares
+                      </Metric>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          {flows.source ? <SourceLine source={flows.source} /> : null}
+          {present(flows.foreign_ratio) ? (
+            <dl className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm sm:grid-cols-4" data-measure="foreign_ratio">
+              <div>
+                <dt className="text-neutral-400">
+                  <Metric termId="foreign_ratio">Foreign holding</Metric>
+                </dt>
+                <dd className="tabular-nums">
+                  <Metric termId="foreign_ratio" icon={false}>
+                    {Number(flows.foreign_ratio).toFixed(2)}%
+                  </Metric>
+                </dd>
+              </div>
+              <div>
+                <dt className="text-neutral-400">
+                  <Metric termId="foreign_limit_ratio">Limit</Metric>
+                </dt>
+                <dd className="tabular-nums">
+                  <Metric termId="foreign_limit_ratio" icon={false}>
+                    {present(flows.foreign_limit_ratio) ? `${Number(flows.foreign_limit_ratio).toFixed(2)}%` : "n/a"}
+                  </Metric>
+                </dd>
+              </div>
+              <div>
+                <dt className="text-neutral-400">
+                  <Metric termId="foreign_shares">Foreign-held shares</Metric>
+                </dt>
+                <dd className="tabular-nums">
+                  <Metric termId="foreign_shares" icon={false}>
+                    {present(flows.foreign_shares) ? groupDigits(flows.foreign_shares) : "n/a"}
+                  </Metric>
+                </dd>
+              </div>
+              <div>
+                <dt className="text-neutral-400">
+                  <Metric termId="shares_issued">Shares issued</Metric>
+                </dt>
+                <dd className="tabular-nums">
+                  <Metric termId="shares_issued" icon={false}>
+                    {present(flows.shares_issued) ? groupDigits(flows.shares_issued) : "n/a"}
+                  </Metric>
+                </dd>
+              </div>
+            </dl>
+          ) : null}
+          {flows.holding_source ? <SourceLine source={flows.holding_source} /> : null}
+          <p className="text-xs text-neutral-500" data-attribution="FinMind">
+            <Metric termId="finmind_attribution" icon={false}>
+              {flows.attribution}
+            </Metric>
+          </p>
+        </>
+      )}
     </section>
   );
 }
@@ -424,7 +553,7 @@ export function TaiwanView({
           </p>
         ) : null}
         <AsKnownOnForm href={`/instruments/${encodeURIComponent(data.code)}`} knownOn={knownOn} invalid={invalidKnownOn} />
-        {sources !== undefined ? <SourceFreshness sources={sources} ids={["twse_openapi"]} /> : null}
+        {sources !== undefined ? <SourceFreshness sources={sources} ids={["twse_openapi", "finmind"]} /> : null}
       </header>
       <PricePanel data={data} />
       {factors}
