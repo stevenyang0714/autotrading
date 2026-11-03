@@ -33,6 +33,7 @@ from autotrading.db.models import (
     HoldingEntry,
     Identifier,
     Instrument,
+    ListedCompany,
     MacroObservation,
     MacroSeries,
     MomentumRuleSet,
@@ -41,6 +42,7 @@ from autotrading.db.models import (
     RiskCheck,
     RiskRuleSet,
     RotationRuleSet,
+    ScreenRuleSet,
     Source,
     ThesisCard,
     TradeDecision,
@@ -247,6 +249,18 @@ def _labels(session: Session, table: str, ids: list[str]) -> dict[str, str]:
         "holding_entries": lambda: [
             (row.id, f"holdings {row.kind} {row.symbol or row.currency} ({row.account})")
             for row in session.scalars(select(HoldingEntry).where(HoldingEntry.id.in_(_uuids(ids))))
+        ],
+        "listed_companies": lambda: [
+            (row.id, f"listed company {row.code} {row.short_name}{'' if row.listed else ' (left)'}")
+            for row in session.scalars(
+                select(ListedCompany).where(ListedCompany.id.in_(_uuids(ids)))
+            )
+        ],
+        "screen_rule_sets": lambda: [
+            (row.id, f"screen rules {row.rule_version}")
+            for row in session.scalars(
+                select(ScreenRuleSet).where(ScreenRuleSet.id.in_(_uuids(ids)))
+            )
         ],
     }
     resolve = resolvers.get(table)

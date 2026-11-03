@@ -148,12 +148,13 @@ def start_twse_refresh(
     (ADR-041 H6); None when twse_openapi is not enabled."""
     with sessions()() as session:
         extra, _ = holdings.tracked(session, "TW")
+    now = datetime.now(UTC)
     run_id = twse_refresh.start_daily(
         ingestion_runner(),
-        now=datetime.now(UTC),
+        now=now,
         manual=manual,
         slot=slot,
-        companies=companies,
+        companies=companies or (not manual and twse_refresh.weekly_companies(slot, now)),
         extra_codes=extra,
     )
     if run_id is None:

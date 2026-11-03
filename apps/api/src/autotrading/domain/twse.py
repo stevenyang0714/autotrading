@@ -302,6 +302,7 @@ class CompanyRow:
     industry: str  # 產業別 code
     shares: Decimal | None  # 已發行普通股數或TDR原股發行股數
     as_of: date  # 出表日期
+    listed_on: date | None = None  # 上市日期
 
 
 def company_rows(payload: Any) -> list[CompanyRow]:
@@ -315,9 +316,15 @@ def company_rows(payload: Any) -> list[CompanyRow]:
             industry=_field(r, "產業別").strip(),
             shares=number(_field(r, "已發行普通股數或TDR原股發行股數")),
             as_of=roc_date(_field(r, "出表日期")),
+            listed_on=_optional_date(_field(r, "上市日期")),
         )
         for r in _rows(payload)
     ]
+
+
+def _optional_date(text: str) -> date | None:
+    """A Gregorian date ('19620209'), or None when the cell is blank."""
+    return None if text.strip() in NO_VALUE else gregorian_date(text)
 
 
 @dataclass(frozen=True)

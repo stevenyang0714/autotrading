@@ -2238,6 +2238,154 @@ class HoldingSnapshot(Base):
     )
 
 
+# ---------- Taiwan listed-stock screens (M3.11) ----------
+
+SCREEN_MARKETS = ("TW",)
+SCREEN_STATUSES = ("judged", "not_judged")
+
+
+class ListedCompany(ProvenanceMixin, Base):
+    """A TWSE-listed company as the company file (t187ap03_L) named it (M3.11, ADR-042 SC2):
+    code, short name (公司簡稱), industry code (產業別), listing date (上市日期) and whether the
+    file still lists it. One row per company and change: a row is added only when a value
+    differs from the company's latest row, or `listed` false when the file stops naming it.
+    published_at is the end of the file's 出表日期 in Taipei, never after it was fetched.
+    Append-only and audited."""
+
+    __tablename__ = "listed_companies"
+    __table_args__ = (
+        *provenance_constraints(),
+        CheckConstraint(r"code ~ '^\d{4}[0-9A-Z]{0,2}$'", name="code_format"),
+        CheckConstraint(r"industry ~ '^\d{2}$'", name="industry_format"),
+        CheckConstraint("length(short_name) BETWEEN 1 AND 40", name="short_name_length"),
+        Index("ix_listed_companies_instrument_published", "instrument_id", "published_at"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    instrument_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("instruments.id"))
+    code: Mapped[str] = mapped_column(Text)
+    short_name: Mapped[str] = mapped_column(Text)
+    industry: Mapped[str] = mapped_column(Text)
+    listed_on: Mapped[date | None] = mapped_column(Date)
+    listed: Mapped[bool] = mapped_column(Boolean)
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class ScreenRuleSet(Base):
+    """One released rule_version of config/screen_rules.yaml (ADR-042), loaded by `make
+    migrate` with the sha256 of its content. Append-only and audited."""
+
+    __tablename__ = "screen_rule_sets"
+    __table_args__ = (
+        CheckConstraint(r"rule_version ~ '^\d+\.\d+\.\d+$'", name="rule_version_format"),
+        CheckConstraint("content_sha256 ~ '^[0-9a-f]{64}$'", name="content_sha256_format"),
+        UniqueConstraint("rule_version", name="uq_screen_rule_sets_rule_version"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    rule_version: Mapped[str] = mapped_column(Text)
+    content: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    content_sha256: Mapped[str] = mapped_column(Text)
+    released: Mapped[date] = mapped_column(Date)
+    loaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class ScreenRun(Base):
+    """The Taiwan screens for one session as the database held it at system_time, under one
+    screen rule version (M3.11, ADR-042): judged (the movers, each screen's readings and watch
+    list, in `document`) or not judged with its reason (SC10). At most one judged run per rule
+    version, market and session; `previous_id` is the judged run whose watch list it carried.
+    Append-only, not audited (like the momentum assessments)."""
+
+    __tablename__ = "screen_runs"
+    __table_args__ = (
+        CheckConstraint(sql_in("market", SCREEN_MARKETS), name="market"),
+        CheckConstraint(sql_in("status", SCREEN_STATUSES), name="status"),
+        CheckConstraint(
+            "(status = 'not_judged') = (reason IS NOT NULL)", name="reason_when_not_judged"
+        ),
+        CheckConstraint("reason IS NULL OR length(reason) <= 300", name="reason_length"),
+        CheckConstraint(sql_in("trigger", ASSESSMENT_TRIGGERS), name="trigger"),
+        CheckConstraint("system_time >= known_at", name="system_time_after_known_at"),
+        CheckConstraint("backfilled = (system_time > known_at)", name="backfilled_flag"),
+        Index(
+            "uq_screen_runs_judged",
+            "rule_version",
+            "market",
+            "session",
+            unique=True,
+            postgresql_where=text("status = 'judged'"),
+        ),
+        Index("ix_screen_runs_market_session", "market", "session"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    market: Mapped[str] = mapped_column(Text)
+    session: Mapped[date] = mapped_column(Date)
+    known_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    system_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    rule_version: Mapped[str] = mapped_column(Text, ForeignKey("screen_rule_sets.rule_version"))
+    status: Mapped[str] = mapped_column(Text)
+    reason: Mapped[str | None] = mapped_column(Text)
+    previous_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, ForeignKey("screen_runs.id"))
+    counts: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    document: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    backfilled: Mapped[bool] = mapped_column(Boolean)
+    trigger: Mapped[str] = mapped_column(Text)
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class ScreenDelivery(Base):
+    """One attempt to push a screen run's report outside the app (M3.11, ADR-042 SC12): sent
+    (messages and the first message id) or failed (a cleaned reason). At most one `sent` per run
+    and channel. Never the chat id or the token. Append-only and audited."""
+
+    __tablename__ = "screen_deliveries"
+    __table_args__ = (
+        CheckConstraint(sql_in("channel", DELIVERY_CHANNELS), name="channel"),
+        CheckConstraint(sql_in("status", DELIVERY_STATUSES), name="status"),
+        CheckConstraint("(status = 'sent') = (message_id IS NOT NULL)", name="message_when_sent"),
+        CheckConstraint("messages >= 0", name="messages_count"),
+        CheckConstraint("error IS NULL OR length(error) <= 300", name="error_length"),
+        Index(
+            "uq_screen_deliveries_sent",
+            "run_id",
+            "channel",
+            unique=True,
+            postgresql_where=text("status = 'sent'"),
+        ),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    run_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("screen_runs.id"))
+    channel: Mapped[str] = mapped_column(Text)
+    rule_version: Mapped[str] = mapped_column(Text, ForeignKey("delivery_rule_sets.rule_version"))
+    status: Mapped[str] = mapped_column(Text)
+    messages: Mapped[int] = mapped_column(Integer)
+    message_id: Mapped[int | None] = mapped_column(BigInteger)
+    error_code: Mapped[int | None] = mapped_column(Integer)
+    error: Mapped[str | None] = mapped_column(Text)
+    attempted_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
 # ---------- audit (append-only, written by triggers) ----------
 
 

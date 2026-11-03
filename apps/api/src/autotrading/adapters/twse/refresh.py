@@ -1,6 +1,8 @@
 """TWSE refresh orchestration (M3.7, ADR-039 TW5): one `twse.daily` run per scheduled slot
 (07:40, 09:40 and 20:40 Singapore time, every day), or now for `make twse-refresh`. Codes held
-outside the universe ride along as `extra_codes` for their closes only (M3.10, ADR-041 H6)."""
+outside the universe ride along as `extra_codes` for their closes only (M3.10, ADR-041 H6).
+The first slot of each Taipei Monday fetches the company file too (M3.11, ADR-042 SC2), so a
+delisting or an industry change is seen within a week; a new listing is seen the next day."""
 
 from datetime import datetime
 from uuid import UUID
@@ -8,8 +10,17 @@ from uuid import UUID
 from autotrading.adapters.twse.client import SOURCE_ID
 from autotrading.adapters.twse.daily import TwseDailyJob
 from autotrading.db.models import Source
+from autotrading.domain.markets import TW
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.ingestion.schedule import refresh_window
+
+WEEKLY_COMPANIES_SLOT = "07:40"
+
+
+def weekly_companies(slot: str, now: datetime) -> bool:
+    """Whether a scheduled slot fetches the company file too: the first slot of each Taipei
+    Monday."""
+    return slot == WEEKLY_COMPANIES_SLOT and now.astimezone(TW.zone).isoweekday() == 1
 
 
 def start_daily(

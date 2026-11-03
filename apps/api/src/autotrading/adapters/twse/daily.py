@@ -2,20 +2,26 @@
 OpenAPI, three times a day (07:40, 09:40 and 20:40 Singapore time).
 
 fetch: STOCK_DAY_ALL, BWIBBU_d, MI_MARGN, TWT48U_ALL and the holiday schedule; the company file
-too when an instrument is still missing (its names and share counts). Every file holds only the
-latest session, so a session no run catches is lost (KI-27).
+too when a universe instrument is still missing, when STOCK_DAY_ALL names a four-digit code the
+company file was never seen with (a new listing), or when asked (`companies`, weekly; M3.11,
+ADR-042 SC2). Every file holds only the latest session, so a session no run catches is lost
+(KI-27).
 store, for the session D of STOCK_DAY_ALL:
 - raw daily bars (price_bars, feed `twse`), public at the end of D in Taipei (ADR-012);
 - exchange_measures: the price change and trade value of D; the P/E, P/B and dividend yield of
   BWIBBU_d when its date is D (its close must equal D's); the margin and short balances of
   MI_MARGN when the chain of balances dates it to D (TW6);
 - cash and stock dividends of TWT48U_ALL whose ex-date is at most the next session;
+- every listed company outside the universe (ADR-042 SC1, SC3): its raw bar, price change and
+  trade value only, in one batch; the company file's changes in listed_companies;
 - notes: no new session, sessions lost, a file not yet updated, a reference price no recorded
-  action explains (TW9), a holiday schedule that differs from config/market_calendar_xtai.yaml.
+  action explains (TW9, universe only), a holiday schedule that differs from
+  config/market_calendar_xtai.yaml.
 A session already stored is unchanged; nothing is guessed.
 """
 
 import json
+import re
 from collections.abc import Callable, Iterable, Mapping
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
@@ -36,7 +42,11 @@ from autotrading.adapters.twse.client import (
     VALUATION,
     TwseClient,
 )
-from autotrading.adapters.twse.instruments import existing_instruments, resolve_instruments
+from autotrading.adapters.twse.instruments import (
+    existing_instruments,
+    resolve_instruments,
+    resolve_listed,
+)
 from autotrading.db.models import DividendEvent, PriceBar, Source, SplitEvent
 from autotrading.domain.market_calendar import MarketCalendar
 from autotrading.domain.markets import TW
@@ -44,6 +54,7 @@ from autotrading.domain.provenance import LicenseStatus, Provenance, end_of_day
 from autotrading.domain.splits import effective_at
 from autotrading.domain.twse import (
     MARGIN_FIELDS,
+    CompanyRow,
     DayRow,
     ExRightRow,
     MarginRow,
@@ -74,6 +85,7 @@ from autotrading.repositories.exchange_measures import (
     latest_session,
     values_on,
 )
+from autotrading.repositories.listed import known_codes, listed_at, record_listed
 from autotrading.repositories.prices import BarIn, PriceRepository
 from autotrading.repositories.universe import TaiwanUniverse, taiwan_universe
 
@@ -81,6 +93,9 @@ ACTOR = "ingest:twse_openapi"
 ZONE = "Asia/Taipei"
 UNVERIFIED_CONFIDENCE = Decimal("0.9")
 MARGIN_UNIT = "lots"
+# Every four-digit STOCK_DAY_ALL code starting 1-9 is a company of the company file (checked on
+# the recorded files); 00xx are funds, six-character codes are warrants, ETNs and the like.
+COMPANY_CODE = re.compile(r"[1-9]\d{3}")
 
 
 def _path(payload: StoredPayload) -> str:
@@ -108,11 +123,18 @@ class TwseDailyJob(IngestionJob):
         return market_calendar(TW.exchange)
 
     def fetch(self, ctx: FetchContext) -> list[FetchedPayload]:
-        paths = [DAY, VALUATION, MARGIN, EX_RIGHTS, HOLIDAYS]
-        if self.params.get("companies") or self._missing(ctx.sessions):
-            paths.append(COMPANIES)
         with self.client() as client:
-            return [client.get(path, ctx.acquire) for path in paths]
+            fetched = [
+                client.get(path, ctx.acquire)
+                for path in (DAY, VALUATION, MARGIN, EX_RIGHTS, HOLIDAYS)
+            ]
+            if (
+                self.params.get("companies")
+                or self._missing(ctx.sessions)
+                or self._new_listings(ctx.sessions, fetched[0])
+            ):
+                fetched.append(client.get(COMPANIES, ctx.acquire))
+        return fetched
 
     def _missing(self, sessions: Callable[[], Session] | None) -> bool:
         """Whether a universe code has no instrument yet (the company file names them)."""
@@ -122,6 +144,16 @@ class TwseDailyJob(IngestionJob):
         with sessions() as session:
             return len(existing_instruments(session, codes)) < len(codes)
 
+    def _new_listings(self, sessions: Callable[[], Session] | None, day: FetchedPayload) -> bool:
+        """Whether STOCK_DAY_ALL names a company code the company file was never seen with."""
+        codes = {
+            r.code for r in day_rows(json.loads(day.content)) if COMPANY_CODE.fullmatch(r.code)
+        }
+        if sessions is None:
+            return True
+        with sessions() as session:
+            return bool(codes - known_codes(session))
+
     def store(self, ctx: StoreContext) -> StoreResult:
         session = ctx.session
         source = session.get_one(Source, SOURCE_ID)
@@ -129,7 +161,8 @@ class TwseDailyJob(IngestionJob):
         universe = self.universe()
         codes = set(universe.codes)
         day_payload = payloads[DAY]
-        days = {r.code: r for r in day_rows(_json(day_payload)) if r.code in codes}
+        every = {r.code: r for r in day_rows(_json(day_payload))}
+        days = {code: r for code, r in every.items() if code in codes}
         if not days:
             raise ValueError("STOCK_DAY_ALL lists none of the Taiwan universe")
         today = session_of(list(days.values()))
@@ -144,7 +177,9 @@ class TwseDailyJob(IngestionJob):
         store = _Store(self, ctx, session, source, ids, set(universe.etfs), today)
         store.notes += store.session_notes(self.calendar())
         store.bars(days, day_payload)
-        self._extra_codes(store, payloads, codes, today)
+        listed = self._listed(store, payloads, companies)
+        self._listed_codes(store, every, listed, codes, day_payload)
+        self._extra_codes(store, payloads, codes | set(listed), today)
         store.day_measures(days, day_payload)
         if VALUATION in payloads:
             store.valuation(payloads[VALUATION], days)
@@ -162,16 +197,60 @@ class TwseDailyJob(IngestionJob):
             notes=tuple(store.notes + store.conflicts),
         )
 
+    def _listed(
+        self,
+        store: "_Store",
+        payloads: Mapping[str, StoredPayload],
+        companies: Mapping[str, CompanyRow],
+    ) -> dict[str, UUID]:
+        """code -> instrument of every listed company (ADR-042 SC1, SC2): from the company file
+        when this run fetched it (recording its changes), else as last recorded."""
+        session = store.session
+        if not companies:
+            return {code: c.instrument_id for code, c in listed_at(session).items()}
+        file = payloads[COMPANIES]
+        ids = resolve_listed(session, companies, at=file.fetched_at)
+        inserted, unchanged = record_listed(
+            session, companies, ids, file, store.source, store.ctx.run_id, actor=ACTOR
+        )
+        store.count(inserted, unchanged, [])
+        if inserted:
+            store.notes.append(
+                f"company file: {inserted} change(s) recorded among {len(companies)} companies"
+            )
+        return ids
+
+    def _listed_codes(
+        self,
+        store: "_Store",
+        every: Mapping[str, DayRow],
+        listed: Mapping[str, UUID],
+        universe: set[str],
+        payload: StoredPayload,
+    ) -> None:
+        """The raw bar, price change and trade value of every listed company outside the
+        universe (ADR-042 SC3), in one batch; no valuation, margin or TW9 note of theirs."""
+        days = {code: row for code, row in every.items() if code in listed and code not in universe}
+        if not days:
+            return
+        ids = {code: listed[code] for code in days}
+        rows = _Store(self, store.ctx, store.session, store.source, ids, set(), store.today)
+        rows.bars(days, payload, summarize=True)
+        rows.day_measures(days, payload)
+        store.count(rows.inserted, rows.unchanged, rows.conflicts)
+        store.notes += rows.notes
+
     def _extra_codes(
         self,
         store: "_Store",
         payloads: Mapping[str, StoredPayload],
-        universe: set[str],
+        stored: set[str],
         today: date,
     ) -> None:
-        """Closes and ex-rights of the codes held outside the universe (ADR-041 H6), under the
-        instruments the Holdings page created; no measure of theirs is stored."""
-        extra = sorted(set(map(str, self.params.get("extra_codes") or [])) - universe)
+        """Closes and ex-rights of the codes held outside the universe that are not listed
+        companies (ADR-041 H6; funds, mostly), under the instruments the Holdings page created;
+        no measure of theirs is stored."""
+        extra = sorted(set(map(str, self.params.get("extra_codes") or [])) - stored)
         if not extra:
             return
         listed = {r.code: r for r in day_rows(_json(payloads[DAY])) if r.code in extra}
@@ -217,7 +296,6 @@ class _Store:
         self.conflicts: list[str] = []
         self.notes: list[str] = []
         self.calendar = job.calendar()
-        self.previous = self._previous_closes()
 
     # ---------- shared ----------
 
@@ -316,14 +394,19 @@ class _Store:
 
     # ---------- STOCK_DAY_ALL ----------
 
-    def bars(self, days: Mapping[str, DayRow], payload: StoredPayload) -> None:
+    def bars(
+        self, days: Mapping[str, DayRow], payload: StoredPayload, *, summarize: bool = False
+    ) -> None:
+        """One raw bar per code that traded; a code without a trade gets a note (one note for
+        all of them when `summarize`)."""
         bar_time = datetime.combine(self.today, time(0, 0), TW.zone)
         bars = []
+        quiet: list[str] = []
         for code, row in days.items():
             if code not in self.ids:
                 continue
             if None in (row.open, row.high, row.low, row.close):
-                self.notes.append(f"{code} {self.today}: no trade, no bar")
+                quiet.append(code)
                 continue
             bars.append(
                 BarIn(
@@ -346,6 +429,10 @@ class _Store:
             )
         result = PriceRepository(self.session).insert_bars(bars, actor=ACTOR)
         self.count(result.inserted, result.unchanged, result.conflicts)
+        if summarize and quiet:
+            self.notes.append(f"{len(quiet)} listed code(s) had no trade on {self.today}: no bar")
+        elif quiet:
+            self.notes += [f"{code} {self.today}: no trade, no bar" for code in quiet]
 
     def measure(
         self,
@@ -589,8 +676,9 @@ class _Store:
     # ---------- reference price (TW9) ----------
 
     def reference_checks(self, days: Mapping[str, DayRow]) -> None:
+        closes = self._previous_closes()
         for code, row in days.items():
-            previous = self.previous.get(code)
+            previous = closes.get(code)
             if row.close is None or row.change is None or previous is None:
                 continue
             if not self.adjacent(previous[0]):
