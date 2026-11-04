@@ -6,15 +6,19 @@ report pushed once; the candidates whose flows FinMind fetches. Uses its own mig
 and stays small for CI.
 """
 
+import json
+import os
 from collections.abc import Callable, Iterator
 from datetime import UTC, date, datetime
 from decimal import Decimal
 from itertools import pairwise
+from pathlib import Path
 from typing import Any
 from uuid import UUID, uuid4
 
 import pytest
 from alembic import command
+from fastapi.testclient import TestClient
 from sqlalchemy import Engine, create_engine, func, select
 from sqlalchemy.engine import URL
 from sqlalchemy.orm import Session, sessionmaker
@@ -40,6 +44,7 @@ from autotrading.ingestion.rate_limit import TokenBucketLimiter
 from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.ingestion.schedule import market_calendar
+from autotrading.main import create_app
 from autotrading.repositories import delivery, screens
 from autotrading.repositories.universe import taiwan_universe
 from autotrading.settings import get_settings
@@ -243,6 +248,74 @@ def rules_coverage() -> Decimal:
         .active()
         .readiness.min_coverage
     )
+
+
+class OkChecker:
+    def core(self) -> dict[str, Any]:
+        return {}
+
+    def background(self) -> dict[str, Any]:
+        return {}
+
+
+@pytest.fixture(scope="module")
+def client(engine: Engine, live: ScreenRun) -> Iterator[TestClient]:
+    with TestClient(
+        create_app(health_checker=OkChecker(), sessions=sessionmaker(engine))
+    ) as client:
+        yield client
+
+
+def test_the_screens_page_reads_the_stored_runs(client: TestClient, live: ScreenRun) -> None:
+    """The latest judged run with its definitions in words, its sources and a newer session not
+    judged; As known on D1 the D1 run; the history counts the stocks that met each screen."""
+    found = client.get("/taiwan/screens").json()
+    assert found["run_id"] == str(live.id) and found["run"]["session"] == str(D2)
+    assert found["demo"] is False and found["trigger"] == "manual"
+    swing = found["rules"]["definitions"][0]
+    assert (swing["screen_id"], swing["name_zh"]) == ("tw_swing_trend", "波段趨勢")
+    assert swing["conditions"][1] == "收盤價高於 20 日均線"
+    assert found["rules"]["content_sha256"] == (
+        "cf10f6d4deb1059efcf5562aef9bd593732dfa2c82e8a25fa83da3df701733a9"
+    )
+    assert found["pending"] is not None and "not stored yet" in found["pending"]["reason"]
+    assert found["industries"]["24"] == "半導體業"
+    assert [s["provider"] for s in found["attribution"]["supplementary"]] == ["FinMind"]
+    line = next(x for x in found["run"]["screens"][0]["lines"] if x["code"] == "2881")
+    assert line["source"]["feed"] == "twse" and line["source"]["bar_id"]
+    earlier = client.get("/taiwan/screens", params={"known_at": "2026-10-22T08:00:00+08:00"})
+    assert earlier.json()["run"]["session"] == str(D1) and earlier.json()["pending"] is None
+    history = client.get("/taiwan/screens/history").json()
+    assert history["rule_version"] == "0.1.0" and history["points"][-1]["session"] == str(D2)
+    assert history["points"][-1]["backfilled"] is False and history["points"][0]["backfilled"]
+    assert history["industry_basis"].startswith("first_known")
+    assert [s["screen_id"] for s in history["summary"]] == ["tw_swing_trend", "tw_range_breakout"]
+    assert all("return" not in key for key in history["summary"][0])
+
+
+@pytest.mark.skipif(
+    not os.environ.get("RECORD_WEB_FIXTURES"),
+    reason="recorder: set RECORD_WEB_FIXTURES=1 to refresh apps/web/tests/fixtures/api",
+)
+def test_record_web_fixtures(client: TestClient) -> None:
+    target = Path(__file__).resolve().parents[3] / "web" / "tests" / "fixtures" / "api"
+    for name, path in (
+        ("taiwan-screens", "/taiwan/screens"),
+        ("taiwan-screens-history", "/taiwan/screens/history"),
+    ):
+        response = client.get(path)
+        assert response.status_code == 200
+        record = {
+            "recorded_at": datetime.now(UTC).isoformat(),
+            "recorded_from": "recorded TWSE and FinMind responses replayed into the integration "
+            "test database (tests/integration/test_screens.py)",
+            "endpoint": path,
+            "params": {},
+            "response": response.json(),
+        }
+        (target / f"{name}.json").write_text(
+            json.dumps(record, indent=2, ensure_ascii=False) + "\n"
+        )
 
 
 class FakeRunner:

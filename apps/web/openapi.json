@@ -1442,6 +1442,37 @@
         "title": "Block",
         "type": "object"
       },
+      "Breadth": {
+        "properties": {
+          "above": {
+            "title": "Above",
+            "type": "integer"
+          },
+          "members": {
+            "title": "Members",
+            "type": "integer"
+          },
+          "share": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Share"
+          }
+        },
+        "required": [
+          "members",
+          "above",
+          "share"
+        ],
+        "title": "Breadth",
+        "type": "object"
+      },
       "BuybackRow": {
         "properties": {
           "cells": {
@@ -2558,6 +2589,59 @@
         "title": "ConditionOut",
         "type": "object"
       },
+      "ConditionReading": {
+        "properties": {
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pass",
+              "fail",
+              "unavailable",
+              "not_applicable"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "threshold": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threshold"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "kind",
+          "label",
+          "status"
+        ],
+        "title": "ConditionReading",
+        "type": "object"
+      },
       "ConsensusOut": {
         "properties": {
           "detail": {
@@ -2644,6 +2728,60 @@
           "source"
         ],
         "title": "CorporateAction",
+        "type": "object"
+      },
+      "Coverage": {
+        "properties": {
+          "covered": {
+            "title": "Covered",
+            "type": "integer"
+          },
+          "expected": {
+            "title": "Expected",
+            "type": "integer"
+          },
+          "liquid": {
+            "title": "Liquid",
+            "type": "integer"
+          },
+          "listed": {
+            "title": "Listed",
+            "type": "integer"
+          },
+          "ratio": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ratio"
+          },
+          "read": {
+            "title": "Read",
+            "type": "integer"
+          },
+          "unavailable": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Unavailable",
+            "type": "object"
+          }
+        },
+        "required": [
+          "listed",
+          "expected",
+          "covered",
+          "ratio",
+          "read",
+          "unavailable",
+          "liquid"
+        ],
+        "title": "Coverage",
         "type": "object"
       },
       "DataAsOf": {
@@ -5298,33 +5436,60 @@
         "title": "HighConvictionRule",
         "type": "object"
       },
-      "HistoryPoint": {
+      "HistorySummary": {
         "properties": {
-          "known_at": {
-            "format": "date-time",
-            "title": "Known At",
+          "max_meeting": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Meeting"
+          },
+          "median_meeting": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Meeting"
+          },
+          "screen_id": {
+            "title": "Screen Id",
             "type": "string"
           },
-          "values": {
-            "additionalProperties": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            },
-            "title": "Values",
-            "type": "object"
+          "sessions": {
+            "title": "Sessions",
+            "type": "integer"
+          },
+          "zero_share": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Zero Share"
           }
         },
         "required": [
-          "known_at",
-          "values"
+          "screen_id",
+          "sessions",
+          "median_meeting",
+          "zero_share",
+          "max_meeting"
         ],
-        "title": "HistoryPoint",
+        "title": "HistorySummary",
         "type": "object"
       },
       "Holding": {
@@ -6308,7 +6473,7 @@
           },
           "history": {
             "items": {
-              "$ref": "#/components/schemas/HistoryPoint"
+              "$ref": "#/components/schemas/autotrading__api__factors__HistoryPoint"
             },
             "title": "History",
             "type": "array"
@@ -7422,6 +7587,35 @@
         "title": "Limits",
         "type": "object"
       },
+      "Liquidity": {
+        "additionalProperties": false,
+        "properties": {
+          "min_avg_trade_value_twd": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Min Avg Trade Value Twd",
+            "type": "string"
+          },
+          "min_history": {
+            "exclusiveMinimum": 1.0,
+            "maximum": 250.0,
+            "title": "Min History",
+            "type": "integer"
+          },
+          "sessions": {
+            "exclusiveMinimum": 1.0,
+            "maximum": 250.0,
+            "title": "Sessions",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "sessions",
+          "min_avg_trade_value_twd",
+          "min_history"
+        ],
+        "title": "Liquidity",
+        "type": "object"
+      },
       "LogOut": {
         "properties": {
           "date": {
@@ -7943,6 +8137,150 @@
         "title": "MetricRow",
         "type": "object"
       },
+      "Metrics": {
+        "properties": {
+          "avg_trade_value": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Trade Value"
+          },
+          "change_1d": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change 1D"
+          },
+          "change_5d": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change 5D"
+          },
+          "close": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Close",
+            "type": "string"
+          },
+          "range_high": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Range High"
+          },
+          "range_low": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Range Low"
+          },
+          "sma_20": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sma 20"
+          },
+          "sma_60": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sma 60"
+          },
+          "volume_ratio": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Volume Ratio"
+          },
+          "z1": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Z1"
+          },
+          "z5": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Z5"
+          }
+        },
+        "required": [
+          "close",
+          "change_1d",
+          "change_5d",
+          "z1",
+          "z5",
+          "volume_ratio",
+          "avg_trade_value",
+          "sma_20",
+          "sma_60",
+          "range_high",
+          "range_low"
+        ],
+        "title": "Metrics",
+        "type": "object"
+      },
       "MilestoneOut": {
         "properties": {
           "done": {
@@ -8235,6 +8573,107 @@
           "backfilled"
         ],
         "title": "MomentumPoint",
+        "type": "object"
+      },
+      "Mover": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "flags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Flags",
+            "type": "array"
+          },
+          "industry": {
+            "title": "Industry",
+            "type": "string"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/Metrics"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "score": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Score",
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/components/schemas/SourceRow"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "industry",
+          "score",
+          "metrics",
+          "flags",
+          "source"
+        ],
+        "title": "Mover",
+        "type": "object"
+      },
+      "MoverRules": {
+        "additionalProperties": false,
+        "properties": {
+          "change_sessions": {
+            "exclusiveMinimum": 1.0,
+            "maximum": 20.0,
+            "title": "Change Sessions",
+            "type": "integer"
+          },
+          "page_top": {
+            "exclusiveMinimum": 0.0,
+            "maximum": 100.0,
+            "title": "Page Top",
+            "type": "integer"
+          },
+          "push_top": {
+            "exclusiveMinimum": 0.0,
+            "maximum": 30.0,
+            "title": "Push Top",
+            "type": "integer"
+          },
+          "volatility_sessions": {
+            "exclusiveMinimum": 1.0,
+            "maximum": 250.0,
+            "title": "Volatility Sessions",
+            "type": "integer"
+          },
+          "volume_ratio": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Volume Ratio",
+            "type": "string"
+          },
+          "volume_sessions": {
+            "exclusiveMinimum": 1.0,
+            "maximum": 250.0,
+            "title": "Volume Sessions",
+            "type": "integer"
+          },
+          "z_threshold": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Z Threshold",
+            "type": "string"
+          }
+        },
+        "required": [
+          "volatility_sessions",
+          "z_threshold",
+          "change_sessions",
+          "volume_sessions",
+          "volume_ratio",
+          "page_top",
+          "push_top"
+        ],
+        "title": "MoverRules",
         "type": "object"
       },
       "NewAssumptions": {
@@ -8937,6 +9376,57 @@
         "title": "NewsSourceOut",
         "type": "object"
       },
+      "NoteReading": {
+        "properties": {
+          "days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "of": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Of"
+          },
+          "status": {
+            "enum": [
+              "pass",
+              "fail",
+              "unavailable",
+              "not_applicable"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "label",
+          "status"
+        ],
+        "title": "NoteReading",
+        "type": "object"
+      },
       "ObservationOut": {
         "properties": {
           "first_release": {
@@ -9140,6 +9630,32 @@
           "last_refresh_at"
         ],
         "title": "Overview",
+        "type": "object"
+      },
+      "PendingOut": {
+        "description": "A session after the run's that was not judged, and why.",
+        "properties": {
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "session": {
+            "format": "date",
+            "title": "Session",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session",
+          "reason",
+          "known_at"
+        ],
+        "title": "PendingOut",
         "type": "object"
       },
       "PerformanceOut": {
@@ -10545,6 +11061,28 @@
           "detail"
         ],
         "title": "ReactionWindowOut",
+        "type": "object"
+      },
+      "Readiness": {
+        "additionalProperties": false,
+        "properties": {
+          "lookback_sessions": {
+            "exclusiveMinimum": 0.0,
+            "maximum": 20.0,
+            "title": "Lookback Sessions",
+            "type": "integer"
+          },
+          "min_coverage": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Min Coverage",
+            "type": "string"
+          }
+        },
+        "required": [
+          "min_coverage",
+          "lookback_sessions"
+        ],
+        "title": "Readiness",
         "type": "object"
       },
       "Reading": {
@@ -12908,6 +13446,241 @@
         "title": "ScoreRule",
         "type": "object"
       },
+      "ScreenDefinitionOut": {
+        "properties": {
+          "conditions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Conditions",
+            "type": "array"
+          },
+          "invalidation": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Invalidation",
+            "type": "array"
+          },
+          "name_zh": {
+            "title": "Name Zh",
+            "type": "string"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
+          "screen_id": {
+            "title": "Screen Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "screen_id",
+          "name_zh",
+          "conditions",
+          "notes",
+          "invalidation"
+        ],
+        "title": "ScreenDefinitionOut",
+        "type": "object"
+      },
+      "ScreenResult": {
+        "properties": {
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/WatchLine"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "meeting": {
+            "title": "Meeting",
+            "type": "integer"
+          },
+          "name_zh": {
+            "title": "Name Zh",
+            "type": "string"
+          },
+          "screen_id": {
+            "title": "Screen Id",
+            "type": "string"
+          },
+          "unavailable": {
+            "title": "Unavailable",
+            "type": "integer"
+          },
+          "watch": {
+            "items": {
+              "$ref": "#/components/schemas/WatchedOut"
+            },
+            "title": "Watch",
+            "type": "array"
+          }
+        },
+        "required": [
+          "screen_id",
+          "name_zh",
+          "meeting",
+          "unavailable",
+          "lines",
+          "watch"
+        ],
+        "title": "ScreenResult",
+        "type": "object"
+      },
+      "ScreenRulesOut": {
+        "properties": {
+          "content_sha256": {
+            "title": "Content Sha256",
+            "type": "string"
+          },
+          "definitions": {
+            "items": {
+              "$ref": "#/components/schemas/ScreenDefinitionOut"
+            },
+            "title": "Definitions",
+            "type": "array"
+          },
+          "liquidity": {
+            "$ref": "#/components/schemas/Liquidity"
+          },
+          "movers": {
+            "$ref": "#/components/schemas/MoverRules"
+          },
+          "note": {
+            "title": "Note",
+            "type": "string"
+          },
+          "readiness": {
+            "$ref": "#/components/schemas/Readiness"
+          },
+          "released": {
+            "format": "date",
+            "title": "Released",
+            "type": "string"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          },
+          "watch_sessions": {
+            "title": "Watch Sessions",
+            "type": "integer"
+          },
+          "window_sessions": {
+            "title": "Window Sessions",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "rule_version",
+          "content_sha256",
+          "released",
+          "note",
+          "window_sessions",
+          "watch_sessions",
+          "readiness",
+          "liquidity",
+          "movers",
+          "definitions"
+        ],
+        "title": "ScreenRulesOut",
+        "type": "object"
+      },
+      "ScreenRunOut": {
+        "properties": {
+          "breadth": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Breadth"
+            },
+            "title": "Breadth",
+            "type": "object"
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/Coverage"
+          },
+          "industry_basis": {
+            "title": "Industry Basis",
+            "type": "string"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "market": {
+            "const": "TW",
+            "title": "Market",
+            "type": "string"
+          },
+          "movers": {
+            "items": {
+              "$ref": "#/components/schemas/Mover"
+            },
+            "title": "Movers",
+            "type": "array"
+          },
+          "movers_count": {
+            "title": "Movers Count",
+            "type": "integer"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          },
+          "screens": {
+            "items": {
+              "$ref": "#/components/schemas/ScreenResult"
+            },
+            "title": "Screens",
+            "type": "array"
+          },
+          "session": {
+            "format": "date",
+            "title": "Session",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "judged",
+              "not_judged"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "market",
+          "session",
+          "known_at",
+          "rule_version",
+          "status",
+          "reason",
+          "coverage",
+          "industry_basis",
+          "breadth",
+          "movers",
+          "movers_count",
+          "screens"
+        ],
+        "title": "ScreenRunOut",
+        "type": "object"
+      },
       "SectorExposure": {
         "properties": {
           "gross": {
@@ -13605,6 +14378,35 @@
           "confidence"
         ],
         "title": "SourceRef",
+        "type": "object"
+      },
+      "SourceRow": {
+        "properties": {
+          "bar_id": {
+            "title": "Bar Id",
+            "type": "string"
+          },
+          "feed": {
+            "title": "Feed",
+            "type": "string"
+          },
+          "feed_status": {
+            "title": "Feed Status",
+            "type": "string"
+          },
+          "published_at": {
+            "format": "date-time",
+            "title": "Published At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "bar_id",
+          "feed",
+          "feed_status",
+          "published_at"
+        ],
+        "title": "SourceRow",
         "type": "object"
       },
       "SplitAdjusted": {
@@ -14334,6 +15136,184 @@
         "title": "TaiwanRow",
         "type": "object"
       },
+      "TaiwanScreensHistoryOut": {
+        "properties": {
+          "detail": {
+            "default": "A research screen and a watch list, not buy or sell advice. Thresholds are Claude's defaults (ADR-042), unvalidated: the history check counts the stocks that met a screen, never their returns (OD-7).",
+            "title": "Detail",
+            "type": "string"
+          },
+          "industry_basis": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Industry Basis"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/autotrading__api__screens__HistoryPoint"
+            },
+            "title": "Points",
+            "type": "array"
+          },
+          "rule_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rule Version"
+          },
+          "summary": {
+            "items": {
+              "$ref": "#/components/schemas/HistorySummary"
+            },
+            "title": "Summary",
+            "type": "array"
+          }
+        },
+        "required": [
+          "known_at",
+          "rule_version",
+          "industry_basis",
+          "points",
+          "summary"
+        ],
+        "title": "TaiwanScreensHistoryOut",
+        "type": "object"
+      },
+      "TaiwanScreensOut": {
+        "properties": {
+          "attribution": {
+            "$ref": "#/components/schemas/Attribution"
+          },
+          "backfilled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Backfilled"
+          },
+          "demo": {
+            "title": "Demo",
+            "type": "boolean"
+          },
+          "detail": {
+            "default": "A research screen and a watch list, not buy or sell advice. Thresholds are Claude's defaults (ADR-042), unvalidated: the history check counts the stocks that met a screen, never their returns (OD-7).",
+            "title": "Detail",
+            "type": "string"
+          },
+          "industries": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Industries",
+            "type": "object"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "pending": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PendingOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "recorded_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recorded At"
+          },
+          "rules": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScreenRulesOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "run": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScreenRunOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "trigger": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trigger"
+          }
+        },
+        "required": [
+          "known_at",
+          "run_id",
+          "recorded_at",
+          "trigger",
+          "backfilled",
+          "demo",
+          "run",
+          "rules",
+          "pending",
+          "industries",
+          "attribution"
+        ],
+        "title": "TaiwanScreensOut",
+        "type": "object"
+      },
       "TaiwanSession": {
         "properties": {
           "calendar_covered_until": {
@@ -14866,6 +15846,147 @@
         "title": "Veto",
         "type": "object"
       },
+      "WatchLine": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "conditions": {
+            "items": {
+              "$ref": "#/components/schemas/ConditionReading"
+            },
+            "title": "Conditions",
+            "type": "array"
+          },
+          "entered": {
+            "format": "date",
+            "title": "Entered",
+            "type": "string"
+          },
+          "flags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Flags",
+            "type": "array"
+          },
+          "industry": {
+            "title": "Industry",
+            "type": "string"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level"
+          },
+          "metrics": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Metrics"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "notes": {
+            "items": {
+              "$ref": "#/components/schemas/NoteReading"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "sessions": {
+            "title": "Sessions",
+            "type": "integer"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceRow"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "state": {
+            "enum": [
+              "entered",
+              "on_watch",
+              "invalidated",
+              "expired"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "still_meets": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Still Meets"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "industry",
+          "state",
+          "entered",
+          "sessions",
+          "level",
+          "still_meets",
+          "reason",
+          "conditions",
+          "notes",
+          "metrics",
+          "flags",
+          "source",
+          "score"
+        ],
+        "title": "WatchLine",
+        "type": "object"
+      },
       "WatchRule": {
         "additionalProperties": false,
         "properties": {
@@ -14900,6 +16021,43 @@
         "title": "WatchRule",
         "type": "object"
       },
+      "WatchedOut": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "entered": {
+            "format": "date",
+            "title": "Entered",
+            "type": "string"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level"
+          },
+          "sessions": {
+            "title": "Sessions",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "code",
+          "entered",
+          "sessions",
+          "level"
+        ],
+        "title": "WatchedOut",
+        "type": "object"
+      },
       "Withheld": {
         "properties": {
           "metric": {
@@ -14915,6 +16073,67 @@
           "metric"
         ],
         "title": "Withheld",
+        "type": "object"
+      },
+      "autotrading__api__factors__HistoryPoint": {
+        "properties": {
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "values": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "title": "Values",
+            "type": "object"
+          }
+        },
+        "required": [
+          "known_at",
+          "values"
+        ],
+        "title": "HistoryPoint",
+        "type": "object"
+      },
+      "autotrading__api__screens__HistoryPoint": {
+        "properties": {
+          "backfilled": {
+            "title": "Backfilled",
+            "type": "boolean"
+          },
+          "meeting": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Meeting",
+            "type": "object"
+          },
+          "movers": {
+            "title": "Movers",
+            "type": "integer"
+          },
+          "session": {
+            "format": "date",
+            "title": "Session",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session",
+          "backfilled",
+          "movers",
+          "meeting"
+        ],
+        "title": "HistoryPoint",
         "type": "object"
       }
     }
@@ -18576,6 +19795,110 @@
         "summary": "Taiwan Instrument",
         "tags": [
           "taiwan"
+        ]
+      }
+    },
+    "/taiwan/screens": {
+      "get": {
+        "operationId": "taiwan_screens_taiwan_screens_get",
+        "parameters": [
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaiwanScreensOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Taiwan Screens",
+        "tags": [
+          "screens"
+        ]
+      }
+    },
+    "/taiwan/screens/history": {
+      "get": {
+        "operationId": "taiwan_screens_history_taiwan_screens_history_get",
+        "parameters": [
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaiwanScreensHistoryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Taiwan Screens History",
+        "tags": [
+          "screens"
         ]
       }
     }

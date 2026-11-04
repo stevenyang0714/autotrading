@@ -1,0 +1,165 @@
+{
+  "recorded_at": "2026-11-04T03:04:03.305083+00:00",
+  "recorded_from": "recorded TWSE and FinMind responses replayed into the integration test database (tests/integration/test_screens.py)",
+  "endpoint": "/taiwan/screens/history",
+  "params": {},
+  "response": {
+    "known_at": "2026-11-04T03:04:03.298365Z",
+    "rule_version": "0.1.0",
+    "industry_basis": "first_known 2026-10-21",
+    "points": [
+      {
+        "session": "2026-10-01",
+        "backfilled": true,
+        "movers": 0,
+        "meeting": {
+          "tw_swing_trend": 5,
+          "tw_range_breakout": 0
+        }
+      },
+      {
+        "session": "2026-10-02",
+        "backfilled": true,
+        "movers": 0,
+        "meeting": {
+          "tw_swing_trend": 4,
+          "tw_range_breakout": 0
+        }
+      },
+      {
+        "session": "2026-10-05",
+        "backfilled": true,
+        "movers": 0,
+        "meeting": {
+          "tw_swing_trend": 6,
+          "tw_range_breakout": 0
+        }
+      },
+      {
+        "session": "2026-10-06",
+        "backfilled": true,
+        "movers": 0,
+        "meeting": {
+          "tw_swing_trend": 5,
+          "tw_range_breakout": 0
+        }
+      },
+      {
+        "session": "2026-10-07",
+        "backfilled": true,
+        "movers": 0,
+        "meeting": {
+          "tw_swing_trend": 4,
+          "tw_range_breakout": 0
+        }
+      },
+      {
+        "session": "2026-10-08",
+        "backfilled": true,
+        "movers": 0,
+        "meeting": {
+          "tw_swing_trend": 4,
+          "tw_range_breakout": 0
+        }
+      },
+      {
+        "session": "2026-10-12",
+        "backfilled": true,
+        "movers": 0,
+        "meeting": {
+          "tw_swing_trend": 4,
+          "tw_range_breakout": 0
+        }
+      },
+      {
+        "session": "2026-10-13",
+        "backfilled": true,
+        "movers": 0,
+        "meeting": {
+          "tw_swing_trend": 1,
+          "tw_range_breakout": 0
+        }
+      },
+      {
+        "session": "2026-10-14",
+        "backfilled": true,
+        "movers": 0,
+        "meeting": {
+          "tw_swing_trend": 1,
+          "tw_range_breakout": 0
+        }
+      },
+      {
+        "session": "2026-10-15",
+        "backfilled": true,
+        "movers": 1,
+        "meeting": {
+          "tw_swing_trend": 1,
+          "tw_range_breakout": 0
+        }
+      },
+      {
+        "session": "2026-10-16",
+        "backfilled": true,
+        "movers": 0,
+        "meeting": {
+          "tw_swing_trend": 1,
+          "tw_range_breakout": 0
+        }
+      },
+      {
+        "session": "2026-10-19",
+        "backfilled": true,
+        "movers": 0,
+        "meeting": {
+          "tw_swing_trend": 1,
+          "tw_range_breakout": 0
+        }
+      },
+      {
+        "session": "2026-10-20",
+        "backfilled": true,
+        "movers": 0,
+        "meeting": {
+          "tw_swing_trend": 0,
+          "tw_range_breakout": 0
+        }
+      },
+      {
+        "session": "2026-10-21",
+        "backfilled": true,
+        "movers": 0,
+        "meeting": {
+          "tw_swing_trend": 1,
+          "tw_range_breakout": 0
+        }
+      },
+      {
+        "session": "2026-10-22",
+        "backfilled": false,
+        "movers": 0,
+        "meeting": {
+          "tw_swing_trend": 1,
+          "tw_range_breakout": 0
+        }
+      }
+    ],
+    "summary": [
+      {
+        "screen_id": "tw_swing_trend",
+        "sessions": 15,
+        "median_meeting": "1",
+        "zero_share": "0.0667",
+        "max_meeting": 6
+      },
+      {
+        "screen_id": "tw_range_breakout",
+        "sessions": 15,
+        "median_meeting": "0",
+        "zero_share": "1.0000",
+        "max_meeting": 0
+      }
+    ],
+    "detail": "A research screen and a watch list, not buy or sell advice. Thresholds are Claude's defaults (ADR-042), unvalidated: the history check counts the stocks that met a screen, never their returns (OD-7)."
+  }
+}

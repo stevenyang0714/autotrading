@@ -75,7 +75,7 @@ jobs:
     name: compose smoke (make up, integration tests, /health, e2e)
     needs: [backend, frontend]
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 40  # took 28 min 51 s of 30 on PR #42 (ADR-042 SC16); billed only when used
     steps:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v7

@@ -148,6 +148,8 @@ for (const path of [
   "/dashboards/portfolio-risk",
   "/holdings",
   "/dashboards/portfolio-risk?known_on=2026-10-06",
+  "/dashboards/opportunity-radar/taiwan-screens",
+  "/dashboards/opportunity-radar/taiwan-screens?known_on=2026-10-23",
 ]) {
   test(`numbers on ${path} are all explained`, async ({ page }) => {
     await page.goto(path);
@@ -762,6 +764,27 @@ test("Taiwan: a session is known only after the end of its Taipei day", async ({
   await page.goto("/instruments/2330?known_on=2026-10-22");
   await expect(page.locator('[data-block="taiwan-prices"]')).toContainText("session 2026-10-21");
   await expect(page.locator('[data-block="taiwan-prices"]')).toContainText("上市個股日成交資訊");
+});
+
+test("Taiwan screens: the session's coverage, the definitions, the watch lists and the sources (M3.11)", async ({
+  page,
+}) => {
+  // CI replays October's recorded sessions (every listed company on 2026-10-21 and 2026-10-22,
+  // six FinMind price histories) and backfills the screens through 2026-10-22
+  await page.goto("/dashboards/opportunity-radar/taiwan-screens?known_on=2026-10-23");
+  await expect(page.locator("h1")).toContainText("Taiwan Screens");
+  await expect(page.locator("[data-run]")).toContainText("2026-10-22");
+  await expect(page.locator("[data-run]")).toContainText("screen rules 0.1.0");
+  const swing = page.locator('[data-screen="tw_swing_trend"]');
+  await expect(swing).toContainText("收盤價高於 20 日均線");
+  await expect(swing).toContainText("連續 2 日收盤低於 20 日均線");
+  await expect(page.locator('[data-block="history"]')).toContainText("never their returns");
+  await expect(page.locator('[data-block="attribution"]')).toContainText("資料來源：FinMind");
+  await expect(page.locator('[data-block="attribution"]')).toContainText("政府資料開放授權條款");
+  // reached from the Opportunity Radar
+  await page.goto("/dashboards/opportunity-radar");
+  await page.locator('[data-link="taiwan-screens"]').click();
+  await expect(page).toHaveURL(/\/dashboards\/opportunity-radar\/taiwan-screens$/, { timeout: 15_000 });
 });
 
 test("Taiwan: the instruments page lists the TWSE universe", async ({ page }) => {

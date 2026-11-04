@@ -179,7 +179,7 @@ Work one sub-milestone at a time, in this order (ADR-035): M3.0, M3.0b, M3.0c (a
 - [x] Every FinMind number names its dataset, time, tier and the attribution line.
 
 ## M3.10 Portfolio Center I: real holdings, exchange rate and the Today page (ADR-041)
-**Decided (ADR-041, H1-H14; Steven on 2026-10-26):** record Steven's real holdings by hand (local only, backed up; no broker connection, no orders): any US listing or TWSE listing plus cash in each currency, valued in USD (DEXTAUS). Kept apart from the paper portfolio and every rule. Then M3.11 (investment policy, rebalancing, custom screens) and M3.12 (performance).
+**Decided (ADR-041, H1-H14; Steven on 2026-10-26):** record Steven's real holdings by hand (local only, backed up; no broker connection, no orders): any US listing or TWSE listing plus cash in each currency, valued in USD (DEXTAUS). Kept apart from the paper portfolio and every rule. Then M3.11 (the Taiwan screens, ADR-042), M3.12 (investment policy and rebalancing) and M3.13 (performance).
 
 **Build**
 - **Ledger:** `holding_entries` (append-only, audited; buys, sells, cash dividends, deposits, withdrawals, fees; reversals as the only correction) and `holding_snapshots` (daily 11:12 SGT), migration 0033.
@@ -193,6 +193,30 @@ Work one sub-milestone at a time, in this order (ADR-035): M3.0, M3.0b, M3.0c (a
 - [x] The valuation is reproducible: a snapshot recomputes identically at its own T and S (`make holdings-verify`).
 - [x] Only the holdings modules read the ledger: no rule, push, radar or research view sees it (unit test).
 - [x] Every number on the Holdings and Today pages carries its glossary term (vitest and e2e).
+
+## M3.11 Taiwan screens: every listed company, the movers and a daily research report (ADR-042)
+**Decided (ADR-042, SC1-SC16; Steven on 2026-11-04):** the Taiwan screens read every TWSE-listed company; FinMind serves their prices since 2024 and ex-dividend results once and the candidates' flows daily (at most 150 requests a day); the stocks that change the most come first. Investment policy and rebalancing become M3.12, performance M3.13.
+
+**Build**
+- **Listed companies:** the company file as observed (`listed_companies`, migration 0034) and every listed company's daily bar, price change, trade value and announced dividends from the TWSE runs.
+- **History:** FinMind prices since 2024 and ex-dividend results for every listed company (`make finmind-listed-backfill`); each ex-date's reference price.
+- **Engine:** `domain/screens.py` and `config/screen_rules.yaml` 0.1.0: returns across ex-dates, movers, Swing Trend and Range Breakout with watch lists, the coverage gate.
+- **Runs:** 08:05 and 10:00 SGT (`screen_runs`); `make screens-evaluate`, `screens-backfill`, `screens-verify`; the candidates' flows at 21:30.
+- **Report:** delivery rules 0.3.0, one Telegram report per run (`screen_deliveries`).
+- **Page:** `/dashboards/opportunity-radar/taiwan-screens`, a Today card, 20 glossary terms.
+
+**Acceptance**
+- [x] A session is judged only with 95% coverage; otherwise it is recorded as not judged with the reason (tested).
+- [x] An ex-dividend drop is not read as a fall (tested on recorded ex-dates of 2330, 2881 and 0056).
+- [x] A run recomputes identically at its own T and S (`make screens-verify`, tested).
+- [x] The report never carries a FinMind number or a link, and is sent once per run, never for a backfill (tested).
+- [x] Every number on the page carries its glossary term (vitest and e2e).
+
+## M3.12 Investment policy and rebalancing
+Reads the holdings ledger (M3.10): a versioned investment policy (goals, horizon, risk, target weights and bands by asset class, market and position), drift against it and the trades that would restore the targets (arithmetic on Steven's own targets, not advice). Planned in plan mode after M3.11.
+
+## M3.13 Performance
+Time-weighted return of the holdings against SPY and 0050, volatility and drawdown, from the snapshots. Planned after M3.12.
 
 ## M3.8 Taiwan fundamentals: monthly revenue and quarterly reports
 **Build**

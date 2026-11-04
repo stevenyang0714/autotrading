@@ -72,6 +72,8 @@ import factors2330 from "../../tests/fixtures/api/factors-2330.json";
 import taiwan from "../../tests/fixtures/api/taiwan.json";
 import holdingsEntries from "../../tests/fixtures/api/holdings-entries.json";
 import holdings from "../../tests/fixtures/api/holdings.json";
+import taiwanScreensHistory from "../../tests/fixtures/api/taiwan-screens-history.json";
+import taiwanScreens from "../../tests/fixtures/api/taiwan-screens.json";
 import taiwan0050 from "../../tests/fixtures/api/taiwan-0050.json";
 import taiwan2330 from "../../tests/fixtures/api/taiwan-2330.json";
 import factorsTlt from "../../tests/fixtures/api/factors-tlt.json";
@@ -101,6 +103,8 @@ import type {
   InstrumentFactors,
   TaiwanInstrument,
   TaiwanList,
+  TaiwanScreens,
+  TaiwanScreensHistory,
   Alerts,
   AssumptionList,
   Convergence,
@@ -311,6 +315,12 @@ export const recordedFactors2330 = factors2330.response as unknown as Instrument
  * without a close yet. */
 export const recordedHoldings = holdings.response as unknown as Holdings;
 export const recordedHoldingEntries = holdingsEntries.response as unknown as HoldingEntries;
+
+/** The Taiwan screens (M3.11) from tests/integration/test_screens.py: the recorded TWSE files
+ * of 2026-10-21 and 2026-10-22 (every listed company) and six recorded FinMind price histories,
+ * backfilled through October and 2026-10-22 judged by a manual run; a later session not judged. */
+export const recordedTaiwanScreens = taiwanScreens.response as unknown as TaiwanScreens;
+export const recordedTaiwanScreensHistory = taiwanScreensHistory.response as unknown as TaiwanScreensHistory;
 
 /** The S3 ETF rotation (M2.4) from tests/integration/test_rotation.py, as known on 2026-10-06
  * (the October month start: SPY only, the other ETFs without a year of recorded closes for 12-1

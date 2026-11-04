@@ -228,6 +228,17 @@ export function OpportunityRadarView({
           </Metric>
         </p>
         <AsKnownOnForm href={HREF} knownOn={knownOn} invalid={invalidKnownOn} />
+        <p className="text-sm">
+          <Link
+            href={`/dashboards/opportunity-radar/taiwan-screens${knownOn ? `?known_on=${knownOn}` : ""}`}
+            className="underline-offset-2 hover:underline"
+            data-link="taiwan-screens"
+          >
+            <Metric termId="page_taiwan_screens" icon={false}>
+              Taiwan screens: every listed company, the movers and two watch lists
+            </Metric>
+          </Link>
+        </p>
         <p className="text-sm text-neutral-400">
           Showing what was known by{" "}
           <Metric termId="point_in_time" icon={false}>

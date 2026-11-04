@@ -3,7 +3,15 @@ import type { Metadata } from "next";
 import { Metric } from "@/components/Metric";
 import { OverviewView } from "@/components/overview/OverviewView";
 import { TodayPanel } from "@/components/today/TodayPanel";
-import { loadAlerts, loadCandidates, loadHoldings, loadOverview, loadSourceHealth, loadTaiwan } from "@/lib/api";
+import {
+  loadAlerts,
+  loadCandidates,
+  loadHoldings,
+  loadOverview,
+  loadSourceHealth,
+  loadTaiwan,
+  loadTaiwanScreens,
+} from "@/lib/api";
 import { endOfDaySgt } from "@/lib/time";
 
 // Point-in-time data: always read live, never serve a cached page.
@@ -16,13 +24,14 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   const knownOn = typeof query.known_on === "string" && query.known_on ? query.known_on : undefined;
   const knownAt = knownOn ? endOfDaySgt(knownOn) : null;
   const today = knownAt === null; // Today is about now; As known on shows the overview alone
-  const [overview, sources, holdings, alerts, candidates, taiwan] = await Promise.all([
+  const [overview, sources, holdings, alerts, candidates, taiwan, screens] = await Promise.all([
     loadOverview(knownAt ?? undefined),
     loadSourceHealth(),
     today ? loadHoldings() : null,
     today ? loadAlerts({ status: "all" }) : null,
     today ? loadCandidates() : null,
     today ? loadTaiwan() : null,
+    today ? loadTaiwanScreens() : null,
   ]);
   if (overview === null) {
     return (
@@ -53,6 +62,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         holdings={holdings}
         alerts={alerts}
         candidates={candidates}
+        screens={screens}
         us={overview.market ?? null}
         taiwan={taiwan}
         sources={sources}

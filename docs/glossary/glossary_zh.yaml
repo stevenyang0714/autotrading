@@ -411,3 +411,23 @@ terms:
   net_contributions: {name: 淨存入, hint: 存入減提領的累計金額（各幣別）。}
   macro_twd_usd: {name: 美元兌台幣, hint: 聯準會 H.10 公布的紐約中午匯率：1 美元兌多少台幣。}
   page_today: {name: 今日, hint: 首頁：你的持股、本週推播、美台兩地交易時段、雷達候選數與資料健康，下方是總經概覽。}
+  page_taiwan_screens: {name: 台股篩選, hint: 每天讀全部上市公司：變化最大的異動榜，以及波段趨勢、量價突破兩個篩選和它們的觀察名單。}
+  listed_company: {name: 上市公司, hint: 證交所公司檔裡的公司：代號、簡稱、產業別與上市日期；篩選讀全部，存託憑證除外。}
+  twse_industry: {name: 產業別, hint: 證交所的產業分類（例如 24 半導體業），族群走強比例依它分組。}
+  ex_reference_price: {name: 除權息參考價, hint: 除權息日的漲跌起算價：前收減去股利（配股再調整），來自 FinMind 的除權息結果。}
+  screen_adjusted_return: {name: 還原報酬, hint: 對參考價計算的當日報酬，除息的跳空不會被當成下跌。}
+  screen_coverage: {name: 涵蓋率, hint: 當日有成交資料的上市公司比例；低於 95% 不判斷。}
+  screen_not_judged: {name: 未判斷, hint: 涵蓋率不足或證交所檔案還沒來的交易日，會寫明原因，不下結論。}
+  screen_liquidity: {name: 平均成交值, hint: "近 20 日平均成交值；低於 NT$3,000 萬的股票不列入異動，也不符合任何篩選。"}
+  screen_z_score: {name: 變動倍數（z）, hint: 當日或 5 日報酬是這檔股票平常波動的幾倍。}
+  screen_volume_ratio: {name: 量比, hint: 當日成交量是前 20 日均量的幾倍。}
+  screen_mover: {name: 異動, hint: 有流動性、變動倍數 ≥ 2.5 或量比 ≥ 3 的股票，依變化大小排序。}
+  screen_sma: {name: 均線（篩選）, hint: 近 20 或 60 日還原收盤價的平均。}
+  screen_range: {name: 整理區間, hint: 前 20 日的最高與最低價及其寬度。}
+  screen_swing_trend: {name: 波段趨勢, hint: 站上上升中的 20 日均線與 60 日均線，且同產業過半站上均線。}
+  screen_range_breakout: {name: 量價突破, hint: 前 20 日區間不超過 15%，收盤突破區間高點且量達 2 倍。}
+  screen_industry_breadth: {name: 族群走強比例, hint: 同產業有流動性的股票中，站上自己 20 日均線的比例。}
+  screen_flow_note: {name: 法人附註, hint: 外資或投信近 5 日至少 3 日買超；只顯示、不是必要條件。}
+  screen_watch_list: {name: 觀察名單, hint: 符合篩選的股票會一直觀察，直到失效條件成立，或滿 20 日且不再符合。}
+  screen_history_check: {name: 歷史檢查, hint: 過去每個交易日有幾檔符合：太多代表太寬，都沒有代表太嚴；不算事後報酬。}
+  screen_rules: {name: 篩選規則, hint: 條件與門檻的發布版本及內容雜湊；改規則就是新版本。}

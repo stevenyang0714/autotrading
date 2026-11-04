@@ -8,6 +8,7 @@ import {
   recordedMarketsOverview,
   recordedSources,
   recordedTaiwan,
+  recordedTaiwanScreens,
 } from "@/test/fixtures";
 import { unexplainedNumbers } from "@/test/numbers";
 
@@ -17,6 +18,7 @@ const props = {
   holdings: recordedHoldings,
   alerts: recordedDeliveredAlerts,
   candidates: recordedCandidates,
+  screens: recordedTaiwanScreens,
   us: recordedMarketsOverview.market ?? null,
   taiwan: recordedTaiwan,
   sources: recordedSources,
@@ -38,6 +40,10 @@ describe("TodayPanel with recorded API responses", () => {
     expect(markets).toContain("Taiwan");
     expect(document.querySelector('[data-today="radar"]')?.textContent).toContain("flagged by the rules");
     expect(document.querySelector('[data-today="health"]')).toBeTruthy();
+    const screens = document.querySelector('[data-today="screens"]')?.textContent;
+    expect(screens).toContain("2026-10-22: 0 movers");
+    expect(screens).toContain("波段趨勢: 0 new, 1 on watch");
+    expect(screens).toContain("2026-11-03 not judged yet");
     expect(unexplainedNumbers(container)).toEqual([]);
   });
 
