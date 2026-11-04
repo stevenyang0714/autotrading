@@ -325,11 +325,14 @@ def test_taiwan_factor_snapshots_read_taipei_closes_against_0050_and_recompute(
     engine: Engine, first: IngestionRun
 ) -> None:
     with Session(engine) as session:
-        at = session.execute(select(func.now())).scalar_one()  # T = S = now, as the daily job
+        # T: As known on 2026-10-22, the day after D1 (at T = now, D1's close is stale once it is
+        # 14 days old); S: now, after the rows were recorded
+        at = datetime(2026, 10, 22, 23, 59, 59, tzinfo=TAIPEI)
+        held = session.execute(select(func.now())).scalar_one()
         assert active_factor_version("TW") == "0.3.0"
         definitions = stored_definitions(session, "0.3.0")
         assert definitions is not None and definitions.benchmark == "0050"
-        stored = record_universe(session, definitions, [(at, "all")], at, "manual")
+        stored = record_universe(session, definitions, [(at, "all")], held, "manual")
         assert stored == len(CODES)
         rows = session.scalars(
             select(FactorSnapshot).where(FactorSnapshot.definition_version == "0.3.0")
