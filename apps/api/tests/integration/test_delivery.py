@@ -118,7 +118,7 @@ def test_each_pushed_alert_is_sent_once_and_recorded(sessions: sessionmaker[Sess
             (regime.id, "sent", 101),
             (s4.id, "sent", 102),
         ]
-        assert all((r.channel, r.rule_version) == ("telegram", "0.2.0") for r in rows)
+        assert all((r.channel, r.rule_version) == ("telegram", "0.3.0") for r in rows)
         # a second run sends nothing more
         assert deliver(session, rules, send, NOW + timedelta(minutes=5)) == (0, 0)
         assert set(delivered(session, [regime.id, s4.id])) == {regime.id, s4.id}
@@ -228,7 +228,7 @@ def test_the_alerts_api_says_whether_telegram_is_on_and_what_was_sent(
     assert (delivery["channel"], delivery["configured"], delivery["rule_version"]) == (
         "telegram",
         configured,
-        "0.2.0",
+        "0.3.0",
     )
     assert delivery["detail"].startswith("Telegram on" if configured else "Telegram not set up")
     assert CHAT not in str(body)

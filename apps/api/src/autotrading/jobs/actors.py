@@ -746,8 +746,39 @@ def deliver_alerts(trigger: str) -> None:
                     "telegram", rate=DELIVERY_RATE, burst=DELIVERY_BURST, timeout=60
                 ),
             )
-    if sent or failed:
-        logger.info("Telegram delivery (%s): %d sent, %d failed", trigger, sent, failed)
+            reported = _deliver_screens(session, rules, client, chat, now, limiter)
+    if sent or failed or reported:
+        logger.info(
+            "Telegram delivery (%s): %d sent, %d failed, %d screen report messages",
+            trigger,
+            sent,
+            failed,
+            reported,
+        )
+
+
+def _deliver_screens(
+    session: Session,
+    rules: delivery.DeliveryRuleSet,
+    client: telegram.TelegramClient,
+    chat: str,
+    now: datetime,
+    limiter: TokenBucketLimiter,
+) -> int:
+    """The Taiwan screens' reports (ADR-042 SC12), under the same chat and rate limit."""
+    from autotrading.repositories import screens
+
+    if rules.screens is None:
+        return 0
+    screen_rules = screens.stored_screen_rules(session, rules.screens.screen_rule_version)
+    if screen_rules is None:
+        return 0
+
+    def send(text: str) -> int:
+        limiter.acquire("telegram", rate=DELIVERY_RATE, burst=DELIVERY_BURST, timeout=60)
+        return client.send(chat, text)
+
+    return delivery.deliver_screens(session, rules, send, now, screen_rules.movers.push_top)
 
 
 def start_alert_delivery(*, manual: bool) -> None:

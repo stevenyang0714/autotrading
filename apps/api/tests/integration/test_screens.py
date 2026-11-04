@@ -1,8 +1,9 @@
 """M3.11 acceptance on recorded real TWSE and FinMind responses (ADR-042): the Taiwan screens
-judged over October 2026 from the stored data (every listed company from the TWSE files, six of
-them with a FinMind history), each run recomputing identically; the scheduled run's not-judged
-row for a session whose files have not come; the candidates whose flows FinMind fetches. Uses
-its own migrated database and stays small for CI.
+backfilled over October 2026 to 2026-10-21 and judged for 2026-10-22 by a manual run, from the
+stored data (every listed company from the TWSE files, six of them with a FinMind history), each
+run recomputing identically; the not-judged row for a session whose files have not come; the
+report pushed once; the candidates whose flows FinMind fetches. Uses its own migrated database
+and stays small for CI.
 """
 
 from collections.abc import Callable, Iterator
@@ -22,12 +23,14 @@ from autotrading.adapters.finmind import refresh as finmind_refresh
 from autotrading.adapters.finmind.client import INSTITUTIONAL
 from autotrading.config_sync import (
     ScreenRulesVersionError,
+    load_delivery_rules,
     load_screen_rules,
     load_sources,
+    sync_delivery_rules,
     sync_screen_rules,
     sync_sources,
 )
-from autotrading.db.models import ScreenRun, Source
+from autotrading.db.models import ScreenDelivery, ScreenRun, Source
 from autotrading.domain.markets import TW
 from autotrading.domain.screens import ScreenRulesFile, ScreenRunOut
 from autotrading.infra.object_store import make_s3_client
@@ -37,7 +40,7 @@ from autotrading.ingestion.rate_limit import TokenBucketLimiter
 from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.ingestion.schedule import market_calendar
-from autotrading.repositories import screens
+from autotrading.repositories import delivery, screens
 from autotrading.repositories.universe import taiwan_universe
 from autotrading.settings import get_settings
 from tests import finmind_replay, twse_replay
@@ -59,6 +62,7 @@ def engine(database_factory: Callable[[], URL]) -> Iterator[Engine]:
     with Session(engine) as session:
         sync_sources(session, load_sources(config / "sources.yaml"))
         sync_screen_rules(session, load_screen_rules(config / "screen_rules.yaml"))
+        sync_delivery_rules(session, load_delivery_rules(config / "delivery_rules.yaml"))
         for source_id in ("twse_openapi", "finmind"):
             source = session.get_one(Source, source_id)
             source.rate_limit_per_second, source.rate_limit_burst = 100, 100  # type: ignore[assignment]
@@ -70,7 +74,7 @@ def engine(database_factory: Callable[[], URL]) -> Iterator[Engine]:
 @pytest.fixture(scope="module")
 def backfilled(engine: Engine) -> list[ScreenRun]:
     """The TWSE sessions (every listed company), then the FinMind history (2330 and 2881's
-    ex-dividend results, six longer price histories), then the screens since October."""
+    ex-dividend results, six longer price histories), then the screens from October to D1."""
     settings = get_settings()
     s3 = make_s3_client(settings)
     bucket = f"raw-payloads-test-{uuid4().hex[:10]}"
@@ -94,7 +98,7 @@ def backfilled(engine: Engine) -> list[ScreenRun]:
         rules = screens.stored_screen_rules(session)
         assert rules is not None
         held = session.execute(select(func.now())).scalar_one()
-        screens.backfill(session, rules, held, since=SINCE)
+        screens.backfill(session, rules, held, since=SINCE, until=D1)
         return list(
             session.scalars(
                 select(ScreenRun).where(ScreenRun.trigger == "backfill").order_by(ScreenRun.session)
@@ -102,14 +106,36 @@ def backfilled(engine: Engine) -> list[ScreenRun]:
         )
 
 
+@pytest.fixture(scope="module")
+def live(engine: Engine, backfilled: list[ScreenRun]) -> ScreenRun:
+    """A manual run at T = S = now: D2 is the newest stored session not judged yet."""
+    with Session(engine) as session:
+        rules = screens.stored_screen_rules(session)
+        assert rules is not None
+        now = session.execute(select(func.now())).scalar_one()
+        row = screens.record_live(session, rules, now, "manual", market_calendar(TW.exchange))
+        session.commit()
+        assert row is not None
+        session.refresh(row)
+        session.expunge(row)
+        return row
+
+
 def test_october_is_judged_from_the_stored_data_and_recomputes_identically(
-    engine: Engine, backfilled: list[ScreenRun]
+    engine: Engine, backfilled: list[ScreenRun], live: ScreenRun
 ) -> None:
-    assert [r.session for r in backfilled][-2:] == [D1, D2]
+    assert backfilled[-1].session == D1 and backfilled[0].session >= SINCE
     assert all(r.status == "judged" and r.backfilled for r in backfilled)
-    assert backfilled[0].session >= SINCE and backfilled[0].previous_id is None
+    assert backfilled[0].previous_id is None
     assert all(b.previous_id == a.id for a, b in pairwise(backfilled))
-    last = ScreenRunOut.model_validate(backfilled[-1].document)
+    assert (live.session, live.status, live.trigger, live.backfilled) == (
+        D2,
+        "judged",
+        "manual",
+        False,
+    )
+    assert live.previous_id == backfilled[-1].id and live.known_at == live.system_time
+    last = ScreenRunOut.model_validate(live.document)
     # 1,087 listed companies (receipts left out); 1,083 traded in the sessions before D2 and
     # 1,077 of them on D2 (7 had no trade); six have 60 sessions of history
     assert (last.coverage.listed, last.coverage.expected, last.coverage.covered) == (
@@ -122,14 +148,15 @@ def test_october_is_judged_from_the_stored_data_and_recomputes_identically(
         "history": 1071,
         "no_trade": 10,
     }
-    assert last.industry_basis.startswith("first_known 2026-10-21")
+    assert last.industry_basis == "as_known"  # the backfill's is "first_known 2026-10-21"
+    assert backfilled[-1].document["industry_basis"].startswith("first_known 2026-10-2")
     swing = last.screens[0]
     fubon = next(x for x in swing.lines if x.code == "2881")
     assert fubon.state == "on_watch" and fubon.entered < D2
     assert fubon.source is not None and fubon.source.feed == "twse"  # the TWSE bar of D2
-    assert backfilled[-1].counts["screens"]["tw_swing_trend"]["meeting"] == swing.meeting
+    assert live.counts["screens"]["tw_swing_trend"]["meeting"] == swing.meeting
     with Session(engine) as session:
-        for row in (backfilled[0], backfilled[-1]):
+        for row in (backfilled[0], backfilled[-1], live):
             assert screens.same(row, screens.recompute(session, row)), row.session
         # a released rule version cannot change under the same number
         changed = load_screen_rules(get_settings().resolved_config_dir() / "screen_rules.yaml")
@@ -140,9 +167,7 @@ def test_october_is_judged_from_the_stored_data_and_recomputes_identically(
         session.rollback()
 
 
-def test_a_session_whose_files_have_not_come_is_not_judged(
-    engine: Engine, backfilled: list[ScreenRun]
-) -> None:
+def test_a_session_whose_files_have_not_come_is_not_judged(engine: Engine, live: ScreenRun) -> None:
     """SC10, SC11: every stored session is judged and the TWSE calendar names later ones, so the
     scheduled run records the latest of them as not judged."""
     with Session(engine) as session:
@@ -157,9 +182,38 @@ def test_a_session_whose_files_have_not_come_is_not_judged(
         assert not row.backfilled and row.previous_id is None
 
 
-def test_the_candidates_flows_leave_the_universe_out(
-    engine: Engine, backfilled: list[ScreenRun]
+def test_the_report_is_pushed_once_and_never_a_backfilled_run(
+    engine: Engine, live: ScreenRun
 ) -> None:
+    """SC12: the manual run's report is sent once and recorded; backfilled runs never are."""
+    sent: list[str] = []
+
+    def send(text: str) -> int:
+        sent.append(text)
+        return 500 + len(sent)
+
+    with Session(engine) as session:
+        rules = delivery.stored_delivery_rules(session)
+        assert rules is not None and rules.screens is not None
+        now = session.execute(select(func.now())).scalar_one()
+        morning = now.astimezone(TW.zone).replace(hour=10, minute=30)  # outside quiet hours
+        pending = delivery.pending_screen_runs(session, rules, morning)
+        assert live.id in {r.id for r in pending}
+        assert all(not r.backfilled and r.trigger in ("schedule", "manual") for r in pending)
+        assert delivery.deliver_screens(session, rules, send, morning, 10) == len(sent) >= 1
+        assert any("2026-10-22 收盤" in text for text in sent)
+        rows = session.scalars(select(ScreenDelivery).where(ScreenDelivery.run_id == live.id)).all()
+        assert [(r.status, r.channel, r.rule_version) for r in rows] == [
+            ("sent", "telegram", "0.3.0")
+        ]
+        before = len(sent)
+        assert delivery.deliver_screens(session, rules, send, morning, 10) == 0
+        assert len(sent) == before
+        quiet = now.astimezone(TW.zone).replace(hour=23, minute=30)
+        assert delivery.deliver_screens(session, rules, send, quiet, 10) == 0
+
+
+def test_the_candidates_flows_leave_the_universe_out(engine: Engine, live: ScreenRun) -> None:
     """SC5: the latest judged run's new and watched names, then its movers, without the
     universe's codes, in runs of at most 20 codes for the institutional flows only."""
     universe = taiwan_universe()
@@ -167,7 +221,7 @@ def test_the_candidates_flows_leave_the_universe_out(
         rules = screens.stored_screen_rules(session)
         assert rules is not None
         found = screens.candidates(session, rules, universe.codes)
-    last = ScreenRunOut.model_validate(backfilled[-1].document)
+    last = ScreenRunOut.model_validate(live.document)
     named = {x.code for s in last.screens for x in s.lines if x.state in ("entered", "on_watch")}
     named |= {m.code for m in last.movers}
     assert set(found) == named - set(universe.codes)

@@ -22,7 +22,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from autotrading.adapters.telegram.client import TelegramError
-from autotrading.db.models import Alert, AlertDelivery, DigestDelivery
+from autotrading.db.models import Alert, AlertDelivery, DigestDelivery, ScreenDelivery, ScreenRun
 from autotrading.db.models import DeliveryRuleSet as DeliveryRuleSetRow
 from autotrading.domain.delivery import (
     DIGEST_TITLES,
@@ -34,9 +34,12 @@ from autotrading.domain.delivery import (
     digest,
     message,
     not_pushed,
+    screen_report,
 )
+from autotrading.domain.screens import ScreenRunOut
 from autotrading.repositories.alert_context import alert_context
 from autotrading.repositories.audit import set_actor
+from autotrading.repositories.listed import industry_names
 from autotrading.settings import get_settings
 
 ACTOR = "delivery:telegram"
@@ -311,3 +314,107 @@ def deliver_digest(
     )
     session.commit()
     return len(texts)
+
+
+# ---------- the Taiwan screens' report (M3.11, ADR-042 SC12) ----------
+
+RETRY_FROM = (9, 30)  # a not-judged run is reported from the 10:00 retry on, Taipei time
+
+
+def pending_screen_runs(session: Session, rules: DeliveryRuleSet, now: datetime) -> list[ScreenRun]:
+    """The screen runs to report: stored by a scheduled or manual run (never a backfill) in the
+    last `max_age_hours`, under the rules' screen version, not sent and not failed
+    `max_attempts` times. A not-judged run only from the retry on, and only while no judged
+    run of its session exists."""
+    push = rules.screens
+    if push is None:
+        return []
+    rows = session.scalars(
+        select(ScreenRun)
+        .where(
+            ScreenRun.rule_version == push.screen_rule_version,
+            ScreenRun.trigger.in_(("schedule", "manual")),
+            ScreenRun.backfilled.is_(False),
+            ScreenRun.recorded_at >= now - timedelta(hours=push.max_age_hours),
+        )
+        .order_by(ScreenRun.recorded_at)
+    ).all()
+    out = []
+    for row in rows:
+        attempts = session.execute(
+            select(ScreenDelivery.status, func.count())
+            .where(ScreenDelivery.run_id == row.id, ScreenDelivery.channel == rules.channel)
+            .group_by(ScreenDelivery.status)
+        ).all()
+        counts = dict(attempts)
+        if counts.get("sent") or counts.get("failed", 0) >= rules.max_attempts:
+            continue
+        if row.status == "not_judged":
+            local = row.known_at.astimezone(ZoneInfo("Asia/Taipei"))
+            if (local.hour, local.minute) < RETRY_FROM:
+                continue
+            judged = session.scalar(
+                select(func.count())
+                .select_from(ScreenRun)
+                .where(
+                    ScreenRun.rule_version == row.rule_version,
+                    ScreenRun.session == row.session,
+                    ScreenRun.status == "judged",
+                )
+            )
+            if judged:
+                continue
+        out.append(row)
+    return out
+
+
+def deliver_screens(
+    session: Session,
+    rules: DeliveryRuleSet,
+    send: Callable[[str], int],
+    now: datetime,
+    push_top: int,
+) -> int:
+    """Send each pending screen run's report (outside quiet hours) and record it; returns the
+    messages sent. Commits after each run, so a crash never sends a report twice."""
+    if rules.screens is None or rules.quiet_hours.holds(now):
+        return 0
+    sent = 0
+    industries = industry_names()
+    for row in pending_screen_runs(session, rules, now):
+        texts = screen_report(
+            rules, ScreenRunOut.model_validate(row.document), industries, push_top
+        )
+        set_actor(session, ACTOR)
+        first: int | None = None
+        try:
+            for text in texts:
+                message_id = send(text)
+                first = message_id if first is None else first
+        except TelegramError as exc:
+            session.add(
+                ScreenDelivery(
+                    run_id=row.id,
+                    channel=rules.channel,
+                    rule_version=rules.rule_version,
+                    status="failed",
+                    messages=0,
+                    error_code=exc.code,
+                    error=str(exc)[:300],
+                )
+            )
+            session.commit()
+            continue
+        session.add(
+            ScreenDelivery(
+                run_id=row.id,
+                channel=rules.channel,
+                rule_version=rules.rule_version,
+                status="sent",
+                messages=len(texts),
+                message_id=first,
+            )
+        )
+        session.commit()
+        sent += len(texts)
+    return sent

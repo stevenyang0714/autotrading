@@ -15,12 +15,14 @@ import yaml
 
 from autotrading.adapters.finmind.client import DIVIDENDS
 from autotrading.config_sync import load_screen_rules
+from autotrading.domain.delivery import MAX_MESSAGE, _notes, screen_report
 from autotrading.domain.finmind import dividend_results, price_rows
 from autotrading.domain.provenance import end_of_day
 from autotrading.domain.screens import (
     CloseBelowLevel,
     Company,
     DailyBar,
+    NoteReading,
     PreviousRun,
     ScreenRuleSet,
     ScreenRulesFile,
@@ -35,6 +37,8 @@ from autotrading.domain.screens import (
     read_stock,
 )
 from autotrading.domain.twse import company_rows, day_rows, ex_right_rows
+from autotrading.repositories.delivery import load_delivery_rules
+from autotrading.repositories.listed import industry_names
 from autotrading.settings import get_settings
 from tests.finmind_replay import PRICE_CODES, payload, price_history
 from tests.twse_replay import payload as twse_payload
@@ -278,3 +282,29 @@ def test_a_session_below_the_coverage_is_not_judged() -> None:
     assert run.status == "not_judged" and run.screens == [] and run.movers == []
     assert (run.coverage.covered, run.coverage.expected) == (5, 6)
     assert run.reason is not None and "5 of 6" in run.reason and "83.3%" in run.reason
+
+
+def test_the_report_names_the_movers_and_screens_and_never_a_flow_number() -> None:
+    """SC12: one plain-text message under Telegram's length, the page named but not linked,
+    TWSE's and FinMind's attribution and the footer; flows as conditions met or not."""
+    delivery = load_delivery_rules(CONFIG / "delivery_rules.yaml").active()
+    assert delivery.screens is not None and delivery.screens.screen_rule_version == "0.1.0"
+    run = run_at(date(2026, 10, 21), previous_of(run_at(date(2026, 10, 20))))  # 2881 met then
+    (text,) = screen_report(delivery, run, industry_names(CONFIG), RULES.movers.push_top)
+    assert len(text) <= MAX_MESSAGE and "http" not in text
+    assert text.startswith("[autotrading] 台股研究篩選（非建議）｜2026-10-21 收盤")
+    assert "異動前 0（相對自身波動與均量）：\n（今天沒有）" in text
+    assert "波段趨勢：新進 1、觀察中 0、結束 0" in text
+    assert "＋ 2881 富邦金（金融保險業） 收 " in text
+    assert "外資近 5 日至少 3 日買超 無資料" in text  # no flows fetched for 2881 here
+    assert "頁面：機會雷達 › 台股篩選" in text and "資料來源：臺灣證券交易所" in text
+    assert "FinMind" in text and text.endswith(delivery.footer)
+    met = NoteReading(
+        kind="flow_net_buy", label="外資近 5 日至少 3 日買超", status="pass", days=4, of=5
+    )
+    assert _notes([met]) == "外資近 5 日至少 3 日買超 ✓"  # the 4 days stay on the web
+    not_judged = run.model_copy(
+        update={"status": "not_judged", "reason": "TWSE's files of 2026-10-22 are not stored yet"}
+    )
+    (short,) = screen_report(delivery, not_judged, {}, RULES.movers.push_top)
+    assert "未判斷：TWSE's files of 2026-10-22 are not stored yet" in short

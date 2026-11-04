@@ -32,6 +32,8 @@ PINNED = {
     "0.1.0": "7b6a95934e7c41dad84ef2bd9988eff7bbf90b9cd3e8af3d15d9d0b17738149a",
     # Chinese messages with reasons and a weekly digest (ADR-038)
     "0.2.0": "9d534f27fd81bfaa5b35b7616fd068f3ceb30aeee295ba14c12b3a545229bd9f",
+    # the Taiwan screens' report (ADR-042)
+    "0.3.0": "9a9ea04df53dea6e5ea21dfb64cda860ad8fcc6d6f42387f5a2b839c35c04d3f",
 }
 FIRST = next(r.rule_set() for r in FILE.rule_sets if r.rule_version == "0.1.0")
 NOW = datetime(2026, 10, 20, 3, 20, tzinfo=UTC)  # 11:20 Singapore time
