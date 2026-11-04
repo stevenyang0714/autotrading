@@ -1267,7 +1267,7 @@ Next were 2303 UMC (1.61, 3.9% below 10th) and 2408 Nanya Technology (1.51).
 
 **TW11 Valuation percentiles.** The P/E, P/B and yield percentiles use the last session of each Taipei month in `exchange_measures`, and are shown from 12 month ends. They are not mixed with the Research Record's SEC-based P/E.
 
-**TW12 Research only.** No strategy, signal, alert, Telegram push, paper portfolio or risk rule reads Taiwan. There is no TWD/USD rate until M3.9.
+**TW12 Research only.** No strategy, signal, alert, Telegram push, paper portfolio or risk rule reads Taiwan. There is no TWD/USD rate until M3.9. (Amended by ADR-042 SC12: the Taiwan screens' research report is pushed; nothing else.)
 
 **TW13 Pages.**
 - `/instruments` gains a Taiwan (TWSE) section.
@@ -1380,6 +1380,49 @@ Steven asked on 2026-10-26 for the pushes to show on a dashboard and to manage h
 
 ---
 
+## ADR-042 M3.11: Taiwan listed-stock screens, movers and the daily research report — Accepted (2026-11-04, Steven approved the whole TWSE-listed market, the FinMind scope and ordering by change; Claude's decisions under ADR-035)
+Steven described his workflow on 2026-10-26: turn his stock-picking judgement into explicit conditions (a stock above its rising 20-session average with its group strengthening; a breakout from a consolidation on volume; foreign investors and investment trusts buying on several days, never one), check them every day over the market, and get a research report with the names, the conditions they meet, the volume change and the risks; judge nothing when the data is incomplete or not updated; check the conditions on history so they are not too wide; the report is a screening tool, not a buy or sell signal. On 2026-11-04 he decided: the Taiwan screens read every TWSE-listed company, not the 11 research codes; FinMind may serve those companies' prices since 2024 and ex-dividend results once and the candidates' institutional flows daily (at most 150 requests a day in all); and he wants the stocks that change the most, not the biggest. M3.11 is Taiwan only; investment policy and rebalancing move to M3.12, performance to M3.13.
+
+**SC1 Universe (Steven).** Every company of the TWSE company file (t187ap03_L) that trades, depositary receipts (industry 91) left out: 1,087 on 2026-10-22. The 11-code research universe is unchanged; the other companies never enter Instruments, the radar, the factors or any rule, and have no instrument page.
+
+**SC2 Listed companies.** Migration 0034 `listed_companies` (append-only, audited, with provenance): code, short name, industry, listing date and whether the file still lists the company, a row per company and change. The company file is fetched when a universe instrument is missing, when STOCK_DAY_ALL names a four-digit code never seen in it (a new listing; every four-digit code of the recorded files is a company), and on the first slot of each Taipei Monday. The industry names (`config/twse_industries.yaml`) come from joining t187ap03_L and t187ap05_L on the company code; every code met one name.
+
+**SC3 Daily bars.** The TWSE runs store every listed company's raw bar, price change and trade value from the STOCK_DAY_ALL they already fetch, in one batch (about ten statements for 1,100 codes), and the dividends TWT48U_ALL announces for them; no valuation, margin or TW9 note for codes outside the universe.
+
+**SC4 FinMind history (Steven).** TaiwanStockPrice since 2024-01-01 for the listed companies outside the universe and TaiwanStockDividendResult for all, one run per code and dataset under a fixed window (a re-run queues only what has not succeeded), up to the day before the first TWSE session of the listed companies, sent 13 s apart so the worker never holds more than one waiting FinMind run (KI-30). `make finmind-listed-backfill [DATASET=price|dividends]`, about four hours each.
+
+**SC5 Candidates' flows (Steven).** The 21:30 FinMind run adds the latest judged run's new and watched names, then its movers, the universe left out, in runs of at most 20 codes for the institutional flows only, 270 s apart: at most 150 requests a day with the universe's 22.
+
+**SC6 Returns across an ex-date.** Neither TWSE's nor FinMind's daily change gives the reference price on an ex-date: both state 0 (every recorded FinMind ex-date of 2330 and 2881; TWSE's 0056 on 2026-10-22). A session's return is against FinMind's ex-dividend reference price (`ex_reference_price`, any kind) where there is one, else the previous close less TWT48U_ALL's announced cash dividend over one plus the stock dividend, else the previous close; a change of 0 with another close and no recorded action is an unexplained gap, read as a raw ratio and flagged. Closes are moved to T's basis by chaining the returns back from T's close. Steven approved fetching the ex-dividend results for this (2026-11-04). TW9 no longer reads a recorded ex-date as a gap.
+
+**SC7 Movers (Steven: change the most).** Liquid stocks (20-session average trade value at least NT$30 million, at least 60 sessions): z1 (the session's return over the standard deviation of the 60 before), z5 (the 5-session return over that deviation times the square root of 5) and the volume ratio (volume over the 20 sessions' average). A mover has |z1| or |z5| of 2.5 or more, or a volume ratio of 3 or more; ordered by the larger |z|. 30 on the page, 10 in the report. The volume ratio is flagged when a stock action over 5% falls in its window.
+
+**SC8 Screens 0.1.0 (Steven's conditions, Claude's thresholds).** Swing Trend: liquid; close above the 20-session average; that average above its value 5 sessions earlier; close above the 60-session average; at least half the industry's liquid stocks above their own 20-session average (judged when the industry has 5 or more). Range Breakout: liquid; the 20 sessions before within 15% from low to high; close above their high; volume at least twice their average. Notes on both (shown, not required, because flows exist only for candidates): foreign investors and investment trusts net buying on at least 3 of the last 5 sessions. Names are ordered by the movers' change.
+
+**SC9 Watch lists.** A name enters the first session it meets a screen and stays on watch until an ending condition holds (Swing Trend: 2 closes in a row below the 20-session average; Range Breakout: a close below the high it broke, moved for later ex-dates), or until it has been on the list 20 judged sessions and no longer meets the screen.
+
+**SC10 Not judged.** Only sessions the stored data names are judged. Below 95% of the listed companies that traded in the 5 sessions before, the session is recorded as not judged with the reason; when every stored session is judged and the TWSE calendar names a later one, that session is recorded as not judged (its files have not come). A stock without the inputs is unavailable, never listed.
+
+**SC11 Schedule.** TWSE publishes a session's files at about 05:20 Taipei the next morning, so the screens run at 08:05 and 10:00 SGT, before the 09:00 Taipei open, on the newest stored session not judged yet.
+
+**SC12 The report (amends ADR-039 TW12 for it only).** Delivery rules 0.3.0: one Telegram report per scheduled or manual run from the last 24 hours, never a backfilled one; a not-judged session only from the 10:00 retry on. The coverage, the top 10 movers, each screen's new and ended names with the reason (at most 15 each, the rest counted); FinMind's flows as conditions met or not, never its numbers (no redistribution); TWSE's prices with its attribution; the page named, never linked (ADR-037 T6). Taiwan still enters no strategy, signal, alert, paper portfolio or risk rule. The screens never read the holdings ledger, so a push never names a holding (the answer to ADR-041 H12).
+
+**SC13 History check (OD-7).** `make screens-backfill [SINCE=]` judges every stored session from the first with 60 sessions before it, each as known at the end of its Taipei day, the watch lists carried, the industry as first known (the company file was first fetched with M3.11); the page shows the stocks meeting each screen per session, the median, the maximum and the share of sessions with none, never returns. `make screens-verify` recomputes the latest runs at their own T and S and must report all identical. Only today's listed companies have history (KI-31).
+
+**SC14 P2-3's scope (Steven).** Factors, the radar and backtests still read each instrument against its own history only. The Taiwan screens order stocks by their change against their own history, and industry breadth counts across an industry's stocks, as Steven's workflow asks (2026-10-26, 2026-11-04).
+
+**SC15 Page.** `/dashboards/opportunity-radar/taiwan-screens`, under the radar (the 15 dashboards are unchanged): the coverage, the movers, each screen's conditions in words from its rule version and hash, its watch list with the numbers and the bar each reading cites (feed, publication time, row id), a session not judged and why, the history check, As known on, TWSE's and FinMind's attribution. A Today card and a radar link; 20 glossary terms with Chinese hints; `twse_price_change` and `twse_reference_price` 0.2.0, `alert_delivery` 0.3.0.
+
+**SC16 CI.** Compose smoke's time limit is 40 minutes (PR #42's run took 28 min 51 s of 30); the screens' integration tests use one database and replay CI's recorded data once.
+
+**Arithmetic.** Each stock's readings depend on its own window only and use IEEE floating point (correctly rounded, so a recompute is identical), stored to 4 decimals: a scheduled run, a backfill and a recompute agree.
+
+**Out of scope.** US screens and a wider US universe (a membership source is a provider decision); TPEx; intraday data; screens led by institutional flows (the whole market's flows exceed the free tier); returns after the hits (OD-7); investment policy and rebalancing (M3.12); performance (M3.13).
+
+**Live check:** see the M3.11 row of `docs/STATUS.md`.
+
+---
+
 ## Open decisions (owner: Steven)
 
 | ID | Decision | Needed by | Default until decided |
@@ -1391,6 +1434,7 @@ Steven asked on 2026-10-26 for the pushes to show on a dashboard and to manage h
 | OD-9 | Verify account eligibility from Singapore for Interactive Brokers (data + paper). The Alpaca part was verified on 2026-10-06 (paper account; market data reachable from Singapore). | Phase 5 | No broker |
 
 ## Decided
+- M3.11 scope (2026-11-04): Steven approved the whole TWSE-listed market for the Taiwan screens, FinMind prices since 2024 and ex-dividend results for every listed company once and the candidates' institutional flows daily (at most 150 requests a day), and ordering the screens by each stock's change against its own history. See ADR-042.
 - OD-2 (2026-10-19): Telegram alert delivery from M3.0b, with the Taiwan market (TWSE and TPEx OpenAPI) approved the same day. See ADR-035.
 - Phase 3 approved (2026-10-19): Steven answered P3-1 to P3-6 with the proposed defaults; OD-6 decided (NASA FIRMS and NOAA ENSO, FIRMS key registered by Steven before M3.5); Claude decides scope and reversible choices from now on. See ADR-035.
 - OD-1 (2026-10-06): Steven confirmed ADR-001: a personal tool, with no redistribution of data. ADR-001 is Accepted.

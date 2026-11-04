@@ -1,0 +1,288 @@
+{
+  "recorded_at": "2026-11-04T03:04:03.293995+00:00",
+  "recorded_from": "recorded TWSE and FinMind responses replayed into the integration test database (tests/integration/test_screens.py)",
+  "endpoint": "/taiwan/screens",
+  "params": {},
+  "response": {
+    "known_at": "2026-11-04T03:04:03.282189Z",
+    "run_id": "e08f0c25-9250-49b3-ad85-e7f929865454",
+    "recorded_at": "2026-11-04T03:04:02.438799Z",
+    "trigger": "manual",
+    "backfilled": false,
+    "demo": false,
+    "run": {
+      "market": "TW",
+      "session": "2026-10-22",
+      "known_at": "2026-11-04T03:04:02.438799Z",
+      "rule_version": "0.1.0",
+      "status": "judged",
+      "reason": null,
+      "coverage": {
+        "listed": 1087,
+        "expected": 1083,
+        "covered": 1077,
+        "ratio": "0.9945",
+        "read": 6,
+        "unavailable": {
+          "history": 1071,
+          "no_trade": 10
+        },
+        "liquid": 6
+      },
+      "industry_basis": "as_known",
+      "breadth": {
+        "17": {
+          "members": 1,
+          "above": 1,
+          "share": "1.0000"
+        },
+        "24": {
+          "members": 5,
+          "above": 0,
+          "share": "0.0000"
+        }
+      },
+      "movers": [],
+      "movers_count": 0,
+      "screens": [
+        {
+          "screen_id": "tw_swing_trend",
+          "name_zh": "波段趨勢",
+          "meeting": 1,
+          "unavailable": 0,
+          "lines": [
+            {
+              "code": "2881",
+              "name": "富邦金",
+              "industry": "17",
+              "state": "on_watch",
+              "entered": "2026-10-01",
+              "sessions": 15,
+              "level": null,
+              "still_meets": true,
+              "reason": null,
+              "conditions": [
+                {
+                  "kind": "liquid",
+                  "label": "20 日平均成交值 ≥ NT$3,000 萬",
+                  "status": "pass",
+                  "value": "2520318873.4500",
+                  "threshold": "30000000.0000"
+                },
+                {
+                  "kind": "close_above_sma",
+                  "label": "收盤價高於 20 日均線",
+                  "status": "pass",
+                  "value": "158.5000",
+                  "threshold": "155.2500"
+                },
+                {
+                  "kind": "sma_rising",
+                  "label": "20 日均線高於 5 日前",
+                  "status": "pass",
+                  "value": "155.2500",
+                  "threshold": "153.7500"
+                },
+                {
+                  "kind": "close_above_sma",
+                  "label": "收盤價高於 60 日均線",
+                  "status": "pass",
+                  "value": "158.5000",
+                  "threshold": "143.6583"
+                },
+                {
+                  "kind": "industry_breadth_min",
+                  "label": "同產業有流動性的股票中 ≥ 50% 站上 20 日均線（≥ 5 檔才判斷）",
+                  "status": "not_applicable",
+                  "value": "1.0000",
+                  "threshold": null
+                }
+              ],
+              "notes": [
+                {
+                  "kind": "flow_net_buy",
+                  "label": "外資近 5 日至少 3 日買超",
+                  "status": "unavailable",
+                  "days": null,
+                  "of": null
+                },
+                {
+                  "kind": "flow_net_buy",
+                  "label": "投信近 5 日至少 3 日買超",
+                  "status": "unavailable",
+                  "days": null,
+                  "of": null
+                }
+              ],
+              "metrics": {
+                "close": "158.50",
+                "change_1d": "0.0000",
+                "change_5d": "-0.0063",
+                "z1": "0.0000",
+                "z5": "-0.1351",
+                "volume_ratio": "0.6371",
+                "avg_trade_value": "2520318873.4500",
+                "sma_20": "155.2500",
+                "sma_60": "143.6583",
+                "range_high": "164.5000",
+                "range_low": "147.5000"
+              },
+              "flags": [
+                "action_in_window"
+              ],
+              "source": {
+                "bar_id": "efa50f22-7375-4889-bca3-0a928a63b543",
+                "feed": "twse",
+                "feed_status": "end_of_day",
+                "published_at": "2026-10-22T15:59:59.999999Z"
+              },
+              "score": "0.1351"
+            }
+          ],
+          "watch": [
+            {
+              "code": "2881",
+              "entered": "2026-10-01",
+              "sessions": 15,
+              "level": null
+            }
+          ]
+        },
+        {
+          "screen_id": "tw_range_breakout",
+          "name_zh": "量價突破",
+          "meeting": 0,
+          "unavailable": 0,
+          "lines": [],
+          "watch": []
+        }
+      ]
+    },
+    "rules": {
+      "rule_version": "0.1.0",
+      "content_sha256": "cf10f6d4deb1059efcf5562aef9bd593732dfa2c82e8a25fa83da3df701733a9",
+      "released": "2026-11-04",
+      "note": "Claude's defaults under ADR-035 for Steven's 2026-10-26 workflow. Every listed company but depositary receipts, read from its own last 90 market sessions; judged only when bars of the session cover 95% of the companies that traded in the 5 sessions before. Movers: a liquid stock whose 1- or 5-session move is at least 2.5 times its own 60-session volatility, or whose volume is at least 3 times its own 20-session average. A listed name stays on the watch list until a condition ends it or 20 judged sessions pass.",
+      "window_sessions": 90,
+      "watch_sessions": 20,
+      "readiness": {
+        "min_coverage": "0.95",
+        "lookback_sessions": 5
+      },
+      "liquidity": {
+        "sessions": 20,
+        "min_avg_trade_value_twd": "30000000",
+        "min_history": 60
+      },
+      "movers": {
+        "volatility_sessions": 60,
+        "z_threshold": "2.5",
+        "change_sessions": 5,
+        "volume_sessions": 20,
+        "volume_ratio": "3",
+        "page_top": 30,
+        "push_top": 10
+      },
+      "definitions": [
+        {
+          "screen_id": "tw_swing_trend",
+          "name_zh": "波段趨勢",
+          "conditions": [
+            "20 日平均成交值 ≥ NT$3,000 萬",
+            "收盤價高於 20 日均線",
+            "20 日均線高於 5 日前",
+            "收盤價高於 60 日均線",
+            "同產業有流動性的股票中 ≥ 50% 站上 20 日均線（≥ 5 檔才判斷）"
+          ],
+          "notes": [
+            "外資近 5 日至少 3 日買超",
+            "投信近 5 日至少 3 日買超"
+          ],
+          "invalidation": [
+            "連續 2 日收盤低於 20 日均線",
+            "觀察滿 20 個交易日且不再符合條件"
+          ]
+        },
+        {
+          "screen_id": "tw_range_breakout",
+          "name_zh": "量價突破",
+          "conditions": [
+            "20 日平均成交值 ≥ NT$3,000 萬",
+            "前 20 日高低區間 ≤ 15%",
+            "收盤價突破前 20 日最高價",
+            "成交量 ≥ 前 20 日均量 2 倍"
+          ],
+          "notes": [
+            "外資近 5 日至少 3 日買超",
+            "投信近 5 日至少 3 日買超"
+          ],
+          "invalidation": [
+            "收盤跌回突破價之下",
+            "觀察滿 20 個交易日且不再符合條件"
+          ]
+        }
+      ]
+    },
+    "pending": {
+      "session": "2026-11-03",
+      "reason": "TWSE's files of 2026-11-03 are not stored yet (the latest stored session is 2026-10-22): not judged",
+      "known_at": "2026-11-04T03:04:03.088881Z"
+    },
+    "industries": {
+      "01": "水泥工業",
+      "02": "食品工業",
+      "03": "塑膠工業",
+      "04": "紡織纖維",
+      "05": "電機機械",
+      "06": "電器電纜",
+      "08": "玻璃陶瓷",
+      "09": "造紙工業",
+      "10": "鋼鐵工業",
+      "11": "橡膠工業",
+      "12": "汽車工業",
+      "14": "建材營造",
+      "15": "航運業",
+      "16": "觀光餐旅",
+      "17": "金融保險業",
+      "18": "貿易百貨",
+      "20": "其他",
+      "21": "化學工業",
+      "22": "生技醫療業",
+      "23": "油電燃氣業",
+      "24": "半導體業",
+      "25": "電腦及週邊設備業",
+      "26": "光電業",
+      "27": "通信網路業",
+      "28": "電子零組件業",
+      "29": "電子通路業",
+      "30": "資訊服務業",
+      "31": "其他電子業",
+      "35": "綠能環保",
+      "36": "數位雲端",
+      "37": "運動休閒",
+      "38": "居家生活",
+      "91": "存託憑證"
+    },
+    "attribution": {
+      "provider": "臺灣證券交易所",
+      "year": 2026,
+      "datasets": [
+        "上市個股日成交資訊",
+        "上市個股日本益比、殖利率及股價淨值比",
+        "集中市場融資融券餘額",
+        "上市股票除權除息預告表"
+      ],
+      "license": "此開放資料依政府資料開放授權條款 (Open Government Data License) 進行公眾釋出",
+      "license_url": "https://data.gov.tw/license",
+      "text": "臺灣證券交易所 2026 上市個股日成交資訊、上市個股日本益比、殖利率及股價淨值比、集中市場融資融券餘額、上市股票除權除息預告表；此開放資料依政府資料開放授權條款 (Open Government Data License) 進行公眾釋出，https://data.gov.tw/license",
+      "supplementary": [
+        {
+          "provider": "FinMind",
+          "text": "資料來源：FinMind",
+          "terms_url": "https://finmind.github.io/Pricing/"
+        }
+      ]
+    },
+    "detail": "A research screen and a watch list, not buy or sell advice. Thresholds are Claude's defaults (ADR-042), unvalidated: the history check counts the stocks that met a screen, never their returns (OD-7)."
+  }
+}

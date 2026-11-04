@@ -1,6 +1,7 @@
 """The TWSE OpenAPI files (M3.7, ADR-039): parsers on the recorded files, the market-cap
 ranking behind config/universe_tw.yaml, the margin chain, the reference price check and the
-client's allowed paths."""
+client's allowed paths. M3.11 (ADR-042 SC1, SC2): the listed companies, their industry names
+and when the company file is fetched."""
 
 import hashlib
 from datetime import date, datetime
@@ -19,6 +20,8 @@ from autotrading.adapters.twse.client import (
     TwseRequestError,
     public_url,
 )
+from autotrading.adapters.twse.daily import COMPANY_CODE
+from autotrading.adapters.twse.refresh import weekly_companies
 from autotrading.config_sync import load_sources
 from autotrading.domain.market_calendar import load_calendar
 from autotrading.domain.twse import (
@@ -41,6 +44,7 @@ from autotrading.domain.twse import (
     valuation_rows,
 )
 from autotrading.ingestion.schedule import SCHEDULES, TWSE
+from autotrading.repositories.listed import industry_names
 from autotrading.settings import get_settings
 from tests.twse_replay import FIXTURES, payload
 
@@ -117,6 +121,38 @@ def test_the_frozen_universe_is_the_recorded_top_ten_by_market_cap() -> None:
         assert hashlib.sha256((FIXTURES / f"d1_{name}.json").read_bytes()).hexdigest() == sha
 
 
+def test_every_listed_company_has_its_listing_date_and_a_named_industry() -> None:
+    companies = {c.code: c for c in company_rows(payload("d1", "t187ap03_L"))}
+    assert len(companies) == 1097
+    assert companies["2603"].listed_on == date(1987, 9, 21)
+    assert all(c.listed_on is not None for c in companies.values())
+    names = industry_names(CONFIG)
+    assert {c.industry for c in companies.values()} <= set(names)
+    assert names["24"] == "半導體業" and names["91"] == "存託憑證"
+    # 91 are depositary receipts: ten of them, some with six-character codes
+    receipts = sorted(code for code, c in companies.items() if c.industry == "91")
+    assert len(receipts) == 10 and "910322" in receipts
+
+
+def test_a_four_digit_code_of_the_day_file_is_always_a_company() -> None:
+    """The rule behind fetching the company file again (ADR-042 SC2): a four-digit code the file
+    was never seen with is a new listing, never a fund or a warrant."""
+    companies = {c.code for c in company_rows(payload("d1", "t187ap03_L"))}
+    for day in ("d1", "d2"):
+        codes = {r.code for r in day_rows(payload(day, "STOCK_DAY_ALL"))}
+        four = {code for code in codes if COMPANY_CODE.fullmatch(code)}
+        assert four and four <= companies
+        assert "0050" not in four and "0056" not in four
+
+
+def test_the_company_file_is_fetched_weekly_on_the_first_taipei_slot_of_monday() -> None:
+    taipei = ZoneInfo("Asia/Taipei")
+    monday = datetime(2026, 11, 2, 7, 40, tzinfo=taipei)
+    assert weekly_companies("07:40", monday)
+    assert not weekly_companies("09:40", monday)
+    assert not weekly_companies("07:40", datetime(2026, 11, 3, 7, 40, tzinfo=taipei))
+
+
 def test_the_xtai_calendar_matches_the_recorded_holiday_schedule() -> None:
     calendar = load_calendar(yaml.safe_load((CONFIG / "market_calendar_xtai.yaml").read_text()))
     published = closures(holiday_rows(payload("d1", "holidaySchedule")))
@@ -189,6 +225,30 @@ def test_ticks_and_the_reference_price_check() -> None:
         reference_gap("2330", day, Decimal(2430), Decimal(15), before, Decimal(2420), etf=False)
         is None
     )
+    # the recorded ex-date of 0056 (2026-10-22, cash 1.72): TWSE states a change of 0, not the
+    # change against the reference 57.03; with the dividend recorded there is nothing to check,
+    # without it a change of 0 and another close is an action the file did not tell
+    rows = {r.code: r for r in day_rows(payload("d2", "STOCK_DAY_ALL"))}
+    fund = rows["0056"]
+    assert fund.close == Decimal("56.30") and fund.change == 0
+    assert fund.close is not None and fund.change is not None
+    told = {r.code: r for r in ex_right_rows(payload("d1", "TWT48U_ALL")) if r.ex_date == day}
+    assert told["0056"].cash == Decimal("1.72")
+    assert (
+        reference_gap(
+            "0056",
+            day,
+            fund.close,
+            fund.change,
+            before,
+            Decimal("58.75"),
+            etf=True,
+            cash=Decimal("1.72"),
+        )
+        is None
+    )
+    untold = reference_gap("0056", day, fund.close, fund.change, before, Decimal("58.75"), etf=True)
+    assert untold is not None and untold.reference == Decimal("56.30")
     # a 10% stock dividend: 100 / 1.1 = 90.91
     assert (
         reference_gap(

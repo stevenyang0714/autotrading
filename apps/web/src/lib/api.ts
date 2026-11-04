@@ -1194,3 +1194,41 @@ export async function reverseHoldingEntry(entryId: string, note: string | null):
     }),
   );
 }
+
+// ---------- Taiwan screens (M3.11, ADR-042) ----------
+
+export type TaiwanScreens = components["schemas"]["TaiwanScreensOut"];
+export type TaiwanScreensHistory = components["schemas"]["TaiwanScreensHistoryOut"];
+export type ScreenRun = components["schemas"]["ScreenRunOut"];
+export type ScreenResult = components["schemas"]["ScreenResult"];
+export type WatchLine = components["schemas"]["WatchLine"];
+export type ScreenMover = components["schemas"]["Mover"];
+export type ScreenMetrics = components["schemas"]["Metrics"];
+
+/** The latest judged Taiwan screen run known at `knownAt`, or null when the API is down. */
+export async function loadTaiwanScreens(knownAt?: string): Promise<TaiwanScreens | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/taiwan/screens", {
+      params: { query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Every judged run of that rule version known at `knownAt` (the history check). */
+export async function loadTaiwanScreensHistory(knownAt?: string): Promise<TaiwanScreensHistory | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/taiwan/screens/history", {
+      params: { query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}

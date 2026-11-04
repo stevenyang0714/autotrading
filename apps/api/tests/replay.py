@@ -22,7 +22,7 @@ from autotrading.ingestion.rate_limit import TokenBucketLimiter
 from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.ingestion.schedule import refresh_window
-from autotrading.repositories import momentum
+from autotrading.repositories import momentum, screens
 from autotrading.repositories.backtest import (
     record_all,
     stored_backtest_rules,
@@ -40,6 +40,7 @@ from autotrading.settings import get_settings
 from tests import alpaca_replay, finmind_replay, fred_replay, news_replay, sec_replay, twse_replay
 
 REPLAY_BACKFILL_SINCE = date(2025, 1, 1)  # enough history for the pages, short for CI
+SCREENS_SINCE = date(2026, 10, 1)  # the Taiwan screens' recorded sessions in CI (M3.11)
 
 
 def main() -> None:
@@ -74,6 +75,7 @@ def main() -> None:
     news_runs = news_replay.replay(runner, window)
     twse_runs = twse_replay.replay(runner, window)
     finmind_runs = finmind_replay.replay_history(runner, window)  # after TWSE: it never overwrites
+    finmind_runs += finmind_replay.replay_prices(runner, window)  # six longer histories (M3.11)
     print(
         f"replayed {len(sec_runs)} SEC, {len(fred_runs)} FRED, {len(alpaca_runs)} Alpaca, "
         f"{len(news_runs)} news, {len(twse_runs)} TWSE and {len(finmind_runs)} FinMind runs "
@@ -126,6 +128,11 @@ def main() -> None:
         momentum_rules = stored_momentum_rules(session)
         assert momentum_rules is not None, "momentum rules not loaded: run `make migrate` first"
         momenta = momentum.record_points(session, momentum_rules, points, held, "replay")
+        # The Taiwan screens (M3.11) at every recorded session since October 2026, as
+        # `make screens-backfill` stores them, so the screens page has runs and a watch list.
+        screen_rules = screens.stored_screen_rules(session)
+        assert screen_rules is not None, "screen rules not loaded: run `make migrate` first"
+        screened = screens.backfill(session, screen_rules, held, "replay", since=SCREENS_SINCE)
         # The backtests (M2.5) now, at a later system time again, so they read everything above.
         backtest_rules = stored_backtest_rules(session)
         assert backtest_rules is not None, "backtest rules not loaded: run `make migrate` first"
@@ -134,7 +141,7 @@ def main() -> None:
     print(
         f"stored {stored} buyback state assignments, {regimes} regime assessments, "
         f"{snapshots} factor snapshots, {rotations} rotation assessments, {momenta} S4 "
-        f"assessments and {runs} backtest runs"
+        f"assessments, {screened} Taiwan screen runs and {runs} backtest runs"
     )
 
 

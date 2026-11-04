@@ -108,8 +108,11 @@ def _day(value: Any) -> date:
 
 
 def price_rows(payload: Any) -> list[DayRow]:
-    """TaiwanStockPrice as STOCK_DAY_ALL rows: volume in shares, value in TWD, `spread` is the
-    change against the reference price, `Trading_turnover` the number of trades."""
+    """TaiwanStockPrice as STOCK_DAY_ALL rows: volume in shares, value in TWD, `spread` the
+    change, `Trading_turnover` the number of trades. FinMind's `spread` is the change against the
+    previous close on an ordinary session, but 0 on an ex-date (checked on every recorded ex-date,
+    tests/fixtures/finmind_prices; ADR-042 SC6): the session's reference price comes from the
+    ex-dividend results (`ex_reference_price`), never from it."""
     return [
         DayRow(
             code=str(_field(r, "stock_id")).strip(),

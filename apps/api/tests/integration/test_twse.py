@@ -1,9 +1,12 @@
 """M3.7 acceptance on recorded real TWSE OpenAPI files (tests/fixtures/twse, ADR-039): the
 Taiwan universe's instruments, bars, exchange measures and run notes, each citing its source
 and time; As known on at the Taipei day boundary; repeats unchanged; Taiwan factor snapshots
-that recompute identically; nothing Taiwan in the US universe. Uses its own migrated database.
+that recompute identically; nothing Taiwan in the US universe. M3.11 (ADR-042 SC1-SC3): every
+listed company of the company file, with the bar, price change and trade value of those outside
+the universe. Uses its own migrated database.
 """
 
+import hashlib
 from collections.abc import Callable, Iterator
 from datetime import UTC, date, datetime
 from decimal import Decimal
@@ -18,6 +21,7 @@ from sqlalchemy import Engine, create_engine, func, select
 from sqlalchemy.engine import URL
 from sqlalchemy.orm import Session, sessionmaker
 
+from autotrading.adapters.twse.client import API_BASE, COMPANIES
 from autotrading.config_sync import (
     load_factor_definitions,
     load_sources,
@@ -31,14 +35,16 @@ from autotrading.db.models import (
     Identifier,
     IngestionRun,
     Instrument,
+    ListedCompany,
     PriceBar,
     RawPayload,
     Source,
 )
 from autotrading.domain.provenance import end_of_day
+from autotrading.domain.twse import company_rows
 from autotrading.infra.object_store import make_s3_client
 from autotrading.infra.redis_client import make_redis
-from autotrading.ingestion.job import JobRegistry, Window
+from autotrading.ingestion.job import JobRegistry, StoredPayload, Window
 from autotrading.ingestion.rate_limit import TokenBucketLimiter
 from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
@@ -52,10 +58,11 @@ from autotrading.repositories.factors import (
     stored_definitions,
     targets,
 )
+from autotrading.repositories.listed import industry_names, listed_at, record_listed
 from autotrading.repositories.prices import daily_bars, instruments_by_symbol
 from autotrading.settings import get_settings
 from tests.integration.conftest import alembic_config
-from tests.twse_replay import register_recorded, replay
+from tests.twse_replay import FIXTURES, payload, register_recorded, replay
 
 pytestmark = pytest.mark.integration
 
@@ -63,6 +70,7 @@ TAIPEI = ZoneInfo("Asia/Taipei")
 D1 = date(2026, 10, 21)
 WINDOW = Window(start=datetime(2026, 10, 22, tzinfo=UTC), end=datetime(2026, 10, 23, tzinfo=UTC))
 CODES = ["2330", "2454", "2308", "2317", "3711", "1303", "2881", "3037", "2383", "2882", "0050"]
+COMPANIES_IN_FILE = 1097  # d1's company file, depositary receipts included
 
 
 @pytest.fixture(scope="module")
@@ -137,6 +145,64 @@ def test_the_first_run_creates_the_taiwan_instruments(engine: Engine, first: Ing
         assert instruments_by_symbol(session, CODES) == {}
         assert not {t.symbol for t in targets(session)} & set(CODES)
         assert [t.symbol for t in targets(session, market="TW")] == CODES
+
+
+def test_the_first_run_records_every_listed_company_and_its_session(
+    engine: Engine, first: IngestionRun
+) -> None:
+    """ADR-042 SC1-SC3: every company of the company file has an instrument and a row; the 1,084
+    listed outside the universe that STOCK_DAY_ALL names get their bar, price change and trade
+    value (1,083 traded; 1538 did not), and nothing else."""
+    with Session(engine) as session:
+        listed = listed_at(session)
+        assert len(listed) == COMPANIES_IN_FILE
+        shipping = listed["2603"]
+        assert (shipping.short_name, shipping.industry, shipping.listed_on) == (
+            "長榮",
+            "15",
+            date(1987, 9, 21),
+        )
+        assert (
+            listed["2330"].industry == "24"
+            and listed["2330"].instrument_id
+            == (instruments_by_symbol(session, ["2330"], "twse")["2330"])
+        )
+        row = session.get_one(ListedCompany, shipping.row_id)
+        # 出表日期 2026-10-21, fetched the next day: public from the end of the Taipei day
+        assert row.published_at == end_of_day(D1, "Asia/Taipei")
+        assert (row.source_url, row.ingestion_run_id, row.listed) == (
+            API_BASE + COMPANIES,
+            first.id,
+            True,
+        )
+        names = industry_names()
+        assert names["15"] == "航運業" and {c.industry for c in listed.values()} <= set(names)
+        bars = session.scalars(
+            select(PriceBar).where(PriceBar.instrument_id == shipping.instrument_id)
+        ).all()
+        assert [(b.bar_date, b.close, b.feed) for b in bars] == [(D1, Decimal("257.50"), "twse")]
+        found = {
+            m.measure_id: m.value
+            for m in session.scalars(
+                select(ExchangeMeasure).where(
+                    ExchangeMeasure.instrument_id == shipping.instrument_id
+                )
+            )
+        }
+        assert found == {"price_change": Decimal("-2.0000"), "trade_value": Decimal(2738441032)}
+        outside = [c.instrument_id for code, c in listed.items() if code not in CODES]
+        assert (
+            session.scalar(
+                select(func.count())
+                .select_from(PriceBar)
+                .where(PriceBar.instrument_id.in_(outside), PriceBar.bar_date == D1)
+            )
+            == 1083
+        )
+    assert "1 listed code(s) had no trade on 2026-10-21: no bar" in first.notes
+    assert f"company file: {COMPANIES_IN_FILE} change(s) recorded among 1097 companies" in (
+        first.notes
+    )
 
 
 def test_bars_and_measures_cite_their_file_and_the_taipei_day(
@@ -241,9 +307,18 @@ def test_the_same_files_again_change_nothing(
         assert any("no new session: TWSE still serves 2026-10-21" in n for n in again.notes)
         # every value of the session again (margin included): unchanged, nothing added
         assert session.scalar(select(func.count()).select_from(ExchangeMeasure)) == before
-        assert session.scalar(
-            select(func.count()).select_from(Identifier).where(Identifier.id_namespace == "twse")
-        ) == len(CODES)
+        # every company of the company file and 0050; the file was not fetched again
+        assert (
+            session.scalar(
+                select(func.count())
+                .select_from(Identifier)
+                .where(Identifier.id_namespace == "twse")
+            )
+            == COMPANIES_IN_FILE + 1
+        )
+        assert session.scalar(select(func.count()).select_from(ListedCompany)) == (
+            COMPANIES_IN_FILE
+        )
 
 
 def test_taiwan_factor_snapshots_read_taipei_closes_against_0050_and_recompute(
@@ -401,11 +476,12 @@ def test_the_next_session_chains_its_margin_balances_to_the_stored_ones(
 def test_codes_held_outside_the_universe_get_their_closes_only(
     engine: Engine, runner: IngestionRunner, second: IngestionRun
 ) -> None:
-    # ADR-041 H6: the Holdings page created 2603 and 6488 (a TPEx code). 2603 gets its close of
-    # the session and nothing else; 6488 is not on the TWSE and is noted; 2330 is the universe's.
+    # ADR-041 H6: the Holdings page created 0056 (a fund) and 6488 (a TPEx code). 0056 gets its
+    # close of the session and nothing else; 6488 is not on the TWSE and is noted; 2330 is the
+    # universe's and 2603 a listed company's (ADR-042 SC1), stored already.
     held: dict[str, UUID] = {}
     with Session(engine) as session:
-        for code in ("2603", "6488"):
+        for code in ("0056", "6488"):
             instrument = Instrument(
                 instrument_type="other", primary_exchange="XTAI", currency="TWD"
             )
@@ -423,15 +499,15 @@ def test_codes_held_outside_the_universe_get_their_closes_only(
             )
             held[code] = instrument.id
         session.commit()
-    params = {"slot": "held", "fixture_day": "d1", "extra_codes": ["2330", "2603", "6488"]}
+    params = {"slot": "held", "fixture_day": "d1", "extra_codes": ["0056", "2330", "2603", "6488"]}
     run_id = runner.create_run("twse.daily", params, WINDOW)
     runner.execute(run_id)
     with Session(engine) as session:
         run = session.get_one(IngestionRun, run_id)
         assert run.status == "succeeded"
         assert "1 held code(s) not in STOCK_DAY_ALL: TPEx listings are not supported" in run.notes
-        bars = session.scalars(select(PriceBar).where(PriceBar.instrument_id == held["2603"]))
-        assert [(b.bar_date, b.close, b.feed) for b in bars] == [(D1, Decimal("257.50"), "twse")]
+        bars = session.scalars(select(PriceBar).where(PriceBar.instrument_id == held["0056"]))
+        assert [(b.bar_date, b.close, b.feed) for b in bars] == [(D1, Decimal("58.75"), "twse")]
         for instrument_id in held.values():
             assert not session.scalar(
                 select(func.count())
@@ -441,3 +517,34 @@ def test_codes_held_outside_the_universe_get_their_closes_only(
         assert not session.scalar(
             select(func.count()).select_from(PriceBar).where(PriceBar.instrument_id == held["6488"])
         )
+
+
+def test_a_company_the_file_stops_naming_is_no_longer_listed_from_then_on(
+    engine: Engine, second: IngestionRun
+) -> None:
+    """ADR-042 SC2: the d1 company file again, fetched a week later and without 2603: one row
+    with `listed` false; As known on before it, 2603 is still listed."""
+    file = (FIXTURES / "d1_t187ap03_L.json").read_bytes()
+    companies = {c.code: c for c in company_rows(payload("d1", "t187ap03_L"))}
+    del companies["2603"]
+    fetched = datetime(2026, 10, 29, 1, 0, tzinfo=UTC)
+    stored = StoredPayload(
+        object_key="test",
+        sha256=hashlib.sha256(file).hexdigest(),
+        content=file,
+        content_type="application/json",
+        source_url=API_BASE + COMPANIES,
+        fetched_at=fetched,
+    )
+    with Session(engine) as session:
+        ids = instruments_by_symbol(session, list(companies), "twse")
+        source = session.get_one(Source, "twse_openapi")
+        inserted, unchanged = record_listed(
+            session, companies, ids, stored, source, second.id, actor="test"
+        )
+        session.commit()
+        assert (inserted, unchanged) == (1, COMPANIES_IN_FILE - 1)
+        assert "2603" not in listed_at(session)
+        # the file's 出表日期 is 2026-10-21 again, so the row is public from the end of that day
+        # at the latest; held before the row was recorded, 2603 is listed
+        assert "2603" in listed_at(session, system_time=second.finished_at)

@@ -1114,6 +1114,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/taiwan/screens": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Taiwan Screens */
+        get: operations["taiwan_screens_taiwan_screens_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/taiwan/screens/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Taiwan Screens History */
+        get: operations["taiwan_screens_history_taiwan_screens_history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1594,6 +1628,15 @@ export interface components {
             /** Title */
             title: string;
         };
+        /** Breadth */
+        Breadth: {
+            /** Above */
+            above: number;
+            /** Members */
+            members: number;
+            /** Share */
+            share: string | null;
+        };
         /** BuybackRow */
         BuybackRow: {
             /** Cells */
@@ -1972,6 +2015,22 @@ export interface components {
             /** Value */
             value: string | null;
         };
+        /** ConditionReading */
+        ConditionReading: {
+            /** Kind */
+            kind: string;
+            /** Label */
+            label: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pass" | "fail" | "unavailable" | "not_applicable";
+            /** Threshold */
+            threshold?: string | null;
+            /** Value */
+            value?: string | null;
+        };
         /** ConsensusOut */
         ConsensusOut: {
             /**
@@ -2018,6 +2077,25 @@ export interface components {
             source: components["schemas"]["SourceRef"];
             /** Value */
             value: string;
+        };
+        /** Coverage */
+        Coverage: {
+            /** Covered */
+            covered: number;
+            /** Expected */
+            expected: number;
+            /** Liquid */
+            liquid: number;
+            /** Listed */
+            listed: number;
+            /** Ratio */
+            ratio: string | null;
+            /** Read */
+            read: number;
+            /** Unavailable */
+            unavailable: {
+                [key: string]: number;
+            };
         };
         /** DataAsOf */
         DataAsOf: {
@@ -2953,17 +3031,18 @@ export interface components {
             /** Repurchase To Fcf Max */
             repurchase_to_fcf_max: string;
         };
-        /** HistoryPoint */
-        HistoryPoint: {
-            /**
-             * Known At
-             * Format: date-time
-             */
-            known_at: string;
-            /** Values */
-            values: {
-                [key: string]: string | null;
-            };
+        /** HistorySummary */
+        HistorySummary: {
+            /** Max Meeting */
+            max_meeting: number | null;
+            /** Median Meeting */
+            median_meeting: string | null;
+            /** Screen Id */
+            screen_id: string;
+            /** Sessions */
+            sessions: number;
+            /** Zero Share */
+            zero_share: string | null;
         };
         /** Holding */
         Holding: {
@@ -3286,7 +3365,7 @@ export interface components {
             detail: string;
             fundamentals: components["schemas"]["SnapshotRef"] | null;
             /** History */
-            history: components["schemas"]["HistoryPoint"][];
+            history: components["schemas"]["autotrading__api__factors__HistoryPoint"][];
             /**
              * Instrument Type
              * @enum {string}
@@ -3638,6 +3717,15 @@ export interface components {
             /** Volume Sessions */
             volume_sessions: number;
         };
+        /** Liquidity */
+        Liquidity: {
+            /** Min Avg Trade Value Twd */
+            min_avg_trade_value_twd: string;
+            /** Min History */
+            min_history: number;
+            /** Sessions */
+            sessions: number;
+        };
         /** LogOut */
         LogOut: {
             /** Date */
@@ -3795,6 +3883,31 @@ export interface components {
             /** Metric Id */
             metric_id: string;
         };
+        /** Metrics */
+        Metrics: {
+            /** Avg Trade Value */
+            avg_trade_value: string | null;
+            /** Change 1D */
+            change_1d: string | null;
+            /** Change 5D */
+            change_5d: string | null;
+            /** Close */
+            close: string;
+            /** Range High */
+            range_high: string | null;
+            /** Range Low */
+            range_low: string | null;
+            /** Sma 20 */
+            sma_20: string | null;
+            /** Sma 60 */
+            sma_60: string | null;
+            /** Volume Ratio */
+            volume_ratio: string | null;
+            /** Z1 */
+            z1: string | null;
+            /** Z5 */
+            z5: string | null;
+        };
         /** MilestoneOut */
         MilestoneOut: {
             /** Done */
@@ -3923,6 +4036,38 @@ export interface components {
             target: {
                 [key: string]: string;
             };
+        };
+        /** Mover */
+        Mover: {
+            /** Code */
+            code: string;
+            /** Flags */
+            flags: string[];
+            /** Industry */
+            industry: string;
+            metrics: components["schemas"]["Metrics"];
+            /** Name */
+            name: string;
+            /** Score */
+            score: string;
+            source: components["schemas"]["SourceRow"];
+        };
+        /** MoverRules */
+        MoverRules: {
+            /** Change Sessions */
+            change_sessions: number;
+            /** Page Top */
+            page_top: number;
+            /** Push Top */
+            push_top: number;
+            /** Volatility Sessions */
+            volatility_sessions: number;
+            /** Volume Ratio */
+            volume_ratio: string;
+            /** Volume Sessions */
+            volume_sessions: number;
+            /** Z Threshold */
+            z_threshold: string;
         };
         /** NewAssumptions */
         NewAssumptions: {
@@ -4117,6 +4262,22 @@ export interface components {
             /** Tier */
             tier: number;
         };
+        /** NoteReading */
+        NoteReading: {
+            /** Days */
+            days?: number | null;
+            /** Kind */
+            kind: string;
+            /** Label */
+            label: string;
+            /** Of */
+            of?: number | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pass" | "fail" | "unavailable" | "not_applicable";
+        };
         /** ObservationOut */
         ObservationOut: {
             first_release: components["schemas"]["FirstRelease"] | null;
@@ -4191,6 +4352,24 @@ export interface components {
             /** Last Refresh At */
             last_refresh_at: string | null;
             market?: components["schemas"]["MarketState"] | null;
+        };
+        /**
+         * PendingOut
+         * @description A session after the run's that was not judged, and why.
+         */
+        PendingOut: {
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Reason */
+            reason: string;
+            /**
+             * Session
+             * Format: date
+             */
+            session: string;
         };
         /** PerformanceOut */
         PerformanceOut: {
@@ -4570,6 +4749,13 @@ export interface components {
             sessions_after: number;
             /** Stock Return */
             stock_return: string | null;
+        };
+        /** Readiness */
+        Readiness: {
+            /** Lookback Sessions */
+            lookback_sessions: number;
+            /** Min Coverage */
+            min_coverage: string;
         };
         /** Reading */
         Reading: {
@@ -5436,6 +5622,97 @@ export interface components {
             /** Mega Cap Min */
             mega_cap_min?: string | null;
         };
+        /** ScreenDefinitionOut */
+        ScreenDefinitionOut: {
+            /** Conditions */
+            conditions: string[];
+            /** Invalidation */
+            invalidation: string[];
+            /** Name Zh */
+            name_zh: string;
+            /** Notes */
+            notes: string[];
+            /** Screen Id */
+            screen_id: string;
+        };
+        /** ScreenResult */
+        ScreenResult: {
+            /** Lines */
+            lines: components["schemas"]["WatchLine"][];
+            /** Meeting */
+            meeting: number;
+            /** Name Zh */
+            name_zh: string;
+            /** Screen Id */
+            screen_id: string;
+            /** Unavailable */
+            unavailable: number;
+            /** Watch */
+            watch: components["schemas"]["WatchedOut"][];
+        };
+        /** ScreenRulesOut */
+        ScreenRulesOut: {
+            /** Content Sha256 */
+            content_sha256: string;
+            /** Definitions */
+            definitions: components["schemas"]["ScreenDefinitionOut"][];
+            liquidity: components["schemas"]["Liquidity"];
+            movers: components["schemas"]["MoverRules"];
+            /** Note */
+            note: string;
+            readiness: components["schemas"]["Readiness"];
+            /**
+             * Released
+             * Format: date
+             */
+            released: string;
+            /** Rule Version */
+            rule_version: string;
+            /** Watch Sessions */
+            watch_sessions: number;
+            /** Window Sessions */
+            window_sessions: number;
+        };
+        /** ScreenRunOut */
+        ScreenRunOut: {
+            /** Breadth */
+            breadth: {
+                [key: string]: components["schemas"]["Breadth"];
+            };
+            coverage: components["schemas"]["Coverage"];
+            /** Industry Basis */
+            industry_basis: string;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /**
+             * Market
+             * @constant
+             */
+            market: "TW";
+            /** Movers */
+            movers: components["schemas"]["Mover"][];
+            /** Movers Count */
+            movers_count: number;
+            /** Reason */
+            reason: string | null;
+            /** Rule Version */
+            rule_version: string;
+            /** Screens */
+            screens: components["schemas"]["ScreenResult"][];
+            /**
+             * Session
+             * Format: date
+             */
+            session: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "judged" | "not_judged";
+        };
         /** SectorExposure */
         SectorExposure: {
             /** Gross */
@@ -5670,6 +5947,20 @@ export interface components {
             raw_payload_sha256: string | null;
             /** Source Url */
             source_url: string;
+        };
+        /** SourceRow */
+        SourceRow: {
+            /** Bar Id */
+            bar_id: string;
+            /** Feed */
+            feed: string;
+            /** Feed Status */
+            feed_status: string;
+            /**
+             * Published At
+             * Format: date-time
+             */
+            published_at: string;
         };
         /**
          * SplitAdjusted
@@ -5964,6 +6255,58 @@ export interface components {
             /** Sessions */
             sessions: number;
         };
+        /** TaiwanScreensHistoryOut */
+        TaiwanScreensHistoryOut: {
+            /**
+             * Detail
+             * @default A research screen and a watch list, not buy or sell advice. Thresholds are Claude's defaults (ADR-042), unvalidated: the history check counts the stocks that met a screen, never their returns (OD-7).
+             */
+            detail: string;
+            /** Industry Basis */
+            industry_basis: string | null;
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Points */
+            points: components["schemas"]["autotrading__api__screens__HistoryPoint"][];
+            /** Rule Version */
+            rule_version: string | null;
+            /** Summary */
+            summary: components["schemas"]["HistorySummary"][];
+        };
+        /** TaiwanScreensOut */
+        TaiwanScreensOut: {
+            attribution: components["schemas"]["Attribution"];
+            /** Backfilled */
+            backfilled: boolean | null;
+            /** Demo */
+            demo: boolean;
+            /**
+             * Detail
+             * @default A research screen and a watch list, not buy or sell advice. Thresholds are Claude's defaults (ADR-042), unvalidated: the history check counts the stocks that met a screen, never their returns (OD-7).
+             */
+            detail: string;
+            /** Industries */
+            industries: {
+                [key: string]: string;
+            };
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            pending: components["schemas"]["PendingOut"] | null;
+            /** Recorded At */
+            recorded_at: string | null;
+            rules: components["schemas"]["ScreenRulesOut"] | null;
+            run: components["schemas"]["ScreenRunOut"] | null;
+            /** Run Id */
+            run_id: string | null;
+            /** Trigger */
+            trigger: string | null;
+        };
         /** TaiwanSession */
         TaiwanSession: {
             /**
@@ -6144,6 +6487,43 @@ export interface components {
             /** Value */
             value: string;
         };
+        /** WatchLine */
+        WatchLine: {
+            /** Code */
+            code: string;
+            /** Conditions */
+            conditions: components["schemas"]["ConditionReading"][];
+            /**
+             * Entered
+             * Format: date
+             */
+            entered: string;
+            /** Flags */
+            flags: string[];
+            /** Industry */
+            industry: string;
+            /** Level */
+            level: string | null;
+            metrics: components["schemas"]["Metrics"] | null;
+            /** Name */
+            name: string;
+            /** Notes */
+            notes: components["schemas"]["NoteReading"][];
+            /** Reason */
+            reason: string | null;
+            /** Score */
+            score: string | null;
+            /** Sessions */
+            sessions: number;
+            source: components["schemas"]["SourceRow"] | null;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "entered" | "on_watch" | "invalidated" | "expired";
+            /** Still Meets */
+            still_meets: boolean | null;
+        };
         /** WatchRule */
         WatchRule: {
             /** Announcement Days */
@@ -6153,12 +6533,54 @@ export interface components {
             /** Remaining To Market Cap Min */
             remaining_to_market_cap_min: string;
         };
+        /** WatchedOut */
+        WatchedOut: {
+            /** Code */
+            code: string;
+            /**
+             * Entered
+             * Format: date
+             */
+            entered: string;
+            /** Level */
+            level: string | null;
+            /** Sessions */
+            sessions: number;
+        };
         /** Withheld */
         Withheld: {
             /** Metric */
             metric: string;
             /** Value */
             value?: null;
+        };
+        /** HistoryPoint */
+        autotrading__api__factors__HistoryPoint: {
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Values */
+            values: {
+                [key: string]: string | null;
+            };
+        };
+        /** HistoryPoint */
+        autotrading__api__screens__HistoryPoint: {
+            /** Backfilled */
+            backfilled: boolean;
+            /** Meeting */
+            meeting: {
+                [key: string]: number;
+            };
+            /** Movers */
+            movers: number;
+            /**
+             * Session
+             * Format: date
+             */
+            session: string;
         };
     };
     responses: never;
@@ -8208,6 +8630,70 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TaiwanInstrumentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    taiwan_screens_taiwan_screens_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaiwanScreensOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    taiwan_screens_history_taiwan_screens_history_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaiwanScreensHistoryOut"];
                 };
             };
             /** @description Validation Error */

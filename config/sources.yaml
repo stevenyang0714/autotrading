@@ -93,7 +93,10 @@ sources:
     note: >-
       Supplementary source for Taiwan (M3.7b, ADR-040): per-stock institutional investors and
       foreign shareholding daily, and a one-time history (prices, margin, P/E, ex-dividend
-      results) for the 11-code universe before 2026-10-21. Free anonymous tier (300 requests
+      results) for the 11-code universe before 2026-10-21. M3.11 (ADR-042, approved by Steven
+      2026-11-04): prices since 2024 and ex-dividend results of every listed company, once, and
+      the institutional flows of the Taiwan screens' candidates daily (at most 150 requests a
+      day in all). Free anonymous tier (300 requests
       an hour, no account, no token), personal non-commercial use per
       https://finmind.github.io/Pricing/ and https://finmind.github.io/PrivacyPolicy/:
       attribution 資料來源：FinMind wherever the data shows, no redistribution, no mirror.

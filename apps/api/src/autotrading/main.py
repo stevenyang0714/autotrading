@@ -34,6 +34,7 @@ from autotrading.api.regime import router as regime_router
 from autotrading.api.research import router as research_router
 from autotrading.api.risk import router as risk_router
 from autotrading.api.rotation import router as rotation_router
+from autotrading.api.screens import router as screens_router
 from autotrading.api.signals import router as signals_router
 from autotrading.api.taiwan import router as taiwan_router
 from autotrading.api.valuation import router as valuation_router
@@ -103,6 +104,7 @@ def create_app(
     app.include_router(momentum_router)
     app.include_router(candidates_router)
     app.include_router(backtests_router)
+    app.include_router(screens_router)
     return app
 
 

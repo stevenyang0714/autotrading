@@ -1,0 +1,14 @@
+{
+  "note": "Real FinMind API responses, unmodified, recorded with `uv run python -m tests.fixtures.finmind_prices.record` (free anonymous tier): TaiwanStockPrice of 2330 since 2025-06-01, 2881 since 2024-06-01, and 2454, 3711, 2303 and 2408 since 2026-01-01, all to 2026-10-22.",
+  "attribution": "資料來源：FinMind",
+  "terms": "https://finmind.github.io/Pricing/",
+  "recorded_at": "2026-11-03T17:04:18.022049+00:00",
+  "files": {
+    "https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=2330&start_date=2025-06-01&end_date=2026-10-22": "2330_TaiwanStockPrice.json",
+    "https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=2881&start_date=2024-06-01&end_date=2026-10-22": "2881_TaiwanStockPrice.json",
+    "https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=2454&start_date=2026-01-01&end_date=2026-10-22": "2454_TaiwanStockPrice.json",
+    "https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=3711&start_date=2026-01-01&end_date=2026-10-22": "3711_TaiwanStockPrice.json",
+    "https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=2303&start_date=2026-01-01&end_date=2026-10-22": "2303_TaiwanStockPrice.json",
+    "https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=2408&start_date=2026-01-01&end_date=2026-10-22": "2408_TaiwanStockPrice.json"
+  }
+}

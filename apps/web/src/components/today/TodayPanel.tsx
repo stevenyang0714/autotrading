@@ -3,7 +3,15 @@ import type { ReactNode } from "react";
 
 import { Metric } from "@/components/Metric";
 import type { CompleteTermId } from "@/generated/glossary";
-import type { Alerts, Holdings, MarketState, OpportunityCandidates, SourceHealth, TaiwanList } from "@/lib/api";
+import type {
+  Alerts,
+  Holdings,
+  MarketState,
+  OpportunityCandidates,
+  SourceHealth,
+  TaiwanList,
+  TaiwanScreens,
+} from "@/lib/api";
 import { FLAG_LABELS, money, signedMoney, weight } from "@/lib/holdings";
 import { formatSgtEt, formatTaipei } from "@/lib/time";
 
@@ -174,6 +182,49 @@ function RadarCard({ candidates }: { candidates: OpportunityCandidates | null })
   );
 }
 
+function ScreensCard({ screens }: { screens: TaiwanScreens | null }) {
+  const run = screens?.run ?? null;
+  return (
+    <Card
+      termId="page_taiwan_screens"
+      title="Taiwan screens"
+      href="/dashboards/opportunity-radar/taiwan-screens"
+      link="Taiwan Screens"
+      block="screens"
+    >
+      {screens === null ? (
+        <Unavailable what="the Taiwan screens" />
+      ) : run === null ? (
+        <p className="text-neutral-400">No judged session yet.</p>
+      ) : (
+        <>
+          <p>
+            <Metric termId="screen_mover" icon={false}>
+              {`${run.session}: ${run.movers_count} movers`}
+            </Metric>
+          </p>
+          <ul className="space-y-0.5 text-neutral-300" aria-label="Screens">
+            {run.screens.map((s) => (
+              <li key={s.screen_id} data-screen={s.screen_id}>
+                <Metric termId="screen_watch_list" icon={false}>
+                  {`${s.name_zh}: ${s.lines.filter((l) => l.state === "entered").length} new, ${s.lines.filter((l) => l.state === "on_watch").length} on watch`}
+                </Metric>
+              </li>
+            ))}
+          </ul>
+          {screens.pending ? (
+            <p className="text-amber-300">
+              <Metric termId="screen_not_judged" icon={false}>
+                {`${screens.pending.session} not judged yet`}
+              </Metric>
+            </p>
+          ) : null}
+        </>
+      )}
+    </Card>
+  );
+}
+
 function HealthCard({ sources }: { sources: SourceHealth[] | null }) {
   const trouble = (sources ?? []).filter((s) => s.enabled && (s.freshness === "stale" || s.freshness === "failing"));
   return (
@@ -200,13 +251,14 @@ function HealthCard({ sources }: { sources: SourceHealth[] | null }) {
 /**
  * Today (M3.10, ADR-041 H10): what to look at first, on the home page above the macro overview.
  * Your holdings (local only), what was pushed to Telegram this week, both markets' sessions, the
- * radar's count and any source that needs a look. Shown when viewing now; As known on keeps the
+ * radar's count, the Taiwan screens' latest session (M3.11) and any source that needs a look. Shown when viewing now; As known on keeps the
  * overview alone.
  */
 export function TodayPanel({
   holdings,
   alerts,
   candidates,
+  screens = null,
   us,
   taiwan,
   sources,
@@ -215,6 +267,7 @@ export function TodayPanel({
   holdings: Holdings | null;
   alerts: Alerts | null;
   candidates: OpportunityCandidates | null;
+  screens?: TaiwanScreens | null;
   us: MarketState | null;
   taiwan: TaiwanList | null;
   sources: SourceHealth[] | null;
@@ -237,6 +290,7 @@ export function TodayPanel({
         <PushesCard alerts={alerts} now={now} />
         <MarketsCard us={us} taiwan={taiwan} />
         <RadarCard candidates={candidates} />
+        <ScreensCard screens={screens} />
         <HealthCard sources={sources} />
       </div>
     </section>

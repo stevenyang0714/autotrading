@@ -7,6 +7,11 @@ older than `max_age_hours` are never pushed; during quiet hours delivery waits. 
 is plain text, ends with the same disclaimer, and carries no secret, chat id or link.
 
 Research only: a pushed alert is a rule output, unvalidated, and never advice to buy or sell.
+
+Since 0.3.0 (M3.11, ADR-042 SC12) the Taiwan screens' report too: one per scheduled or manual
+run, the movers and each screen's new and ended names with their conditions; FinMind's flows
+as conditions met or not, never its numbers (no redistribution); TWSE's prices with its
+attribution; the page named, never linked (ADR-037 T6).
 """
 
 import hashlib
@@ -18,6 +23,8 @@ from typing import Annotated, Literal
 from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+from autotrading.domain.screens import NoteReading, ScreenRunOut, WatchLine
 
 PushedKind = Literal["regime", "level_change", "rotation", "momentum", "portfolio"]
 MAX_MESSAGE = 4000  # Telegram allows 4096 characters
@@ -56,6 +63,18 @@ class DigestRule(_Rule):
     at: time  # local, in the quiet hours' timezone
 
 
+class ScreenPush(_Rule):
+    """The Taiwan screens' report (M3.11, ADR-042 SC12): the runs of one screen rule version a
+    scheduled or manual run stored in the last `max_age_hours`; at most `max_lines` names per
+    section, the rest counted."""
+
+    screen_rule_version: Annotated[str, Field(pattern=r"^\d+\.\d+\.\d+$")]
+    max_age_hours: Annotated[int, Field(gt=0)]
+    max_lines: Annotated[int, Field(gt=0, le=30)]
+    attribution: Annotated[str, Field(min_length=1)]
+    page: Annotated[str, Field(min_length=1)]
+
+
 class DeliveryRuleSet(_Rule):
     """One released rule version: immutable, like the alert rule sets (ADR-028)."""
 
@@ -76,6 +95,8 @@ class DeliveryRuleSet(_Rule):
     language: Literal["en", "zh"] = "en"
     details: bool = False
     digest: DigestRule | None = None
+    # 0.3.0 (M3.11, ADR-042): the Taiwan screens' report. The default keeps 0.2.0's hash.
+    screens: ScreenPush | None = None
 
     def content(self) -> dict[str, object]:
         return self.model_dump(mode="json", exclude={"status"}, exclude_defaults=True)
@@ -533,5 +554,120 @@ def digest(
         if len(text) > MAX_MESSAGE:
             keep = MAX_MESSAGE - len(rules.footer) - 1
             text = "\n".join([title, *lines])[:keep] + "\n" + rules.footer
+        out.append(text)
+    return out
+
+
+# ---------- the Taiwan screens' report (M3.11, ADR-042 SC12) ----------
+
+SCREEN_DISCLAIMER = "研究篩選，只是觀察名單，不是買賣建議；條件未經績效驗證（OD-7）。"
+NOTE_MARKS = {"pass": "✓", "fail": "✗", "unavailable": "無資料", "not_applicable": "不適用"}
+
+
+def _price(value: Decimal) -> str:
+    return f"{value.quantize(Decimal('0.01')):,}"
+
+
+def _signed_pct(ratio: Decimal) -> str:
+    return f"{ratio * 100:+.1f}%"
+
+
+def _who(code: str, name: str, industry: str, industries: dict[str, str]) -> str:
+    return f"{code} {name}（{industries.get(industry, industry)}）"
+
+
+def _notes(notes: list[NoteReading]) -> str:
+    """FinMind's flows as conditions met or not, never their numbers."""
+    return "、".join(f"{n.label} {NOTE_MARKS[n.status]}" for n in notes)
+
+
+def _entered(line: WatchLine, industries: dict[str, str]) -> str:
+    text = "＋ " + _who(line.code, line.name, line.industry, industries)
+    m = line.metrics
+    if m is not None:
+        text += f" 收 {_price(m.close)}"
+        if m.change_1d is not None:
+            text += f"，{_signed_pct(m.change_1d)}"
+        if m.volume_ratio is not None:
+            text += f"，量 {m.volume_ratio.quantize(Decimal('0.1'))} 倍"
+    if line.notes:
+        text += f"｜{_notes(line.notes)}"
+    return text
+
+
+def _ended(line: WatchLine, industries: dict[str, str]) -> str:
+    why = line.reason or f"觀察 {line.sessions} 個交易日，已不再符合條件"
+    return "－ " + _who(line.code, line.name, line.industry, industries) + f"：{why}"
+
+
+def screen_report(
+    rules: DeliveryRuleSet, run: ScreenRunOut, industries: dict[str, str], push_top: int
+) -> list[str]:
+    """A screen run's report in as many messages as Telegram's length needs, each with the
+    header, the disclaimer, the attribution and the footer."""
+    push = rules.screens
+    assert push is not None, "a delivery rule set without the screens' report"
+    head = f"[autotrading] 台股研究篩選（非建議）｜{run.session:%Y-%m-%d} 收盤"
+    end = [f"頁面：{push.page}", SCREEN_DISCLAIMER, push.attribution, rules.footer]
+    if run.status == "not_judged":
+        return ["\n".join([head, f"未判斷：{run.reason}", *end])]
+    c = run.coverage
+    first = [
+        f"涵蓋 {c.covered:,}/{c.expected:,} 檔"
+        + (f"（{c.ratio * 100:.1f}%）" if c.ratio is not None else "")
+        + f"；有流動性 {c.liquid:,} 檔"
+    ]
+    blocks: list[list[str]] = []
+    movers = [f"異動前 {min(push_top, len(run.movers))}（相對自身波動與均量）："]
+    for i, m in enumerate(run.movers[:push_top], start=1):
+        line = f"{i}. {_who(m.code, m.name, m.industry, industries)} 收 {_price(m.metrics.close)}"
+        if m.metrics.change_1d is not None:
+            line += f"，{_signed_pct(m.metrics.change_1d)}"
+        line += f"（z {m.score.quantize(Decimal('0.1'))}）"
+        if m.metrics.volume_ratio is not None:
+            line += f"，量 {m.metrics.volume_ratio.quantize(Decimal('0.1'))} 倍"
+        movers.append(line)
+    if not run.movers:
+        movers.append("（今天沒有）")
+    elif run.movers_count > push_top:
+        movers.append(f"（共 {run.movers_count} 檔，其餘見網頁）")
+    blocks.append(movers)
+    for screen in run.screens:
+        by = {s: [x for x in screen.lines if x.state == s] for s in ("entered", "on_watch")}
+        ended = [x for x in screen.lines if x.state in ("invalidated", "expired")]
+        block = [
+            f"{screen.name_zh}：新進 {len(by['entered'])}、觀察中 {len(by['on_watch'])}、"
+            f"結束 {len(ended)}"
+        ]
+        block += [_entered(x, industries) for x in by["entered"][: push.max_lines]]
+        if len(by["entered"]) > push.max_lines:
+            block.append(f"（新進其餘 {len(by['entered']) - push.max_lines} 檔見網頁）")
+        block += [_ended(x, industries) for x in ended[: push.max_lines]]
+        if len(ended) > push.max_lines:
+            block.append(f"（結束其餘 {len(ended) - push.max_lines} 檔見網頁）")
+        blocks.append(block)
+    return _split(head, first, blocks, end, rules.footer)
+
+
+def _split(
+    head: str, first: list[str], blocks: list[list[str]], end: list[str], footer: str
+) -> list[str]:
+    """Blocks packed into messages under Telegram's length, each with the header (numbered when
+    there are several) and the end lines."""
+    messages: list[list[str]] = [list(first)]
+    for block in blocks:
+        current = messages[-1]
+        alone = len(current) <= (len(first) if len(messages) == 1 else 0)
+        if len("\n".join([head, *current, *block, *end])) > MAX_MESSAGE and not alone:
+            messages.append([])
+        messages[-1].extend(block)
+    total = len(messages)
+    out = []
+    for i, lines in enumerate(messages, start=1):
+        title = head if total == 1 else f"{head}（{i}/{total}）"
+        text = "\n".join([title, *lines, *end])
+        if len(text) > MAX_MESSAGE:
+            keep = MAX_MESSAGE - len(footer) - 1
+            text = "\n".join([title, *lines])[:keep] + "\n" + footer
         out.append(text)
     return out

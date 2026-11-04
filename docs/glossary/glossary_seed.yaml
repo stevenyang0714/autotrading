@@ -5306,20 +5306,20 @@ terms:
     display_name: "Telegram Delivery"
     category: alerts
     short_definition: "Pushing chosen alerts to Steven's Telegram chat, each once, with the time it was sent."
-    full_definition: "Since delivery rules 0.2.0 (M3.0c, ADR-038) each message is in Chinese and names every company or ETF a target adds or drops, with its sector and reasons (momentum, P/E and FCF yield against its own history, the DCF fair value against the price under the current assumptions, buyback state), the rule's rhythm and median backtest holding period, and the market; a weekly digest lists every candidate on Monday at 08:00. Every 5 minutes the delivery rules pick the alerts to push: stress changes, companies entering or leaving L3/L4, new S3 and S4 targets and the drawdown alert, under the pinned alert rule version. Never backfilled alerts or ones older than 48 hours; quiet from 23:00 to 07:00 Singapore time. Each attempt is recorded (sent once, or failed and tried again up to 3 times); the chat id and the bot token are never stored or shown."
+    full_definition: "Since delivery rules 0.2.0 (M3.0c, ADR-038) each message is in Chinese and names every company or ETF a target adds or drops, with its sector and reasons (momentum, P/E and FCF yield against its own history, the DCF fair value against the price under the current assumptions, buyback state), the rule's rhythm and median backtest holding period, and the market; a weekly digest lists every candidate on Monday at 08:00. Every 5 minutes the delivery rules pick the alerts to push: stress changes, companies entering or leaving L3/L4, new S3 and S4 targets and the drawdown alert, under the pinned alert rule version. Never backfilled alerts or ones older than 48 hours; quiet from 23:00 to 07:00 Singapore time. Each attempt is recorded (sent once, or failed and tried again up to 3 times); the chat id and the bot token are never stored or shown. Since 0.3.0 (M3.11, ADR-042) the Taiwan screens' report too, after each scheduled screen run: the movers and each screen's new and ended names, FinMind's flows as met or not, never its numbers."
     formula: "rule match -> plain-text message -> one sent record"
     unit: "delivery"
     example: "S4 動能｜每月目標調整: －離開 JPM 摩根大通 (比 SPY 的 12-1 動能 -0.6 個百分點), sent 11:22 SGT."
     direction: "N/A"
     interpretation: "The alert reached the phone; the Alerts Center still holds the evidence."
     why_it_matters: "No need to open the Mac to know something changed."
-    source: "Delivery rules 0.2.0 (config/delivery_rules.yaml); repositories/delivery.py, repositories/alert_context.py; ADR-037, ADR-038"
+    source: "Delivery rules 0.3.0 (config/delivery_rules.yaml); repositories/delivery.py, repositories/alert_context.py; ADR-037, ADR-038, ADR-042"
     source_url: https://github.com/stevenyang0714/autotrading/blob/main/config/delivery_rules.yaml
-    as_of: "2026-10-21"
+    as_of: "2026-11-04"
     update_cadence: "every 5 minutes"
     caveats: "Only while the Mac runs; messages pass through Telegram's servers. A rule output, unvalidated, not advice (OD-7)."
-    related_terms: [alert, delivery_rule_set, weekly_digest, instrument_label]
-    methodology_version: 0.2.0
+    related_terms: [alert, delivery_rule_set, weekly_digest, instrument_label, page_taiwan_screens]
+    methodology_version: 0.3.0
     status: complete
 
   - term_id: delivery_rule_set
@@ -5445,41 +5445,41 @@ terms:
   - term_id: twse_price_change
     display_name: "Change (TWSE)"
     category: market_data
-    short_definition: "The session's change as TWSE published it: the close against the session's reference price."
-    full_definition: "Change of STOCK_DAY_ALL. On an ex-dividend or ex-rights date the reference price is the previous close less the dividend, so the change is not the close-to-close move."
-    formula: "close - reference price"
+    short_definition: "The session's change as TWSE published it: the close against the previous close, and 0 on an ex-date."
+    full_definition: "Change of STOCK_DAY_ALL. On an ordinary session it is the close against the previous close. On an ex-dividend or ex-rights date TWSE states 0 (its website marks the day X): the recorded 0056 on 2026-10-22 went ex a cash dividend of 1.72 and closed 2.45 lower with a change of 0. FinMind does the same in its history (ADR-042)."
+    formula: "close - previous close (0 on an ex-date)"
     unit: "TWD"
     example: "2330 on 2026-10-21: +15."
     direction: "N/A"
-    interpretation: "The move the exchange reports, adjusted for that day's corporate action."
-    why_it_matters: "Recovers the reference price for the corporate action check."
-    source: "TWSE OpenAPI (Open Government Data License Taiwan 1.0, attribution required); ADR-039"
+    interpretation: "The move the exchange reports on an ordinary day."
+    why_it_matters: "A change of 0 with another close is how an ex-date, or an action no file lists, shows."
+    source: "TWSE OpenAPI (Open Government Data License Taiwan 1.0, attribution required); ADR-039, ADR-042"
     source_url: https://openapi.twse.com.tw/
-    as_of: "2026-10-22"
+    as_of: "2026-11-04"
     update_cadence: "daily (07:40, 09:40 and 20:40 SGT), the latest session only"
-    caveats: "Not a return: on an ex-date it differs from the close-to-close change."
-    related_terms: [twse_reference_price, reference_price_gap]
-    methodology_version: 0.1.0
+    caveats: "Not a return on an ex-date: the screens take that day's reference price from the announced dividends."
+    related_terms: [twse_reference_price, reference_price_gap, ex_reference_price]
+    methodology_version: 0.2.0
     status: complete
 
   - term_id: twse_reference_price
     display_name: "Reference Price (TWSE)"
     category: market_data
-    short_definition: "The price TWSE measured the session's change from: the previous close, adjusted on an ex-date."
-    full_definition: "Read as close minus TWSE's change. Without a corporate action it equals the previous close; on an ex-dividend date it is the previous close less the cash dividend, divided by one plus the stock dividend."
-    formula: "close - change"
+    short_definition: "The price a session's change is measured from: the previous close, or on an ex-date the previous close less the dividend."
+    full_definition: "On an ordinary session it is close minus TWSE's change, the previous close. On an ex-date TWSE states a change of 0, so the reference is not in its file: it is the previous close less the cash dividend, divided by one plus the stock dividend, from the dividends TWT48U_ALL announced. An ex-date with its action recorded is not checked; a change of 0 with another close and no recorded action is flagged."
+    formula: "close - change; on an ex-date (previous close - cash) / (1 + stock dividend)"
     unit: "TWD"
-    example: "2330 on 2026-10-21: 2,420 - 15 = 2,405."
+    example: "2330 on 2026-10-21: 2,420 - 15 = 2,405. 0056 on 2026-10-22: 58.75 - 1.72 = 57.03."
     direction: "N/A"
     interpretation: "What the exchange treated as the starting price of the session."
-    why_it_matters: "Shows corporate actions the OpenAPI does not list."
-    source: "TWSE OpenAPI (Open Government Data License Taiwan 1.0, attribution required); ADR-039"
+    why_it_matters: "Shows corporate actions the OpenAPI does not list, and lets a return cross an ex-date."
+    source: "TWSE OpenAPI (Open Government Data License Taiwan 1.0, attribution required); ADR-039, ADR-042"
     source_url: https://openapi.twse.com.tw/
-    as_of: "2026-10-22"
+    as_of: "2026-11-04"
     update_cadence: "daily (07:40, 09:40 and 20:40 SGT), the latest session only"
     caveats: "TWSE rounds it to the tick, so one tick of difference is ignored."
-    related_terms: [twse_price_change, reference_price_gap]
-    methodology_version: 0.1.0
+    related_terms: [twse_price_change, reference_price_gap, ex_reference_price]
+    methodology_version: 0.2.0
     status: complete
 
   - term_id: trade_value
@@ -7818,3 +7818,403 @@ terms:
     update_cadence: per official update
     methodology_version: 0.1.0
     status: seed
+
+  - term_id: page_taiwan_screens
+    display_name: "Taiwan Screens"
+    category: navigation
+    short_definition: "Every TWSE-listed company read each session: the biggest movers and two screens with their watch lists."
+    full_definition: "A page under the Opportunity Radar (ADR-042): the latest judged session's coverage, the movers (how much each liquid stock moved against its own history), the Swing Trend and Range Breakout screens with the names that entered, stay on watch or ended and why, each screen's conditions in words with its rule version and hash, the history check, and the source of every reading for a spot check. As known on shows an earlier session."
+    formula: "not a calculation; reads GET /taiwan/screens and /taiwan/screens/history"
+    unit: "page"
+    example: "On a session with an earnings season, more movers and breakouts appear."
+    direction: "N/A"
+    interpretation: "Where the day's Taiwan research list is."
+    why_it_matters: "Steven's workflow: explicit conditions checked every day over the whole market, so research starts from a short list."
+    source: "Milestone M3.11; ADR-042"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-11-04"
+    update_cadence: "each scheduled run (08:05 and 10:00 SGT)"
+    caveats: "A research screen and a watch list, not buy or sell advice; the conditions are unvalidated (OD-7)."
+    related_terms: [screen_mover, screen_watch_list, screen_history_check]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: listed_company
+    display_name: "Listed Company"
+    category: market_data
+    short_definition: "A company in the TWSE company file (t187ap03_L), with its code, short name, industry and listing date."
+    full_definition: "The company file of the TWSE OpenAPI lists every company listed on the exchange. Each change is stored as observed (listed_companies): a new listing, a changed name or industry, or a company the file stops naming. The screens read every listed company except depositary receipts (industry 91), each from its listing date."
+    formula: "t187ap03_L, fetched when a new four-digit code trades and every Monday"
+    unit: "company"
+    example: "2603 長榮, industry 15 (航運業), listed 1987-09-21."
+    direction: "N/A"
+    interpretation: "The set the Taiwan screens read."
+    why_it_matters: "The whole market, not only the 11 research codes, so the biggest movers can be found."
+    source: "TWSE OpenAPI (Open Government Data License Taiwan 1.0, attribution required); ADR-042"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-11-04"
+    update_cadence: "weekly, and when a new code trades"
+    caveats: "Only today's listed companies have history here (companies delisted before 2026-11 are missing: survivorship)."
+    related_terms: [twse_industry, taiwan_universe]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: twse_industry
+    display_name: "TWSE Industry"
+    category: market_data
+    short_definition: "The industry TWSE classifies a listed company in (產業別), such as 24 半導體業."
+    full_definition: "The two-digit code of the company file; the names (config/twse_industries.yaml) were derived by joining the company file with the monthly revenue file (t187ap05_L) on the company code, and match TWSE's 2023 classification of 33 industries. The screens' industry breadth groups by it."
+    formula: "產業別 (t187ap03_L); names from t187ap05_L"
+    unit: "category"
+    example: "2330, 2454, 3711, 2303 and 2408 are all 24 半導體業."
+    direction: "N/A"
+    interpretation: "Which peers a company is compared with for breadth."
+    why_it_matters: "Steven's swing condition asks whether the stock's group strengthens with it."
+    source: "TWSE OpenAPI; config/twse_industries.yaml; ADR-042"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-11-04"
+    update_cadence: "weekly"
+    caveats: "A backfilled session uses the classification first known (2026-11), not the one in force then."
+    related_terms: [listed_company, screen_industry_breadth]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: ex_reference_price
+    display_name: "Ex-date Reference Price"
+    category: market_data
+    short_definition: "The price an ex-date's move is measured from, from FinMind's ex-dividend results."
+    full_definition: "For every ex-date in FinMind's ex-dividend results (息, 權 or 權息), the reference price the exchange set: the previous close less the dividend, adjusted for a stock dividend. Neither TWSE's nor FinMind's daily change gives it (both state 0 on an ex-date), so the screens' return across the ex-date uses it; from M3.11 on, TWSE's announced dividends give it for new ex-dates."
+    formula: "FinMind reference_price (TaiwanStockDividendResult)"
+    unit: "TWD"
+    example: "2330 on 2026-09-16: previous close 2,385, cash dividend 7, reference 2,377.99."
+    direction: "N/A"
+    interpretation: "Where the stock would have opened with no change, after the dividend."
+    why_it_matters: "Without it an ex-dividend drop would look like a fall."
+    source: "FinMind (資料來源：FinMind); ADR-042"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-11-04"
+    update_cadence: "once (the listed backfill)"
+    caveats: "FinMind rounds it down to the cent, a cent from TWSE's tick-rounded reference."
+    related_terms: [twse_reference_price, screen_adjusted_return]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: screen_adjusted_return
+    display_name: "Adjusted Return"
+    category: screens
+    short_definition: "A session's return against its reference price, so an ex-dividend drop is not a fall."
+    full_definition: "The close against the reference price: the ex-date reference price where FinMind gave one, else the previous close less TWSE's announced dividends, else the previous close. Earlier closes are moved to the latest session's basis by chaining these returns back, and the averages and ranges are read on that basis. A session with a change of 0, another close and no recorded action is flagged as an unexplained gap (a capital reduction, say) and read as a raw ratio."
+    formula: "close / reference price - 1"
+    unit: "ratio"
+    example: "2330 on 2026-09-16: 2,380 / 2,377.99 - 1 = +0.08%, not -0.21%."
+    direction: "N/A"
+    interpretation: "The move the holder of the stock saw that day."
+    why_it_matters: "Moving averages and breakouts read across dividend season without false breaks."
+    source: "Screen rules 0.1.0 (domain/screens.py); ADR-042 SC6"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-11-04"
+    update_cadence: "each run"
+    caveats: "A rights offering or capital reduction is not modelled; it shows as a flag."
+    related_terms: [ex_reference_price, screen_z_score]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: screen_coverage
+    display_name: "Coverage"
+    category: screens
+    short_definition: "The share of listed companies with a bar for the session; below 95% the session is not judged."
+    full_definition: "Among the listed companies that had a bar in the 5 sessions before, the share with one for the session. A run judges a session only at 95% or more; otherwise, or when the TWSE calendar names a session whose files have not come, it records the session as not judged with the reason."
+    formula: "companies with a bar at T / companies with a bar in the 5 sessions before"
+    unit: "ratio"
+    example: "2026-10-22: 1,077 of 1,083 (99.4%)."
+    direction: "Higher = more complete"
+    interpretation: "Whether the day's data is complete enough to judge."
+    why_it_matters: "Steven: if the data has not updated, do not judge."
+    source: "Screen rules 0.1.0; ADR-042 SC10"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-11-04"
+    update_cadence: "each run"
+    caveats: "A stock without a trade that day is counted as missing; usually a handful."
+    related_terms: [screen_not_judged, listed_company]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: screen_not_judged
+    display_name: "Not Judged"
+    category: screens
+    short_definition: "A session the screens did not judge, with the reason: coverage below 95% or files not come yet."
+    full_definition: "Stored like a judged run, with no lists. The 08:05 run records it and the 10:00 retry reports it if the files are still missing; it disappears once a judged run of the session exists."
+    formula: "coverage < 95%, or a TWSE calendar session with no bars"
+    unit: "state"
+    example: "TWSE's files of 2026-11-03 are not stored yet."
+    direction: "N/A"
+    interpretation: "Nothing is concluded from incomplete data."
+    why_it_matters: "A missing day must not be read as a quiet day."
+    source: "Screen rules 0.1.0; ADR-042 SC10, SC11"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-11-04"
+    update_cadence: "each run"
+    caveats: "A typhoon closure is known only when no file comes; the calendar lists it once announced."
+    related_terms: [screen_coverage]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: screen_liquidity
+    display_name: "Average Trade Value"
+    category: screens
+    short_definition: "A stock's average trade value over 20 sessions; the screens read stocks above NT$30 million."
+    full_definition: "The mean of the stock's trade value over its last 20 sessions. A stock below the threshold, or with fewer than 60 sessions of history, is not liquid: it is never a mover and fails every screen."
+    formula: "mean of trade value over 20 sessions"
+    unit: "TWD"
+    example: "2454: about NT$20 billion a session."
+    direction: "Higher = more liquid"
+    interpretation: "Whether a move in the stock means much."
+    why_it_matters: "Thin stocks move a lot on little; leaving them out keeps the list useful."
+    source: "Screen rules 0.1.0; ADR-042 SC7"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-11-04"
+    update_cadence: "each run"
+    caveats: "Regular session only (TWSE's trade value)."
+    related_terms: [trade_value, screen_mover]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: screen_z_score
+    display_name: "Move z"
+    category: screens
+    short_definition: "How many times its own usual daily move a stock moved: the 1- or 5-session return over its 60-session volatility."
+    full_definition: "z1: the session's adjusted return divided by the standard deviation of the stock's 60 daily returns before it. z5: the 5-session return divided by that deviation times the square root of 5. The movers are ordered by the larger of the two in size."
+    formula: "z1 = r(T) / sd(r over 60 sessions); z5 = r(5 sessions) / (sd x sqrt 5)"
+    unit: "ratio"
+    example: "3711 on 2026-10-15: 2.66."
+    direction: "Higher = more unusual"
+    interpretation: "A z of 3 is a move the stock rarely makes."
+    why_it_matters: "Steven wants the stocks that changed the most, against their own history, not the biggest."
+    source: "Screen rules 0.1.0; ADR-042 SC7"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-11-04"
+    update_cadence: "each run"
+    caveats: "Ordered across stocks by Steven's choice (2026-11-04); each z is against the stock's own history only."
+    related_terms: [screen_mover, screen_volume_ratio, screen_adjusted_return]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: screen_volume_ratio
+    display_name: "Volume Ratio"
+    category: screens
+    short_definition: "The session's volume against the stock's average of the 20 sessions before."
+    full_definition: "Shares traded at T divided by the mean of the 20 sessions before. A stock at 3 or more is a mover whatever its price move. Flagged when a stock dividend or capital reduction over 5% falls in the window (the share count changed)."
+    formula: "volume(T) / mean volume of the 20 sessions before"
+    unit: "ratio"
+    example: "2.3 means 2.3 times the usual volume."
+    direction: "Higher = more traded than usual"
+    interpretation: "Attention: money moving in or out."
+    why_it_matters: "A breakout on volume is the condition Steven named."
+    source: "Screen rules 0.1.0; ADR-042 SC7, SC8"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-11-04"
+    update_cadence: "each run"
+    caveats: "In shares: a stock dividend inside the window biases it (flagged)."
+    related_terms: [volume, screen_mover]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: screen_mover
+    display_name: "Mover"
+    category: screens
+    short_definition: "A liquid stock whose move was at least 2.5 times its usual (z) or whose volume was at least 3 times its average."
+    full_definition: "Every session, among the liquid listed companies: a z1 or z5 of 2.5 or more in size, or a volume ratio of 3 or more. Listed by the larger z, largest first; the page shows 30, the report 10."
+    formula: "max(|z1|, |z5|) >= 2.5 or volume ratio >= 3"
+    unit: "list"
+    example: "A company up 7% on a session when it usually moves 2% is a mover (z 3.5)."
+    direction: "N/A"
+    interpretation: "Where the day's unusual moves are."
+    why_it_matters: "Research starts from what changed, not from a fixed list."
+    source: "Screen rules 0.1.0; ADR-042 SC7, SC14"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-11-04"
+    update_cadence: "each run"
+    caveats: "A move is not a signal: news, an index change or a block trade can cause it."
+    related_terms: [screen_z_score, screen_volume_ratio]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: screen_sma
+    display_name: "Moving Average (screens)"
+    category: screens
+    short_definition: "The mean of a stock's last 20 or 60 adjusted closes."
+    full_definition: "Read on the latest session's basis (adjusted returns chained back), so an ex-dividend drop does not pull it. The Swing Trend screen asks for the close above the 20- and 60-session averages and the 20-session average above its value 5 sessions earlier."
+    formula: "mean of the last N adjusted closes"
+    unit: "TWD"
+    example: "2330 on 2026-10-22: 20-session average 2,485.25."
+    direction: "N/A"
+    interpretation: "The trend the close is measured against."
+    why_it_matters: "Steven's swing condition: the stock above a rising 20-session average."
+    source: "Screen rules 0.1.0; ADR-042 SC8"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-11-04"
+    update_cadence: "each run"
+    caveats: "Different from the factor engine's averages (raw closes on the split basis)."
+    related_terms: [screen_swing_trend, close_vs_moving_average]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: screen_range
+    display_name: "Consolidation Range"
+    category: screens
+    short_definition: "The high and low of the 20 sessions before the latest, and their width."
+    full_definition: "The highest adjusted high and lowest adjusted low of the 20 sessions before T; the width is the high over the low less one. The Range Breakout screen asks for a width of 15% or less and a close above the high."
+    formula: "max high, min low of the 20 sessions before T; width = high / low - 1"
+    unit: "TWD"
+    example: "A stock that held between 50 and 55 has a width of 10%."
+    direction: "N/A"
+    interpretation: "A tight range shows a stock building a base."
+    why_it_matters: "Steven's short-term condition: a breakout from a consolidation on volume."
+    source: "Screen rules 0.1.0; ADR-042 SC8"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-11-04"
+    update_cadence: "each run"
+    caveats: "Adjusted for ex-dates, so a range may differ from a chart of raw prices."
+    related_terms: [screen_range_breakout]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: screen_swing_trend
+    display_name: "Swing Trend"
+    category: screens
+    short_definition: "A liquid stock above its rising 20-session average and its 60-session average, with half its industry above theirs."
+    full_definition: "Conditions: liquid; close above the 20-session average; that average above its value 5 sessions earlier; close above the 60-session average; at least 50% of the industry's liquid stocks above their own 20-session average (judged when the industry has 5 or more). Notes: foreign investors and investment trusts net buying on at least 3 of the last 5 sessions. A watch ends after 2 closes in a row below the 20-session average."
+    formula: "rules 0.1.0, screen tw_swing_trend"
+    unit: "screen"
+    example: "A semiconductor name trending up while most of its industry does too."
+    direction: "N/A"
+    interpretation: "A stock in an uptrend with its group."
+    why_it_matters: "Steven holds for 3 to 6 months: swings, not days."
+    source: "Screen rules 0.1.0; ADR-042 SC8"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-11-04"
+    update_cadence: "each run"
+    caveats: "Thresholds are Claude's defaults; the history check counts hits, not returns (OD-7)."
+    related_terms: [screen_sma, screen_industry_breadth, screen_watch_list]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: screen_range_breakout
+    display_name: "Range Breakout"
+    category: screens
+    short_definition: "A liquid stock closing above a tight 20-session range on at least twice its average volume."
+    full_definition: "Conditions: liquid; the 20 sessions before within 15% from low to high; the close above their high; volume at least 2 times the average of those sessions. The high it broke is kept as the level; the watch ends when a close falls below it (moved for later ex-dates)."
+    formula: "rules 0.1.0, screen tw_range_breakout"
+    unit: "screen"
+    example: "A stock that held between 50 and 55 for a month closes at 56 on triple volume."
+    direction: "N/A"
+    interpretation: "A base breaking out with money behind it."
+    why_it_matters: "Steven's short-term condition, kept as a watch list for the swing."
+    source: "Screen rules 0.1.0; ADR-042 SC8"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-11-04"
+    update_cadence: "each run"
+    caveats: "A breakout often fails: the level shows when it did."
+    related_terms: [screen_range, screen_volume_ratio, screen_watch_list]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: screen_industry_breadth
+    display_name: "Industry Breadth"
+    category: screens
+    short_definition: "The share of an industry's liquid stocks closing above their own 20-session average."
+    full_definition: "Per TWSE industry, among its liquid stocks with 20 sessions of history: how many close above their own 20-session average. Read only for an industry with 5 or more such stocks; below that the condition does not apply."
+    formula: "stocks above their 20-session average / liquid stocks of the industry"
+    unit: "ratio"
+    example: "Industry 24 on 2026-10-22, among five recorded semiconductor companies: 0 of 5."
+    direction: "Higher = broader strength"
+    interpretation: "Whether the group moves with the stock."
+    why_it_matters: "Steven's condition: the same group strengthening at the same time."
+    source: "Screen rules 0.1.0; ADR-042 SC8, SC14"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-11-04"
+    update_cadence: "each run"
+    caveats: "A cross-stock count (Steven's workflow), unlike the factor engine's own-history readings (P2-3)."
+    related_terms: [twse_industry, screen_swing_trend]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: screen_flow_note
+    display_name: "Flow Note"
+    category: screens
+    short_definition: "Whether foreign investors or investment trusts net bought on at least 3 of the last 5 sessions; shown, not required."
+    full_definition: "From FinMind's institutional flows, fetched each evening for the screens' candidates (at most 128 codes) and the 11 research codes. Days are counted where the group's net buying is above zero. Shown as met or not with the days; never required, because the flows exist only for candidates, and one day of buying proves nothing. The report shows met or not only, never FinMind's numbers."
+    formula: "days with net buying > 0 among the last 5 sessions >= 3"
+    unit: "days"
+    example: "外資近 5 日至少 3 日買超: 4 of 5."
+    direction: "N/A"
+    interpretation: "Whether the institutions are accumulating."
+    why_it_matters: "Steven reads the flows as confirmation, not as the trigger."
+    source: "FinMind (資料來源：FinMind); screen rules 0.1.0; ADR-042 SC5, SC8"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-11-04"
+    update_cadence: "daily (21:30 SGT), read by the next run"
+    caveats: "A name that entered today has no flows until the evening's fetch."
+    related_terms: [institutional_flows, screen_watch_list]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: screen_watch_list
+    display_name: "Watch List"
+    category: screens
+    short_definition: "The names a screen listed, kept until a condition ends them or 20 sessions pass without meeting the screen."
+    full_definition: "A name enters the first session it meets a screen and stays on watch while no ending condition holds; after 20 judged sessions it expires once it no longer meets the screen. States: entered, on watch, ended (with the reason) and expired."
+    formula: "entered -> on watch -> ended or expired"
+    unit: "state"
+    example: "2881 on watch since 2026-10-21 under Swing Trend."
+    direction: "N/A"
+    interpretation: "What to follow, and when to stop."
+    why_it_matters: "Steven: define when a condition fails, not only when it holds."
+    source: "Screen rules 0.1.0; ADR-042 SC9"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-11-04"
+    update_cadence: "each run"
+    caveats: "A backfilled watch list starts at the backfill's first session."
+    related_terms: [screen_swing_trend, screen_range_breakout]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: screen_history_check
+    display_name: "History Check"
+    category: screens
+    short_definition: "How many stocks met each screen on every past session: too many means too wide, none means too narrow."
+    full_definition: "The screens backfilled at every session since 2024 with 60 sessions before it, each as known at the end of its Taipei day. Shows the stocks meeting each screen per session, the median, the maximum and the share of sessions with none. Never the returns after the hits (OD-7)."
+    formula: "per session: stocks meeting the screen"
+    unit: "count"
+    example: "A median of 40 a session would be too wide to research."
+    direction: "N/A"
+    interpretation: "Whether a screen's thresholds fit the market."
+    why_it_matters: "Steven: check the rules on history so they are not too wide."
+    source: "Screen rules 0.1.0; ADR-042 SC13"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-11-04"
+    update_cadence: "once (make screens-backfill), then each run"
+    caveats: "Only today's listed companies, classified as first known (survivorship, KI)."
+    related_terms: [screen_watch_list, screen_rules]
+    methodology_version: 0.1.0
+    status: complete
+
+  - term_id: screen_rules
+    display_name: "Screen Rules"
+    category: screens
+    short_definition: "The released version of the screens' conditions and thresholds, with the hash of its content."
+    full_definition: "config/screen_rules.yaml: each version is immutable (make migrate refuses changed content under the same number); every run stores the version it used. A change, including an overrule by Steven, is a new version."
+    formula: "rule_version and sha256 of its content"
+    unit: "version"
+    example: "0.1.0 (2026-11-04)."
+    direction: "N/A"
+    interpretation: "Which conditions a list came from."
+    why_it_matters: "A list is only reproducible with its exact rules."
+    source: "config/screen_rules.yaml; ADR-042"
+    source_url: https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md
+    as_of: "2026-11-04"
+    update_cadence: "per release"
+    caveats: "0.1.0's thresholds are Claude's defaults (ADR-035)."
+    related_terms: [screen_history_check]
+    methodology_version: 0.1.0
+    status: complete

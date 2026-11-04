@@ -8,6 +8,8 @@ store: net buying by group and the foreign holding per session into exchange_mea
 (source finmind, tier 2); a changed value for a session already stored becomes a revision
 public at the end of the fetch day (TW18); closes only for sessions with no TWSE bar (TW24).
 Codes without an instrument yet (the TWSE job creates them) are noted and skipped.
+`datasets` narrows the datasets per code: the Taiwan screens' candidates get the institutional
+flows only (M3.11, ADR-042 SC5).
 """
 
 import json
@@ -61,13 +63,20 @@ class FinMindFlowsJob(IngestionJob):
             str(self.params["end"])
         )
 
+    @property
+    def datasets(self) -> tuple[str, ...]:
+        chosen = tuple(str(d) for d in self.params.get("datasets", (INSTITUTIONAL, SHAREHOLDING)))
+        if not chosen or not set(chosen) <= {INSTITUTIONAL, SHAREHOLDING}:
+            raise ValueError(f"datasets {chosen} are not flow datasets")
+        return chosen
+
     def fetch(self, ctx: FetchContext) -> list[FetchedPayload]:
         start, end = self.dates
         price_codes = {str(c) for c in self.params.get("price_codes", [])}
         payloads = []
         with self.client() as client:
             for code in self.codes:
-                for dataset in (INSTITUTIONAL, SHAREHOLDING):
+                for dataset in self.datasets:
                     payloads.append(client.get(dataset, code, start, end, ctx.acquire))
                 if code in price_codes:
                     payloads.append(client.get(PRICE, code, start, end, ctx.acquire))

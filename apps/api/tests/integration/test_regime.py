@@ -5,7 +5,7 @@ stress state's market-wide alert, and the rule set's sha guard."""
 import json
 import os
 from collections.abc import Callable, Iterator
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -28,6 +28,7 @@ from autotrading.config_sync import (
     sync_sources,
 )
 from autotrading.db.models import Alert, RegimeAssessment, Source
+from autotrading.domain.fair_value import month_ends
 from autotrading.domain.provenance import end_of_day
 from autotrading.domain.regime import STRESS_ORDER
 from autotrading.infra.object_store import make_s3_client
@@ -316,8 +317,11 @@ def test_the_backfill_points_are_session_closes_and_month_ends(
                 "AND adjustment = 'raw' AND bar_date >= '2026-09-01'"
             )
         ).scalars()
-        expected = {end_of_day(d) for d in closes} | {end_of_day(datetime(2026, 9, 30).date())}
+        # Month ends up to the run's own time: the recorded closes end in October 2026, but
+        # each month end that has passed since is a point too (CI #93 ran after 31 October).
+        expected = {end_of_day(d) for d in closes} | set(month_ends(date(2026, 9, 1), stored))
     assert points == sorted(expected)
+    assert end_of_day(date(2026, 9, 30)) in points
     assert all(p <= stored for p in points)
 
 

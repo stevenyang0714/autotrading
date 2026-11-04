@@ -148,12 +148,13 @@ def start_twse_refresh(
     (ADR-041 H6); None when twse_openapi is not enabled."""
     with sessions()() as session:
         extra, _ = holdings.tracked(session, "TW")
+    now = datetime.now(UTC)
     run_id = twse_refresh.start_daily(
         ingestion_runner(),
-        now=datetime.now(UTC),
+        now=now,
         manual=manual,
         slot=slot,
-        companies=companies,
+        companies=companies or (not manual and twse_refresh.weekly_companies(slot, now)),
         extra_codes=extra,
     )
     if run_id is None:
@@ -182,9 +183,31 @@ def start_finmind_refresh(*, manual: bool) -> UUID | None:
     )
     if run_id is None:
         logger.info("FinMind refresh skipped: finmind is not enabled")
-    else:
-        run_ingestion.send(str(run_id))
+        return None
+    run_ingestion.send(str(run_id))
+    start_candidate_flows(manual=manual)
     return run_id
+
+
+CANDIDATE_SPACING_MS = 270_000  # a candidates' run (20 requests at 12.5 s) after the one before
+
+
+def start_candidate_flows(*, manual: bool) -> int:
+    """The institutional flows of the Taiwan screens' candidates (ADR-042 SC5), after the
+    universe's run; each run sent when the one before should be done (KI-30)."""
+    from autotrading.repositories import screens
+    from autotrading.repositories.universe import taiwan_universe
+
+    universe = taiwan_universe()
+    with sessions()() as session:
+        rules = screens.stored_screen_rules(session)
+        codes = screens.candidates(session, rules, universe.codes) if rules else []
+    run_ids = finmind_refresh.start_candidate_flows(
+        ingestion_runner(), now=datetime.now(UTC), manual=manual, codes=codes
+    )
+    for i, run_id in enumerate(run_ids, start=1):
+        run_ingestion.send_with_options(args=(str(run_id),), delay=i * CANDIDATE_SPACING_MS)
+    return len(run_ids)
 
 
 def start_finmind_backfill(end: date | None = None) -> int:
@@ -200,6 +223,27 @@ def start_finmind_backfill(end: date | None = None) -> int:
     )
     for run_id in run_ids:
         run_ingestion.send(str(run_id))
+    return len(run_ids)
+
+
+LISTED_SPACING_MS = 13_000  # one FinMind request every 13 s: under the 300-an-hour cap
+
+
+def start_finmind_listed_backfill(datasets: tuple[str, ...] | None = None) -> int:
+    """Queue the listed companies' history (ADR-042 SC4): one run per code and dataset, each
+    sent 13 s after the one before, so the worker never holds more than one waiting FinMind run
+    (KI-30); runs that have succeeded are not queued again."""
+    from autotrading.domain.markets import TW
+    from autotrading.repositories.universe import taiwan_universe
+
+    run_ids = finmind_refresh.start_listed_history(
+        ingestion_runner(),
+        universe=taiwan_universe(),
+        today=datetime.now(UTC).astimezone(TW.zone).date(),
+        datasets=datasets or finmind_refresh.LISTED_DATASETS,
+    )
+    for i, run_id in enumerate(run_ids):
+        run_ingestion.send_with_options(args=(str(run_id),), delay=i * LISTED_SPACING_MS)
     return len(run_ids)
 
 
@@ -617,6 +661,60 @@ def start_momentum_backfill() -> int:
     return len(points)
 
 
+# ---------- Taiwan screens (M3.11) ----------
+
+SCREENS_TIME_LIMIT_MS = 60 * 60 * 1000  # every session since 2024, in batches
+
+
+@dramatiq.actor(queue_name=EVALUATION_QUEUE, max_retries=1, broker=broker)
+def evaluate_screens(trigger: str) -> None:
+    """The Taiwan screens of the newest stored session (ADR-042 SC11), or a not-judged row for
+    a calendar session whose TWSE files have not come."""
+    from autotrading.domain.markets import TW
+    from autotrading.repositories import screens
+
+    with sessions()() as session:
+        now = _now(session)
+        rules = screens.stored_screen_rules(session)
+        if rules is None:
+            logger.warning("Screen rules not loaded (make migrate): nothing judged")
+            return
+        row = screens.record_live(session, rules, now, trigger, market_calendar(TW.exchange))
+        found = f"{row.session} {row.status}" if row is not None else "nothing new"
+        session.commit()
+    logger.info("Taiwan screens at %s (%s): %s", now, trigger, found)
+
+
+@dramatiq.actor(
+    queue_name=EVALUATION_QUEUE, max_retries=1, time_limit=SCREENS_TIME_LIMIT_MS, broker=broker
+)
+def backfill_screens(system_time: str, since: str | None = None) -> None:
+    """The Taiwan screens at every stored session not judged yet, in order, as the database held
+    it at `system_time` (the history check, ADR-042 SC13)."""
+    from autotrading.repositories import screens
+
+    held = datetime.fromisoformat(system_time)
+    with sessions()() as session:
+        rules = screens.stored_screen_rules(session)
+        if rules is None:
+            logger.warning("Screen rules not loaded (make migrate): nothing judged")
+            return
+        stored = screens.backfill(
+            session, rules, held, since=date.fromisoformat(since) if since else None
+        )
+    logger.info("Taiwan screens backfill: %d runs stored", stored)
+
+
+def start_screens_evaluation(*, manual: bool) -> None:
+    evaluate_screens.send("manual" if manual else "schedule")
+
+
+def start_screens_backfill(since: date | None = None) -> None:
+    with sessions()() as session:
+        now = _now(session)
+    backfill_screens.send(now.isoformat(), since.isoformat() if since else None)
+
+
 # ---------- alert delivery (M3.0b) ----------
 
 DELIVERY_RATE = 1.0  # messages a second to one chat (Telegram allows about one)
@@ -648,8 +746,39 @@ def deliver_alerts(trigger: str) -> None:
                     "telegram", rate=DELIVERY_RATE, burst=DELIVERY_BURST, timeout=60
                 ),
             )
-    if sent or failed:
-        logger.info("Telegram delivery (%s): %d sent, %d failed", trigger, sent, failed)
+            reported = _deliver_screens(session, rules, client, chat, now, limiter)
+    if sent or failed or reported:
+        logger.info(
+            "Telegram delivery (%s): %d sent, %d failed, %d screen report messages",
+            trigger,
+            sent,
+            failed,
+            reported,
+        )
+
+
+def _deliver_screens(
+    session: Session,
+    rules: delivery.DeliveryRuleSet,
+    client: telegram.TelegramClient,
+    chat: str,
+    now: datetime,
+    limiter: TokenBucketLimiter,
+) -> int:
+    """The Taiwan screens' reports (ADR-042 SC12), under the same chat and rate limit."""
+    from autotrading.repositories import screens
+
+    if rules.screens is None:
+        return 0
+    screen_rules = screens.stored_screen_rules(session, rules.screens.screen_rule_version)
+    if screen_rules is None:
+        return 0
+
+    def send(text: str) -> int:
+        limiter.acquire("telegram", rate=DELIVERY_RATE, burst=DELIVERY_BURST, timeout=60)
+        return client.send(chat, text)
+
+    return delivery.deliver_screens(session, rules, send, now, screen_rules.movers.push_top)
 
 
 def start_alert_delivery(*, manual: bool) -> None:

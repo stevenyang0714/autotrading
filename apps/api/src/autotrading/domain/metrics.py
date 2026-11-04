@@ -79,8 +79,12 @@ METHODOLOGY = {
     # M3.0b (ADR-037): alerts may be pushed to Telegram; S4 targets raise alerts.
     "alert": "0.4.0",
     "rotation_alert": "0.2.0",
-    # M3.0c (ADR-038): Chinese messages with names and reasons, and the weekly digest.
-    "alert_delivery": "0.2.0",
+    # M3.0c (ADR-038): Chinese messages with names and reasons, and the weekly digest; M3.11
+    # (ADR-042): the Taiwan screens' report.
+    "alert_delivery": "0.3.0",
+    # M3.11 (ADR-042 SC6): TWSE states a change of 0 on an ex-date.
+    "twse_price_change": "0.2.0",
+    "twse_reference_price": "0.2.0",
     # M3.7 (ADR-039 TW10): beta and relative momentum against the market's benchmark.
     "beta_252d": "0.2.0",
     "relative_momentum_12_1": "0.2.0",
@@ -208,6 +212,29 @@ METRICS: tuple[MetricDefinition, ...] = (
                 )
             },
             "holdings_change": "holdings.change",
+            # M3.11 (ADR-042): the Taiwan screens, rules 0.1.0
+            "listed_company": "twse.company_rows",
+            "twse_industry": "twse.company_rows",
+            "ex_reference_price": "finmind.dividend_results",
+            **{
+                term_id: "screens.evaluate"
+                for term_id in (
+                    "screen_adjusted_return",
+                    "screen_coverage",
+                    "screen_liquidity",
+                    "screen_z_score",
+                    "screen_volume_ratio",
+                    "screen_mover",
+                    "screen_sma",
+                    "screen_range",
+                    "screen_industry_breadth",
+                    "screen_flow_note",
+                    "screen_watch_list",
+                    "screen_swing_trend",
+                    "screen_range_breakout",
+                )
+            },
+            "screen_history_check": "screens.history_summary",
             # M1.2 (ADR-022)
             "valuation_price": "valuation.select_price",
             "market_cap": "valuation.valuation",
