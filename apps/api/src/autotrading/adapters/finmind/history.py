@@ -7,7 +7,8 @@ store, by dataset:
   sessions with no TWSE row; on TWSE sessions the values are compared instead (TW19);
 - TaiwanStockMarginPurchaseShortSale and TaiwanStockPER: the same measure ids as the TWSE
   files, same rule;
-- TaiwanStockDividendResult: cash dividends and stock dividends the prices reproduce (TW20);
+- TaiwanStockDividendResult: cash dividends and stock dividends the prices reproduce (TW20),
+  and every ex-date's reference price (`ex_reference_price`, M3.11, ADR-042 SC6);
 - TaiwanStockInstitutionalInvestorsBuySell and TaiwanStockShareholding: every session.
 Re-running is harmless: stored values are unchanged, changed ones become revisions (TW18).
 """
@@ -111,7 +112,9 @@ class FinMindHistoryJob(IngestionJob):
             elif dataset == PER:
                 writer.valuation(code, valuation_rows(body), payload)
             elif dataset == DIVIDENDS:
-                writer.dividends(code, dividend_results(body, etf=etf), payload)
+                results = dividend_results(body, etf=etf)
+                writer.dividends(code, results, payload)
+                writer.reference_prices(code, results, payload)
             elif dataset == INSTITUTIONAL:
                 days, notes = flow_days(body)
                 writer.notes += notes

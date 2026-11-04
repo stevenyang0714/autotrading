@@ -13,7 +13,7 @@ from datetime import UTC, date, datetime
 from decimal import Decimal
 from pathlib import Path
 from typing import Any, ClassVar
-from uuid import uuid4
+from uuid import UUID, uuid4
 from zoneinfo import ZoneInfo
 
 import httpx2 as httpx
@@ -24,6 +24,7 @@ from sqlalchemy import Engine, create_engine, func, select
 from sqlalchemy.engine import URL
 from sqlalchemy.orm import Session, sessionmaker
 
+from autotrading.adapters.finmind import refresh as finmind_refresh
 from autotrading.adapters.finmind.client import DIVIDENDS, PRICE, FinMindClient
 from autotrading.config_sync import (
     load_factor_definitions,
@@ -42,7 +43,7 @@ from autotrading.db.models import (
 from autotrading.domain.provenance import end_of_day
 from autotrading.infra.object_store import make_s3_client
 from autotrading.infra.redis_client import make_redis
-from autotrading.ingestion.job import JobRegistry, Window, register_job
+from autotrading.ingestion.job import JobRegistry, Window, idempotency_key, register_job
 from autotrading.ingestion.rate_limit import TokenBucketLimiter
 from autotrading.ingestion.raw_store import RawPayloadStore
 from autotrading.ingestion.runner import IngestionRunner
@@ -50,6 +51,7 @@ from autotrading.main import create_app
 from autotrading.repositories.exchange_measures import measures
 from autotrading.repositories.factors import backfill_points, record_universe, stored_definitions
 from autotrading.repositories.prices import instruments_by_symbol
+from autotrading.repositories.universe import taiwan_universe
 from autotrading.settings import get_settings
 from tests import finmind_replay, twse_replay
 from tests.finmind_replay import RecordedFinMindFlows, history_params, recorded_client, serve
@@ -197,7 +199,8 @@ def test_flows_are_known_from_the_end_of_their_taipei_day(
 
 def test_ex_dividend_results_become_events(engine: Engine, history: list[IngestionRun]) -> None:
     fubon = _runs(history, DIVIDENDS, "2881")
-    assert fubon.status == "succeeded" and fubon.rows_inserted == 16
+    # 11 cash and 5 stock dividends, and the 16 ex-dates' reference prices (ADR-042 SC6)
+    assert fubon.status == "succeeded" and fubon.rows_inserted == 16 + 16
     with Session(engine) as session:
         (instrument_id,) = instruments_by_symbol(session, ["2881"], "twse").values()
         cash = session.scalars(
@@ -220,6 +223,109 @@ def test_ex_dividend_results_become_events(engine: Engine, history: list[Ingesti
             "stock_dividend",
         )
         assert first_stock.published_at == datetime(2021, 9, 5, 16, 0, tzinfo=UTC)  # Taipei start
+
+
+def test_every_ex_date_has_its_reference_price(engine: Engine, history: list[IngestionRun]) -> None:
+    """ADR-042 SC6: whatever its kind, each ex-date's reference price is stored for the screens'
+    returns across it, public at the end of its Taipei day."""
+    with Session(engine) as session:
+        ids = instruments_by_symbol(session, ["2330", "2881"], "twse")
+        found = {
+            (m.symbol, m.session_date): m
+            for m in session.scalars(
+                select(ExchangeMeasure).where(
+                    ExchangeMeasure.instrument_id.in_(ids.values()),
+                    ExchangeMeasure.measure_id == "ex_reference_price",
+                )
+            )
+        }
+        tsmc = found[("2330", date(2026, 9, 16))]
+        assert (tsmc.value, tsmc.unit, tsmc.detail, tsmc.source_id) == (
+            Decimal("2377.99"),
+            "TWD",
+            "息",
+            "finmind",
+        )
+        assert tsmc.published_at == end_of_day(date(2026, 9, 16), "Asia/Taipei")
+        assert found[("2881", date(2024, 9, 9))].detail == "權"
+        assert found[("2881", date(2024, 9, 9))].value == Decimal("88.09")
+        assert sum(code == "2881" for code, _ in found) == 16
+
+
+def test_a_listed_company_gets_its_closes_before_its_first_twse_session(
+    engine: Engine, runner: IngestionRunner, history: list[IngestionRun]
+) -> None:
+    """ADR-042 SC4: 2303 (listed outside the universe) since 2026-01: FinMind fills the sessions
+    before the TWSE ones and is compared on 2026-10-21 and 2026-10-22 (TW24)."""
+    body, params = finmind_replay.price_history("2303")
+    run_id = runner.create_run("finmind.history", params, WINDOW)
+    runner.execute(run_id)
+    with Session(engine) as session:
+        run = session.get_one(IngestionRun, run_id)
+        assert run.status == "succeeded", run.error_message
+        (instrument_id,) = instruments_by_symbol(session, ["2303"], "twse").values()
+        bars = session.scalars(
+            select(PriceBar).where(
+                PriceBar.instrument_id == instrument_id, PriceBar.superseded_at.is_(None)
+            )
+        ).all()
+        feeds = {b.bar_date: b.feed for b in bars}
+        assert feeds[D1] == feeds[D2] == "twse"
+        assert sum(f == "finmind" for f in feeds.values()) == len(body["data"]) - 2
+        assert min(feeds) == date(2026, 1, 2)
+        assert not any("vs TWSE" in n for n in run.notes)  # the two sources agree
+
+
+def test_the_listed_backfill_queues_only_what_has_not_succeeded(
+    engine: Engine, history: list[IngestionRun]
+) -> None:
+    """ADR-042 SC4: prices for the listed companies outside the universe, ex-dividend results
+    for all, depositary receipts left out, up to the day before the first TWSE session; a run
+    whose key succeeded is not queued again."""
+    fake = FakeRunner(sessionmaker(engine))
+    finmind_refresh.start_listed_history(
+        fake,  # type: ignore[arg-type]
+        universe=taiwan_universe(),
+        today=date(2026, 11, 5),
+    )
+    planned = {(p["dataset"], p["code"]): p for _, p in fake.created}
+    prices = {code for dataset, code in planned if dataset == PRICE}
+    results = {code for dataset, code in planned if dataset == DIVIDENDS}
+    assert len(results) == 1087 and len(prices) == 1087 - 10  # 1,097 less 10 receipts
+    assert "2330" in results and "2330" not in prices and "9105" not in results
+    assert {(p["start"], p["end"]) for p in planned.values()} == {("2024-01-01", "2026-10-20")}
+    done = planned[(PRICE, "2603")]
+    with Session(engine) as session:
+        session.add(
+            IngestionRun(
+                source_id="finmind",
+                job="finmind.history",
+                params=done,
+                idempotency_key=idempotency_key(
+                    "finmind", "finmind.history", done, finmind_refresh.LISTED_WINDOW
+                ),
+                status="succeeded",
+            )
+        )
+        session.commit()
+    again = FakeRunner(sessionmaker(engine))
+    finmind_refresh.start_listed_history(
+        again,  # type: ignore[arg-type]
+        universe=taiwan_universe(),
+        today=date(2026, 11, 5),
+    )
+    assert len(again.created) == len(fake.created) - 1
+    assert (PRICE, "2603") not in {(p["dataset"], p["code"]) for _, p in again.created}
+
+
+class FakeRunner:
+    def __init__(self, sessions: sessionmaker[Session]) -> None:
+        self.sessions = sessions
+        self.created: list[tuple[str, dict[str, Any]]] = []
+
+    def create_run(self, name: str, params: dict[str, Any], window: object) -> UUID:
+        self.created.append((name, params))
+        return UUID(int=len(self.created))
 
 
 def test_the_same_history_again_stores_nothing(

@@ -30,6 +30,7 @@ from autotrading.repositories.audit import set_actor
 from autotrading.settings import get_settings
 
 ZONE = "Asia/Taipei"
+DEPOSITARY_RECEIPTS = "91"  # 存託憑證: listed, but not companies the screens read (SC1)
 
 
 @dataclass(frozen=True)

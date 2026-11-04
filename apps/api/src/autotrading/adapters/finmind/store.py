@@ -314,7 +314,7 @@ class Writer:
         bars: list[BarIn] = []
         confidence = self.confidence()
         for row in rows:
-            if None in (row.open, row.high, row.low, row.close):
+            if None in (row.open, row.high, row.low, row.close) or cast(Decimal, row.close) <= 0:
                 self.notes.append(f"{code} {row.session}: no trade, no bar")
                 continue
             close = cast(Decimal, row.close)
@@ -356,6 +356,23 @@ class Writer:
         return kept
 
     # ---------- dividends (TW20) ----------
+
+    def reference_prices(
+        self, code: str, results: Sequence[DividendResult], payload: StoredPayload
+    ) -> None:
+        """The reference price of every ex-date with prices, whatever its kind (息, 權 or 權息):
+        `ex_reference_price`, which the Taiwan screens' returns use across the ex-date (M3.11,
+        ADR-042 SC6)."""
+        self._measure_items(
+            code,
+            payload,
+            [
+                (r.ex_date, "ex_reference_price", r.reference_price, "TWD", r.kind)
+                for r in results
+                if r.reference_price > 0 and r.before_price > 0
+            ],
+            twse_primary=False,
+        )
 
     def dividends(
         self, code: str, results: Sequence[DividendResult], payload: StoredPayload

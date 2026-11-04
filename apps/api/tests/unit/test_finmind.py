@@ -1,9 +1,11 @@
 """FinMind (M3.7b, ADR-040): the parsers on recorded responses, their agreement with the
 recorded TWSE files on the same session (TW19), the ex-dividend decoding (TW20), the client's
-allowed datasets, envelope check and quota cooldown (TW16, TW22), and the source entry."""
+allowed datasets, envelope check and quota cooldown (TW16, TW22), and the source entry. M3.11
+(ADR-042 SC6): what `spread` is on an ex-date."""
 
 from datetime import date
 from decimal import Decimal
+from itertools import pairwise
 from pathlib import Path
 
 import httpx2 as httpx
@@ -24,6 +26,7 @@ from autotrading.adapters.finmind.client import (
     MemoryCooldown,
     public_url,
 )
+from autotrading.adapters.finmind.daily import FinMindFlowsJob
 from autotrading.config_sync import load_sources
 from autotrading.domain.finmind import (
     FinMindFormatError,
@@ -37,9 +40,10 @@ from autotrading.domain.finmind import (
 from autotrading.domain.twse import day_rows as twse_day_rows
 from autotrading.domain.twse import margin_rows as twse_margin_rows
 from autotrading.domain.twse import valuation_rows as twse_valuation_rows
+from autotrading.ingestion.job import Window
 from autotrading.ingestion.schedule import FINMIND, SCHEDULES
 from autotrading.settings import get_settings
-from tests.finmind_replay import payload
+from tests.finmind_replay import payload, price_history
 from tests.twse_replay import payload as twse_payload
 
 CONFIG = Path(get_settings().resolved_config_dir())
@@ -130,6 +134,38 @@ def test_ex_dividend_results_are_decoded_from_the_prices() -> None:
     combined = dict(payload("2881", DIVIDENDS)["data"][0], stock_or_cache_dividend="權息")
     (skipped,) = dividend_results({"msg": "success", "status": 200, "data": [combined]})
     assert not skipped.accepted and "cannot be split" in (skipped.note or "")
+
+
+def test_the_spread_is_zero_on_an_ex_date_so_its_reference_price_comes_from_the_results() -> None:
+    """ADR-042 SC6, the check behind the listed backfill: on every recorded ex-date FinMind's
+    `spread` is 0 (not the change against the reference price) while the close moved; on every
+    other session it is the change against the previous close. The ex-dividend results name the
+    day's previous close and reference price, so the screens' return across an ex-date comes
+    from them."""
+    for code in ("2330", "2881"):
+        rows = price_rows(price_history(code)[0])
+        results = {r.ex_date: r for r in dividend_results(payload(code, DIVIDENDS))}
+        ex_dates = 0
+        for before, row in pairwise(rows):
+            assert row.close is not None and row.change is not None
+            if row.session in results:
+                ex_dates += 1
+                assert row.change == 0 and row.close != before.close
+                assert results[row.session].before_price == before.close
+                assert 0 < results[row.session].reference_price < before.close
+            else:
+                assert row.close - row.change == before.close
+        assert ex_dates == (6 if code == "2330" else 5)
+
+
+def test_a_flows_run_fetches_flow_datasets_only() -> None:
+    def job(**params: object) -> FinMindFlowsJob:
+        return FinMindFlowsJob({"codes": ["2303"], **params}, Window())
+
+    assert job().datasets == (INSTITUTIONAL, SHAREHOLDING)
+    assert job(datasets=[INSTITUTIONAL]).datasets == (INSTITUTIONAL,)
+    with pytest.raises(ValueError, match="not flow datasets"):
+        _ = job(datasets=[PRICE]).datasets
 
 
 def test_a_changed_dataset_fails_instead_of_storing_half() -> None:

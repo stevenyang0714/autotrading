@@ -204,6 +204,27 @@ def start_finmind_backfill(end: date | None = None) -> int:
     return len(run_ids)
 
 
+LISTED_SPACING_MS = 13_000  # one FinMind request every 13 s: under the 300-an-hour cap
+
+
+def start_finmind_listed_backfill(datasets: tuple[str, ...] | None = None) -> int:
+    """Queue the listed companies' history (ADR-042 SC4): one run per code and dataset, each
+    sent 13 s after the one before, so the worker never holds more than one waiting FinMind run
+    (KI-30); runs that have succeeded are not queued again."""
+    from autotrading.domain.markets import TW
+    from autotrading.repositories.universe import taiwan_universe
+
+    run_ids = finmind_refresh.start_listed_history(
+        ingestion_runner(),
+        universe=taiwan_universe(),
+        today=datetime.now(UTC).astimezone(TW.zone).date(),
+        datasets=datasets or finmind_refresh.LISTED_DATASETS,
+    )
+    for i, run_id in enumerate(run_ids):
+        run_ingestion.send_with_options(args=(str(run_id),), delay=i * LISTED_SPACING_MS)
+    return len(run_ids)
+
+
 # ---------- Alpaca market data (M0.7) ----------
 
 

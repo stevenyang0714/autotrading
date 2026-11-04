@@ -15,7 +15,7 @@ export NEXT_TELEMETRY_DISABLED := 1
 export COREPACK_ENABLE_DOWNLOAD_PROMPT := 0
 
 .DEFAULT_GOAL := help
-.PHONY: help setup up down ps logs migrate sec-refresh fred-refresh prices-refresh prices-backfill news-refresh news-backfill buyback-evaluate buyback-backfill buyback-verify signals-backfill alerts-backfill regime-evaluate regime-backfill regime-verify factors-evaluate factors-backfill factors-verify portfolio-snapshot risk-verify holdings-snapshot holdings-verify rotation-evaluate rotation-backfill rotation-verify momentum-evaluate momentum-backfill momentum-verify alerts-deliver alerts-digest telegram-check twse-refresh twse-factors twse-factors-backfill twse-rank finmind-refresh finmind-backfill backtest-run backtest-verify db-backup db-restore-check replay-fixtures gen test test-unit test-integration e2e lint lint-api lint-web fmt dev-web
+.PHONY: help setup up down ps logs migrate sec-refresh fred-refresh prices-refresh prices-backfill news-refresh news-backfill buyback-evaluate buyback-backfill buyback-verify signals-backfill alerts-backfill regime-evaluate regime-backfill regime-verify factors-evaluate factors-backfill factors-verify portfolio-snapshot risk-verify holdings-snapshot holdings-verify rotation-evaluate rotation-backfill rotation-verify momentum-evaluate momentum-backfill momentum-verify alerts-deliver alerts-digest telegram-check twse-refresh twse-factors twse-factors-backfill twse-rank finmind-refresh finmind-backfill finmind-listed-backfill backtest-run backtest-verify db-backup db-restore-check replay-fixtures gen test test-unit test-integration e2e lint lint-api lint-web fmt dev-web
 
 help: ## Show available targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  %-18s %s\n", $$1, $$2}'
@@ -126,6 +126,9 @@ finmind-refresh: ## Queue the Taiwan institutional flows and foreign holdings fr
 
 finmind-backfill: ## Queue the one-time FinMind history (prices, margin, P/E, dividends, flows since 2016; M3.7b)
 	$(COMPOSE) exec -T api python -m autotrading.jobs.finmind_refresh --backfill
+
+finmind-listed-backfill: ## Queue the listed companies' FinMind history (DATASET=price|dividends; M3.11)
+	$(COMPOSE) exec -T api python -m autotrading.jobs.finmind_refresh --listed-backfill $(if $(DATASET),--dataset $(DATASET),)
 
 twse-rank: ## Print the TWSE market-cap ranking from the stored files against universe_tw.yaml
 	$(COMPOSE) exec -T api python -m autotrading.jobs.twse_refresh --rank
