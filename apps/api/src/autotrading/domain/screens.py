@@ -339,6 +339,7 @@ class DailyBar:
     cash: float | None  # a cash dividend going ex this session (TWD a share)
     stock_ratio: float | None  # a stock dividend going ex: new shares per share
     feed: str  # twse or finmind
+    feed_status: str  # end_of_day, or fixture for recorded test data (the DEMO banner)
     row_id: str
     published_at: datetime
 
@@ -439,6 +440,7 @@ def adjusted_window(bars: Sequence[DailyBar], sessions: Sequence[date]) -> Windo
 class SourceRow(BaseModel):
     bar_id: str
     feed: str
+    feed_status: str
     published_at: datetime
 
 
@@ -502,7 +504,12 @@ class StockReading:
 
     def source(self) -> SourceRow:
         bar = self.window.bars[-1]
-        return SourceRow(bar_id=bar.row_id, feed=bar.feed, published_at=bar.published_at)
+        return SourceRow(
+            bar_id=bar.row_id,
+            feed=bar.feed,
+            feed_status=bar.feed_status,
+            published_at=bar.published_at,
+        )
 
 
 @dataclass(frozen=True)

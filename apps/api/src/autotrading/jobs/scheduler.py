@@ -31,6 +31,7 @@ from autotrading.ingestion.schedule import (
     SEC_EDGAR,
     SNAPSHOT_SECONDS,
     TW_FACTORS,
+    TW_SCREENS,
     TWSE,
 )
 from autotrading.jobs import actors
@@ -163,6 +164,16 @@ def main() -> None:
         coalesce=True,
         misfire_grace_time=12 * 3600,
     )
+    # Taiwan screens (M3.11, ADR-042 SC11): 08:05 and 10:00 SGT, after the TWSE runs.
+    for hour, minute in TW_SCREENS.times:
+        scheduler.add_job(
+            lambda: actors.start_screens_evaluation(manual=False),
+            CronTrigger(hour=hour, minute=minute, timezone=REFRESH_TIMEZONE),
+            id=f"taiwan_screens_{hour:02d}{minute:02d}",
+            max_instances=1,
+            coalesce=True,
+            misfire_grace_time=3600,
+        )
     # Taiwan factor snapshots (M3.7, ADR-039 TW10): daily at 09:50 SGT, after the TWSE runs.
     scheduler.add_job(
         lambda: actors.start_taiwan_factor_evaluation(manual=False),

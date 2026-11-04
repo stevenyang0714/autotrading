@@ -78,6 +78,7 @@ def recorded(code: str, *, references: bool = True) -> list[DailyBar]:
             cash=None,
             stock_ratio=None,
             feed="finmind",
+            feed_status="end_of_day",
             row_id=f"{code}-{r.session}",
             published_at=end_of_day(r.session, TAIPEI),
         )
@@ -174,6 +175,7 @@ def test_a_twse_ex_date_takes_its_reference_from_the_announced_dividend() -> Non
             cash=float(cash) if cash is not None else None,
             stock_ratio=None,
             feed="twse",
+            feed_status="end_of_day",
             row_id=f"0056-{day}",
             published_at=end_of_day(r.session, TAIPEI),
         )

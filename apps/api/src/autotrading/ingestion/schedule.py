@@ -108,6 +108,9 @@ HOLDINGS = DailySchedule(11, 12)
 MOMENTUM = DailySchedule(11, 17)
 # M3.7: the Taiwan factor snapshots (definitions 0.2.0), after the 07:40 and 09:40 TWSE runs
 TW_FACTORS = DailySchedule(9, 50)
+# M3.11 (ADR-042 SC11): the Taiwan screens after the 07:40 and 09:40 TWSE runs (a session's
+# files come about 05:20 Taipei the next morning), before the 09:00 Taipei open
+TW_SCREENS = MultiDailySchedule(((8, 5), (10, 0)))
 # M2.5: the backtests, once a month after the month's first rotation assessment
 BACKTESTS = DailySchedule(11, 20)
 # Official RSS feeds (M0.8): every 30 minutes at :05 and :35, one run per feed.
