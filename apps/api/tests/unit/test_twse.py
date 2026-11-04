@@ -225,6 +225,30 @@ def test_ticks_and_the_reference_price_check() -> None:
         reference_gap("2330", day, Decimal(2430), Decimal(15), before, Decimal(2420), etf=False)
         is None
     )
+    # the recorded ex-date of 0056 (2026-10-22, cash 1.72): TWSE states a change of 0, not the
+    # change against the reference 57.03; with the dividend recorded there is nothing to check,
+    # without it a change of 0 and another close is an action the file did not tell
+    rows = {r.code: r for r in day_rows(payload("d2", "STOCK_DAY_ALL"))}
+    fund = rows["0056"]
+    assert fund.close == Decimal("56.30") and fund.change == 0
+    assert fund.close is not None and fund.change is not None
+    told = {r.code: r for r in ex_right_rows(payload("d1", "TWT48U_ALL")) if r.ex_date == day}
+    assert told["0056"].cash == Decimal("1.72")
+    assert (
+        reference_gap(
+            "0056",
+            day,
+            fund.close,
+            fund.change,
+            before,
+            Decimal("58.75"),
+            etf=True,
+            cash=Decimal("1.72"),
+        )
+        is None
+    )
+    untold = reference_gap("0056", day, fund.close, fund.change, before, Decimal("58.75"), etf=True)
+    assert untold is not None and untold.reference == Decimal("56.30")
     # a 10% stock dividend: 100 / 1.1 = 90.91
     assert (
         reference_gap(

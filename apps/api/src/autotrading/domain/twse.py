@@ -7,10 +7,12 @@ field raises, so a changed file fails the run instead of storing half of it.
 - Numbers: thousands separators removed; "", "--" and "-" are no value.
 - MI_MARGN has no date: its session is the one STOCK_DAY_ALL names in the same run, checked by
   the chain of balances (each 前日餘額 must equal the stored 今日餘額 of the session before; TW6).
-- Reference price: TWSE's change is against the session's reference price, so
-  reference = close - change. With no corporate action the reference is the previous close;
-  on an ex-date it is the previous close less the cash dividend, over one plus the stock
-  dividend. A larger gap than one tick is an action this source did not tell (TW9).
+- Reference price: TWSE's change is against the previous close, so close - change is the
+  previous close on an ordinary session. On an ex-date the file states a change of 0 (0056 on
+  2026-10-22, recorded; the website marks the day X), so the reference (the previous close less
+  the cash dividend, over one plus the stock dividend) is not in the file: an ex-date with its
+  action recorded is not checked. A change of 0 with another close and no recorded action, or
+  a larger gap than one tick, is an action this source did not tell (TW9; M3.11, ADR-042).
 """
 
 from collections.abc import Iterable, Mapping, Sequence
@@ -421,7 +423,11 @@ def reference_gap(
     stock_ratio: Decimal = Decimal(0),
 ) -> ReferenceGap | None:
     """The gap between TWSE's reference price and the previous close less the recorded cash
-    and stock dividends of `session`, or None within one tick."""
+    and stock dividends of `session`, or None within one tick. An ex-date with its action
+    recorded is None: TWSE states a change of 0 that day, not the change against the
+    reference."""
+    if change == 0 and (cash or stock_ratio):
+        return None
     reference = close - change
     expected = (previous_close - cash) / (1 + stock_ratio)
     if abs(reference - expected) <= tick(previous_close, etf):

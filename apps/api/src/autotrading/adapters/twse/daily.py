@@ -178,7 +178,7 @@ class TwseDailyJob(IngestionJob):
         store.notes += store.session_notes(self.calendar())
         store.bars(days, day_payload)
         listed = self._listed(store, payloads, companies)
-        self._listed_codes(store, every, listed, codes, day_payload)
+        self._listed_codes(store, every, listed, codes, payloads)
         self._extra_codes(store, payloads, codes | set(listed), today)
         store.day_measures(days, day_payload)
         if VALUATION in payloads:
@@ -226,17 +226,21 @@ class TwseDailyJob(IngestionJob):
         every: Mapping[str, DayRow],
         listed: Mapping[str, UUID],
         universe: set[str],
-        payload: StoredPayload,
+        payloads: Mapping[str, StoredPayload],
     ) -> None:
         """The raw bar, price change and trade value of every listed company outside the
-        universe (ADR-042 SC3), in one batch; no valuation, margin or TW9 note of theirs."""
+        universe (ADR-042 SC3), in one batch, and the cash and stock dividends TWT48U_ALL
+        announces for them (the screens' reference price on an ex-date, SC6); no valuation,
+        margin or TW9 note of theirs."""
         days = {code: row for code, row in every.items() if code in listed and code not in universe}
         if not days:
             return
         ids = {code: listed[code] for code in days}
         rows = _Store(self, store.ctx, store.session, store.source, ids, set(), store.today)
-        rows.bars(days, payload, summarize=True)
-        rows.day_measures(days, payload)
+        rows.bars(days, payloads[DAY], summarize=True)
+        rows.day_measures(days, payloads[DAY])
+        if EX_RIGHTS in payloads:
+            rows.ex_rights(payloads[EX_RIGHTS], self.calendar())
         store.count(rows.inserted, rows.unchanged, rows.conflicts)
         store.notes += rows.notes
 

@@ -45,6 +45,9 @@ from autotrading.db.models import (
 from autotrading.db.models import (
     RotationRuleSet as RotationRuleSetRow,
 )
+from autotrading.db.models import (
+    ScreenRuleSet as ScreenRuleSetRow,
+)
 from autotrading.domain.backtest import BacktestRulesFile
 from autotrading.domain.buyback_states import RulesFile
 from autotrading.domain.convergence import AlertRulesFile
@@ -56,6 +59,7 @@ from autotrading.domain.provenance import LicenseStatus
 from autotrading.domain.regime import RegimeRulesFile
 from autotrading.domain.risk import RiskRulesFile
 from autotrading.domain.rotation import RotationRulesFile
+from autotrading.domain.screens import ScreenRulesFile
 from autotrading.infra.db import make_engine
 from autotrading.repositories.audit import set_actor
 from autotrading.settings import get_settings
@@ -592,6 +596,46 @@ def sync_backtest_rules(session: Session, rules: BacktestRulesFile) -> GlossaryS
     return result
 
 
+class ScreenRulesVersionError(ValueError):
+    """A released screen rule set's content changed without a new rule_version."""
+
+
+def load_screen_rules(path: Path) -> ScreenRulesFile:
+    return ScreenRulesFile.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
+
+
+def sync_screen_rules(session: Session, rules: ScreenRulesFile) -> GlossarySyncResult:
+    """Register each Taiwan screen rule_version once; the same version with other content is
+    refused (ADR-042, as the momentum rules)."""
+    set_actor(session, "config:screen_rules.yaml")
+    result = GlossarySyncResult()
+    for entry in rules.rule_sets:
+        rule_set = entry.rule_set()
+        sha = rule_set.content_sha256()
+        existing = session.scalars(
+            select(ScreenRuleSetRow).where(ScreenRuleSetRow.rule_version == rule_set.rule_version)
+        ).first()
+        if existing is not None:
+            if existing.content_sha256 != sha:
+                raise ScreenRulesVersionError(
+                    f"screen rule set {rule_set.rule_version} changed but its rule_version "
+                    "was not bumped"
+                )
+            result.unchanged.append(rule_set.rule_version)
+            continue
+        session.add(
+            ScreenRuleSetRow(
+                rule_version=rule_set.rule_version,
+                content=rule_set.content(),
+                content_sha256=sha,
+                released=rule_set.released,
+            )
+        )
+        result.created.append(rule_set.rule_version)
+    session.flush()
+    return result
+
+
 def main() -> None:
     settings = get_settings()
     sources_path = settings.resolved_config_dir() / "sources.yaml"
@@ -635,6 +679,10 @@ def main() -> None:
                 session,
                 load_delivery_rules(settings.resolved_config_dir() / "delivery_rules.yaml"),
             )
+            screens = sync_screen_rules(
+                session,
+                load_screen_rules(settings.resolved_config_dir() / "screen_rules.yaml"),
+            )
             session.commit()
     finally:
         engine.dispose()
@@ -659,6 +707,7 @@ def main() -> None:
     print(f"momentum_rules.yaml synced: new rule versions={momentum.created}")
     print(f"backtest_rules.yaml synced: new rule versions={backtests.created}")
     print(f"delivery_rules.yaml synced: new rule versions={delivery.created}")
+    print(f"screen_rules.yaml synced: new rule versions={screens.created}")
 
 
 if __name__ == "__main__":
