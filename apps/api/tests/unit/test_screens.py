@@ -5,6 +5,7 @@ gates (SC10) and the history summary (SC13)."""
 
 import math
 import statistics
+from dataclasses import replace
 from datetime import date
 from decimal import Decimal
 from itertools import pairwise
@@ -210,6 +211,29 @@ def test_the_movers_readings_match_a_direct_computation() -> None:
     assert reading.z5 == pytest.approx((closes[-1] / closes[-6] - 1) / (sigma * math.sqrt(5)))
     assert reading.volume_ratio == pytest.approx(volumes[-1] / statistics.fmean(volumes[-21:-1]))
     assert reading.liquid  # MediaTek trades far above NT$30m a session
+
+
+def test_a_stored_close_of_zero_is_a_session_without_trade() -> None:
+    """FinMind's placeholder rows (close 0, as stored for 2317 on 2025-07-30 before M3.11's store
+    skipped them) read as no trade: the stock reads as without the bar, the return across it a
+    raw ratio marked `gap`."""
+    bars = BARS["2454"]
+    i = len(bars) - 10
+    zero = replace(
+        bars[i],
+        open=0.0,
+        high=0.0,
+        low=0.0,
+        close=0.0,
+        close_text="0.0",
+        volume=0.0,
+        trade_value=0.0,
+    )
+    reading = read_stock(RULES, COMPANIES["2454"], [*bars[:i], zero, *bars[i + 1 :]], SESSIONS)
+    assert isinstance(reading, StockReading)
+    assert reading == read_stock(RULES, COMPANIES["2454"], [*bars[:i], *bars[i + 1 :]], SESSIONS)
+    (gap,) = [e for e in reading.window.events if e.session == bars[i + 1].session]
+    assert gap.source == "gap"
 
 
 def test_the_screens_and_watch_lists_over_thirty_recorded_sessions() -> None:

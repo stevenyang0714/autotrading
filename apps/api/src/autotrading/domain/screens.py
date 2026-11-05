@@ -538,7 +538,9 @@ def read_stock(
     `bars`: the stock's bars known at T, oldest first, none after T (so the tail is read)."""
     window_sessions = sessions[-rules.window_sessions :]
     first = window_sessions[0]
-    own = [b for b in bars[-rules.window_sessions :] if b.session >= first]
+    # a stored close of 0 is a session without trade: FinMind's placeholder rows, which its store
+    # skips since M3.11 (the few stored before for the research universe are skipped here)
+    own = [b for b in bars[-rules.window_sessions :] if b.session >= first and b.close > 0]
     if not own or own[-1].session != window_sessions[-1]:
         return Unavailable(company, "no_trade", f"no trade on {window_sessions[-1]}")
     if len(own) < rules.liquidity.min_history:
