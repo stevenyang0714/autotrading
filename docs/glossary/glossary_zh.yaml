@@ -417,7 +417,7 @@ terms:
   ex_reference_price: {name: 除權息參考價, hint: 除權息日的漲跌起算價：前收減去股利（配股再調整），來自 FinMind 的除權息結果。}
   screen_adjusted_return: {name: 還原報酬, hint: 對參考價計算的當日報酬，除息的跳空不會被當成下跌。}
   screen_coverage: {name: 涵蓋率, hint: 當日有成交資料的上市公司比例；低於 95% 不判斷。}
-  screen_not_judged: {name: 未判斷, hint: 涵蓋率不足或證交所檔案還沒來的交易日，會寫明原因，不下結論。}
+  screen_not_judged: {name: 未判斷, hint: 涵蓋率不足、有足夠歷史的股票不到九成，或證交所檔案還沒來的交易日，會寫明原因，不下結論。}
   screen_liquidity: {name: 平均成交值, hint: "近 20 日平均成交值；低於 NT$3,000 萬的股票不列入異動，也不符合任何篩選。"}
   screen_z_score: {name: 變動倍數（z）, hint: 當日或 5 日報酬是這檔股票平常波動的幾倍。}
   screen_volume_ratio: {name: 量比, hint: 當日成交量是前 20 日均量的幾倍。}

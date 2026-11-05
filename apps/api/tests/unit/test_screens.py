@@ -1,7 +1,7 @@
 """The Taiwan screens (M3.11, ADR-042) on recorded responses: the rule file pinned to its hash,
 returns across ex-dates (SC6), the movers' readings against a direct computation (SC7), the
-screens and their watch lists over 30 recorded sessions (SC8, SC9), the coverage gate (SC10)
-and the history summary (SC13)."""
+screens and their watch lists over 30 recorded sessions (SC8, SC9), the coverage and history
+gates (SC10) and the history summary (SC13)."""
 
 import math
 import statistics
@@ -44,7 +44,11 @@ from tests.finmind_replay import PRICE_CODES, payload, price_history
 from tests.twse_replay import payload as twse_payload
 
 CONFIG = Path(get_settings().resolved_config_dir())
-PINNED = {"0.1.0": "cf10f6d4deb1059efcf5562aef9bd593732dfa2c82e8a25fa83da3df701733a9"}
+PINNED = {
+    "0.1.0": "cf10f6d4deb1059efcf5562aef9bd593732dfa2c82e8a25fa83da3df701733a9",
+    # not judged while the history is backfilled (SC10)
+    "0.2.0": "66087bd1dbf7b785c5f632410053f68cbe4028b6ee96337549f4eb868a8644d0",
+}
 TAIPEI = "Asia/Taipei"
 
 
@@ -284,11 +288,44 @@ def test_a_session_below_the_coverage_is_not_judged() -> None:
     assert run.reason is not None and "5 of 6" in run.reason and "83.3%" in run.reason
 
 
+def test_a_session_while_the_history_is_backfilled_is_not_judged() -> None:
+    """SC10 since 0.2.0: 2303 and 2408 traded but hold 30 sessions, so 4 of the 6 companies
+    with a bar have 60 sessions of history (below 90%); 0.1.0 judged such a session."""
+    session = SESSIONS[-1]
+    bars = {c: [b for b in v if b.session <= session] for c, v in BARS.items()}
+    for code in ("2303", "2408"):
+        bars[code] = bars[code][-30:]
+
+    def judged_with(rules: ScreenRuleSet) -> ScreenRunOut:
+        return evaluate(
+            rules,
+            known_at=end_of_day(session, TAIPEI),
+            companies=COMPANIES,
+            bars=bars,
+            sessions=SESSIONS,
+            flows={},
+            previous=None,
+            industry_basis="as_known",
+        )
+
+    run = judged_with(RULES)
+    assert RULES.rule_version == "0.2.0" and run.status == "not_judged" and run.screens == []
+    assert (run.coverage.covered, run.coverage.read, run.coverage.unavailable["history"]) == (
+        6,
+        4,
+        2,
+    )
+    assert run.reason is not None and "4 of the 6 companies" in run.reason
+    assert "66.7%" in run.reason and "below 90%" in run.reason
+    first = next(r.rule_set() for r in rules_file().rule_sets if r.rule_version == "0.1.0")
+    assert judged_with(first).status == "judged"
+
+
 def test_the_report_names_the_movers_and_screens_and_never_a_flow_number() -> None:
     """SC12: one plain-text message under Telegram's length, the page named but not linked,
     TWSE's and FinMind's attribution and the footer; flows as conditions met or not."""
     delivery = load_delivery_rules(CONFIG / "delivery_rules.yaml").active()
-    assert delivery.screens is not None and delivery.screens.screen_rule_version == "0.1.0"
+    assert delivery.screens is not None and delivery.screens.screen_rule_version == "0.2.0"
     run = run_at(date(2026, 10, 21), previous_of(run_at(date(2026, 10, 20))))  # 2881 met then
     (text,) = screen_report(delivery, run, industry_names(CONFIG), RULES.movers.push_top)
     assert len(text) <= MAX_MESSAGE and "http" not in text
