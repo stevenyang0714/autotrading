@@ -424,7 +424,7 @@ terms:
   screen_mover: {name: 異動, hint: 有流動性、變動倍數 ≥ 2.5 或量比 ≥ 3 的股票，依變化大小排序。}
   screen_sma: {name: 均線（篩選）, hint: 近 20 或 60 日還原收盤價的平均。}
   screen_range: {name: 整理區間, hint: 前 20 日的最高與最低價及其寬度。}
-  screen_swing_trend: {name: 波段趨勢, hint: 站上上升中的 20 日均線與 60 日均線，且同產業過半站上均線。}
+  screen_swing_trend: {name: 波段趨勢, hint: 站上上升中的 20 日均線與 60 日均線、成交量達 20 日均量 1.5 倍，且同產業過半站上均線。}
   screen_range_breakout: {name: 量價突破, hint: 前 20 日區間不超過 15%，收盤突破區間高點且量達 2 倍。}
   screen_industry_breadth: {name: 族群走強比例, hint: 同產業有流動性的股票中，站上自己 20 日均線的比例。}
   screen_flow_note: {name: 法人附註, hint: 外資或投信近 5 日至少 3 日買超；只顯示、不是必要條件。}

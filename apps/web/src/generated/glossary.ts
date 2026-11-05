@@ -8971,15 +8971,15 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "term_id": "screen_swing_trend",
     "display_name": "Swing Trend",
     "category": "screens",
-    "short_definition": "A liquid stock above its rising 20-session average and its 60-session average, with half its industry above theirs.",
-    "full_definition": "Conditions: liquid; close above the 20-session average; that average above its value 5 sessions earlier; close above the 60-session average; at least 50% of the industry's liquid stocks above their own 20-session average (judged when the industry has 5 or more). Notes: foreign investors and investment trusts net buying on at least 3 of the last 5 sessions. A watch ends after 2 closes in a row below the 20-session average.",
-    "formula": "rules 0.1.0, screen tw_swing_trend",
+    "short_definition": "A liquid stock above its rising 20-session average and its 60-session average on a volume of 1.5 times its average, with half its industry above theirs.",
+    "full_definition": "Conditions: liquid; close above the 20-session average; that average above its value 5 sessions earlier; close above the 60-session average; since screen rules 0.4.0 a volume of at least 1.5 times the 20 sessions before (under 0.3.0 a median 141 stocks met the screen a session); at least 50% of the industry's liquid stocks above their own 20-session average (judged when the industry has 5 or more). Notes: foreign investors and investment trusts net buying on at least 3 of the last 5 sessions. A watch ends after 2 closes in a row below the 20-session average.",
+    "formula": "rules 0.4.0, screen tw_swing_trend",
     "unit": "screen",
     "example": "A semiconductor name trending up while most of its industry does too.",
     "direction": "N/A",
     "interpretation": "A stock in an uptrend with its group.",
     "why_it_matters": "Steven holds for 3 to 6 months: swings, not days.",
-    "source": "Screen rules 0.1.0; ADR-042 SC8",
+    "source": "Screen rules 0.4.0; ADR-042 SC8",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md",
     "as_of": "2026-11-04",
     "update_cadence": "each run",
@@ -8989,9 +8989,9 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "screen_industry_breadth",
       "screen_watch_list"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "波段趨勢",
-    "hint_zh": "站上上升中的 20 日均線與 60 日均線，且同產業過半站上均線。"
+    "hint_zh": "站上上升中的 20 日均線與 60 日均線、成交量達 20 日均量 1.5 倍，且同產業過半站上均線。"
   },
   "screen_volume_ratio": {
     "term_id": "screen_volume_ratio",

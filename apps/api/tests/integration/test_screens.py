@@ -194,8 +194,8 @@ def test_the_report_is_pushed_once_and_never_a_backfilled_run(
     engine: Engine, live: ScreenRun
 ) -> None:
     """SC12: the manual run's report is sent once and recorded; backfilled runs never are. The
-    0.1.0 run goes out under delivery rules 0.3.0, never under the active 0.5.0 (screen rules
-    0.3.0)."""
+    0.1.0 run goes out under delivery rules 0.3.0, never under the active 0.6.0 (screen rules
+    0.4.0)."""
     sent: list[str] = []
 
     def send(text: str) -> int:
@@ -307,7 +307,7 @@ def test_a_session_while_the_history_is_backfilled_is_not_judged(
     history (the FinMind backfill of the others not run), so the active rules do not judge it."""
     with Session(engine) as session:
         rules = screens.stored_screen_rules(session)
-        assert rules is not None and rules.rule_version == "0.3.0"
+        assert rules is not None and rules.rule_version == "0.4.0"
         now = session.execute(select(func.now())).scalar_one()
         row = screens.record_live(session, rules, now, "manual", market_calendar(TW.exchange))
         session.commit()
