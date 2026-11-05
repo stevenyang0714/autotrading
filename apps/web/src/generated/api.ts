@@ -4758,6 +4758,8 @@ export interface components {
             min_coverage: string;
             /** Min History Share */
             min_history_share?: string | null;
+            /** Min Listed Share */
+            min_listed_share?: string | null;
         };
         /** Reading */
         Reading: {

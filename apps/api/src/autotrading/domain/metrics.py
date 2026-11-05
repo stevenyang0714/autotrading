@@ -86,7 +86,7 @@ METHODOLOGY = {
     "twse_price_change": "0.2.0",
     "twse_reference_price": "0.2.0",
     # M3.11 (ADR-042 SC10): screen rules 0.2.0 wait for 90% of the histories.
-    "screen_not_judged": "0.2.0",
+    "screen_not_judged": "0.3.0",
     # M3.7 (ADR-039 TW10): beta and relative momentum against the market's benchmark.
     "beta_252d": "0.2.0",
     "relative_momentum_12_1": "0.2.0",

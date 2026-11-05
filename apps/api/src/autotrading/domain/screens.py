@@ -210,6 +210,9 @@ class Readiness(_Rule):
     # 0.2.0: of the companies with a bar at T, the share with `min_history` sessions (a history
     # still being backfilled is not a quiet market); None in 0.1.0
     min_history_share: Annotated[Decimal, Field(gt=0, le=1)] | None = None
+    # 0.3.0: of the companies listed by T, the share with a bar at T (a session before the
+    # market's histories begin, with a few long histories only, is not a market); None before
+    min_listed_share: Annotated[Decimal, Field(gt=0, le=1)] | None = None
 
 
 class Liquidity(_Rule):
@@ -975,6 +978,15 @@ def _not_ready(rules: ScreenRuleSet, session: date, coverage: Coverage) -> str |
             f"{readiness.min_coverage * 100:.0f}%: not judged"
         )
     traded = coverage.read + coverage.unavailable.get("history", 0)
+    listed = Decimal(traded) / Decimal(coverage.listed) if coverage.listed else None
+    if readiness.min_listed_share is not None and (
+        listed is None or listed < readiness.min_listed_share
+    ):
+        return (
+            f"bars of {session} for {traded} of the {coverage.listed} companies listed by then "
+            f"({(listed or Decimal(0)) * 100:.1f}%), below "
+            f"{readiness.min_listed_share * 100:.0f}%: not judged"
+        )
     share = Decimal(coverage.read) / Decimal(traded) if traded else None
     if readiness.min_history_share is not None and (
         share is None or share < readiness.min_history_share
@@ -1000,8 +1012,9 @@ def evaluate(
     industry_basis: str,
 ) -> ScreenRunOut:
     """The screens at T = sessions[-1] over `companies` (the listed set, receipts left out),
-    with each one's bars (oldest first) known at T; not judged below the coverage or, since
-    0.2.0, the share of them with enough history (SC10)."""
+    with each one's bars (oldest first) known at T; not judged below the coverage, since 0.3.0
+    the share of the listed companies with a bar at T, or since 0.2.0 the share of those with
+    enough history (SC10)."""
     session = sessions[-1]
     expected, covered = coverage_of(rules, bars, sessions)
     ratio = Decimal(covered) / Decimal(expected) if expected else None

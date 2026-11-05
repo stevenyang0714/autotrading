@@ -56,8 +56,8 @@ pytestmark = pytest.mark.integration
 D1, D2 = date(2026, 10, 21), date(2026, 10, 22)
 WINDOW = Window(start=datetime(2026, 10, 26, tzinfo=UTC), end=datetime(2026, 10, 27, tzinfo=UTC))
 SINCE = date(2026, 10, 1)
-# Six of the recorded companies hold 60 sessions of history, so the active 0.2.0 does not judge
-# (SC10, the last test); the runs, watch lists and report are exercised with 0.1.0
+# Six of the recorded companies hold 60 sessions of history, so the active rules (0.2.0 on) do
+# not judge (SC10, the last test); the runs, watch lists and report are exercised with 0.1.0
 JUDGED_WITH = "0.1.0"
 
 
@@ -194,7 +194,8 @@ def test_the_report_is_pushed_once_and_never_a_backfilled_run(
     engine: Engine, live: ScreenRun
 ) -> None:
     """SC12: the manual run's report is sent once and recorded; backfilled runs never are. The
-    0.1.0 run goes out under delivery rules 0.3.0, never under 0.4.0 (screen rules 0.2.0)."""
+    0.1.0 run goes out under delivery rules 0.3.0, never under the active 0.5.0 (screen rules
+    0.3.0)."""
     sent: list[str] = []
 
     def send(text: str) -> int:
@@ -306,7 +307,7 @@ def test_a_session_while_the_history_is_backfilled_is_not_judged(
     history (the FinMind backfill of the others not run), so the active rules do not judge it."""
     with Session(engine) as session:
         rules = screens.stored_screen_rules(session)
-        assert rules is not None and rules.rule_version == "0.2.0"
+        assert rules is not None and rules.rule_version == "0.3.0"
         now = session.execute(select(func.now())).scalar_one()
         row = screens.record_live(session, rules, now, "manual", market_calendar(TW.exchange))
         session.commit()

@@ -208,6 +208,7 @@ Work one sub-milestone at a time, in this order (ADR-035): M3.0, M3.0b, M3.0c (a
 **Acceptance**
 - [x] A session is judged only with 95% coverage; otherwise it is recorded as not judged with the reason (tested).
 - [x] Since screen rules 0.2.0 (2026-11-05) also only when 90% of the companies with a bar have 60 sessions of history (tested; KI-34).
+- [x] Since screen rules 0.3.0 (2026-11-05) also only when 95% of the companies listed by the session have a bar of it, so the backfill starts in 2024, not on the research universe's 2016 histories (tested).
 - [x] An ex-dividend drop is not read as a fall (tested on recorded ex-dates of 2330, 2881 and 0056).
 - [x] A run recomputes identically at its own T and S (`make screens-verify`, tested).
 - [x] The report never carries a FinMind number or a link, and is sent once per run, never for a backfill (tested).
