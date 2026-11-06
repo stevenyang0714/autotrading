@@ -4,17 +4,21 @@ outside the universe ride along as `extra_codes` for their closes only (M3.10, A
 The first slot of each Taipei Monday fetches the company file too (M3.11, ADR-042 SC2), so a
 delisting or an industry change is seen within a week; a new listing is seen the next day."""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from uuid import UUID
+
+from sqlalchemy import func, select
+from sqlalchemy.orm import Session
 
 from autotrading.adapters.twse.client import SOURCE_ID
 from autotrading.adapters.twse.daily import TwseDailyJob
-from autotrading.db.models import Source
+from autotrading.db.models import IngestionRun, Source
 from autotrading.domain.markets import TW
 from autotrading.ingestion.runner import IngestionRunner
 from autotrading.ingestion.schedule import refresh_window
 
 WEEKLY_COMPANIES_SLOT = "07:40"
+IN_FLIGHT_HOURS = 6  # a run queued longer ago lost its message: nothing to wait for
 
 
 def weekly_companies(slot: str, now: datetime) -> bool:
@@ -46,3 +50,19 @@ def start_daily(
     if extra_codes:
         params["extra_codes"] = sorted(extra_codes)
     return runner.create_run(TwseDailyJob.name, params, refresh_window(now, manual=manual))
+
+
+def daily_in_flight(session: Session, now: datetime) -> bool:
+    """Whether a `twse.daily` run created in the last IN_FLIGHT_HOURS is queued or running: the
+    Taiwan screens wait for it (M3.11, ADR-042 SC11), as the slots a sleeping Mac missed all
+    fire at its wake and the screens would otherwise judge before the new session is stored."""
+    count = session.scalar(
+        select(func.count())
+        .select_from(IngestionRun)
+        .where(
+            IngestionRun.job == TwseDailyJob.name,
+            IngestionRun.status.in_(("queued", "running")),
+            IngestionRun.created_at > now - timedelta(hours=IN_FLIGHT_HOURS),
+        )
+    )
+    return bool(count)

@@ -664,17 +664,24 @@ def start_momentum_backfill() -> int:
 # ---------- Taiwan screens (M3.11) ----------
 
 SCREENS_TIME_LIMIT_MS = 60 * 60 * 1000  # every session since 2024, in batches
+SCREENS_WAIT_MS = 2 * 60 * 1000  # a TWSE daily run in flight: look again in 2 minutes
+SCREENS_MAX_WAITS = 15  # then judge what is stored, after 30 minutes at most
 
 
 @dramatiq.actor(queue_name=EVALUATION_QUEUE, max_retries=1, broker=broker)
-def evaluate_screens(trigger: str) -> None:
+def evaluate_screens(trigger: str, waits: int = 0) -> None:
     """The Taiwan screens of the newest stored session (ADR-042 SC11), or a not-judged row for
-    a calendar session whose TWSE files have not come."""
+    a calendar session whose TWSE files have not come. Waits for a TWSE daily run queued or
+    running (the slots a sleeping Mac missed all fire at its wake)."""
     from autotrading.domain.markets import TW
     from autotrading.repositories import screens
 
     with sessions()() as session:
         now = _now(session)
+        if waits < SCREENS_MAX_WAITS and twse_refresh.daily_in_flight(session, now):
+            evaluate_screens.send_with_options(args=(trigger, waits + 1), delay=SCREENS_WAIT_MS)
+            logger.info("Taiwan screens (%s): a TWSE daily run is in flight, waiting", trigger)
+            return
         rules = screens.stored_screen_rules(session)
         if rules is None:
             logger.warning("Screen rules not loaded (make migrate): nothing judged")
