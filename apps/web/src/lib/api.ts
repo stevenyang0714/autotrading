@@ -1154,24 +1154,25 @@ export async function loadHoldingEntries(): Promise<HoldingEntries | null> {
   }
 }
 
-export type HoldingWriteResult =
-  | { status: "ok"; data: HoldingEntry }
+export type HoldingWriteResult<T = HoldingEntry> =
+  | { status: "ok"; data: T }
   | { status: "invalid"; errors: string[] }
   | { status: "unavailable" };
 
-async function holdingWrite(
+async function holdingWrite<T>(
   call: (client: ReturnType<typeof createClient<paths>>) => Promise<{
-    data?: HoldingEntry;
+    data?: T;
     error?: unknown;
     response: Response;
   }>,
-): Promise<HoldingWriteResult> {
+  refused = "The API refused the entry.",
+): Promise<HoldingWriteResult<T>> {
   const client = createClient<paths>({ baseUrl: apiBaseUrl() });
   try {
     const { data, error, response } = await call(client);
     if (data) return { status: "ok", data };
     if ([404, 409, 422].includes(response.status)) {
-      return { status: "invalid", errors: validationMessages(error, "The API refused the entry.") };
+      return { status: "invalid", errors: validationMessages(error, refused) };
     }
     return { status: "unavailable" };
   } catch {
@@ -1192,6 +1193,51 @@ export async function reverseHoldingEntry(entryId: string, note: string | null):
       body: { note },
       cache: "no-store",
     }),
+  );
+}
+
+// ---------- investment policy (M3.12, ADR-043) ----------
+
+export type PolicyAssessment = components["schemas"]["PolicyAssessmentOut"];
+export type PolicyVersion = components["schemas"]["PolicyVersionOut"];
+export type PolicyVersions = components["schemas"]["PolicyVersionsOut"];
+export type PolicyContent = components["schemas"]["PolicyContent-Output"];
+export type PolicySleeve = components["schemas"]["Sleeve-Output"];
+export type PolicyHolding = components["schemas"]["PolicyHoldingOut"];
+export type PolicyTrade = components["schemas"]["PolicyTradeOut"];
+export type NewPolicy = components["schemas"]["NewPolicy"];
+
+/** Steven's policy in force at `knownAt` (default now) against his holdings, as recorded now, or
+ * null when the API is down. Local only, like the holdings (H12). */
+export async function loadPolicy(knownAt?: string): Promise<PolicyAssessment | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/holdings/policy", {
+      params: { query: knownAt ? { known_at: knownAt } : {} },
+      cache: "no-store",
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Every version of the policy, newest first. */
+export async function loadPolicyVersions(): Promise<PolicyVersions | null> {
+  const client = createClient<paths>({ baseUrl: apiBaseUrl() });
+  try {
+    const { data } = await client.GET("/holdings/policy/versions", { cache: "no-store" });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Save a new version of the policy (the latest + 1, audited as `web`). */
+export async function savePolicy(body: NewPolicy): Promise<HoldingWriteResult<PolicyVersion>> {
+  return holdingWrite(
+    (client) => client.POST("/holdings/policy", { body, cache: "no-store" }),
+    "The API refused the policy.",
   );
 }
 

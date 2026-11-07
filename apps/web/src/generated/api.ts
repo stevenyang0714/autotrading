@@ -425,6 +425,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/holdings/policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Investment Policy
+         * @description The version in force at T (default now) against the holdings at T, as recorded now.
+         */
+        get: operations["investment_policy_holdings_policy_get"];
+        put?: never;
+        /**
+         * Save Investment Policy
+         * @description A new version (the latest + 1); earlier versions are never changed.
+         */
+        post: operations["save_investment_policy_holdings_policy_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/holdings/policy/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Investment Policy Versions */
+        get: operations["investment_policy_versions_holdings_policy_versions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/ingestion-runs": {
         parameters: {
             query?: never;
@@ -1764,6 +1805,17 @@ export interface components {
             /** Version */
             version: number;
         };
+        /** CashFlowOut */
+        CashFlowOut: {
+            /** After */
+            after: string;
+            /** Balance */
+            balance: string;
+            /** Currency */
+            currency: string;
+            /** Flow */
+            flow: string;
+        };
         /** Catalyst */
         Catalyst: {
             /** Description */
@@ -2956,6 +3008,17 @@ export interface components {
             /** Methodology Version */
             methodology_version: string;
         };
+        /** GroupDriftOut */
+        GroupDriftOut: {
+            /** Actual */
+            actual: string | null;
+            /** Drift */
+            drift: string | null;
+            /** Group */
+            group: string;
+            /** Target */
+            target: string;
+        };
         /** GuidanceOut */
         GuidanceOut: {
             /** Adjusted */
@@ -3849,6 +3912,28 @@ export interface components {
             /** Value */
             value: string | null;
         };
+        /**
+         * Member
+         * @description A listing (`US:SPY`, `TW:2330`) with an optional target share of the total, or a
+         *     currency (`USD`, `TWD`) of a cash sleeve.
+         */
+        "Member-Input": {
+            /** Key */
+            key: string;
+            /** Target Pct */
+            target_pct?: number | string | null;
+        };
+        /**
+         * Member
+         * @description A listing (`US:SPY`, `TW:2330`) with an optional target share of the total, or a
+         *     currency (`USD`, `TWD`) of a cash sleeve.
+         */
+        "Member-Output": {
+            /** Key */
+            key: string;
+            /** Target Pct */
+            target_pct?: string | null;
+        };
         /** MentionOut */
         MentionOut: {
             /** Confidence */
@@ -4149,6 +4234,15 @@ export interface components {
              */
             trade_date: string;
         };
+        /**
+         * NewPolicy
+         * @description A version as written on the policy page. Unknown fields are refused.
+         */
+        NewPolicy: {
+            content: components["schemas"]["PolicyContent-Input"];
+            /** Reason */
+            reason: string;
+        };
         /** NewsFeed */
         NewsFeed: {
             /** Article Count */
@@ -4419,6 +4513,174 @@ export interface components {
             number: number;
             /** Scope */
             scope: string;
+        };
+        /** PolicyAssessmentOut */
+        PolicyAssessmentOut: {
+            /** Asset Classes */
+            asset_classes: components["schemas"]["GroupDriftOut"][];
+            /** Blocked */
+            blocked: string[];
+            /** Cash Flows */
+            cash_flows: components["schemas"]["CashFlowOut"][];
+            /** Detail */
+            detail: string;
+            /** Due */
+            due: boolean;
+            /** Equity Usd */
+            equity_usd: string | null;
+            fx: components["schemas"]["HoldingFxOut"] | null;
+            /** Holdings */
+            holdings: components["schemas"]["PolicyHoldingOut"][];
+            /**
+             * Known At
+             * Format: date-time
+             */
+            known_at: string;
+            /** Markets */
+            markets: components["schemas"]["GroupDriftOut"][];
+            policy: components["schemas"]["PolicyVersionOut"] | null;
+            /** Position Cap */
+            position_cap: string | null;
+            /** Rebalancing Version */
+            rebalancing_version: string;
+            /** Sleeves */
+            sleeves: components["schemas"]["SleeveDriftOut"][];
+            /**
+             * System Time
+             * Format: date-time
+             */
+            system_time: string;
+            /** Trades */
+            trades: components["schemas"]["PolicyTradeOut"][];
+        };
+        /**
+         * PolicyContent
+         * @description One version of Steven's investment policy, as he wrote it.
+         */
+        "PolicyContent-Input": {
+            /** Goals */
+            goals: string;
+            /** Horizon Years */
+            horizon_years: number;
+            /** Max Drawdown Pct */
+            max_drawdown_pct?: number | string | null;
+            /** Position Cap Pct */
+            position_cap_pct?: number | string | null;
+            /** Risk */
+            risk: string;
+            /** Sleeves */
+            sleeves: components["schemas"]["Sleeve-Input"][];
+        };
+        /**
+         * PolicyContent
+         * @description One version of Steven's investment policy, as he wrote it.
+         */
+        "PolicyContent-Output": {
+            /** Goals */
+            goals: string;
+            /** Horizon Years */
+            horizon_years: number;
+            /** Max Drawdown Pct */
+            max_drawdown_pct?: string | null;
+            /** Position Cap Pct */
+            position_cap_pct?: string | null;
+            /** Risk */
+            risk: string;
+            /** Sleeves */
+            sleeves: components["schemas"]["Sleeve-Output"][];
+        };
+        /** PolicyHoldingOut */
+        PolicyHoldingOut: {
+            /** Currency */
+            currency: string;
+            /** Flags */
+            flags: string[];
+            /** Instrument Id */
+            instrument_id: string | null;
+            /** Key */
+            key: string;
+            mark: components["schemas"]["HoldingMarkOut"] | null;
+            /** Market */
+            market: ("US" | "TW") | null;
+            /** Name */
+            name: string | null;
+            /** Name Zh */
+            name_zh: string | null;
+            /** Over Cap */
+            over_cap: boolean;
+            /** Price */
+            price: string | null;
+            /** Quantity */
+            quantity: string | null;
+            /** Sleeve */
+            sleeve: string | null;
+            /** Symbol */
+            symbol: string | null;
+            /** Value */
+            value: string;
+            /** Value Usd */
+            value_usd: string | null;
+            /** Weight */
+            weight: string | null;
+        };
+        /** PolicyTradeOut */
+        PolicyTradeOut: {
+            /** Amount */
+            amount: string | null;
+            /** Amount Usd */
+            amount_usd: string;
+            /** Currency */
+            currency: string;
+            /** Flags */
+            flags: string[];
+            /** Instrument Id */
+            instrument_id: string | null;
+            /** Key */
+            key: string;
+            mark: components["schemas"]["HoldingMarkOut"] | null;
+            /**
+             * Market
+             * @enum {string}
+             */
+            market: "US" | "TW";
+            /** Name */
+            name: string | null;
+            /** Name Zh */
+            name_zh: string | null;
+            /** Price */
+            price: string | null;
+            /** Shares */
+            shares: string | null;
+            /** Side */
+            side: string;
+            /** Sleeve */
+            sleeve: string;
+            /** Symbol */
+            symbol: string;
+            /** Weight Before */
+            weight_before: string;
+            /** Weight Target */
+            weight_target: string;
+        };
+        /** PolicyVersionOut */
+        PolicyVersionOut: {
+            content: components["schemas"]["PolicyContent-Output"];
+            /** Content Sha256 */
+            content_sha256: string;
+            /** Reason */
+            reason: string;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /** Version */
+            version: number;
+        };
+        /** PolicyVersionsOut */
+        PolicyVersionsOut: {
+            /** Versions */
+            versions: components["schemas"]["PolicyVersionOut"][];
         };
         /**
          * Portfolio
@@ -5849,6 +6111,75 @@ export interface components {
             rule_versions: {
                 [key: string]: string;
             };
+        };
+        /** Sleeve */
+        "Sleeve-Input": {
+            /**
+             * Asset Class
+             * @enum {string}
+             */
+            asset_class: "equity" | "bond" | "commodity" | "real_estate" | "cash" | "other";
+            /** Band Pp */
+            band_pp: number | string;
+            /**
+             * Market
+             * @enum {string}
+             */
+            market: "US" | "TW" | "cash" | "mixed";
+            /** Members */
+            members: components["schemas"]["Member-Input"][];
+            /** Name */
+            name: string;
+            /** Target Pct */
+            target_pct: number | string;
+        };
+        /** Sleeve */
+        "Sleeve-Output": {
+            /**
+             * Asset Class
+             * @enum {string}
+             */
+            asset_class: "equity" | "bond" | "commodity" | "real_estate" | "cash" | "other";
+            /** Band Pp */
+            band_pp: string;
+            /**
+             * Market
+             * @enum {string}
+             */
+            market: "US" | "TW" | "cash" | "mixed";
+            /** Members */
+            members: components["schemas"]["Member-Output"][];
+            /** Name */
+            name: string;
+            /** Target Pct */
+            target_pct: string;
+        };
+        /** SleeveDriftOut */
+        SleeveDriftOut: {
+            /** Actual */
+            actual: string | null;
+            /** After */
+            after: string | null;
+            /**
+             * Asset Class
+             * @enum {string}
+             */
+            asset_class: "equity" | "bond" | "commodity" | "real_estate" | "cash" | "other";
+            /** Band */
+            band: string;
+            /** Drift */
+            drift: string | null;
+            /**
+             * Market
+             * @enum {string}
+             */
+            market: "US" | "TW" | "cash" | "mixed";
+            /** Name */
+            name: string;
+            /** Outside */
+            outside: boolean;
+            /** Target */
+            target: string;
         };
         /** SnapshotRef */
         SnapshotRef: {
@@ -7325,6 +7656,91 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    investment_policy_holdings_policy_get: {
+        parameters: {
+            query?: {
+                /** @description Point in time (ADR-012); default now */
+                known_at?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PolicyAssessmentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_investment_policy_holdings_policy_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewPolicy"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PolicyVersionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    investment_policy_versions_holdings_policy_versions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PolicyVersionsOut"];
                 };
             };
         };

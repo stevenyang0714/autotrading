@@ -72,6 +72,8 @@ import factors2330 from "../../tests/fixtures/api/factors-2330.json";
 import taiwan from "../../tests/fixtures/api/taiwan.json";
 import holdingsEntries from "../../tests/fixtures/api/holdings-entries.json";
 import holdings from "../../tests/fixtures/api/holdings.json";
+import holdingsPolicyVersions from "../../tests/fixtures/api/holdings-policy-versions.json";
+import holdingsPolicy from "../../tests/fixtures/api/holdings-policy.json";
 import taiwanScreensHistory from "../../tests/fixtures/api/taiwan-screens-history.json";
 import taiwanScreens from "../../tests/fixtures/api/taiwan-screens.json";
 import taiwan0050 from "../../tests/fixtures/api/taiwan-0050.json";
@@ -91,6 +93,8 @@ import signalsMomentum from "../../tests/fixtures/api/signals-momentum.json";
 import type {
   HoldingEntries,
   Holdings,
+  PolicyAssessment,
+  PolicyVersions,
   AlertDetail,
   BacktestsResponse,
   MomentumResponse,
@@ -315,6 +319,12 @@ export const recordedFactors2330 = factors2330.response as unknown as Instrument
  * without a close yet. */
 export const recordedHoldings = holdings.response as unknown as Holdings;
 export const recordedHoldingEntries = holdingsEntries.response as unknown as HoldingEntries;
+
+/** The investment policy (M3.12) from tests/integration/test_holdings_api.py: a made-up policy
+ * (version 2 of 2) against the same made-up ledger, as recorded now: US equity outside its band,
+ * the trades to the targets (two listings without a close) and the cash they move. */
+export const recordedPolicy = holdingsPolicy.response as unknown as PolicyAssessment;
+export const recordedPolicyVersions = holdingsPolicyVersions.response as unknown as PolicyVersions;
 
 /** The Taiwan screens (M3.11) from tests/integration/test_screens.py: the recorded TWSE files
  * of 2026-10-21 and 2026-10-22 (every listed company) and six recorded FinMind price histories,

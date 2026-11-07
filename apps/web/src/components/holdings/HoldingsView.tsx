@@ -400,6 +400,11 @@ export function HoldingsView({
             {data.detail}
           </Metric>
         </p>
+        <p className="text-sm">
+          <Link href="/holdings/policy" className="underline-offset-2 hover:underline">
+            <Metric termId="page_policy">Investment policy: drift and rebalancing</Metric>
+          </Link>
+        </p>
         <AsKnownOnForm href={HREF} knownOn={knownOn} invalid={invalidKnownOn} />
         <p className="text-xs text-neutral-500">
           <Metric termId="holdings_equity" icon={false}>

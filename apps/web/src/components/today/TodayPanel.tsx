@@ -8,6 +8,7 @@ import type {
   Holdings,
   MarketState,
   OpportunityCandidates,
+  PolicyAssessment,
   SourceHealth,
   TaiwanList,
   TaiwanScreens,
@@ -52,7 +53,25 @@ function Unavailable({ what }: { what: string }) {
   return <p className="text-neutral-400">{`Data unavailable: ${what} could not be loaded.`}</p>;
 }
 
-function HoldingsCard({ holdings }: { holdings: Holdings | null }) {
+function PolicyLine({ policy }: { policy: PolicyAssessment }) {
+  const outside = policy.sleeves.filter((s) => s.outside).length;
+  const text = !policy.policy
+    ? "Investment policy: not written yet"
+    : outside > 0
+      ? `Investment policy v${policy.policy.version}: ${outside} ${outside === 1 ? "sleeve" : "sleeves"} outside ${outside === 1 ? "its band" : "their bands"}`
+      : `Investment policy v${policy.policy.version}: every sleeve within its band`;
+  return (
+    <p className={`text-xs ${outside > 0 ? "text-amber-300" : "text-neutral-400"}`} data-policy="">
+      <Link href="/holdings/policy" className="underline-offset-2 hover:underline">
+        <Metric termId="rebalancing_due" icon={false}>
+          {text}
+        </Metric>
+      </Link>
+    </p>
+  );
+}
+
+function HoldingsCard({ holdings, policy }: { holdings: Holdings | null; policy: PolicyAssessment | null }) {
   return (
     <Card termId="page_holdings" title="Your holdings" href="/holdings" link="Holdings" block="holdings">
       {holdings === null ? (
@@ -92,6 +111,7 @@ function HoldingsCard({ holdings }: { holdings: Holdings | null }) {
               </Metric>
             </p>
           ) : null}
+          {policy ? <PolicyLine policy={policy} /> : null}
         </>
       )}
     </Card>
@@ -259,6 +279,7 @@ export function TodayPanel({
   alerts,
   candidates,
   screens = null,
+  policy = null,
   us,
   taiwan,
   sources,
@@ -268,6 +289,7 @@ export function TodayPanel({
   alerts: Alerts | null;
   candidates: OpportunityCandidates | null;
   screens?: TaiwanScreens | null;
+  policy?: PolicyAssessment | null;
   us: MarketState | null;
   taiwan: TaiwanList | null;
   sources: SourceHealth[] | null;
@@ -286,7 +308,7 @@ export function TodayPanel({
         </Metric>
       </p>
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        <HoldingsCard holdings={holdings} />
+        <HoldingsCard holdings={holdings} policy={policy} />
         <PushesCard alerts={alerts} now={now} />
         <MarketsCard us={us} taiwan={taiwan} />
         <RadarCard candidates={candidates} />

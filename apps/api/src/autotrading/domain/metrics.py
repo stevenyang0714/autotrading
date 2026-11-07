@@ -89,6 +89,9 @@ METHODOLOGY = {
     # the listed companies; 0.4.0 (SC8): the swing trend also needs volume.
     "screen_not_judged": "0.3.0",
     "screen_swing_trend": "0.2.0",
+    # M3.12 (ADR-043): the definitions name the milestones as renumbered by ADR-042.
+    "holding_weight": "0.2.0",
+    "net_contributions": "0.2.0",
     # M3.7 (ADR-039 TW10): beta and relative momentum against the market's benchmark.
     "beta_252d": "0.2.0",
     "relative_momentum_12_1": "0.2.0",
@@ -216,6 +219,19 @@ METRICS: tuple[MetricDefinition, ...] = (
                 )
             },
             "holdings_change": "holdings.change",
+            # M3.12 (ADR-043): Steven's investment policy, rebalancing 0.1.0
+            **{
+                term_id: "investment_policy.assess"
+                for term_id in (
+                    "target_weight",
+                    "rebalancing_band",
+                    "policy_drift",
+                    "rebalancing_due",
+                    "rebalancing_trade",
+                    "position_cap",
+                    "policy_cash_flow",
+                )
+            },
             # M3.11 (ADR-042): the Taiwan screens, rules 0.1.0
             "listed_company": "twse.company_rows",
             "twse_industry": "twse.company_rows",

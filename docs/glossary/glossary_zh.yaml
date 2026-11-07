@@ -409,6 +409,16 @@ terms:
   holding_flag: {name: 持股警示, hint: 收盤價過舊或缺少、賣超、現金為負、匯率缺少或過舊。}
   holdings_snapshot: {name: 持股快照, hint: 每天 11:12 存下的估值，可在當時的時間點重算驗證。}
   net_contributions: {name: 淨存入, hint: 存入減提領的累計金額（各幣別）。}
+  page_policy: {name: 投資政策, hint: 你自己寫的投資政策（有版本）與持股的對照：各區塊的偏離，以及回到目標所需的交易；只是算術，不是建議。}
+  investment_policy: {name: 投資政策, hint: 你寫下的持股規則：目標、期限、風險，以及各配置區塊的目標權重與容許區間；每次修改存成新版本。}
+  policy_sleeve: {name: 配置區塊, hint: 政策的一部分：某市場的某資產類別，有目標權重、容許區間與成員（上市標的或幣別）。}
+  target_weight: {name: 目標權重, hint: 你設定的、某區塊或成員應占美元總計的比例；各區塊合計 100%。}
+  rebalancing_band: {name: 容許區間, hint: 區塊可偏離目標多少個百分點；超出才需要再平衡。}
+  policy_drift: {name: 偏離, hint: 區塊的實際權重減去目標權重（百分點）。}
+  rebalancing_due: {name: 需要再平衡, hint: 有任何區塊超出容許區間；此時列出讓所有區塊回到目標的交易。}
+  rebalancing_trade: {name: 再平衡交易, hint: 以最後已知收盤價計算、讓成員回到目標的整股數；只是算術，不會送出任何委託。}
+  position_cap: {name: 單一持股上限, hint: 任何一檔持股占總計的上限（若有設定）；超過只標示，不進交易計算。}
+  policy_cash_flow: {name: 現金變動, hint: 列出的交易對各幣別現金的影響：賣出減買進，以及交易後的餘額。}
   macro_twd_usd: {name: 美元兌台幣, hint: 聯準會 H.10 公布的紐約中午匯率：1 美元兌多少台幣。}
   page_today: {name: 今日, hint: 首頁：你的持股、本週推播、美台兩地交易時段、雷達候選數與資料健康，下方是總經概覽。}
   page_taiwan_screens: {name: 台股篩選, hint: 每天讀全部上市公司：變化最大的異動榜，以及波段趨勢、量價突破兩個篩選和它們的觀察名單。}

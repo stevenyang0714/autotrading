@@ -6,6 +6,7 @@ import {
   recordedCandidates,
   recordedHoldings,
   recordedMarketsOverview,
+  recordedPolicy,
   recordedSources,
   recordedTaiwan,
   recordedTaiwanScreens,
@@ -19,6 +20,7 @@ const props = {
   alerts: recordedDeliveredAlerts,
   candidates: recordedCandidates,
   screens: recordedTaiwanScreens,
+  policy: recordedPolicy,
   us: recordedMarketsOverview.market ?? null,
   taiwan: recordedTaiwan,
   sources: recordedSources,
@@ -32,6 +34,9 @@ describe("TodayPanel with recorded API responses", () => {
     const holdings = document.querySelector('[data-today="holdings"]');
     expect(holdings?.textContent).toContain("$16,684.67");
     expect(holdings?.textContent).toContain("-$19.95 in 24 h");
+    const policy = holdings?.querySelector("[data-policy]");
+    expect(policy?.textContent).toBe("Investment policy v2: 1 sleeve outside its band");
+    expect(policy?.querySelector("a")?.getAttribute("href")).toBe("/holdings/policy");
     expect(screen.getByRole("list", { name: "Largest weights" }).querySelectorAll("li").length).toBeGreaterThan(0);
     const pushed = props.alerts.entries.filter((a) => a.delivered_at).length;
     expect(document.querySelectorAll('[data-today="pushes"] [data-alert]')).toHaveLength(Math.min(pushed, 5));

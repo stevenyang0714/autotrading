@@ -176,6 +176,7 @@ export type CompleteTermId =
   | "interest_expense"
   | "invalidation"
   | "invested_capital"
+  | "investment_policy"
   | "journal_entry"
   | "journal_replay"
   | "last_price"
@@ -252,6 +253,7 @@ export type CompleteTermId =
   | "page_macro"
   | "page_news"
   | "page_overview"
+  | "page_policy"
   | "page_progress"
   | "page_reconciliation"
   | "page_taiwan_screens"
@@ -266,9 +268,13 @@ export type CompleteTermId =
   | "performance_withheld"
   | "planned_phase"
   | "point_in_time"
+  | "policy_cash_flow"
+  | "policy_drift"
+  | "policy_sleeve"
   | "portfolio_drawdown"
   | "portfolio_equity"
   | "portfolio_snapshot"
+  | "position_cap"
   | "position_weight"
   | "predecessor_issuer"
   | "pretax_income"
@@ -282,6 +288,9 @@ export type CompleteTermId =
   | "real_fed_funds_rate"
   | "real_gdp_growth_annualized"
   | "realized_pnl"
+  | "rebalancing_band"
+  | "rebalancing_due"
+  | "rebalancing_trade"
   | "reconciliation_status"
   | "reference_price_gap"
   | "regime"
@@ -378,6 +387,7 @@ export type CompleteTermId =
   | "survivorship_bias"
   | "taiwan_market_session"
   | "taiwan_universe"
+  | "target_weight"
   | "terminal_growth"
   | "thesis_card"
   | "threshold_review"
@@ -4244,7 +4254,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "example": "USD 3,660 of USD 16,664.67 = 21.96%.",
     "direction": "Higher = more concentrated",
     "interpretation": "How much of everything you own one position is.",
-    "why_it_matters": "Concentration is the first thing an investment policy limits (M3.11).",
+    "why_it_matters": "Concentration is the first thing an investment policy limits (M3.12).",
     "source": "Holdings valuation 0.1.0 (domain/holdings.py); ADR-041",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md",
     "as_of": "2026-10-27",
@@ -4254,7 +4264,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "holdings_equity",
       "position_weight"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "權重",
     "hint_zh": "部位或現金占美元總計的比例。"
   },
@@ -4345,7 +4355,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "example": "One snapshot each morning after the closes and the rate.",
     "direction": "N/A",
     "interpretation": "A daily record of the total and the positions.",
-    "why_it_matters": "Performance over time (M3.12) is computed from these.",
+    "why_it_matters": "Performance over time (M3.13) is computed from these.",
     "source": "Holdings valuation 0.1.0 (domain/holdings.py); ADR-041",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md",
     "as_of": "2026-10-27",
@@ -4355,7 +4365,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "holdings_equity",
       "holding_reversal"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "持股快照",
     "hint_zh": "每天 11:12 存下的估值，可在當時的時間點重算驗證。"
   },
@@ -4791,6 +4801,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "投入資本",
     "hint_zh": "股東權益 + 總負債 − 現金。"
+  },
+  "investment_policy": {
+    "term_id": "investment_policy",
+    "display_name": "Investment Policy",
+    "category": "portfolio",
+    "short_definition": "Your written rules for the holdings: goals, horizon, risk and the sleeves with targets and bands, in versions.",
+    "full_definition": "A version holds your goals and risk in your own words, a horizon in years, an optional largest drawdown you can bear (shown only; performance compares it from M3.13), an optional cap on any one position, and 1 to 12 sleeves whose targets add up to exactly 100%. A new version is saved as the latest + 1 and is in force from the moment it is recorded; earlier versions never change.",
+    "formula": "not a calculation; the version in force at T is the latest recorded by T",
+    "unit": "document",
+    "example": "Version 2: US equity 40%, TW equity 30%, cash 30%.",
+    "direction": "N/A",
+    "interpretation": "What you decided, kept so you can see what you had decided when.",
+    "why_it_matters": "Drift and rebalancing are measured against it.",
+    "source": "Rebalancing 0.1.0 (domain/investment_policy.py); ADR-043",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md",
+    "as_of": "2026-11-07",
+    "update_cadence": "when you save a version",
+    "caveats": "Not advice: the app checks the numbers, never the choices.",
+    "related_terms": [
+      "policy_sleeve",
+      "target_weight",
+      "rebalancing_band"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "投資政策",
+    "hint_zh": "你寫下的持股規則：目標、期限、風險，以及各配置區塊的目標權重與容許區間；每次修改存成新版本。"
   },
   "journal_entry": {
     "term_id": "journal_entry",
@@ -5912,7 +5948,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "example": "Deposit 10,000 USD, withdraw 200: 9,800 USD.",
     "direction": "N/A",
     "interpretation": "How much of the total is money you put in.",
-    "why_it_matters": "The base for returns (M3.12).",
+    "why_it_matters": "The base for returns (M3.13).",
     "source": "Holdings valuation 0.1.0 (domain/holdings.py); ADR-041",
     "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md",
     "as_of": "2026-10-27",
@@ -5922,7 +5958,7 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
       "holdings_change",
       "cash_balance"
     ],
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "name_zh": "淨存入",
     "hint_zh": "存入減提領的累計金額（各幣別）。"
   },
@@ -6718,6 +6754,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "總覽",
     "hint_zh": "首頁總經儀表板：六大區塊、圖表與規則式重點。"
   },
+  "page_policy": {
+    "term_id": "page_policy",
+    "display_name": "Investment Policy",
+    "category": "navigation",
+    "short_definition": "Your own investment policy, versioned, and your holdings against it: drift by sleeve, asset class and market, and the trades that would restore your targets.",
+    "full_definition": "System page under Holdings (M3.12, ADR-043): write a new version of your policy (goals, horizon, risk, sleeves with targets, bands and members); see each holding's sleeve and weight, each sleeve's drift against its band, the asset classes and markets, the positions above your cap and, when a sleeve is outside its band, the whole-share trades that would bring every sleeve to its target. With As known on. Arithmetic on your own targets, not advice; kept on this machine and never pushed.",
+    "formula": "not a calculation; reads GET /holdings/policy and /holdings/policy/versions",
+    "unit": "page",
+    "example": "A US equity sleeve at 37.16% against 40% with a 1-point band is outside it.",
+    "direction": "N/A",
+    "interpretation": "Where you check your holdings against your own rules.",
+    "why_it_matters": "A written policy turns a plan into numbers you can check.",
+    "source": "Milestone M3.12 (investment policy and rebalancing); ADR-043",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md",
+    "as_of": "2026-11-07",
+    "update_cadence": "live (each page load)",
+    "caveats": "The targets are yours: the app never suggests one.",
+    "related_terms": [
+      "investment_policy",
+      "page_holdings",
+      "policy_drift"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "投資政策",
+    "hint_zh": "你自己寫的投資政策（有版本）與持股的對照：各區塊的偏離，以及回到目標所需的交易；只是算術，不是建議。"
+  },
   "page_progress": {
     "term_id": "page_progress",
     "display_name": "Build Progress",
@@ -7076,6 +7138,83 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "name_zh": "時點資料",
     "hint_zh": "只使用在該時間點之前已公開的資訊，避免用到「未來的資料」。"
   },
+  "policy_cash_flow": {
+    "term_id": "policy_cash_flow",
+    "display_name": "Cash Moved",
+    "category": "portfolio",
+    "short_definition": "What the listed trades take from or add to each currency's cash: sells less buys.",
+    "full_definition": "For each currency, the balance before, the trades' sells less buys (whole shares at the close) and the balance after. A negative balance after means the trades need a deposit or a currency conversion first.",
+    "formula": "after = balance + sells - buys",
+    "unit": "currency",
+    "example": "TWD: NT$54,480 - NT$9,000 = NT$45,480.",
+    "direction": "N/A",
+    "interpretation": "Where the money for the trades comes from.",
+    "why_it_matters": "Trades in two markets may need cash moved between currencies.",
+    "source": "Rebalancing 0.1.0 (domain/investment_policy.py); ADR-043",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md",
+    "as_of": "2026-11-07",
+    "update_cadence": "each page load",
+    "caveats": "Fees and taxes are not included.",
+    "related_terms": [
+      "rebalancing_trade",
+      "cash_balance"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "現金變動",
+    "hint_zh": "列出的交易對各幣別現金的影響：賣出減買進，以及交易後的餘額。"
+  },
+  "policy_drift": {
+    "term_id": "policy_drift",
+    "display_name": "Drift",
+    "category": "portfolio",
+    "short_definition": "A sleeve's actual weight less its target, in percentage points.",
+    "full_definition": "The sleeve's weight (its members' share of the USD total, cash included, as on the Holdings page) less its target. Asset classes and markets add up their sleeves, without a band. Unavailable when the USD total is (no rate for a TWD amount, or nothing held).",
+    "formula": "actual weight - target",
+    "unit": "percentage points",
+    "example": "37.16% - 40.00% = -2.84 pp.",
+    "direction": "Further from 0 = further from the policy",
+    "interpretation": "Below 0: the sleeve holds less than its target; above: more.",
+    "why_it_matters": "It shows where the holdings have moved away from your plan.",
+    "source": "Rebalancing 0.1.0 (domain/investment_policy.py); ADR-043",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md",
+    "as_of": "2026-11-07",
+    "update_cadence": "each page load",
+    "caveats": "Weighed at the last closes known, like the holdings.",
+    "related_terms": [
+      "rebalancing_band",
+      "holding_weight",
+      "rebalancing_due"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "偏離",
+    "hint_zh": "區塊的實際權重減去目標權重（百分點）。"
+  },
+  "policy_sleeve": {
+    "term_id": "policy_sleeve",
+    "display_name": "Sleeve",
+    "category": "portfolio",
+    "short_definition": "A part of the policy: an asset class in a market with a target, a band and its members.",
+    "full_definition": "A sleeve names an asset class (equity, bond, commodity, real estate, cash or other), a market (US, TW, cash or mixed), a target share of the USD total, a band in percentage points and its members: listings written US:SPY or TW:2330, each with an optional target of its own, or currencies (USD, TWD) for a cash sleeve. A listing or currency belongs to one sleeve at most. A holding no sleeve names is unassigned, and no trade is listed until a version names it.",
+    "formula": "sleeve weight = sum of its members' weights",
+    "unit": "group",
+    "example": "TW equity: TW:2330 and TW:0050, 30% with a 5-point band.",
+    "direction": "N/A",
+    "interpretation": "Which holdings count toward which target.",
+    "why_it_matters": "Sleeves are how a policy says what goes where.",
+    "source": "Rebalancing 0.1.0 (domain/investment_policy.py); ADR-043",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md",
+    "as_of": "2026-11-07",
+    "update_cadence": "when you save a version",
+    "caveats": "You assign the asset classes: the app has no classification of its own for tracked listings.",
+    "related_terms": [
+      "investment_policy",
+      "target_weight",
+      "holding_weight"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "配置區塊",
+    "hint_zh": "政策的一部分：某市場的某資產類別，有目標權重、容許區間與成員（上市標的或幣別）。"
+  },
   "portfolio_drawdown": {
     "term_id": "portfolio_drawdown",
     "display_name": "Portfolio Drawdown",
@@ -7150,6 +7289,31 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "組合快照",
     "hint_zh": "某一時點存下的紙上組合；風險檢查與回撤警示都指向它。"
+  },
+  "position_cap": {
+    "term_id": "position_cap",
+    "display_name": "Position Cap",
+    "category": "portfolio",
+    "short_definition": "The largest share of the USD total any one position may hold, if you set one; above it the position is flagged.",
+    "full_definition": "A check only: a position (one instrument over every account) above the cap is flagged, and rebalancing 0.1.0 never trades for it. Cash is never capped.",
+    "formula": "flagged when position weight > cap",
+    "unit": "percent",
+    "example": "SPY at 36.56% against a 35% cap.",
+    "direction": "Lower = less concentration allowed",
+    "interpretation": "One holding is larger than you allow.",
+    "why_it_matters": "Concentration is the risk a policy most often limits.",
+    "source": "Rebalancing 0.1.0 (domain/investment_policy.py); ADR-043",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md",
+    "as_of": "2026-11-07",
+    "update_cadence": "each page load",
+    "caveats": "The trades bring sleeves to their targets; they do not trim a position to the cap.",
+    "related_terms": [
+      "holding_weight",
+      "investment_policy"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "單一持股上限",
+    "hint_zh": "任何一檔持股占總計的上限（若有設定）；超過只標示，不進交易計算。"
   },
   "position_weight": {
     "term_id": "position_weight",
@@ -7475,6 +7639,84 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "已實現損益",
     "hint_zh": "賣出所得減去所賣股數的平均成本。"
+  },
+  "rebalancing_band": {
+    "term_id": "rebalancing_band",
+    "display_name": "Band",
+    "category": "portfolio",
+    "short_definition": "How far a sleeve may drift from its target, in percentage points, before rebalancing is due.",
+    "full_definition": "A sleeve is outside its band when its drift, either way, is larger than the band (equal is inside). From 0 to 50 points.",
+    "formula": "outside when |drift| > band",
+    "unit": "percentage points",
+    "example": "A 40% target with a 5-point band holds from 35% to 45%.",
+    "direction": "Wider = fewer rebalancing trades",
+    "interpretation": "How much drift you accept before acting.",
+    "why_it_matters": "Bands keep small moves from turning into trades.",
+    "source": "Rebalancing 0.1.0 (domain/investment_policy.py); ADR-043",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md",
+    "as_of": "2026-11-07",
+    "update_cadence": "when you save a version",
+    "caveats": "A band of 0 makes any drift due.",
+    "related_terms": [
+      "policy_drift",
+      "rebalancing_due",
+      "target_weight"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "容許區間",
+    "hint_zh": "區塊可偏離目標多少個百分點；超出才需要再平衡。"
+  },
+  "rebalancing_due": {
+    "term_id": "rebalancing_due",
+    "display_name": "Rebalancing Due",
+    "category": "portfolio",
+    "short_definition": "Whether any sleeve is outside its band; then every sleeve's trades to its target are listed.",
+    "full_definition": "Rebalancing 0.1.0: due when any sleeve's drift exceeds its band. Every listing sleeve is then brought to its target (a full rebalance) and a cash sleeve takes what the trades leave. No trade is listed without a USD total, while anything held is unassigned, or without a policy.",
+    "formula": "any sleeve with |drift| > band",
+    "unit": "flag",
+    "example": "US equity 2.84 points under its target with a 1-point band: due.",
+    "direction": "N/A",
+    "interpretation": "Your own rule says the holdings have moved far enough.",
+    "why_it_matters": "It turns the bands into a yes or no.",
+    "source": "Rebalancing 0.1.0 (domain/investment_policy.py); ADR-043",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md",
+    "as_of": "2026-11-07",
+    "update_cadence": "each page load",
+    "caveats": "A rule of your policy, not a signal or advice.",
+    "related_terms": [
+      "rebalancing_band",
+      "rebalancing_trade",
+      "policy_drift"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "需要再平衡",
+    "hint_zh": "有任何區塊超出容許區間；此時列出讓所有區塊回到目標的交易。"
+  },
+  "rebalancing_trade": {
+    "term_id": "rebalancing_trade",
+    "display_name": "Rebalancing Trade",
+    "category": "portfolio",
+    "short_definition": "The whole shares that would bring a member to its target at the last close known: arithmetic, not an order.",
+    "full_definition": "Each member's target in USD (its own target, else its sleeve's target in proportion to the members' current values, else in equal parts when the sleeve holds nothing) less its current value, converted at the DEXTAUS rate used and divided by the last close known at T, rounded toward zero to whole shares. Without a close only the USD amount shows (no_close); an old close is flagged (stale_mark). Fees, taxes (TWSE's 0.3% on sales) and board lots are not counted.",
+    "formula": "trunc((target USD - value USD) x rate / close)",
+    "unit": "shares",
+    "example": "Buy 6 of 2330 at NT$1,500 = NT$9,000.",
+    "direction": "N/A",
+    "interpretation": "What your targets imply at the last closes.",
+    "why_it_matters": "It sizes the gap between the holdings and the policy.",
+    "source": "Rebalancing 0.1.0 (domain/investment_policy.py); ADR-043",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md",
+    "as_of": "2026-11-07",
+    "update_cadence": "each page load",
+    "caveats": "Nothing is ever sent to a broker; whether and how to trade is your decision.",
+    "related_terms": [
+      "rebalancing_due",
+      "policy_cash_flow",
+      "price_mark"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "再平衡交易",
+    "hint_zh": "以最後已知收盤價計算、讓成員回到目標的整股數；只是算術，不會送出任何委託。"
   },
   "reconciliation_status": {
     "term_id": "reconciliation_status",
@@ -9894,6 +10136,32 @@ export const GLOSSARY: Record<CompleteTermId, GlossaryTerm> = {
     "methodology_version": "0.1.0",
     "name_zh": "台股觀察名單",
     "hint_zh": "2026-10-21 證交所上市市值前 10 大公司加 0050，名單凍結；只做研究，不進任何策略或模擬組合。"
+  },
+  "target_weight": {
+    "term_id": "target_weight",
+    "display_name": "Target Weight",
+    "category": "portfolio",
+    "short_definition": "The share of the USD total a sleeve or a member should hold, as you set it.",
+    "full_definition": "Entered in percent with two decimals. The sleeves' targets add up to exactly 100%; when every member of a sleeve has a target of its own, those add up to the sleeve's. Asset classes and markets show the sum of their sleeves' targets.",
+    "formula": "as entered / 100",
+    "unit": "percent",
+    "example": "40.00% for US equity.",
+    "direction": "N/A",
+    "interpretation": "Where you want each part to be.",
+    "why_it_matters": "Drift and the trades are measured from it.",
+    "source": "Rebalancing 0.1.0 (domain/investment_policy.py); ADR-043",
+    "source_url": "https://github.com/stevenyang0714/autotrading/blob/main/docs/milestones/M3_world_policy.md",
+    "as_of": "2026-11-07",
+    "update_cadence": "when you save a version",
+    "caveats": "Yours alone: the form never fills one in.",
+    "related_terms": [
+      "policy_sleeve",
+      "rebalancing_band",
+      "policy_drift"
+    ],
+    "methodology_version": "0.1.0",
+    "name_zh": "目標權重",
+    "hint_zh": "你設定的、某區塊或成員應占美元總計的比例；各區塊合計 100%。"
   },
   "terminal_growth": {
     "term_id": "terminal_growth",
