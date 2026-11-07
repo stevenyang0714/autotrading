@@ -1,0 +1,429 @@
+{
+  "recorded_at": "2026-11-07T15:26:08.545990+00:00",
+  "recorded_from": "a made-up ledger, closes and DEXTAUS rates in the integration test database (tests/integration/test_holdings_api.py); no real holdings",
+  "endpoint": "/holdings/policy",
+  "params": {},
+  "response": {
+    "known_at": "2026-11-07T15:26:08.516953Z",
+    "system_time": "2026-11-07T15:26:08.516953Z",
+    "rebalancing_version": "0.1.0",
+    "policy": {
+      "version": 2,
+      "content": {
+        "goals": "A made-up policy for the test",
+        "horizon_years": 15,
+        "risk": "Made up",
+        "max_drawdown_pct": null,
+        "position_cap_pct": "35",
+        "sleeves": [
+          {
+            "name": "US equity",
+            "asset_class": "equity",
+            "market": "US",
+            "target_pct": "40",
+            "band_pp": "1",
+            "members": [
+              {
+                "key": "US:SPY",
+                "target_pct": "30"
+              },
+              {
+                "key": "US:VOO",
+                "target_pct": "5"
+              },
+              {
+                "key": "US:ZZZZ",
+                "target_pct": "5"
+              }
+            ]
+          },
+          {
+            "name": "TW equity",
+            "asset_class": "equity",
+            "market": "TW",
+            "target_pct": "30",
+            "band_pp": "5",
+            "members": [
+              {
+                "key": "TW:2330",
+                "target_pct": null
+              },
+              {
+                "key": "TW:2603",
+                "target_pct": null
+              }
+            ]
+          },
+          {
+            "name": "Cash",
+            "asset_class": "cash",
+            "market": "cash",
+            "target_pct": "30",
+            "band_pp": "10",
+            "members": [
+              {
+                "key": "USD",
+                "target_pct": null
+              },
+              {
+                "key": "TWD",
+                "target_pct": null
+              }
+            ]
+          }
+        ]
+      },
+      "content_sha256": "1690563421d82f0bdcf43193262bfc8288c652576c1e84baa156f83d9b5bb5ab",
+      "reason": "name the tracked listings",
+      "recorded_at": "2026-11-07T15:26:08.315403Z"
+    },
+    "equity_usd": "16684.67",
+    "fx": {
+      "series_id": "DEXTAUS",
+      "value": "32.10",
+      "observation_date": "2026-10-23",
+      "published_at": "2026-10-26T21:00:00Z",
+      "row_id": "d5607702-3178-4a81-8276-6506dac79cd6",
+      "source_url": "https://fred.stlouisfed.org/series/DEXTAUS",
+      "lag_days": 15,
+      "stale": true
+    },
+    "position_cap": "0.35",
+    "holdings": [
+      {
+        "key": "TW:2330",
+        "market": "TW",
+        "instrument_id": "32740b93-7c11-405b-a483-1b1784dfaa93",
+        "symbol": "2330",
+        "name": "TSMC",
+        "name_zh": "台積電",
+        "currency": "TWD",
+        "quantity": "100.000000",
+        "price": "1500.000000",
+        "mark": {
+          "close": "1500",
+          "session": "2026-10-22",
+          "published_at": "2026-10-22T21:20:00Z",
+          "row_id": "37627eea-27cd-4056-a759-7a72b93ad747"
+        },
+        "value": "150000.00",
+        "value_usd": "4672.90",
+        "weight": "0.2801",
+        "sleeve": "TW equity",
+        "over_cap": false,
+        "flags": [
+          "stale_mark"
+        ]
+      },
+      {
+        "key": "TW:2603",
+        "market": "TW",
+        "instrument_id": "a4b2bb22-cdf2-469e-8118-a9d56145b9cb",
+        "symbol": "2603",
+        "name": null,
+        "name_zh": null,
+        "currency": "TWD",
+        "quantity": "2.000000",
+        "price": null,
+        "mark": null,
+        "value": "500.00",
+        "value_usd": "15.58",
+        "weight": "0.0009",
+        "sleeve": "TW equity",
+        "over_cap": false,
+        "flags": [
+          "no_mark"
+        ]
+      },
+      {
+        "key": "US:SPY",
+        "market": "US",
+        "instrument_id": "23c08870-5c21-4f45-946c-e61bdeeb013a",
+        "symbol": "SPY",
+        "name": "SPDR S&P 500 ETF",
+        "name_zh": "標普 500 ETF",
+        "currency": "USD",
+        "quantity": "10.000000",
+        "price": "610.000000",
+        "mark": {
+          "close": "610",
+          "session": "2026-10-23",
+          "published_at": "2026-10-24T00:00:00Z",
+          "row_id": "c3fa3044-c4fb-47b0-b348-f83fafc8766e"
+        },
+        "value": "6100.00",
+        "value_usd": "6100.00",
+        "weight": "0.3656",
+        "sleeve": "US equity",
+        "over_cap": true,
+        "flags": [
+          "stale_mark"
+        ]
+      },
+      {
+        "key": "US:ZZZZ",
+        "market": "US",
+        "instrument_id": "a684b711-7cd1-4555-b1c0-cb10e27db0c3",
+        "symbol": "ZZZZ",
+        "name": null,
+        "name_zh": null,
+        "currency": "USD",
+        "quantity": "2.000000",
+        "price": null,
+        "mark": null,
+        "value": "100.00",
+        "value_usd": "100.00",
+        "weight": "0.0060",
+        "sleeve": "US equity",
+        "over_cap": false,
+        "flags": [
+          "no_mark"
+        ]
+      },
+      {
+        "key": "TWD",
+        "market": null,
+        "instrument_id": null,
+        "symbol": null,
+        "name": null,
+        "name_zh": null,
+        "currency": "TWD",
+        "quantity": null,
+        "price": null,
+        "mark": null,
+        "value": "54480.00",
+        "value_usd": "1697.20",
+        "weight": "0.1017",
+        "sleeve": "Cash",
+        "over_cap": false,
+        "flags": []
+      },
+      {
+        "key": "USD",
+        "market": null,
+        "instrument_id": null,
+        "symbol": null,
+        "name": null,
+        "name_zh": null,
+        "currency": "USD",
+        "quantity": null,
+        "price": null,
+        "mark": null,
+        "value": "4099.00",
+        "value_usd": "4099.00",
+        "weight": "0.2457",
+        "sleeve": "Cash",
+        "over_cap": false,
+        "flags": []
+      }
+    ],
+    "sleeves": [
+      {
+        "name": "US equity",
+        "asset_class": "equity",
+        "market": "US",
+        "target": "0.4000",
+        "band": "0.0100",
+        "actual": "0.3716",
+        "drift": "-0.0284",
+        "outside": true,
+        "after": "0.3680"
+      },
+      {
+        "name": "TW equity",
+        "asset_class": "equity",
+        "market": "TW",
+        "target": "0.3000",
+        "band": "0.0500",
+        "actual": "0.2810",
+        "drift": "-0.0190",
+        "outside": false,
+        "after": "0.2978"
+      },
+      {
+        "name": "Cash",
+        "asset_class": "cash",
+        "market": "cash",
+        "target": "0.3000",
+        "band": "0.1000",
+        "actual": "0.3474",
+        "drift": "0.0474",
+        "outside": false,
+        "after": "0.3342"
+      }
+    ],
+    "asset_classes": [
+      {
+        "group": "equity",
+        "target": "0.7000",
+        "actual": "0.6526",
+        "drift": "-0.0474"
+      },
+      {
+        "group": "cash",
+        "target": "0.3000",
+        "actual": "0.3474",
+        "drift": "0.0474"
+      }
+    ],
+    "markets": [
+      {
+        "group": "US",
+        "target": "0.4000",
+        "actual": "0.3716",
+        "drift": "-0.0284"
+      },
+      {
+        "group": "TW",
+        "target": "0.3000",
+        "actual": "0.2810",
+        "drift": "-0.0190"
+      },
+      {
+        "group": "cash",
+        "target": "0.3000",
+        "actual": "0.3474",
+        "drift": "0.0474"
+      }
+    ],
+    "due": true,
+    "blocked": [],
+    "trades": [
+      {
+        "sleeve": "US equity",
+        "key": "US:SPY",
+        "market": "US",
+        "instrument_id": "23c08870-5c21-4f45-946c-e61bdeeb013a",
+        "symbol": "SPY",
+        "name": "SPDR S&P 500 ETF",
+        "name_zh": "標普 500 ETF",
+        "currency": "USD",
+        "side": "sell",
+        "amount_usd": "1094.60",
+        "price": "610.000000",
+        "mark": {
+          "close": "610",
+          "session": "2026-10-23",
+          "published_at": "2026-10-24T00:00:00Z",
+          "row_id": "c3fa3044-c4fb-47b0-b348-f83fafc8766e"
+        },
+        "shares": "1",
+        "amount": "610.00",
+        "weight_before": "0.3656",
+        "weight_target": "0.3000",
+        "flags": [
+          "stale_mark"
+        ]
+      },
+      {
+        "sleeve": "US equity",
+        "key": "US:VOO",
+        "market": "US",
+        "instrument_id": "52c3cd07-b40c-4470-b835-7bb5f2e7e57f",
+        "symbol": "VOO",
+        "name": null,
+        "name_zh": null,
+        "currency": "USD",
+        "side": "buy",
+        "amount_usd": "834.23",
+        "price": "550.000000",
+        "mark": {
+          "close": "550",
+          "session": "2026-10-23",
+          "published_at": "2026-10-24T00:00:00Z",
+          "row_id": "3747995b-8592-4d81-89b4-1caebae64d41"
+        },
+        "shares": "1",
+        "amount": "550.00",
+        "weight_before": "0.0000",
+        "weight_target": "0.0500",
+        "flags": [
+          "stale_mark"
+        ]
+      },
+      {
+        "sleeve": "US equity",
+        "key": "US:ZZZZ",
+        "market": "US",
+        "instrument_id": "a684b711-7cd1-4555-b1c0-cb10e27db0c3",
+        "symbol": "ZZZZ",
+        "name": null,
+        "name_zh": null,
+        "currency": "USD",
+        "side": "buy",
+        "amount_usd": "734.23",
+        "price": null,
+        "mark": null,
+        "shares": null,
+        "amount": null,
+        "weight_before": "0.0060",
+        "weight_target": "0.0500",
+        "flags": [
+          "no_close"
+        ]
+      },
+      {
+        "sleeve": "TW equity",
+        "key": "TW:2330",
+        "market": "TW",
+        "instrument_id": "32740b93-7c11-405b-a483-1b1784dfaa93",
+        "symbol": "2330",
+        "name": "TSMC",
+        "name_zh": "台積電",
+        "currency": "TWD",
+        "side": "buy",
+        "amount_usd": "315.87",
+        "price": "1500.000000",
+        "mark": {
+          "close": "1500",
+          "session": "2026-10-22",
+          "published_at": "2026-10-22T21:20:00Z",
+          "row_id": "37627eea-27cd-4056-a759-7a72b93ad747"
+        },
+        "shares": "6",
+        "amount": "9000.00",
+        "weight_before": "0.2801",
+        "weight_target": "0.2990",
+        "flags": [
+          "stale_mark"
+        ]
+      },
+      {
+        "sleeve": "TW equity",
+        "key": "TW:2603",
+        "market": "TW",
+        "instrument_id": "a4b2bb22-cdf2-469e-8118-a9d56145b9cb",
+        "symbol": "2603",
+        "name": null,
+        "name_zh": null,
+        "currency": "TWD",
+        "side": "buy",
+        "amount_usd": "1.05",
+        "price": null,
+        "mark": null,
+        "shares": null,
+        "amount": null,
+        "weight_before": "0.0009",
+        "weight_target": "0.0010",
+        "flags": [
+          "no_close"
+        ]
+      }
+    ],
+    "cash_flows": [
+      {
+        "currency": "TWD",
+        "balance": "54480.00",
+        "flow": "-9000.00",
+        "after": "45480.00"
+      },
+      {
+        "currency": "USD",
+        "balance": "4099.00",
+        "flow": "60.00",
+        "after": "4159.00"
+      }
+    ],
+    "detail": "Arithmetic on your own targets, not advice: the policy is yours as you wrote it, and the trades are what would bring every sleeve back to its target at the last closes known, in whole shares, without fees or taxes. Kept on this machine only; nothing here is ever sent to a broker."
+  }
+}

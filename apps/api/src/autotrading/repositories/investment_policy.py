@@ -40,9 +40,7 @@ def policy_at(session: Session, at: datetime, system_time: datetime) -> Policy |
 
 def versions(session: Session) -> list[InvestmentPolicy]:
     """Every version, the newest first."""
-    return list(
-        session.scalars(select(InvestmentPolicy).order_by(InvestmentPolicy.version.desc()))
-    )
+    return list(session.scalars(select(InvestmentPolicy).order_by(InvestmentPolicy.version.desc())))
 
 
 def save_version(session: Session, content: PolicyContent, reason: str) -> InvestmentPolicy:

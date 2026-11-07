@@ -253,6 +253,8 @@ class Assessment:
     system_time: datetime
     policy: Policy | None
     equity_usd: Decimal | None
+    fx: Fx | None  # the valuation's rate, which the trades convert at
+    fx_lag_days: int | None
     holdings: tuple[Holding, ...]
     sleeves: tuple[SleeveDrift, ...]
     asset_classes: tuple[GroupDrift, ...]
@@ -401,6 +403,8 @@ def assess(valuation: Valuation, policy: Policy | None, quotes: Mapping[str, Quo
             system_time=valuation.system_time,
             policy=None,
             equity_usd=valuation.equity_usd,
+            fx=valuation.fx,
+            fx_lag_days=valuation.fx_lag_days,
             holdings=holdings,
             sleeves=(),
             asset_classes=(),
@@ -493,6 +497,8 @@ def assess(valuation: Valuation, policy: Policy | None, quotes: Mapping[str, Quo
         system_time=valuation.system_time,
         policy=policy,
         equity_usd=valuation.equity_usd,
+        fx=valuation.fx,
+        fx_lag_days=valuation.fx_lag_days,
         holdings=holdings,
         sleeves=sleeves,
         asset_classes=_groups(content.sleeves, actual, equity, lambda s: s.asset_class),
