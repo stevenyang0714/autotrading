@@ -1,7 +1,8 @@
 """Real holdings API (M3.10, ADR-041 H8, H13) on its own database: entries in, the valuation at a
 pinned T with closes, a TWD rate and the change, reversals, the entry list, the audit actor and a
-snapshot that recomputes identically. Trade dates are October 2026, before any run of this test;
-the system time is always the database's."""
+snapshot that recomputes identically; then the investment policy (M3.12, ADR-043): versions in
+force from their recorded time, the assessment against the same ledger, the trades. Trade dates
+are October 2026, before any run of this test; the system time is always the database's."""
 
 import json
 import os
@@ -30,6 +31,7 @@ from autotrading.db.models import (
     MacroSeries,
     Source,
 )
+from autotrading.domain.investment_policy import PolicyContent
 from autotrading.domain.macro import MacroObservationIn
 from autotrading.domain.markets import TW, US
 from autotrading.main import create_app
@@ -425,6 +427,158 @@ def test_a_listing_outside_the_universe_becomes_tracked(
     )
 
 
+# ---------- the investment policy (M3.12, ADR-043) ----------
+
+
+def sleeve(
+    name: str, asset_class: str, market: str, target: str, band: str, members: list[dict[str, str]]
+) -> dict[str, Any]:
+    return {
+        "name": name,
+        "asset_class": asset_class,
+        "market": market,
+        "target_pct": target,
+        "band_pp": band,
+        "members": members,
+    }
+
+
+def policy(*sleeves: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "goals": "A made-up policy for the test",
+        "horizon_years": 15,
+        "risk": "Made up",
+        "position_cap_pct": "35",
+        "sleeves": list(sleeves),
+    }
+
+
+CASH = sleeve("Cash", "cash", "cash", "30", "10", [{"key": "USD"}, {"key": "TWD"}])
+# v1 leaves ZZZZ and 2603 (the tracked listings above) unassigned
+V1 = policy(
+    sleeve("US equity", "equity", "US", "40", "5", [{"key": "US:SPY"}]),
+    sleeve("TW equity", "equity", "TW", "30", "5", [{"key": "TW:2330"}]),
+    CASH,
+)
+# v2 names them, and VOO, which nothing holds; US equity's band of 1 is crossed
+V2 = policy(
+    sleeve(
+        "US equity",
+        "equity",
+        "US",
+        "40",
+        "1",
+        [
+            {"key": "US:SPY", "target_pct": "30"},
+            {"key": "US:VOO", "target_pct": "5"},
+            {"key": "US:ZZZZ", "target_pct": "5"},
+        ],
+    ),
+    sleeve("TW equity", "equity", "TW", "30", "5", [{"key": "TW:2330"}, {"key": "TW:2603"}]),
+    CASH,
+)
+
+
+def save(client: TestClient, content: dict[str, Any], reason: str) -> dict[str, Any]:
+    response = client.post("/holdings/policy", json={"content": content, "reason": reason})
+    assert response.status_code == 201, response.text
+    result: dict[str, Any] = response.json()
+    return result
+
+
+@pytest.mark.parametrize(
+    ("body", "detail"),
+    [
+        ({"content": policy(CASH), "reason": "x"}, "add up to 30"),
+        ({"content": V1, "reason": "x", "broker": "alpaca"}, "extra"),
+        ({"content": {**V1, "order": "buy"}, "reason": "x"}, "extra"),
+        ({"content": V1, "reason": " "}, "at least 1 character"),
+    ],
+)
+def test_a_policy_version_is_validated(
+    client: TestClient, body: dict[str, Any], detail: str
+) -> None:
+    response = client.post("/holdings/policy", json=body)
+    assert response.status_code == 422 and detail in response.text
+
+
+def test_the_policy_in_force_against_the_holdings(
+    client: TestClient, sessions: sessionmaker[Session], ledger: dict[str, dict[str, Any]]
+) -> None:
+    """IP2-IP10 on the ledger as the tests above left it (SPY, 2330 and the tracked ZZZZ and
+    2603, valued at cost): no policy, then v1 with two listings unassigned, then v2, due."""
+    bare = client.get("/holdings/policy").json()
+    assert bare["policy"] is None and bare["blocked"] == ["no_policy"] and not bare["trades"]
+    assert {h["key"] for h in bare["holdings"]} == {
+        "US:SPY",
+        "US:ZZZZ",
+        "TW:2330",
+        "TW:2603",
+        "USD",
+        "TWD",
+    }
+    with sessions() as session:
+        voo = _instrument(session, "VOO", US.namespace, "USD", "ARCX")
+        PriceRepository(session).insert_bars(
+            [_bar(voo, "VOO", date(2026, 10, 23), "550", OCT_23_NY_CLOSE)], actor="test"
+        )
+        session.commit()
+
+    first = save(client, V1, "first version")
+    one = client.get("/holdings/policy").json()
+    assert one["policy"]["version"] == first["version"] == 1
+    assert one["blocked"] == ["unassigned"] and not one["trades"]
+    unassigned = {h["key"] for h in one["holdings"] if h["sleeve"] is None}
+    assert unassigned == {"US:ZZZZ", "TW:2603"}
+
+    second = save(client, V2, "name the tracked listings")
+    body = client.get("/holdings/policy").json()
+    assert body["policy"]["version"] == second["version"] == 2 and body["policy"]["reason"]
+    assert body["policy"]["content_sha256"] == PolicyContent.model_validate(V2).content_sha256()
+    assert body["rebalancing_version"] == "0.1.0" and body["position_cap"] == "0.35"
+    assert body["due"] and body["blocked"] == [] and body["fx"]["value"] == "32.10"
+    holdings = client.get("/holdings").json()
+    assert body["equity_usd"] == holdings["equity_usd"]
+    by_key = {h["key"]: h for h in body["holdings"]}
+    for p in holdings["positions"]:
+        assert by_key[f"{p['market']}:{p['symbol']}"]["value_usd"] == p["value_usd"]
+    assert by_key["US:SPY"]["over_cap"] is True  # 6,100 of about 16,685
+    sleeves = {s["name"]: s for s in body["sleeves"]}
+    assert sleeves["US equity"]["outside"] and not sleeves["Cash"]["outside"]
+    trades = {t["key"]: t for t in body["trades"]}
+    assert {k: t["side"] for k, t in trades.items()} == {
+        "US:SPY": "sell",
+        "US:VOO": "buy",
+        "US:ZZZZ": "buy",
+        "TW:2330": "buy",
+        "TW:2603": "buy",
+    }
+    voo_trade = trades["US:VOO"]
+    assert voo_trade["instrument_id"] == str(voo) and voo_trade["shares"] == "1"
+    assert (voo_trade["price"], voo_trade["mark"]["session"]) == ("550.000000", "2026-10-23")
+    assert trades["US:ZZZZ"]["flags"] == ["no_close"] and trades["US:ZZZZ"]["shares"] is None
+    assert trades["US:SPY"]["weight_target"] == "0.3000"
+    assert {f["currency"] for f in body["cash_flows"]} == {"USD", "TWD"}
+
+    # In force from their recorded time (IP2): before v1 none, between the two v1
+    at_one = datetime.fromisoformat(first["recorded_at"])
+    earlier = client.get(
+        "/holdings/policy", params={"known_at": (at_one - timedelta(seconds=1)).isoformat()}
+    )
+    assert earlier.json()["policy"] is None
+    between = client.get("/holdings/policy", params={"known_at": at_one.isoformat()}).json()
+    assert between["policy"]["version"] == 1
+    listed = client.get("/holdings/policy/versions").json()["versions"]
+    assert [v["version"] for v in listed] == [2, 1]
+    with sessions() as session:
+        actors = set(
+            session.scalars(
+                select(AuditLog.actor).where(AuditLog.object_type == "investment_policies")
+            )
+        )
+    assert actors == {"web"}
+
+
 # ---------- web fixtures (opt-in recorder) ----------
 
 
@@ -437,6 +591,8 @@ def test_record_web_fixtures(client: TestClient, ledger: dict[str, dict[str, Any
     recorded: tuple[tuple[str, str, dict[str, Any]], ...] = (
         ("holdings", "/holdings", {"known_at": T.isoformat()}),
         ("holdings-entries", "/holdings/entries", {}),
+        ("holdings-policy", "/holdings/policy", {}),
+        ("holdings-policy-versions", "/holdings/policy/versions", {}),
     )
     for name, path, params in recorded:
         response = client.get(path, params=params)

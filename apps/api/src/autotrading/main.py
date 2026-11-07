@@ -22,6 +22,7 @@ from autotrading.api.health import HealthChecker
 from autotrading.api.health import router as health_router
 from autotrading.api.holdings import router as holdings_router
 from autotrading.api.instruments import router as instruments_router
+from autotrading.api.investment_policy import router as investment_policy_router
 from autotrading.api.journal import router as journal_router
 from autotrading.api.macro import router as macro_router
 from autotrading.api.momentum import router as momentum_router
@@ -82,6 +83,7 @@ def create_app(
     app.include_router(instruments_router)
     app.include_router(taiwan_router)
     app.include_router(holdings_router)
+    app.include_router(investment_policy_router)
     app.include_router(macro_router)
     app.include_router(news_router)
     app.include_router(overview_router)

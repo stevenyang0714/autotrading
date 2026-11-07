@@ -50,6 +50,9 @@ test.describe("every page loads without console errors", () => {
     "/instruments/0050?known_on=2026-10-22",
     "/system/progress",
     "/journal/new?ticker=AAPL",
+    "/holdings",
+    "/holdings/policy",
+    "/dashboards/opportunity-radar/taiwan-screens",
     ...DASHBOARD_SLUGS.map((s) => `/dashboards/${s}`),
   ]) {
     test(path, async ({ page }) => {
@@ -147,6 +150,8 @@ for (const path of [
   "/instruments/0050?known_on=2026-10-22",
   "/dashboards/portfolio-risk",
   "/holdings",
+  "/holdings/policy",
+  "/holdings/policy?known_on=2026-10-23",
   "/dashboards/portfolio-risk?known_on=2026-10-06",
   "/dashboards/opportunity-radar/taiwan-screens",
   "/dashboards/opportunity-radar/taiwan-screens?known_on=2026-10-23",
@@ -895,12 +900,12 @@ test("unknown instrument returns 404", async ({ page }) => {
   expect(response?.status()).toBe(404);
 });
 
-test("Today puts the holdings, pushes, markets, radar and data health above the overview (M3.10)", async ({
+test("Today puts the holdings, pushes, markets, radar, Taiwan screens and data health above the overview (M3.10)", async ({
   page,
 }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Today");
-  for (const block of ["holdings", "pushes", "markets", "radar", "health"]) {
+  for (const block of ["holdings", "pushes", "markets", "radar", "screens", "health"]) {
     await expect(page.locator(`[data-today="${block}"]`)).toBeVisible();
   }
   await expect(page.getByRole("heading", { level: 2, name: /Overview/ })).toBeVisible();
@@ -940,6 +945,33 @@ test("Holdings records a deposit and two buys, values them and reverses one (M3.
   await buy.getByRole("button", { name: "Reverse" }).click();
   await expect(positions.locator('[data-symbol="0050"]')).toHaveCount(0, { timeout: 20_000 });
   await expect(page.getByRole("table", { name: "Entries" }).locator('tr[data-status="reversed"]')).toContainText("0050");
+  expect(await unexplainedNumbers(page)).toEqual([]);
+});
+
+test("Investment policy saves a version and weighs the holdings against it (M3.12)", async ({ page, isMobile }) => {
+  await page.goto("/holdings/policy");
+  await expect(page.locator('[data-page="policy"]')).toBeVisible();
+  await expect(page.locator("[data-not-advice]")).toContainText("not advice");
+  // The policy is Steven's own, like the ledger: write only to CI's throwaway database.
+  if (isMobile || !process.env.CI) return;
+  test.setTimeout(90_000);
+  const form = page.getByRole("form", { name: "Save a policy version" });
+  await form.locator('textarea[name="goals"]').fill("e2e goals");
+  await form.locator('textarea[name="risk"]').fill("e2e risk");
+  await form.locator('input[name="horizon_years"]').fill("10");
+  const sleeve = async (i: number, fields: Record<string, string>, selects: Record<string, string> = {}) => {
+    for (const [name, value] of Object.entries(selects)) await form.locator(`select[name="sleeve_${i}_${name}"]`).selectOption(value);
+    for (const [name, value] of Object.entries(fields)) await form.locator(`input[name="sleeve_${i}_${name}"]`).fill(value);
+  };
+  await sleeve(0, { name: "US equity", target_pct: "70", band_pp: "5", members: "US:SPY" });
+  await form.getByRole("button", { name: "Add a sleeve" }).click();
+  await sleeve(1, { name: "Cash", target_pct: "30", band_pp: "10", members: "USD, TWD" }, { asset_class: "cash", market: "cash" });
+  await expect(form.locator("[data-total]")).toContainText("100.00%");
+  await form.locator('input[name="reason"]').fill("e2e version");
+  await form.getByRole("button", { name: /Save as version/ }).click();
+  const sleeves = page.getByRole("table", { name: "Sleeves" });
+  await expect(sleeves.locator('[data-sleeve="US equity"]')).toContainText("70.00%", { timeout: 20_000 });
+  await expect(page.getByRole("table", { name: "Policy versions" })).toContainText("e2e version");
   expect(await unexplainedNumbers(page)).toEqual([]);
 });
 

@@ -8,6 +8,7 @@ import {
   loadCandidates,
   loadHoldings,
   loadOverview,
+  loadPolicy,
   loadSourceHealth,
   loadTaiwan,
   loadTaiwanScreens,
@@ -24,7 +25,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   const knownOn = typeof query.known_on === "string" && query.known_on ? query.known_on : undefined;
   const knownAt = knownOn ? endOfDaySgt(knownOn) : null;
   const today = knownAt === null; // Today is about now; As known on shows the overview alone
-  const [overview, sources, holdings, alerts, candidates, taiwan, screens] = await Promise.all([
+  const [overview, sources, holdings, alerts, candidates, taiwan, screens, policy] = await Promise.all([
     loadOverview(knownAt ?? undefined),
     loadSourceHealth(),
     today ? loadHoldings() : null,
@@ -32,6 +33,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
     today ? loadCandidates() : null,
     today ? loadTaiwan() : null,
     today ? loadTaiwanScreens() : null,
+    today ? loadPolicy() : null,
   ]);
   if (overview === null) {
     return (
@@ -63,6 +65,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         alerts={alerts}
         candidates={candidates}
         screens={screens}
+        policy={policy}
         us={overview.market ?? null}
         taiwan={taiwan}
         sources={sources}

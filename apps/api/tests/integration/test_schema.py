@@ -92,6 +92,7 @@ APP_TABLES = {
     "screen_rule_sets",
     "screen_runs",
     "screen_deliveries",
+    "investment_policies",
 }
 FEB = datetime(2025, 2, 1, 21, 5, tzinfo=UTC)
 AUG = datetime(2025, 8, 1, 20, 30, tzinfo=UTC)
@@ -300,6 +301,9 @@ def test_guardrails_exist(engine: Engine) -> None:
         "screen_deliveries_append_only",
         "screen_deliveries_no_truncate",
         "screen_deliveries_audit",
+        "investment_policies_append_only",
+        "investment_policies_no_truncate",
+        "investment_policies_audit",
     } <= triggers
     assert exclusions == {"ex_identifiers_value_period", "ex_identifiers_subject_period"}
 

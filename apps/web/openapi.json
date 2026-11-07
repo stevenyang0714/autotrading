@@ -1828,6 +1828,37 @@
         "title": "CardOut",
         "type": "object"
       },
+      "CashFlowOut": {
+        "properties": {
+          "after": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "After",
+            "type": "string"
+          },
+          "balance": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Balance",
+            "type": "string"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "flow": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Flow",
+            "type": "string"
+          }
+        },
+        "required": [
+          "currency",
+          "balance",
+          "flow",
+          "after"
+        ],
+        "title": "CashFlowOut",
+        "type": "object"
+      },
       "Catalyst": {
         "additionalProperties": false,
         "properties": {
@@ -5249,6 +5280,51 @@
         "title": "GlossaryVersion",
         "type": "object"
       },
+      "GroupDriftOut": {
+        "properties": {
+          "actual": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual"
+          },
+          "drift": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Drift"
+          },
+          "group": {
+            "title": "Group",
+            "type": "string"
+          },
+          "target": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Target",
+            "type": "string"
+          }
+        },
+        "required": [
+          "group",
+          "target",
+          "actual",
+          "drift"
+        ],
+        "title": "GroupDriftOut",
+        "type": "object"
+      },
       "GuidanceOut": {
         "properties": {
           "adjusted": {
@@ -7996,6 +8072,67 @@
         "title": "MeasureOut",
         "type": "object"
       },
+      "Member-Input": {
+        "additionalProperties": false,
+        "description": "A listing (`US:SPY`, `TW:2330`) with an optional target share of the total, or a\ncurrency (`USD`, `TWD`) of a cash sleeve.",
+        "properties": {
+          "key": {
+            "pattern": "^((US|TW):[A-Z0-9.]{1,10}|USD|TWD)$",
+            "title": "Key",
+            "type": "string"
+          },
+          "target_pct": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,3}|(?=[\\d.]{1,6}0*$)\\d{0,3}\\.\\d{0,2}0*$)",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Pct"
+          }
+        },
+        "required": [
+          "key"
+        ],
+        "title": "Member",
+        "type": "object"
+      },
+      "Member-Output": {
+        "additionalProperties": false,
+        "description": "A listing (`US:SPY`, `TW:2330`) with an optional target share of the total, or a\ncurrency (`USD`, `TWD`) of a cash sleeve.",
+        "properties": {
+          "key": {
+            "pattern": "^((US|TW):[A-Z0-9.]{1,10}|USD|TWD)$",
+            "title": "Key",
+            "type": "string"
+          },
+          "target_pct": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,3}|(?=[\\d.]{1,6}0*$)\\d{0,3}\\.\\d{0,2}0*$)",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Pct"
+          }
+        },
+        "required": [
+          "key"
+        ],
+        "title": "Member",
+        "type": "object"
+      },
       "MentionOut": {
         "properties": {
           "confidence": {
@@ -9053,6 +9190,27 @@
         "title": "NewHoldingEntry",
         "type": "object"
       },
+      "NewPolicy": {
+        "additionalProperties": false,
+        "description": "A version as written on the policy page. Unknown fields are refused.",
+        "properties": {
+          "content": {
+            "$ref": "#/components/schemas/PolicyContent-Input"
+          },
+          "reason": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "content",
+          "reason"
+        ],
+        "title": "NewPolicy",
+        "type": "object"
+      },
       "NewsFeed": {
         "properties": {
           "article_count": {
@@ -9850,6 +10008,666 @@
           "blocking"
         ],
         "title": "PhaseOut",
+        "type": "object"
+      },
+      "PolicyAssessmentOut": {
+        "properties": {
+          "asset_classes": {
+            "items": {
+              "$ref": "#/components/schemas/GroupDriftOut"
+            },
+            "title": "Asset Classes",
+            "type": "array"
+          },
+          "blocked": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Blocked",
+            "type": "array"
+          },
+          "cash_flows": {
+            "items": {
+              "$ref": "#/components/schemas/CashFlowOut"
+            },
+            "title": "Cash Flows",
+            "type": "array"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "due": {
+            "title": "Due",
+            "type": "boolean"
+          },
+          "equity_usd": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Equity Usd"
+          },
+          "fx": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HoldingFxOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "holdings": {
+            "items": {
+              "$ref": "#/components/schemas/PolicyHoldingOut"
+            },
+            "title": "Holdings",
+            "type": "array"
+          },
+          "known_at": {
+            "format": "date-time",
+            "title": "Known At",
+            "type": "string"
+          },
+          "markets": {
+            "items": {
+              "$ref": "#/components/schemas/GroupDriftOut"
+            },
+            "title": "Markets",
+            "type": "array"
+          },
+          "policy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PolicyVersionOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "position_cap": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Position Cap"
+          },
+          "rebalancing_version": {
+            "title": "Rebalancing Version",
+            "type": "string"
+          },
+          "sleeves": {
+            "items": {
+              "$ref": "#/components/schemas/SleeveDriftOut"
+            },
+            "title": "Sleeves",
+            "type": "array"
+          },
+          "system_time": {
+            "format": "date-time",
+            "title": "System Time",
+            "type": "string"
+          },
+          "trades": {
+            "items": {
+              "$ref": "#/components/schemas/PolicyTradeOut"
+            },
+            "title": "Trades",
+            "type": "array"
+          }
+        },
+        "required": [
+          "known_at",
+          "system_time",
+          "rebalancing_version",
+          "policy",
+          "equity_usd",
+          "fx",
+          "position_cap",
+          "holdings",
+          "sleeves",
+          "asset_classes",
+          "markets",
+          "due",
+          "blocked",
+          "trades",
+          "cash_flows",
+          "detail"
+        ],
+        "title": "PolicyAssessmentOut",
+        "type": "object"
+      },
+      "PolicyContent-Input": {
+        "additionalProperties": false,
+        "description": "One version of Steven's investment policy, as he wrote it.",
+        "properties": {
+          "goals": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Goals",
+            "type": "string"
+          },
+          "horizon_years": {
+            "maximum": 60.0,
+            "minimum": 1.0,
+            "title": "Horizon Years",
+            "type": "integer"
+          },
+          "max_drawdown_pct": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,3}|(?=[\\d.]{1,6}0*$)\\d{0,3}\\.\\d{0,2}0*$)",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Drawdown Pct"
+          },
+          "position_cap_pct": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,3}|(?=[\\d.]{1,6}0*$)\\d{0,3}\\.\\d{0,2}0*$)",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Position Cap Pct"
+          },
+          "risk": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Risk",
+            "type": "string"
+          },
+          "sleeves": {
+            "items": {
+              "$ref": "#/components/schemas/Sleeve-Input"
+            },
+            "maxItems": 12,
+            "minItems": 1,
+            "title": "Sleeves",
+            "type": "array"
+          }
+        },
+        "required": [
+          "goals",
+          "horizon_years",
+          "risk",
+          "sleeves"
+        ],
+        "title": "PolicyContent",
+        "type": "object"
+      },
+      "PolicyContent-Output": {
+        "additionalProperties": false,
+        "description": "One version of Steven's investment policy, as he wrote it.",
+        "properties": {
+          "goals": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Goals",
+            "type": "string"
+          },
+          "horizon_years": {
+            "maximum": 60.0,
+            "minimum": 1.0,
+            "title": "Horizon Years",
+            "type": "integer"
+          },
+          "max_drawdown_pct": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,3}|(?=[\\d.]{1,6}0*$)\\d{0,3}\\.\\d{0,2}0*$)",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Drawdown Pct"
+          },
+          "position_cap_pct": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,3}|(?=[\\d.]{1,6}0*$)\\d{0,3}\\.\\d{0,2}0*$)",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Position Cap Pct"
+          },
+          "risk": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Risk",
+            "type": "string"
+          },
+          "sleeves": {
+            "items": {
+              "$ref": "#/components/schemas/Sleeve-Output"
+            },
+            "maxItems": 12,
+            "minItems": 1,
+            "title": "Sleeves",
+            "type": "array"
+          }
+        },
+        "required": [
+          "goals",
+          "horizon_years",
+          "risk",
+          "sleeves"
+        ],
+        "title": "PolicyContent",
+        "type": "object"
+      },
+      "PolicyHoldingOut": {
+        "properties": {
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "flags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Flags",
+            "type": "array"
+          },
+          "instrument_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instrument Id"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "mark": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HoldingMarkOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "market": {
+            "anyOf": [
+              {
+                "enum": [
+                  "US",
+                  "TW"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "name_zh": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name Zh"
+          },
+          "over_cap": {
+            "title": "Over Cap",
+            "type": "boolean"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "sleeve": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sleeve"
+          },
+          "symbol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Symbol"
+          },
+          "value": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Value",
+            "type": "string"
+          },
+          "value_usd": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value Usd"
+          },
+          "weight": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weight"
+          }
+        },
+        "required": [
+          "key",
+          "market",
+          "instrument_id",
+          "symbol",
+          "name",
+          "name_zh",
+          "currency",
+          "quantity",
+          "price",
+          "mark",
+          "value",
+          "value_usd",
+          "weight",
+          "sleeve",
+          "over_cap",
+          "flags"
+        ],
+        "title": "PolicyHoldingOut",
+        "type": "object"
+      },
+      "PolicyTradeOut": {
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "amount_usd": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Amount Usd",
+            "type": "string"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "flags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Flags",
+            "type": "array"
+          },
+          "instrument_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instrument Id"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "mark": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HoldingMarkOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "market": {
+            "enum": [
+              "US",
+              "TW"
+            ],
+            "title": "Market",
+            "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "name_zh": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name Zh"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price"
+          },
+          "shares": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shares"
+          },
+          "side": {
+            "title": "Side",
+            "type": "string"
+          },
+          "sleeve": {
+            "title": "Sleeve",
+            "type": "string"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "weight_before": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Weight Before",
+            "type": "string"
+          },
+          "weight_target": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Weight Target",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sleeve",
+          "key",
+          "market",
+          "instrument_id",
+          "symbol",
+          "name",
+          "name_zh",
+          "currency",
+          "side",
+          "amount_usd",
+          "price",
+          "mark",
+          "shares",
+          "amount",
+          "weight_before",
+          "weight_target",
+          "flags"
+        ],
+        "title": "PolicyTradeOut",
+        "type": "object"
+      },
+      "PolicyVersionOut": {
+        "properties": {
+          "content": {
+            "$ref": "#/components/schemas/PolicyContent-Output"
+          },
+          "content_sha256": {
+            "title": "Content Sha256",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "recorded_at": {
+            "format": "date-time",
+            "title": "Recorded At",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version",
+          "content",
+          "content_sha256",
+          "reason",
+          "recorded_at"
+        ],
+        "title": "PolicyVersionOut",
+        "type": "object"
+      },
+      "PolicyVersionsOut": {
+        "properties": {
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/PolicyVersionOut"
+            },
+            "title": "Versions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "versions"
+        ],
+        "title": "PolicyVersionsOut",
         "type": "object"
       },
       "Portfolio": {
@@ -14094,6 +14912,241 @@
         "title": "SignalsOut",
         "type": "object"
       },
+      "Sleeve-Input": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_class": {
+            "enum": [
+              "equity",
+              "bond",
+              "commodity",
+              "real_estate",
+              "cash",
+              "other"
+            ],
+            "title": "Asset Class",
+            "type": "string"
+          },
+          "band_pp": {
+            "anyOf": [
+              {
+                "maximum": 50.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,2}|(?=[\\d.]{1,5}0*$)\\d{0,2}\\.\\d{0,2}0*$)",
+                "type": "string"
+              }
+            ],
+            "title": "Band Pp"
+          },
+          "market": {
+            "enum": [
+              "US",
+              "TW",
+              "cash",
+              "mixed"
+            ],
+            "title": "Market",
+            "type": "string"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/Member-Input"
+            },
+            "maxItems": 40,
+            "minItems": 1,
+            "title": "Members",
+            "type": "array"
+          },
+          "name": {
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "target_pct": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,3}|(?=[\\d.]{1,6}0*$)\\d{0,3}\\.\\d{0,2}0*$)",
+                "type": "string"
+              }
+            ],
+            "title": "Target Pct"
+          }
+        },
+        "required": [
+          "name",
+          "asset_class",
+          "market",
+          "target_pct",
+          "band_pp",
+          "members"
+        ],
+        "title": "Sleeve",
+        "type": "object"
+      },
+      "Sleeve-Output": {
+        "additionalProperties": false,
+        "properties": {
+          "asset_class": {
+            "enum": [
+              "equity",
+              "bond",
+              "commodity",
+              "real_estate",
+              "cash",
+              "other"
+            ],
+            "title": "Asset Class",
+            "type": "string"
+          },
+          "band_pp": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,2}|(?=[\\d.]{1,5}0*$)\\d{0,2}\\.\\d{0,2}0*$)",
+            "title": "Band Pp",
+            "type": "string"
+          },
+          "market": {
+            "enum": [
+              "US",
+              "TW",
+              "cash",
+              "mixed"
+            ],
+            "title": "Market",
+            "type": "string"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/Member-Output"
+            },
+            "maxItems": 40,
+            "minItems": 1,
+            "title": "Members",
+            "type": "array"
+          },
+          "name": {
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "target_pct": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,3}|(?=[\\d.]{1,6}0*$)\\d{0,3}\\.\\d{0,2}0*$)",
+            "title": "Target Pct",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "asset_class",
+          "market",
+          "target_pct",
+          "band_pp",
+          "members"
+        ],
+        "title": "Sleeve",
+        "type": "object"
+      },
+      "SleeveDriftOut": {
+        "properties": {
+          "actual": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual"
+          },
+          "after": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "After"
+          },
+          "asset_class": {
+            "enum": [
+              "equity",
+              "bond",
+              "commodity",
+              "real_estate",
+              "cash",
+              "other"
+            ],
+            "title": "Asset Class",
+            "type": "string"
+          },
+          "band": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Band",
+            "type": "string"
+          },
+          "drift": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Drift"
+          },
+          "market": {
+            "enum": [
+              "US",
+              "TW",
+              "cash",
+              "mixed"
+            ],
+            "title": "Market",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "outside": {
+            "title": "Outside",
+            "type": "boolean"
+          },
+          "target": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Target",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "asset_class",
+          "market",
+          "target",
+          "band",
+          "actual",
+          "drift",
+          "outside",
+          "after"
+        ],
+        "title": "SleeveDriftOut",
+        "type": "object"
+      },
       "SnapshotRef": {
         "properties": {
           "backfilled": {
@@ -17421,6 +18474,120 @@
           }
         },
         "summary": "Reverse Holding Entry",
+        "tags": [
+          "holdings"
+        ]
+      }
+    },
+    "/holdings/policy": {
+      "get": {
+        "description": "The version in force at T (default now) against the holdings at T, as recorded now.",
+        "operationId": "investment_policy_holdings_policy_get",
+        "parameters": [
+          {
+            "description": "Point in time (ADR-012); default now",
+            "in": "query",
+            "name": "known_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Point in time (ADR-012); default now",
+              "title": "Known At"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyAssessmentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Investment Policy",
+        "tags": [
+          "holdings"
+        ]
+      },
+      "post": {
+        "description": "A new version (the latest + 1); earlier versions are never changed.",
+        "operationId": "save_investment_policy_holdings_policy_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewPolicy"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyVersionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Save Investment Policy",
+        "tags": [
+          "holdings"
+        ]
+      }
+    },
+    "/holdings/policy/versions": {
+      "get": {
+        "operationId": "investment_policy_versions_holdings_policy_versions_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyVersionsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Investment Policy Versions",
         "tags": [
           "holdings"
         ]

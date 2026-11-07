@@ -1,0 +1,138 @@
+{
+  "recorded_at": "2026-11-07T15:26:08.551339+00:00",
+  "recorded_from": "a made-up ledger, closes and DEXTAUS rates in the integration test database (tests/integration/test_holdings_api.py); no real holdings",
+  "endpoint": "/holdings/policy/versions",
+  "params": {},
+  "response": {
+    "versions": [
+      {
+        "version": 2,
+        "content": {
+          "goals": "A made-up policy for the test",
+          "horizon_years": 15,
+          "risk": "Made up",
+          "max_drawdown_pct": null,
+          "position_cap_pct": "35",
+          "sleeves": [
+            {
+              "name": "US equity",
+              "asset_class": "equity",
+              "market": "US",
+              "target_pct": "40",
+              "band_pp": "1",
+              "members": [
+                {
+                  "key": "US:SPY",
+                  "target_pct": "30"
+                },
+                {
+                  "key": "US:VOO",
+                  "target_pct": "5"
+                },
+                {
+                  "key": "US:ZZZZ",
+                  "target_pct": "5"
+                }
+              ]
+            },
+            {
+              "name": "TW equity",
+              "asset_class": "equity",
+              "market": "TW",
+              "target_pct": "30",
+              "band_pp": "5",
+              "members": [
+                {
+                  "key": "TW:2330",
+                  "target_pct": null
+                },
+                {
+                  "key": "TW:2603",
+                  "target_pct": null
+                }
+              ]
+            },
+            {
+              "name": "Cash",
+              "asset_class": "cash",
+              "market": "cash",
+              "target_pct": "30",
+              "band_pp": "10",
+              "members": [
+                {
+                  "key": "USD",
+                  "target_pct": null
+                },
+                {
+                  "key": "TWD",
+                  "target_pct": null
+                }
+              ]
+            }
+          ]
+        },
+        "content_sha256": "1690563421d82f0bdcf43193262bfc8288c652576c1e84baa156f83d9b5bb5ab",
+        "reason": "name the tracked listings",
+        "recorded_at": "2026-11-07T15:26:08.315403Z"
+      },
+      {
+        "version": 1,
+        "content": {
+          "goals": "A made-up policy for the test",
+          "horizon_years": 15,
+          "risk": "Made up",
+          "max_drawdown_pct": null,
+          "position_cap_pct": "35",
+          "sleeves": [
+            {
+              "name": "US equity",
+              "asset_class": "equity",
+              "market": "US",
+              "target_pct": "40",
+              "band_pp": "5",
+              "members": [
+                {
+                  "key": "US:SPY",
+                  "target_pct": null
+                }
+              ]
+            },
+            {
+              "name": "TW equity",
+              "asset_class": "equity",
+              "market": "TW",
+              "target_pct": "30",
+              "band_pp": "5",
+              "members": [
+                {
+                  "key": "TW:2330",
+                  "target_pct": null
+                }
+              ]
+            },
+            {
+              "name": "Cash",
+              "asset_class": "cash",
+              "market": "cash",
+              "target_pct": "30",
+              "band_pp": "10",
+              "members": [
+                {
+                  "key": "USD",
+                  "target_pct": null
+                },
+                {
+                  "key": "TWD",
+                  "target_pct": null
+                }
+              ]
+            }
+          ]
+        },
+        "content_sha256": "7173846e5022ff54f4e0714b9efc3668630de2574c5861dbda1b200b9413fe4a",
+        "reason": "first version",
+        "recorded_at": "2026-11-07T15:26:08.285401Z"
+      }
+    ]
+  }
+}

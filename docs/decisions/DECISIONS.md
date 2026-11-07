@@ -1338,7 +1338,7 @@ Cash goes to `dividend_events`, stock dividends to `split_events` (kind stock_di
 ---
 
 ## ADR-041 M3.10: Portfolio Center I, the real holdings ledger and the Today page — Accepted (2026-10-26, Steven approved recording real holdings, their scope and USD as the base currency; Claude's decisions under ADR-035)
-Steven asked on 2026-10-26 for the pushes to show on a dashboard and to manage his own portfolio, following five steps (investment policy, security analysis, portfolio construction, rebalancing, performance evaluation). The platform had a paper portfolio only. Steven decided: record his real holdings (manual entry, local only, backed up; no broker connection, no orders), any US listing or TWSE listing plus cash in each currency, and USD as the base currency (US listings in USD, TWSE listings in TWD, DEXTAUS for the conversion). The Portfolio Center has three parts: M3.10 (this ADR: ledger, valuation, Holdings and Today pages), M3.11 (investment policy, rebalancing, custom screens) and M3.12 (performance).
+Steven asked on 2026-10-26 for the pushes to show on a dashboard and to manage his own portfolio, following five steps (investment policy, security analysis, portfolio construction, rebalancing, performance evaluation). The platform had a paper portfolio only. Steven decided: record his real holdings (manual entry, local only, backed up; no broker connection, no orders), any US listing or TWSE listing plus cash in each currency, and USD as the base currency (US listings in USD, TWSE listings in TWD, DEXTAUS for the conversion). The Portfolio Center has three parts: M3.10 (this ADR: ledger, valuation, Holdings and Today pages), M3.11 (investment policy, rebalancing, custom screens) and M3.12 (performance). (Renumbered by ADR-042: the screens are M3.11, investment policy and rebalancing M3.12 (ADR-043), performance M3.13.)
 
 **H1 Ledger.** Migration 0033 `holding_entries`, append-only and audited (actor `web`): kind buy, sell, dividend (cash), deposit, withdrawal, fee or reversal; an account label; the market (US or TW; none for cash); the instrument and symbol; the currency (a CHECK ties US to USD and TW to TWD); the trade date (never after the Taipei date of recording); quantity and price (and an optional fee) for a trade, an amount otherwise; a note. Each kind's fields are one CHECK, and a NULL never passes as positive. A mistake is never edited: a reversal points at one entry (one each, a unique index) and the entry is entered again. There is no order, broker or execution column; requests with unknown fields are refused (422).
 
@@ -1352,7 +1352,7 @@ Steven asked on 2026-10-26 for the pushes to show on a dashboard and to manage h
 - USD: TWD divided by the last DEXTAUS value known at T (ALFRED vintages); without one the USD total is unavailable (each currency's total still shows); a rate more than 10 days old is flagged. Weights are of the USD total.
 - The 24-hour change is the USD total at T less the total at T minus 24 hours (both as recorded now), less the deposits and withdrawals in between, converted at the later rate.
 
-**H4 Apart from research and the paper book.** Only the holdings modules name the ledger (a unit test lists them). No rule, alert, push, radar, factor, journal or risk check reads it; the paper portfolio is unchanged. A held listing outside the research universe has no issuer or SEC identifier, so no research view lists it; Taiwan codes stay out of every rule (ADR-039 TW12).
+**H4 Apart from research and the paper book.** Only the holdings modules name the ledger (a unit test lists them). No rule, alert, push, radar, factor, journal or risk check reads it; the paper portfolio is unchanged. A held listing outside the research universe has no issuer or SEC identifier, so no research view lists it; Taiwan codes stay out of every rule (ADR-039 TW12). (Amended by ADR-043 IP1: the investment policy's modules are holdings modules too; they read the valuation, and no rule reads them.)
 
 **H5 Tracked US listings.** The first entry of a US symbol outside the universe creates an instrument of type `other` with an `alpaca` ticker. The daily Alpaca refresh adds bars and splits runs of their own for the tracked symbols, from their earliest trade date, so a symbol Alpaca does not know fails only those runs. Names are not fetched (the Alpaca client reaches market data only).
 
@@ -1420,6 +1420,43 @@ Steven described his workflow on 2026-10-26: turn his stock-picking judgement in
 **Out of scope.** US screens and a wider US universe (a membership source is a provider decision); TPEx; intraday data; screens led by institutional flows (the whole market's flows exceed the free tier); returns after the hits (OD-7); investment policy and rebalancing (M3.12); performance (M3.13).
 
 **Live check:** see the M3.11 row of `docs/STATUS.md`.
+
+---
+
+## ADR-043 M3.12: Investment policy and rebalancing — Accepted (2026-11-07, Claude's decisions under ADR-035, plan approved by Steven)
+The second part of the Portfolio Center (ADR-041, renumbered by ADR-042): a versioned investment policy that Steven writes, the drift of his real holdings against it, and the trades that would restore his targets. The holdings have no asset class of their own (tracked listings are instruments of type `other`, and the sector labels are display-only), so the policy names its own sleeves. The targets and bands are Steven's decisions: Claude never fills one in or suggests one (ADR-038: no personalized buy or sell advice). Everything below is Claude's default under ADR-035 and can be replaced by a new version.
+
+**IP1 Scope.** Policy, drift and rebalancing arithmetic, local only. No push, no broker, no order. The policy modules (domain, repository and API `investment_policy`) are holdings modules (amends ADR-041 H4; `test_holdings_apart` lists them): no rule, alert, push, radar or risk check reads them.
+
+**IP2 Versions.** Migration 0035 `investment_policies`: one row per version (1, 2, ...), the content with its sha256 and Steven's reason, append-only and audited as `web`. A version is in force from its recorded time until the next; at (T, S) the version in force is the latest recorded by both. A version saved at the same moment as another gets 409.
+
+**IP3 Content.** Goals (up to 1,000 characters) and risk (500) in Steven's words, a horizon of 1 to 60 years, an optional largest drawdown he can bear (shown only; M3.13 compares it), an optional cap on any one position, and 1 to 12 sleeves. The form starts from the version in force, or empty.
+
+**IP4 Sleeves.** A name, an asset class (equity, bond, commodity, real estate, cash, other), a market (US, TW, cash, mixed), a target (percent, two decimals), a band (0 to 50 percentage points) and at least one member: a listing (`US:SPY`, `TW:2330`) with an optional target of its own, or a currency (USD, TWD) of a cash sleeve. The targets add up to exactly 100%; a listing or currency is in one sleeve at most; a cash sleeve (asset class and market cash) holds currencies and only it does; a US or TW sleeve holds that market's listings; members' own targets are given for every member or none and add up to the sleeve's; a currency takes no target of its own.
+
+**IP5 Assignment.** A position is one instrument summed over the accounts, cash one currency summed over the accounts. Each is assigned to the sleeve that names it; a holding no sleeve names is unassigned, shown with its weight, and stops the trades until a version names it.
+
+**IP6 Drift (rebalancing 0.1.0).** Weights as in the valuation (a share of the USD total, cash included). Drift is the sleeve's weight less its target; a sleeve is outside its band when the drift, either way, exceeds the band. Asset classes and markets add up their sleeves' targets and weights (no band), so the three views agree. A position above the cap is flagged, never traded for.
+
+**IP7 Trigger.** Rebalancing is due when any sleeve is outside its band. Every listing sleeve then goes to its target (a full rebalance; before rounding the trades net to zero) and a cash sleeve takes what the trades leave. Not due: the drift only, no trade.
+
+**IP8 Within a sleeve.** Each member to its own target when the sleeve gives them; else in proportion to the members' current values; else, when the sleeve holds nothing, in equal parts.
+
+**IP9 Shares.** The USD amount is converted at the valuation's DEXTAUS rate and divided by the last close known at T, rounded toward zero to whole shares; a trade under one share is left out. A listing nothing holds takes its close from the database; without one the trade shows the USD amount only (`no_close`), and an old close is flagged (`stale_mark`). Fees, taxes (TWSE's 0.3% on sales) and board lots are not counted (KI-35). The cash each currency gains or loses is shown, with the balance after; a negative balance means a deposit or a conversion first.
+
+**IP10 No trade.** Without a USD total (no rate for a TWD amount, or nothing held), while anything held is unassigned, or without a policy, no trade is listed and the page says why.
+
+**IP11 Not advice.** The API's detail and the page say: arithmetic on your own targets, not advice; nothing is sent to a broker; no fees or taxes. The form has no order, broker, route or execute field (tested).
+
+**IP12 API.** `GET /holdings/policy?known_at` (the assessment), `GET /holdings/policy/versions`, `POST /holdings/policy` (422 when a version does not fit, 409 on a race). Unknown fields are refused.
+
+**IP13 Page.** `/holdings/policy`, under Holdings (no new navigation entry): the version in force, the drift by sleeve, asset class and market, the holdings with their sleeve and the cap, the trades and cash moved when due, the form (viewing now only), every version, As known on. Holdings links to it; Today's holdings card says how many sleeves are outside their bands.
+
+**IP14 Privacy.** As ADR-041 H12: the policy stays on this machine, is backed up with the database, and no push, log line or verify output shows it. The e2e writes a policy only to CI's database; no sample policy is ever written to the local one.
+
+**IP15 Glossary.** Ten terms (`page_policy`, `investment_policy`, `policy_sleeve`, `target_weight`, `rebalancing_band`, `policy_drift`, `rebalancing_due`, `rebalancing_trade`, `position_cap`, `policy_cash_flow`) with Chinese hints; `holding_weight`, `holdings_snapshot` and `net_contributions` 0.2.0 name the renumbered milestones.
+
+**Out of scope.** Performance (M3.13); tax and fee models; board-lot and odd-lot rules; trimming a position to the cap; reminders when a band is crossed (in the app only, later); any broker connection or order; holdings or the policy in pushes.
 
 ---
 

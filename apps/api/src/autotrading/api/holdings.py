@@ -35,6 +35,7 @@ from autotrading.domain.holdings import (
     FX_STALE_DAYS,
     ZONE_OF_CURRENCY,
     Entry,
+    Fx,
     Valuation,
     change,
     document,
@@ -162,7 +163,7 @@ class HoldingsOut(BaseModel):
     detail: str
 
 
-def _names(session: Session, instrument_ids: set[UUID]) -> dict[UUID, str]:
+def issuer_names(session: Session, instrument_ids: set[UUID]) -> dict[UUID, str]:
     """The issuer name of held instruments that have one."""
     if not instrument_ids:
         return {}
@@ -194,9 +195,25 @@ def research_pages() -> set[tuple[str, str]]:
     return us | {("TW", code) for code in universe_symbols("TW")}
 
 
+def fx_out(session: Session, fx: Fx | None, lag_days: int | None) -> HoldingFxOut | None:
+    """The DEXTAUS rate a valuation used, with its source and age."""
+    if fx is None or lag_days is None:
+        return None
+    return HoldingFxOut(
+        series_id=FX_SERIES,
+        value=fx.value,
+        observation_date=fx.observation_date,
+        published_at=fx.published_at,
+        row_id=fx.row_id,
+        source_url=fx_source_url(session, fx.row_id),
+        lag_days=lag_days,
+        stale=lag_days > FX_STALE_DAYS,
+    )
+
+
 def holdings_out(session: Session, valuation: Valuation, before: Valuation) -> HoldingsOut:
     stored = document(valuation)
-    issuers = _names(session, {p.instrument_id for p in valuation.positions})
+    issuers = issuer_names(session, {p.instrument_id for p in valuation.positions})
     pages = research_pages()
     positions = []
     for raw, position in zip(stored["positions"], valuation.positions, strict=True):
@@ -204,18 +221,7 @@ def holdings_out(session: Session, valuation: Valuation, before: Valuation) -> H
         research = (position.market, position.symbol) in pages
         named = {**raw, "name": name, "name_zh": name_zh, "research": research}
         positions.append(HoldingPositionOut.model_validate(named))
-    fx = None
-    if valuation.fx is not None and valuation.fx_lag_days is not None:
-        fx = HoldingFxOut(
-            series_id=FX_SERIES,
-            value=valuation.fx.value,
-            observation_date=valuation.fx.observation_date,
-            published_at=valuation.fx.published_at,
-            row_id=valuation.fx.row_id,
-            source_url=fx_source_url(session, valuation.fx.row_id),
-            lag_days=valuation.fx_lag_days,
-            stale=valuation.fx_lag_days > FX_STALE_DAYS,
-        )
+    fx = fx_out(session, valuation.fx, valuation.fx_lag_days)
     snapshot = latest_snapshot(session, valuation.known_at)
     return HoldingsOut(
         known_at=valuation.known_at,
@@ -346,7 +352,7 @@ class ReverseHoldingEntry(BaseModel):
 
 def entries_out(session: Session, rows: list[HoldingEntry]) -> list[HoldingEntryOut]:
     reversed_by = {row.reverses_id: row.id for row in rows if row.reverses_id is not None}
-    issuers = _names(session, {r.instrument_id for r in rows if r.instrument_id is not None})
+    issuers = issuer_names(session, {r.instrument_id for r in rows if r.instrument_id is not None})
     out = []
     for row in sorted(rows, key=lambda r: (r.recorded_at, str(r.id)), reverse=True):
         name, name_zh = (
