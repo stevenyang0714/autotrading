@@ -1,10 +1,11 @@
 """The Taiwan screens (M3.11, ADR-042) on recorded responses: the rule file pinned to its hash,
 returns across ex-dates (SC6), the movers' readings against a direct computation (SC7), the
-screens and their watch lists over 30 recorded sessions (SC8, SC9), the coverage gate (SC10)
-and the history summary (SC13)."""
+screens and their watch lists over 30 recorded sessions (SC8, SC9), the coverage, listed and
+history gates (SC10) and the history summary (SC13)."""
 
 import math
 import statistics
+from dataclasses import replace
 from datetime import date
 from decimal import Decimal
 from itertools import pairwise
@@ -44,7 +45,15 @@ from tests.finmind_replay import PRICE_CODES, payload, price_history
 from tests.twse_replay import payload as twse_payload
 
 CONFIG = Path(get_settings().resolved_config_dir())
-PINNED = {"0.1.0": "cf10f6d4deb1059efcf5562aef9bd593732dfa2c82e8a25fa83da3df701733a9"}
+PINNED = {
+    "0.1.0": "cf10f6d4deb1059efcf5562aef9bd593732dfa2c82e8a25fa83da3df701733a9",
+    # not judged while the history is backfilled (SC10)
+    "0.2.0": "66087bd1dbf7b785c5f632410053f68cbe4028b6ee96337549f4eb868a8644d0",
+    # nor while the companies listed by then lack bars (SC10)
+    "0.3.0": "7b7d645683b14cdf14c816a2375240459c963a8b779f7509a82beef8b965f279",
+    # the swing trend also needs volume (SC8)
+    "0.4.0": "bfeef16550040fd08019d3b0c403689f504896149060fab5bf30237ea299457e",
+}
 TAIPEI = "Asia/Taipei"
 
 
@@ -55,6 +64,9 @@ def rules_file() -> ScreenRulesFile:
 
 
 RULES = rules_file().active()
+# the watch lists' entries, ends and report over the recorded sessions, under 0.3.0 (0.4.0's swing
+# trend waits for volume, so the six recorded companies enter it less often)
+WATCHED = next(r.rule_set() for r in rules_file().rule_sets if r.rule_version == "0.3.0")
 NAMES = {c.code: c for c in company_rows(twse_payload("d1", "t187ap03_L"))}
 COMPANIES = {c: Company(c, NAMES[c].short_name, NAMES[c].industry) for c in PRICE_CODES}
 
@@ -95,10 +107,12 @@ BARS = {code: recorded(code) for code in PRICE_CODES}
 SESSIONS = sorted({b.session for bars in BARS.values() for b in bars})
 
 
-def run_at(session: date, previous: PreviousRun | None = None) -> ScreenRunOut:
+def run_at(
+    session: date, previous: PreviousRun | None = None, rules: ScreenRuleSet = WATCHED
+) -> ScreenRunOut:
     sessions = SESSIONS[: SESSIONS.index(session) + 1]
     return evaluate(
-        RULES,
+        rules,
         known_at=end_of_day(session, TAIPEI),
         companies=COMPANIES,
         bars={c: [b for b in bars if b.session <= session] for c, bars in BARS.items()},
@@ -120,6 +134,7 @@ def test_the_rule_file_has_one_active_set_pinned_to_its_hash() -> None:
         "收盤價高於 20 日均線",
         "20 日均線高於 5 日前",
         "收盤價高於 60 日均線",
+        "成交量 ≥ 前 20 日均量 1.5 倍",
         "同產業有流動性的股票中 ≥ 50% 站上 20 日均線（≥ 5 檔才判斷）",
     ]
     assert describe(RULES, breakout)["invalidation"] == [
@@ -208,6 +223,29 @@ def test_the_movers_readings_match_a_direct_computation() -> None:
     assert reading.liquid  # MediaTek trades far above NT$30m a session
 
 
+def test_a_stored_close_of_zero_is_a_session_without_trade() -> None:
+    """FinMind's placeholder rows (close 0, as stored for 2317 on 2025-07-30 before M3.11's store
+    skipped them) read as no trade: the stock reads as without the bar, the return across it a
+    raw ratio marked `gap`."""
+    bars = BARS["2454"]
+    i = len(bars) - 10
+    zero = replace(
+        bars[i],
+        open=0.0,
+        high=0.0,
+        low=0.0,
+        close=0.0,
+        close_text="0.0",
+        volume=0.0,
+        trade_value=0.0,
+    )
+    reading = read_stock(RULES, COMPANIES["2454"], [*bars[:i], zero, *bars[i + 1 :]], SESSIONS)
+    assert isinstance(reading, StockReading)
+    assert reading == read_stock(RULES, COMPANIES["2454"], [*bars[:i], *bars[i + 1 :]], SESSIONS)
+    (gap,) = [e for e in reading.window.events if e.session == bars[i + 1].session]
+    assert gap.source == "gap"
+
+
 def test_the_screens_and_watch_lists_over_thirty_recorded_sessions() -> None:
     previous = None
     runs: dict[date, ScreenRunOut] = {}
@@ -243,11 +281,23 @@ def test_the_screens_and_watch_lists_over_thirty_recorded_sessions() -> None:
     again = run_at(date(2026, 10, 22), previous_of(runs[date(2026, 10, 21)]))
     assert again.model_dump() == runs[date(2026, 10, 22)].model_dump()
     summary = history_summary(
-        [s.screen_id for s in RULES.screens], [r.counts() for r in runs.values()]
+        [s.screen_id for s in WATCHED.screens], [r.counts() for r in runs.values()]
     )
     assert summary[0].sessions == 30 and summary[0].max_meeting == 6
     assert summary[1].zero_share == Decimal(1)
     assert not any("return" in field for field in summary[0].model_dump())  # OD-7
+    # 0.4.0's swing trend also needs a volume of 1.5 times the 20-session average (SC8): none of
+    # 0.3.0's four entries of 2026-09-08, then 2330 and 3711 on 2026-09-18's volume
+    strict: dict[date, ScreenRunOut] = {}
+    previous = None
+    for session in SESSIONS[-30:]:
+        strict[session] = run_at(session, previous, RULES)
+        previous = previous_of(strict[session])
+    assert strict[date(2026, 9, 8)].screens[0].lines == []
+    entered = [x for x in strict[date(2026, 9, 18)].screens[0].lines if x.state == "entered"]
+    assert {x.code for x in entered} == {"2330", "3711"}
+    volume = [c for x in entered for c in x.conditions if c.kind == "volume_multiple_min"]
+    assert len(volume) == 2 and all(c.status == "pass" for c in volume)
 
 
 def test_a_breakout_ends_below_its_level() -> None:
@@ -284,11 +334,73 @@ def test_a_session_below_the_coverage_is_not_judged() -> None:
     assert run.reason is not None and "5 of 6" in run.reason and "83.3%" in run.reason
 
 
+def test_a_session_while_the_history_is_backfilled_is_not_judged() -> None:
+    """SC10 since 0.2.0: 2303 and 2408 traded but hold 30 sessions, so 4 of the 6 companies
+    with a bar have 60 sessions of history (below 90%); 0.1.0 judged such a session."""
+    session = SESSIONS[-1]
+    bars = {c: [b for b in v if b.session <= session] for c, v in BARS.items()}
+    for code in ("2303", "2408"):
+        bars[code] = bars[code][-30:]
+
+    def judged_with(rules: ScreenRuleSet) -> ScreenRunOut:
+        return evaluate(
+            rules,
+            known_at=end_of_day(session, TAIPEI),
+            companies=COMPANIES,
+            bars=bars,
+            sessions=SESSIONS,
+            flows={},
+            previous=None,
+            industry_basis="as_known",
+        )
+
+    run = judged_with(RULES)
+    assert RULES.rule_version == "0.4.0" and run.status == "not_judged" and run.screens == []
+    assert (run.coverage.covered, run.coverage.read, run.coverage.unavailable["history"]) == (
+        6,
+        4,
+        2,
+    )
+    assert run.reason is not None and "4 of the 6 companies" in run.reason
+    assert "66.7%" in run.reason and "below 90%" in run.reason
+    first = next(r.rule_set() for r in rules_file().rule_sets if r.rule_version == "0.1.0")
+    assert judged_with(first).status == "judged"
+
+
+def test_a_session_before_the_market_histories_begin_is_not_judged() -> None:
+    """SC10 since 0.3.0: with a seventh listed company without a bar (as 2016 to 2023 hold the
+    research universe's long histories only), 6 of the 7 companies listed by then have a bar of
+    the session (below 95%); 0.2.0, counting the companies that traded before only, judged it."""
+    session = SESSIONS[-1]
+    code = next(c for c in sorted(NAMES) if c not in COMPANIES and NAMES[c].industry != "91")
+    companies = {**COMPANIES, code: Company(code, NAMES[code].short_name, NAMES[code].industry)}
+
+    def judged_with(rules: ScreenRuleSet) -> ScreenRunOut:
+        return evaluate(
+            rules,
+            known_at=end_of_day(session, TAIPEI),
+            companies=companies,
+            bars={c: [b for b in v if b.session <= session] for c, v in BARS.items()},
+            sessions=SESSIONS,
+            flows={},
+            previous=None,
+            industry_basis="as_known",
+        )
+
+    run = judged_with(RULES)
+    assert RULES.rule_version == "0.4.0" and run.status == "not_judged" and run.screens == []
+    assert (run.coverage.listed, run.coverage.covered, run.coverage.expected) == (7, 6, 6)
+    assert run.reason is not None and "6 of the 7 companies listed by then" in run.reason
+    assert "85.7%" in run.reason and "below 95%" in run.reason
+    second = next(r.rule_set() for r in rules_file().rule_sets if r.rule_version == "0.2.0")
+    assert judged_with(second).status == "judged"
+
+
 def test_the_report_names_the_movers_and_screens_and_never_a_flow_number() -> None:
     """SC12: one plain-text message under Telegram's length, the page named but not linked,
     TWSE's and FinMind's attribution and the footer; flows as conditions met or not."""
     delivery = load_delivery_rules(CONFIG / "delivery_rules.yaml").active()
-    assert delivery.screens is not None and delivery.screens.screen_rule_version == "0.1.0"
+    assert delivery.screens is not None and delivery.screens.screen_rule_version == "0.4.0"
     run = run_at(date(2026, 10, 21), previous_of(run_at(date(2026, 10, 20))))  # 2881 met then
     (text,) = screen_report(delivery, run, industry_names(CONFIG), RULES.movers.push_top)
     assert len(text) <= MAX_MESSAGE and "http" not in text

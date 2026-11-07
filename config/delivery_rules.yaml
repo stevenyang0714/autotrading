@@ -12,10 +12,91 @@
 # sent. Every message is plain text and ends with the footer: a rule output, not advice. Since
 # 0.2.0 (M3.0c, ADR-038) messages are in Chinese with names and reasons, plus a weekly digest.
 # 0.3.0 (M3.11, ADR-042 SC12) adds the Taiwan screens' report after each scheduled run.
+# 0.4.0 (2026-11-05) reports screen rules 0.2.0, which also wait for a complete history.
+# 0.5.0 (2026-11-05) reports screen rules 0.3.0, which also wait for the whole market.
+# 0.6.0 (2026-11-05) reports screen rules 0.4.0, whose swing trend also needs volume.
 version: 0.1.0
 rule_sets:
-  - rule_version: 0.3.0
+  - rule_version: 0.6.0
     status: active  # active: used for new deliveries; retired: kept for the stored ones
+    released: "2026-11-05"
+    note: >-
+      As 0.3.0, for screen rules 0.4.0 (ADR-042 SC10, SC12, Claude's defaults under ADR-035): one
+      report per scheduled or manual run of screen rules 0.4.0 from the last 24 hours, the
+      movers and each screen's new and ended names (at most 15 each), FinMind's flows as
+      conditions met or not, never its numbers; a not-judged session from the 10:00 retry on.
+    channel: telegram
+    alert_rule_version: 0.6.0
+    kinds: [regime, level_change, rotation, momentum, portfolio]
+    min_company_level: 3
+    max_age_hours: 48
+    quiet_hours: {start: "23:00", end: "07:00", timezone: Asia/Singapore}
+    max_per_run: 10
+    max_attempts: 3
+    footer: "規則輸出、未經驗證、不是投資建議；僅供模擬（Paper only）。"
+    language: zh
+    details: true
+    digest: {weekday: 0, at: "08:00"}
+    screens:
+      screen_rule_version: 0.4.0
+      max_age_hours: 24
+      max_lines: 15
+      attribution: "資料來源：臺灣證券交易所（政府資料開放授權條款）、FinMind"
+      page: "機會雷達 › 台股篩選"
+  - rule_version: 0.5.0
+    status: retired
+    released: "2026-11-05"
+    note: >-
+      As 0.3.0, for screen rules 0.3.0 (ADR-042 SC10, SC12, Claude's defaults under ADR-035): one
+      report per scheduled or manual run of screen rules 0.3.0 from the last 24 hours, the
+      movers and each screen's new and ended names (at most 15 each), FinMind's flows as
+      conditions met or not, never its numbers; a not-judged session from the 10:00 retry on.
+    channel: telegram
+    alert_rule_version: 0.6.0
+    kinds: [regime, level_change, rotation, momentum, portfolio]
+    min_company_level: 3
+    max_age_hours: 48
+    quiet_hours: {start: "23:00", end: "07:00", timezone: Asia/Singapore}
+    max_per_run: 10
+    max_attempts: 3
+    footer: "規則輸出、未經驗證、不是投資建議；僅供模擬（Paper only）。"
+    language: zh
+    details: true
+    digest: {weekday: 0, at: "08:00"}
+    screens:
+      screen_rule_version: 0.3.0
+      max_age_hours: 24
+      max_lines: 15
+      attribution: "資料來源：臺灣證券交易所（政府資料開放授權條款）、FinMind"
+      page: "機會雷達 › 台股篩選"
+  - rule_version: 0.4.0
+    status: retired
+    released: "2026-11-05"
+    note: >-
+      0.3.0 for screen rules 0.2.0 (ADR-042 SC10, SC12, Claude's defaults under ADR-035): one
+      report per scheduled or manual run of screen rules 0.2.0 from the last 24 hours, the
+      movers and each screen's new and ended names (at most 15 each), FinMind's flows as
+      conditions met or not, never its numbers; a not-judged session from the 10:00 retry on.
+    channel: telegram
+    alert_rule_version: 0.6.0
+    kinds: [regime, level_change, rotation, momentum, portfolio]
+    min_company_level: 3
+    max_age_hours: 48
+    quiet_hours: {start: "23:00", end: "07:00", timezone: Asia/Singapore}
+    max_per_run: 10
+    max_attempts: 3
+    footer: "規則輸出、未經驗證、不是投資建議；僅供模擬（Paper only）。"
+    language: zh
+    details: true
+    digest: {weekday: 0, at: "08:00"}
+    screens:
+      screen_rule_version: 0.2.0
+      max_age_hours: 24
+      max_lines: 15
+      attribution: "資料來源：臺灣證券交易所（政府資料開放授權條款）、FinMind"
+      page: "機會雷達 › 台股篩選"
+  - rule_version: 0.3.0
+    status: retired
     released: "2026-11-04"
     note: >-
       0.2.0 and the Taiwan screens' report (ADR-042 SC12, Claude's defaults under ADR-035): one

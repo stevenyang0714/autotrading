@@ -129,8 +129,9 @@ def main() -> None:
         assert momentum_rules is not None, "momentum rules not loaded: run `make migrate` first"
         momenta = momentum.record_points(session, momentum_rules, points, held, "replay")
         # The Taiwan screens (M3.11) at every recorded session since October 2026, as
-        # `make screens-backfill` stores them, so the screens page has runs and a watch list.
-        screen_rules = screens.stored_screen_rules(session)
+        # `make screens-backfill` stores them, so the screens page has runs and a watch list:
+        # under 0.1.0, as six recorded companies hold 60 sessions and 0.2.0 waits for 90% (SC10).
+        screen_rules = screens.stored_screen_rules(session, "0.1.0")
         assert screen_rules is not None, "screen rules not loaded: run `make migrate` first"
         screened = screens.backfill(session, screen_rules, held, "replay", since=SCREENS_SINCE)
         # The backtests (M2.5) now, at a later system time again, so they read everything above.

@@ -1,15 +1,16 @@
 """M3.11 acceptance on recorded real TWSE and FinMind responses (ADR-042): the Taiwan screens
 backfilled over October 2026 to 2026-10-21 and judged for 2026-10-22 by a manual run, from the
 stored data (every listed company from the TWSE files, six of them with a FinMind history), each
-run recomputing identically; the not-judged row for a session whose files have not come; the
-report pushed once; the candidates whose flows FinMind fetches. Uses its own migrated database
-and stays small for CI.
+run recomputing identically (screen rules 0.1.0); the not-judged row for a session whose files
+have not come, unless a TWSE daily run is in flight; the report pushed once, and a not-judged
+session once; the candidates whose flows FinMind fetches; 0.2.0 not judging while most
+histories are missing. Uses its own migrated database and stays small for CI.
 """
 
 import json
 import os
 from collections.abc import Callable, Iterator
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from itertools import pairwise
 from pathlib import Path
@@ -25,6 +26,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from autotrading.adapters.finmind import refresh as finmind_refresh
 from autotrading.adapters.finmind.client import INSTITUTIONAL
+from autotrading.adapters.twse import refresh as twse_refresh
 from autotrading.config_sync import (
     ScreenRulesVersionError,
     load_delivery_rules,
@@ -34,7 +36,7 @@ from autotrading.config_sync import (
     sync_screen_rules,
     sync_sources,
 )
-from autotrading.db.models import ScreenDelivery, ScreenRun, Source
+from autotrading.db.models import IngestionRun, ScreenDelivery, ScreenRun, Source
 from autotrading.domain.markets import TW
 from autotrading.domain.screens import ScreenRulesFile, ScreenRunOut
 from autotrading.infra.object_store import make_s3_client
@@ -56,6 +58,9 @@ pytestmark = pytest.mark.integration
 D1, D2 = date(2026, 10, 21), date(2026, 10, 22)
 WINDOW = Window(start=datetime(2026, 10, 26, tzinfo=UTC), end=datetime(2026, 10, 27, tzinfo=UTC))
 SINCE = date(2026, 10, 1)
+# Six of the recorded companies hold 60 sessions of history, so the active rules (0.2.0 on) do
+# not judge (SC10, the last test); the runs, watch lists and report are exercised with 0.1.0
+JUDGED_WITH = "0.1.0"
 
 
 @pytest.fixture(scope="module")
@@ -100,7 +105,7 @@ def backfilled(engine: Engine) -> list[ScreenRun]:
             s3.delete_object(Bucket=bucket, Key=obj["Key"])
         s3.delete_bucket(Bucket=bucket)
     with Session(engine) as session:
-        rules = screens.stored_screen_rules(session)
+        rules = screens.stored_screen_rules(session, JUDGED_WITH)
         assert rules is not None
         held = session.execute(select(func.now())).scalar_one()
         screens.backfill(session, rules, held, since=SINCE, until=D1)
@@ -115,7 +120,7 @@ def backfilled(engine: Engine) -> list[ScreenRun]:
 def live(engine: Engine, backfilled: list[ScreenRun]) -> ScreenRun:
     """A manual run at T = S = now: D2 is the newest stored session not judged yet."""
     with Session(engine) as session:
-        rules = screens.stored_screen_rules(session)
+        rules = screens.stored_screen_rules(session, JUDGED_WITH)
         assert rules is not None
         now = session.execute(select(func.now())).scalar_one()
         row = screens.record_live(session, rules, now, "manual", market_calendar(TW.exchange))
@@ -176,7 +181,7 @@ def test_a_session_whose_files_have_not_come_is_not_judged(engine: Engine, live:
     """SC10, SC11: every stored session is judged and the TWSE calendar names later ones, so the
     scheduled run records the latest of them as not judged."""
     with Session(engine) as session:
-        rules = screens.stored_screen_rules(session)
+        rules = screens.stored_screen_rules(session, JUDGED_WITH)
         assert rules is not None
         now = session.execute(select(func.now())).scalar_one()
         row = screens.record_live(session, rules, now, "manual", market_calendar(TW.exchange))
@@ -187,10 +192,33 @@ def test_a_session_whose_files_have_not_come_is_not_judged(engine: Engine, live:
         assert not row.backfilled and row.previous_id is None
 
 
+def test_the_screens_wait_for_a_twse_daily_run_in_flight(engine: Engine, live: ScreenRun) -> None:
+    """SC11 (2026-11-06): the slots a sleeping Mac missed fire together at its wake, so the
+    screens wait for a TWSE daily run queued or running, created in the last 6 hours."""
+    with Session(engine) as session:
+        now = session.execute(select(func.now())).scalar_one()
+        assert not twse_refresh.daily_in_flight(session, now)  # the replayed runs finished
+        session.add(
+            IngestionRun(
+                source_id="twse_openapi",
+                job="twse.daily",
+                params={"slot": "07:40"},
+                idempotency_key=uuid4().hex * 2,
+                status="queued",
+            )
+        )
+        session.flush()
+        assert twse_refresh.daily_in_flight(session, now)
+        assert not twse_refresh.daily_in_flight(session, now + timedelta(hours=7))
+        session.rollback()
+
+
 def test_the_report_is_pushed_once_and_never_a_backfilled_run(
     engine: Engine, live: ScreenRun
 ) -> None:
-    """SC12: the manual run's report is sent once and recorded; backfilled runs never are."""
+    """SC12: the manual run's report is sent once and recorded; backfilled runs never are. The
+    0.1.0 run goes out under delivery rules 0.3.0, never under the active 0.6.0 (screen rules
+    0.4.0)."""
     sent: list[str] = []
 
     def send(text: str) -> int:
@@ -198,10 +226,12 @@ def test_the_report_is_pushed_once_and_never_a_backfilled_run(
         return 500 + len(sent)
 
     with Session(engine) as session:
-        rules = delivery.stored_delivery_rules(session)
-        assert rules is not None and rules.screens is not None
+        rules = delivery.stored_delivery_rules(session, "0.3.0")
+        active = delivery.stored_delivery_rules(session)
+        assert rules is not None and rules.screens is not None and active is not None
         now = session.execute(select(func.now())).scalar_one()
         morning = now.astimezone(TW.zone).replace(hour=10, minute=30)  # outside quiet hours
+        assert live.id not in {r.id for r in delivery.pending_screen_runs(session, active, morning)}
         pending = delivery.pending_screen_runs(session, rules, morning)
         assert live.id in {r.id for r in pending}
         assert all(not r.backfilled and r.trigger in ("schedule", "manual") for r in pending)
@@ -216,6 +246,50 @@ def test_the_report_is_pushed_once_and_never_a_backfilled_run(
         assert len(sent) == before
         quiet = now.astimezone(TW.zone).replace(hour=23, minute=30)
         assert delivery.deliver_screens(session, rules, send, quiet, 10) == 0
+
+
+def test_a_not_judged_session_is_reported_once(engine: Engine, live: ScreenRun) -> None:
+    """SC12: the 08:05 and 10:00 slots fired together at a Mac's wake store two not-judged runs
+    of one session, which send one notice (at T from 10:00 Taipei time, the retry on)."""
+    sent: list[str] = []
+
+    def send(text: str) -> int:
+        sent.append(text)
+        return 700 + len(sent)
+
+    with Session(engine) as session:
+        rules = screens.stored_screen_rules(session, JUDGED_WITH)
+        pushed = delivery.stored_delivery_rules(session, "0.3.0")
+        assert rules is not None and pushed is not None
+        now = session.execute(select(func.now())).scalar_one()
+        at = now.astimezone(TW.zone)
+        if not 10 <= at.hour < 22:
+            at = (at + timedelta(days=1 if at.hour >= 22 else 0)).replace(hour=10, minute=0)
+        calendar = market_calendar(TW.exchange)
+        rows = [screens.record_live(session, rules, at, "schedule", calendar) for _ in range(2)]
+        session.commit()
+        days = {(r.session, r.status) for r in rows if r is not None}
+        assert len(days) == 1 and next(iter(days))[1] == "not_judged"
+        day = next(iter(days))[0]
+        later = at + timedelta(minutes=1)
+        pending = delivery.pending_screen_runs(session, pushed, later)
+        waiting = [r.session for r in pending if r.status == "not_judged"]
+        assert len(set(waiting)) == len(waiting)
+        delivery.deliver_screens(session, pushed, send, later, 10)
+        notices = session.scalar(
+            select(func.count())
+            .select_from(ScreenDelivery)
+            .join(ScreenRun, ScreenRun.id == ScreenDelivery.run_id)
+            .where(
+                ScreenRun.rule_version == JUDGED_WITH,
+                ScreenRun.session == day,
+                ScreenRun.status == "not_judged",
+                ScreenDelivery.status == "sent",
+            )
+        )
+        assert notices == 1
+        left = {r.id for r in delivery.pending_screen_runs(session, pushed, later)}
+        assert not left & {r.id for r in rows if r is not None}
 
 
 def test_the_candidates_flows_leave_the_universe_out(engine: Engine, live: ScreenRun) -> None:
@@ -291,6 +365,22 @@ def test_the_screens_page_reads_the_stored_runs(client: TestClient, live: Screen
     assert history["industry_basis"].startswith("first_known")
     assert [s["screen_id"] for s in history["summary"]] == ["tw_swing_trend", "tw_range_breakout"]
     assert all("return" not in key for key in history["summary"][0])
+
+
+def test_a_session_while_the_history_is_backfilled_is_not_judged(
+    engine: Engine, live: ScreenRun
+) -> None:
+    """SC10 since 0.2.0: of the 1,077 companies with a bar of D2, six hold 60 sessions of
+    history (the FinMind backfill of the others not run), so the active rules do not judge it."""
+    with Session(engine) as session:
+        rules = screens.stored_screen_rules(session)
+        assert rules is not None and rules.rule_version == "0.4.0"
+        now = session.execute(select(func.now())).scalar_one()
+        row = screens.record_live(session, rules, now, "manual", market_calendar(TW.exchange))
+        session.commit()
+        assert row is not None and (row.session, row.status) == (D2, "not_judged")
+        assert row.reason is not None and "6 of the 1077 companies" in row.reason
+        assert "below 90%" in row.reason and row.previous_id is None
 
 
 @pytest.mark.skipif(

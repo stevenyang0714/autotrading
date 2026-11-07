@@ -4,11 +4,208 @@
 # 0.1.0: the conditions Steven described on 2026-10-26 (a stock above its rising 20-session
 # average with its industry; a breakout from a tight range on volume; foreign and investment
 # trust buying on several days, never one), with Claude's default thresholds.
+# 0.2.0 (2026-11-05): also not judged while fewer than 90% of the companies that traded have
+# 60 sessions of history (0.1.0 judged 2026-11-03 with the FinMind backfill a quarter done).
+# 0.3.0 (2026-11-05): also not judged while fewer than 95% of the companies listed by then
+# have a bar of the session (0.2.0 judged 2016 to 2023 on the research universe's nine long
+# FinMind histories, 1% of the market).
+# 0.4.0 (2026-11-05): the swing trend also needs a volume of 1.5 times the 20-session average
+# (量能放大 in Steven's list); 0.3.0's history check met a median 141 stocks a session, 36 with it.
 # A research screen and a watch list, not a buy or sell signal; unvalidated (OD-7).
-version: 0.1.0
+version: 0.4.0
 rule_sets:
-  - rule_version: 0.1.0
+  - rule_version: 0.4.0
     status: active
+    released: 2026-11-05
+    note: >-
+      Claude's defaults under ADR-035 for Steven's 2026-10-26 workflow. Every listed company
+      but depositary receipts, read from its own last 90 market sessions; judged only when bars
+      of the session cover 95% of the companies that traded in the 5 sessions before. Movers:
+      a liquid stock whose 1- or 5-session move is at least 2.5 times its own 60-session
+      volatility, or whose volume is at least 3 times its own 20-session average. A listed name
+      stays on the watch list until a condition ends it or 20 judged sessions pass. Since
+      0.2.0 also not judged while fewer than 90% of the companies with a bar of the session
+      have 60 sessions of history; since 0.3.0 nor while fewer than 95% of the companies
+      listed by then have one.
+      Since 0.4.0 the swing trend also needs a volume of at least 1.5 times the 20-session
+      average (量能放大, from Steven's list): under 0.3.0 a median 141 stocks met it a session.
+    market: TW
+    exclude_industries: ["91"]       # 存託憑證 (depositary receipts)
+    window_sessions: 90
+    readiness:
+      min_coverage: 0.95
+      lookback_sessions: 5
+      min_history_share: 0.9         # of the companies with a bar at T (0.2.0)
+      min_listed_share: 0.95         # of the companies listed by T, with a bar at T (0.3.0)
+    liquidity:
+      sessions: 20
+      min_avg_trade_value_twd: 30000000   # NT$3,000 萬 a session on average
+      min_history: 60
+    movers:
+      volatility_sessions: 60
+      z_threshold: 2.5
+      change_sessions: 5
+      volume_sessions: 20
+      volume_ratio: 3
+      page_top: 30
+      push_top: 10
+    watch_sessions: 20
+    action_flag_ratio: 0.05          # an ex-date moving the price basis over 5%: volume ratio flagged
+    flows:
+      max_requests: 150              # FinMind requests a day in all (the universe's 22 included)
+    screens:
+      - screen_id: tw_swing_trend
+        name_zh: 波段趨勢
+        conditions:
+          - {kind: liquid}
+          - {kind: close_above_sma, sessions: 20}
+          - {kind: sma_rising, sessions: 20, lookback: 5}
+          - {kind: close_above_sma, sessions: 60}
+          - {kind: volume_multiple_min, sessions: 20, multiple: 1.5}   # 0.4.0
+          - {kind: industry_breadth_min, sessions: 20, share: 0.5, min_members: 5}
+        notes:
+          - {kind: flow_net_buy, investor: foreign, sessions: 5, min_days: 3}
+          - {kind: flow_net_buy, investor: trust, sessions: 5, min_days: 3}
+        invalidation:
+          - {kind: closes_below_sma, sessions: 20, consecutive: 2}
+      - screen_id: tw_range_breakout
+        name_zh: 量價突破
+        conditions:
+          - {kind: liquid}
+          - {kind: range_width_max, sessions: 20, percent: 15}
+          - {kind: close_above_range_high, sessions: 20}
+          - {kind: volume_multiple_min, sessions: 20, multiple: 2}
+        notes:
+          - {kind: flow_net_buy, investor: foreign, sessions: 5, min_days: 3}
+          - {kind: flow_net_buy, investor: trust, sessions: 5, min_days: 3}
+        invalidation:
+          - {kind: close_below_level}
+  - rule_version: 0.3.0
+    status: retired
+    released: 2026-11-05
+    note: >-
+      Claude's defaults under ADR-035 for Steven's 2026-10-26 workflow. Every listed company
+      but depositary receipts, read from its own last 90 market sessions; judged only when bars
+      of the session cover 95% of the companies that traded in the 5 sessions before. Movers:
+      a liquid stock whose 1- or 5-session move is at least 2.5 times its own 60-session
+      volatility, or whose volume is at least 3 times its own 20-session average. A listed name
+      stays on the watch list until a condition ends it or 20 judged sessions pass. Since
+      0.2.0 also not judged while fewer than 90% of the companies with a bar of the session
+      have 60 sessions of history; since 0.3.0 nor while fewer than 95% of the companies
+      listed by then have one.
+    market: TW
+    exclude_industries: ["91"]       # 存託憑證 (depositary receipts)
+    window_sessions: 90
+    readiness:
+      min_coverage: 0.95
+      lookback_sessions: 5
+      min_history_share: 0.9         # of the companies with a bar at T (0.2.0)
+      min_listed_share: 0.95         # of the companies listed by T, with a bar at T (0.3.0)
+    liquidity:
+      sessions: 20
+      min_avg_trade_value_twd: 30000000   # NT$3,000 萬 a session on average
+      min_history: 60
+    movers:
+      volatility_sessions: 60
+      z_threshold: 2.5
+      change_sessions: 5
+      volume_sessions: 20
+      volume_ratio: 3
+      page_top: 30
+      push_top: 10
+    watch_sessions: 20
+    action_flag_ratio: 0.05          # an ex-date moving the price basis over 5%: volume ratio flagged
+    flows:
+      max_requests: 150              # FinMind requests a day in all (the universe's 22 included)
+    screens:
+      - screen_id: tw_swing_trend
+        name_zh: 波段趨勢
+        conditions:
+          - {kind: liquid}
+          - {kind: close_above_sma, sessions: 20}
+          - {kind: sma_rising, sessions: 20, lookback: 5}
+          - {kind: close_above_sma, sessions: 60}
+          - {kind: industry_breadth_min, sessions: 20, share: 0.5, min_members: 5}
+        notes:
+          - {kind: flow_net_buy, investor: foreign, sessions: 5, min_days: 3}
+          - {kind: flow_net_buy, investor: trust, sessions: 5, min_days: 3}
+        invalidation:
+          - {kind: closes_below_sma, sessions: 20, consecutive: 2}
+      - screen_id: tw_range_breakout
+        name_zh: 量價突破
+        conditions:
+          - {kind: liquid}
+          - {kind: range_width_max, sessions: 20, percent: 15}
+          - {kind: close_above_range_high, sessions: 20}
+          - {kind: volume_multiple_min, sessions: 20, multiple: 2}
+        notes:
+          - {kind: flow_net_buy, investor: foreign, sessions: 5, min_days: 3}
+          - {kind: flow_net_buy, investor: trust, sessions: 5, min_days: 3}
+        invalidation:
+          - {kind: close_below_level}
+  - rule_version: 0.2.0
+    status: retired
+    released: 2026-11-05
+    note: >-
+      Claude's defaults under ADR-035 for Steven's 2026-10-26 workflow. Every listed company
+      but depositary receipts, read from its own last 90 market sessions; judged only when bars
+      of the session cover 95% of the companies that traded in the 5 sessions before. Movers:
+      a liquid stock whose 1- or 5-session move is at least 2.5 times its own 60-session
+      volatility, or whose volume is at least 3 times its own 20-session average. A listed name
+      stays on the watch list until a condition ends it or 20 judged sessions pass. Since
+      0.2.0 also not judged while fewer than 90% of the companies with a bar of the session
+      have 60 sessions of history.
+    market: TW
+    exclude_industries: ["91"]       # 存託憑證 (depositary receipts)
+    window_sessions: 90
+    readiness:
+      min_coverage: 0.95
+      lookback_sessions: 5
+      min_history_share: 0.9         # of the companies with a bar at T (0.2.0)
+    liquidity:
+      sessions: 20
+      min_avg_trade_value_twd: 30000000   # NT$3,000 萬 a session on average
+      min_history: 60
+    movers:
+      volatility_sessions: 60
+      z_threshold: 2.5
+      change_sessions: 5
+      volume_sessions: 20
+      volume_ratio: 3
+      page_top: 30
+      push_top: 10
+    watch_sessions: 20
+    action_flag_ratio: 0.05          # an ex-date moving the price basis over 5%: volume ratio flagged
+    flows:
+      max_requests: 150              # FinMind requests a day in all (the universe's 22 included)
+    screens:
+      - screen_id: tw_swing_trend
+        name_zh: 波段趨勢
+        conditions:
+          - {kind: liquid}
+          - {kind: close_above_sma, sessions: 20}
+          - {kind: sma_rising, sessions: 20, lookback: 5}
+          - {kind: close_above_sma, sessions: 60}
+          - {kind: industry_breadth_min, sessions: 20, share: 0.5, min_members: 5}
+        notes:
+          - {kind: flow_net_buy, investor: foreign, sessions: 5, min_days: 3}
+          - {kind: flow_net_buy, investor: trust, sessions: 5, min_days: 3}
+        invalidation:
+          - {kind: closes_below_sma, sessions: 20, consecutive: 2}
+      - screen_id: tw_range_breakout
+        name_zh: 量價突破
+        conditions:
+          - {kind: liquid}
+          - {kind: range_width_max, sessions: 20, percent: 15}
+          - {kind: close_above_range_high, sessions: 20}
+          - {kind: volume_multiple_min, sessions: 20, multiple: 2}
+        notes:
+          - {kind: flow_net_buy, investor: foreign, sessions: 5, min_days: 3}
+          - {kind: flow_net_buy, investor: trust, sessions: 5, min_days: 3}
+        invalidation:
+          - {kind: close_below_level}
+  - rule_version: 0.1.0
+    status: retired
     released: 2026-11-04
     note: >-
       Claude's defaults under ADR-035 for Steven's 2026-10-26 workflow. Every listed company

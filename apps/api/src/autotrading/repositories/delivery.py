@@ -324,8 +324,8 @@ RETRY_FROM = (9, 30)  # a not-judged run is reported from the 10:00 retry on, Ta
 def pending_screen_runs(session: Session, rules: DeliveryRuleSet, now: datetime) -> list[ScreenRun]:
     """The screen runs to report: stored by a scheduled or manual run (never a backfill) in the
     last `max_age_hours`, under the rules' screen version, not sent and not failed
-    `max_attempts` times. A not-judged run only from the retry on, and only while no judged
-    run of its session exists."""
+    `max_attempts` times. A not-judged run only from the retry on, only while no judged run of
+    its session exists, and once a session (two slots fired together at a Mac's wake)."""
     push = rules.screens
     if push is None:
         return []
@@ -340,6 +340,7 @@ def pending_screen_runs(session: Session, rules: DeliveryRuleSet, now: datetime)
         .order_by(ScreenRun.recorded_at)
     ).all()
     out = []
+    notified: set[date] = set()
     for row in rows:
         attempts = session.execute(
             select(ScreenDelivery.status, func.count())
@@ -351,7 +352,7 @@ def pending_screen_runs(session: Session, rules: DeliveryRuleSet, now: datetime)
             continue
         if row.status == "not_judged":
             local = row.known_at.astimezone(ZoneInfo("Asia/Taipei"))
-            if (local.hour, local.minute) < RETRY_FROM:
+            if (local.hour, local.minute) < RETRY_FROM or row.session in notified:
                 continue
             judged = session.scalar(
                 select(func.count())
@@ -362,8 +363,21 @@ def pending_screen_runs(session: Session, rules: DeliveryRuleSet, now: datetime)
                     ScreenRun.status == "judged",
                 )
             )
-            if judged:
+            sent = session.scalar(
+                select(func.count())
+                .select_from(ScreenDelivery)
+                .join(ScreenRun, ScreenRun.id == ScreenDelivery.run_id)
+                .where(
+                    ScreenRun.rule_version == row.rule_version,
+                    ScreenRun.session == row.session,
+                    ScreenRun.status == "not_judged",
+                    ScreenDelivery.channel == rules.channel,
+                    ScreenDelivery.status == "sent",
+                )
+            )
+            if judged or sent:
                 continue
+            notified.add(row.session)
         out.append(row)
     return out
 
