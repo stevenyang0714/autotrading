@@ -2238,6 +2238,35 @@ class HoldingSnapshot(Base):
     )
 
 
+class InvestmentPolicy(Base):
+    """One version of Steven's investment policy (M3.12, ADR-043 IP2): his goals, horizon and
+    risk, and the sleeves with their targets, bands and members, as he wrote them on the web
+    app. In force from recorded_at until the next version. Holdings-side (H4): no rule, alert,
+    push or risk check reads it. Append-only and audited."""
+
+    __tablename__ = "investment_policies"
+    __table_args__ = (
+        CheckConstraint("version >= 1", name="version_positive"),
+        CheckConstraint("content_sha256 ~ '^[0-9a-f]{64}$'", name="content_sha256_format"),
+        CheckConstraint("length(reason) BETWEEN 1 AND 500", name="reason_length"),
+        CheckConstraint(f"user_id = '{HOLDING_USER}'", name="single_user"),
+        UniqueConstraint("version", name="uq_investment_policies_version"),
+    )
+    __mapper_args__ = {"eager_defaults": True}  # noqa: RUF012  (SQLAlchemy reads it per class)
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, primary_key=True, default=uuid.uuid4, server_default=func.gen_random_uuid()
+    )
+    version: Mapped[int] = mapped_column(Integer)
+    content: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    content_sha256: Mapped[str] = mapped_column(Text)
+    reason: Mapped[str] = mapped_column(Text)
+    user_id: Mapped[str] = mapped_column(Text)
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
 # ---------- Taiwan listed-stock screens (M3.11) ----------
 
 SCREEN_MARKETS = ("TW",)

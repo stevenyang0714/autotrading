@@ -1,6 +1,7 @@
 """Real holdings stay apart from research and the paper portfolio (M3.10, ADR-041 H4, H12): only
-the holdings modules (and the audit viewer's labels) read the ledger or its snapshots, so no
-rule, alert, push, radar or paper book can see them."""
+the holdings modules (and the audit viewer's labels) read the ledger, its snapshots or the
+investment policy (M3.12, ADR-043 IP1), so no rule, alert, push, radar or paper book can see
+them."""
 
 import re
 from pathlib import Path
@@ -9,6 +10,7 @@ SOURCE = Path(__file__).resolve().parents[2] / "src" / "autotrading"
 LEDGER = re.compile(
     r"HoldingEntry|HoldingSnapshot|holding_entries|holding_snapshots"
     r"|(?:repositories|domain|api)\.holdings|holdings\.(?:record_snapshot|valuation_at|recompute)"
+    r"|InvestmentPolicy|investment_policies|(?:repositories|domain|api)\.investment_policy\b"
 )
 ALLOWED = {
     "api/holdings.py",
@@ -16,6 +18,9 @@ ALLOWED = {
     "db/models.py",
     "domain/holdings.py",
     "repositories/holdings.py",
+    "api/investment_policy.py",  # the investment policy (M3.12) reads the valuation
+    "domain/investment_policy.py",
+    "repositories/investment_policy.py",
     "jobs/actors.py",  # the daily snapshot actor
     "jobs/scheduler.py",
     "jobs/holdings_snapshot.py",
