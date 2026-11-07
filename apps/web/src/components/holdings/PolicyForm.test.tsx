@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { recordedPolicy } from "@/test/fixtures";
+import { unexplainedNumbers } from "@/test/numbers";
 
 import { PolicyForm } from "./PolicyForm";
 
@@ -34,6 +35,11 @@ describe("PolicyForm", () => {
     expect(container.querySelectorAll("[data-sleeve-row]")).toHaveLength(3);
     expect((container.querySelector('input[name="sleeve_count"]') as HTMLInputElement).value).toBe("3");
     expect(container.querySelector("[data-total]")?.textContent).toContain("65.00%");
+  });
+
+  it("explains every number", () => {
+    const { container } = render(<PolicyForm initial={recordedPolicy.policy?.content ?? null} next={3} action={vi.fn()} />);
+    expect(unexplainedNumbers(container)).toEqual([]);
   });
 
   it("has no order, broker or execution field", () => {

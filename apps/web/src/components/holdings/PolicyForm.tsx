@@ -146,8 +146,11 @@ export function PolicyForm({
           <Metric termId="policy_sleeve">Sleeves</Metric>
         </legend>
         <p className="text-xs text-neutral-500">
-          Members: listings written US:SPY or TW:2330, a listing&apos;s own target after = (US:SPY=30, given for every member
-          or none); a cash sleeve lists currencies (USD, TWD).
+          <Metric termId="policy_sleeve" icon={false}>
+            {
+              "Members: listings written US:SPY or TW:2330, a listing's own target after = (US:SPY=30, given for every member or none); a cash sleeve lists currencies (USD, TWD)."
+            }
+          </Metric>
         </p>
         <input type="hidden" name="sleeve_count" value={sleeves.length} />
         {sleeves.map((s, i) => (
