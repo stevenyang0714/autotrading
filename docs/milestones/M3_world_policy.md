@@ -215,8 +215,23 @@ Work one sub-milestone at a time, in this order (ADR-035): M3.0, M3.0b, M3.0c (a
 - [x] The report never carries a FinMind number or a link, and is sent once per run, never for a backfill (tested).
 - [x] Every number on the page carries its glossary term (vitest and e2e).
 
-## M3.12 Investment policy and rebalancing
-Reads the holdings ledger (M3.10): a versioned investment policy (goals, horizon, risk, target weights and bands by asset class, market and position), drift against it and the trades that would restore the targets (arithmetic on Steven's own targets, not advice). Planned in plan mode after M3.11.
+## M3.12 Investment policy and rebalancing (ADR-043)
+**Decided (ADR-043, IP1-IP15; Claude's defaults under ADR-035, plan approved by Steven on 2026-11-07):** Steven writes a versioned investment policy (goals, horizon, risk, and sleeves: an asset class in a market with a target, a band and its members); the page weighs his real holdings against the version in force and, when a sleeve is outside its band, lists the whole-share trades that would bring every sleeve to its target. Arithmetic on his own targets, not advice; the targets are never filled in for him.
+
+**Build**
+- **Versions:** `investment_policies` (append-only, audited as `web`), migration 0035; a version is in force from its recorded time.
+- **Rebalancing 0.1.0 (`domain/investment_policy.py`):** holdings by sleeve, asset class and market, drift against the bands, the position cap, a full rebalance when any band is crossed, members to their own targets or in proportion, whole shares at the last close, the cash each currency moves; fees, taxes and lots not counted (KI-35).
+- **API:** `GET /holdings/policy`, `GET /holdings/policy/versions`, `POST /holdings/policy`.
+- **Pages:** `/holdings/policy` (version in force, drift, holdings, trades, the form, versions, As known on); a link from Holdings; a line on Today's holdings card. Ten glossary terms.
+
+**Acceptance**
+- [x] A version that does not fit is refused: targets not adding up to 100%, a listing in two sleeves, a cash sleeve with listings, a listing outside its sleeve's market, members' targets not adding up (tested).
+- [x] The version in force at T is the latest recorded by T; earlier versions never change (tested).
+- [x] Drift, the trigger and the trades reproduce the arithmetic by hand on a made-up ledger; within the bands nothing is traded (tested).
+- [x] No trade without a policy, a USD total, or while a holding is unassigned; the page says why (tested).
+- [x] The policy modules are holdings modules: no rule, alert, push or risk check names them (`test_holdings_apart`).
+- [x] The page explains every number and says it is not advice; the form has no order, broker or execution field (tested).
+- [ ] Steven records his holdings and writes his first version (his decision; nothing is entered for him).
 
 ## M3.13 Performance
 Time-weighted return of the holdings against SPY and 0050, volatility and drawdown, from the snapshots. Planned after M3.12.
